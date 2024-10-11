@@ -1,7 +1,7 @@
 import { SmartCopilotSettings } from './types/settings'
 
-export const CHAT_VIEW_TYPE = 'chat-view'
-export const APPLY_VIEW_TYPE = 'apply-view'
+export const CHAT_VIEW_TYPE = 'smtcmp-chat-view'
+export const APPLY_VIEW_TYPE = 'smtcmp-apply-view'
 
 export const DEFAULT_SETTINGS: SmartCopilotSettings = {
   openAIApiKey: '',

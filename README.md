@@ -1,7 +1,5 @@
 # Obsidian Smart Composer
 
-`<GIF>`
-
 Everytime we ask ChatGPT, we need to put so much context information for each query. Why spend time putting background infos that are already in your vault?
 
 Obsidian Smart Composer is a plugin that helps you write efficiently with AI by easily referencing your vault content. Inspired by Cursor AI and ChatGPT Canvas, this plugin unifies your note-taking and content creation process within Obsidian.
@@ -10,16 +8,12 @@ Obsidian Smart Composer is a plugin that helps you write efficiently with AI by 
 
 ### Contextual Chat
 
-`<GIF>`
-
 Upgrade your note-taking experience with our Contextual AI Assistant, inspired by Cursor AI. Unlike typical AI plugins, our assistant allows you to precisely select the context for your interactions:
 
 - Type `@<filename>` to choose specific files as your conversation context
 - Get responses based on selected vault content
 
 ### Apply Edit
-
-`<GIF>`
 
 Smart Composer suggests edits to your document, you can apply with a single click.
 
