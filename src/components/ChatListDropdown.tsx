@@ -5,14 +5,12 @@ import { ChatConversationMeta } from '../types/chat'
 
 export function ChatListDropdown({
   chatList,
-  currentConversationId,
   onSelectConversation,
   onDeleteConversation,
   className,
   children,
 }: {
   chatList: ChatConversationMeta[]
-  currentConversationId: string | null
   onSelectConversation: (conversationId: string) => void
   onDeleteConversation: (conversationId: string) => void
   className?: string
