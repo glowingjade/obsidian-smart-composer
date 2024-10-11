@@ -1,0 +1,78 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ItemView, WorkspaceLeaf } from 'obsidian'
+import React from 'react'
+import { Root, createRoot } from 'react-dom/client'
+
+import Chat, { ChatProps, ChatRef } from './components/Chat'
+import { CHAT_VIEW_TYPE } from './constants'
+import { AppProvider } from './contexts/app-context'
+import { DarkModeProvider } from './contexts/dark-mode-context'
+import { LLMProvider } from './contexts/llm-context'
+import { SettingsProvider } from './contexts/settings-context'
+import SmartCopilotPlugin from './main'
+import { MentionableBlockData } from './types/mentionable'
+import { SmartCopilotSettings } from './types/settings'
+
+export class ChatView extends ItemView {
+  private root: Root | null = null
+  private settings: SmartCopilotSettings
+  private initialChatProps?: ChatProps
+  private chatRef: React.RefObject<ChatRef> = React.createRef()
+
+  constructor(
+    leaf: WorkspaceLeaf,
+    private plugin: SmartCopilotPlugin,
+  ) {
+    super(leaf)
+    this.settings = plugin.settings
+    this.initialChatProps = plugin.initialChatProps
+  }
+
+  getViewType() {
+    return CHAT_VIEW_TYPE
+  }
+
+  getIcon() {
+    return 'message-square'
+  }
+
+  getDisplayText() {
+    return 'Copilot Chat'
+  }
+
+  async onOpen() {
+    const queryClient = new QueryClient()
+
+    this.root = createRoot(this.containerEl.children[1])
+    this.root.render(
+      <AppProvider app={this.app}>
+        <SettingsProvider settings={this.settings}>
+          <DarkModeProvider>
+            <LLMProvider>
+              <QueryClientProvider client={queryClient}>
+                <React.StrictMode>
+                  <Chat ref={this.chatRef} {...this.initialChatProps} />
+                </React.StrictMode>
+              </QueryClientProvider>
+            </LLMProvider>
+          </DarkModeProvider>
+        </SettingsProvider>
+      </AppProvider>,
+    )
+
+    // Consume chatProps
+    this.initialChatProps = undefined
+  }
+
+  async onClose() {
+    this.root?.unmount()
+  }
+
+  addSelectionToChat(data: MentionableBlockData) {
+    this.chatRef.current?.addSelectionToChat(data)
+  }
+
+  focusMessage() {
+    this.chatRef.current?.focusMessage()
+  }
+}
