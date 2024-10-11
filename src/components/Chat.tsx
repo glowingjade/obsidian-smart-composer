@@ -6,7 +6,6 @@ import {
   useCallback,
   useEffect,
   useImperativeHandle,
-  useLayoutEffect,
   useRef,
   useState,
 } from 'react'
@@ -112,14 +111,14 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     }
   }
 
-  useLayoutEffect(() => {
+  const handleScrollToBottom = () => {
     if (chatMessagesRef.current) {
       const scrollContainer = chatMessagesRef.current
       if (scrollContainer.scrollTop !== scrollContainer.scrollHeight) {
         scrollContainer.scrollTop = scrollContainer.scrollHeight
       }
     }
-  }, [chatMessages])
+  }
 
   const abortActiveStreams = () => {
     for (const abortController of activeStreamAbortControllersRef.current) {
@@ -194,6 +193,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
                 : message,
             ),
           )
+          handleScrollToBottom()
         }
       } catch (error) {
         if (error.name === 'AbortError') {
@@ -488,6 +488,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           handleSubmit([...chatMessages, { ...inputMessage, content }])
           chatUserInputRefs.current.get(inputMessage.id)?.clear()
           setInputMessage(getNewInputMessage(app))
+          handleScrollToBottom()
         }}
         onFocus={() => {
           setFocusedMessageId(inputMessage.id)
