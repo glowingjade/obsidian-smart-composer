@@ -43,16 +43,14 @@ Currently, Obsidian Smart Composer is available through manual installation only
 
 Note: The plugin requires a valid API key to work.
 
-
 ### Commands and Hotkeys
 
 Obsidian Smart Composer adds a few commands to work with AI. You can set custom hotkeys for these commands by going to `Settings > Hotkeys` and searching for "Obsidian Smart Composer". (Note: Hotkeys are unset by default)
 
 | Command               | Description                                | Preferred Hotkey |
 | --------------------- | ------------------------------------------ | ---------------- |
-| Open Chat View        | Opens the AI chat interface                | Cmd+Shift+L |
-| Add Selection to Chat | Adds the selected text to the current chat | Cmd+L       |
-
+| Open Chat View        | Opens the AI chat interface                | Cmd+Shift+L      |
+| Add Selection to Chat | Adds the selected text to the current chat | Cmd+L            |
 
 ## Roadmap
 
