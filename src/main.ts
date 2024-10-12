@@ -27,7 +27,7 @@ export default class SmartCopilotPlugin extends Plugin {
     // This adds a simple command that can be triggered anywhere
     this.addCommand({
       id: 'open-chat-view',
-      name: 'Open Smart Composer',
+      name: 'Open chat',
       callback: () => this.openChatView(),
     })
 
