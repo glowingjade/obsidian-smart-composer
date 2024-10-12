@@ -223,6 +223,7 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
 }
 
 .smtcmp-typeahead-popover {
+  z-index: 1000;
   background: var(--background-primary);
   box-shadow: var(--shadow-s);
   border-radius: var(--radius-m);
@@ -307,6 +308,7 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
 }
 
 .smtcmp-chat-list-dropdown-content {
+  z-index: 1000;
   max-height: 300px;
   overflow-y: auto;
   background-color: var(--background-primary);
