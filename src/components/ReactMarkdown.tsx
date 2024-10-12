@@ -5,18 +5,18 @@ import MarkdownCodeComponent from './MarkdownCodeComponent'
 function parsesmtcmpBlocks(input: string): (
   | { type: 'string'; content: string }
   | {
-      type: 'smtcmpBlock'
+      type: 'smtcmp_block'
       content: string
       language?: string
       filename?: string
     }
 )[] {
-  const regex = /<smtcmpBlock([^>]*)>\s*([\s\S]*?)\s*(?:<\/smtcmpBlock>|$)/g
+  const regex = /<smtcmp_block([^>]*)>\s*([\s\S]*?)\s*(?:<\/smtcmp_block>|$)/g
   const matches = input.matchAll(regex)
   const result: (
     | { type: 'string'; content: string }
     | {
-        type: 'smtcmpBlock'
+        type: 'smtcmp_block'
         content: string
         language?: string
         filename?: string
@@ -35,7 +35,7 @@ function parsesmtcmpBlocks(input: string): (
     const language = attributes.match(/language="([^"]+)"/)?.[1]
     const filename = attributes.match(/filename="([^"]+)"/)?.[1]
     result.push({
-      type: 'smtcmpBlock',
+      type: 'smtcmp_block',
       content,
       language,
       filename,
