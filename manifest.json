@@ -1,9 +1,9 @@
 {
   "id": "smart-composer",
   "name": "Smart Composer",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "minAppVersion": "0.15.0",
-  "description": "AI chat with note context, smart writing assistance, and one-click edits for your Obsidian vault.",
+  "description": "AI chat with note context, smart writing assistance, and one-click edits for your vault.",
   "author": "Heesu Suh",
   "authorUrl": "https://github.com/glowingjade",
   "fundingUrl": "https://buymeacoffee.com/glowingjade",
