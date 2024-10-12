@@ -1,3 +1,4 @@
+import { parseFragment } from 'parse5'
 import Markdown from 'react-markdown'
 
 import MarkdownCodeComponent from './MarkdownCodeComponent'
@@ -5,51 +6,80 @@ import MarkdownCodeComponent from './MarkdownCodeComponent'
 function parsesmtcmpBlocks(input: string): (
   | { type: 'string'; content: string }
   | {
-      type: 'smtcmpBlock'
+      type: 'smtcmp_block'
       content: string
       language?: string
       filename?: string
     }
 )[] {
-  const regex = /<smtcmpBlock([^>]*)>\s*([\s\S]*?)\s*(?:<\/smtcmpBlock>|$)/g
-  const matches = input.matchAll(regex)
-  const result: (
+  const parsedResult: (
     | { type: 'string'; content: string }
     | {
-        type: 'smtcmpBlock'
+        type: 'smtcmp_block'
         content: string
         language?: string
         filename?: string
       }
   )[] = []
 
-  let lastIndex = 0
-  for (const match of matches) {
-    if (match.index > lastIndex) {
-      result.push({
-        type: 'string',
-        content: input.slice(lastIndex, match.index),
-      })
-    }
-    const [, attributes, content] = match
-    const language = attributes.match(/language="([^"]+)"/)?.[1]
-    const filename = attributes.match(/filename="([^"]+)"/)?.[1]
-    result.push({
-      type: 'smtcmpBlock',
-      content,
-      language,
-      filename,
-    })
-    lastIndex = match.index + match[0].length
-  }
-  if (lastIndex < input.length) {
-    result.push({
-      type: 'string',
-      content: input.slice(lastIndex),
-    })
-  }
+  const fragment = parseFragment(input, {
+    sourceCodeLocationInfo: true,
+  })
+  let lastEndOffset = 0
+  for (const node of fragment.childNodes) {
+    if (node.nodeName === 'smtcmp_block') {
+      if (!node.sourceCodeLocation) {
+        throw new Error('sourceCodeLocation is undefined')
+      }
+      const startOffset = node.sourceCodeLocation.startOffset
+      const endOffset = node.sourceCodeLocation.endOffset
+      if (startOffset > lastEndOffset) {
+        parsedResult.push({
+          type: 'string',
+          content: input.slice(lastEndOffset, startOffset),
+        })
+      }
 
-  return result
+      const language = node.attrs.find(
+        (attr) => attr.name === 'language',
+      )?.value
+      const filename = node.attrs.find(
+        (attr) => attr.name === 'filename',
+      )?.value
+
+      const children = node.childNodes
+      if (children.length === 0) {
+        parsedResult.push({
+          type: 'smtcmp_block',
+          content: '',
+          language,
+          filename,
+        })
+      } else {
+        const innerContentStartOffset =
+          children[0].sourceCodeLocation?.startOffset
+        const innerContentEndOffset =
+          children[children.length - 1].sourceCodeLocation?.endOffset
+        if (!innerContentStartOffset || !innerContentEndOffset) {
+          throw new Error('sourceCodeLocation is undefined')
+        }
+        parsedResult.push({
+          type: 'smtcmp_block',
+          content: input.slice(innerContentStartOffset, innerContentEndOffset),
+          language,
+          filename,
+        })
+      }
+      lastEndOffset = endOffset
+    }
+  }
+  if (lastEndOffset < input.length) {
+    parsedResult.push({
+      type: 'string',
+      content: input.slice(lastEndOffset),
+    })
+  }
+  return parsedResult
 }
 
 export default function ReactMarkdown({

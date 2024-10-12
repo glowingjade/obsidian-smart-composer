@@ -67,14 +67,14 @@ export const parseRequestMessages = async (
 
 1. Please keep your response as concise as possible. Avoid being verbose.
 
-2. When the user is asking for edits to their markdown, please provide a simplified version of the markdown block emphasizing only the changes. Use comments to show where unchanged content has been skipped. Wrap the markdown block with <smtcmpBlock> tags. Add filename and language attributes to the <smtcmpBlock> tags. For example:
-<smtcmpBlock filename="path/to/file.md" language="markdown">
+2. When the user is asking for edits to their markdown, please provide a simplified version of the markdown block emphasizing only the changes. Use comments to show where unchanged content has been skipped. Wrap the markdown block with <smtcmp_block> tags. Add filename and language attributes to the <smtcmp_block> tags. For example:
+<smtcmp_block filename="path/to/file.md" language="markdown">
 <!-- ... existing content ... -->
 {{ edit_1 }}
 <!-- ... existing content ... -->
 {{ edit_2 }}
 <!-- ... existing content ... -->
-</smtcmpBlock>
+</smtcmp_block>
 The user has full access to the file, so they prefer seeing only the changes in the markdown. Often this will mean that the start/end of the file will be skipped, but that's okay! Rewrite the entire file only if specifically requested. Always provide a brief explanation of the updates, except when the user specifically asks for just the content.
 
 3. Do not lie or make up facts.
@@ -83,18 +83,18 @@ The user has full access to the file, so they prefer seeing only the changes in 
 
 5. Format your response in markdown.
 
-6. When writing out new markdown blocks, also wrap them with <smtcmpBlock> tags. For example:
-<smtcmpBlock language="markdown">
+6. When writing out new markdown blocks, also wrap them with <smtcmp_block> tags. For example:
+<smtcmp_block language="markdown">
 {{ content }}
-</smtcmpBlock>
+</smtcmp_block>
 
-7. When providing markdown blocks for an existing file, add the filename and language attributes to the <smtcmpBlock> tags. Restate the relevant section or heading, so the user knows which part of the file you are editing. For example:
-<smtcmpBlock filename="path/to/file.md" language="markdown">
+7. When providing markdown blocks for an existing file, add the filename and language attributes to the <smtcmp_block> tags. Restate the relevant section or heading, so the user knows which part of the file you are editing. For example:
+<smtcmp_block filename="path/to/file.md" language="markdown">
 ## Section Title
 ...
 {{ content }}
 ...
-</smtcmpBlock>`,
+</smtcmp_block>`,
   }
 
   const currentFile = lastUserMessage.mentionables.find(
