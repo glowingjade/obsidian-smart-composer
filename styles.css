@@ -217,6 +217,17 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
  * ChatUserInput
  */
 
+.smtcmp-chat-input-root .mention {
+  background-color: var(--tag-background);
+  color: var(--tag-color);
+  padding: var(--size-2-1) calc(var(--size-2-1));
+  border-radius: var(--radius-s);
+  background-color: var(--tag-background);
+  color: var(--tag-color);
+  padding: var(--size-2-1) calc(var(--size-2-1));
+  border-radius: var(--radius-s);
+}
+
 .smtcmp-chat-input-paragraph {
   margin: 0;
   line-height: 1.6;

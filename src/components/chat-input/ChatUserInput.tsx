@@ -78,6 +78,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
     const initialConfig: InitialConfigType = {
       namespace: 'ChatUserInput',
       theme: {
+        root: 'smtcmp-chat-input-root',
         paragraph: 'smtcmp-chat-input-paragraph',
       },
       nodes: [MentionNode],

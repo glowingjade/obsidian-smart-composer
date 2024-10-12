@@ -42,8 +42,6 @@ export type SerializedMentionNode = Spread<
 //   return null
 // }
 
-const mentionStyle =
-  'background-color: var(--tag-background); color: var(--tag-color); padding: var(--size-2-1) calc(var(--size-2-1)); border-radius: var(--radius-s);'
 export class MentionNode extends TextNode {
   __id: string
   __mention: string
@@ -87,7 +85,6 @@ export class MentionNode extends TextNode {
 
   createDOM(config: EditorConfig): HTMLElement {
     const dom = super.createDOM(config)
-    dom.style.cssText = mentionStyle
     dom.className = MENTION_NODE_TYPE
     return dom
   }
