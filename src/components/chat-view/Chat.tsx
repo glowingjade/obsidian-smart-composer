@@ -67,8 +67,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const { settings } = useSettings()
 
   const {
-    createConversation,
-    updateConversation,
+    createOrUpdateConversation,
     deleteConversation,
     getChatMessagesById,
     chatList,
@@ -94,9 +93,8 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   })
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
   const [focusedMessageId, setFocusedMessageId] = useState<string | null>(null)
-  const [currentConversationId, setCurrentConversationId] = useState<
-    string | null
-  >(null)
+  const [currentConversationId, setCurrentConversationId] =
+    useState<string>(uuidv4())
   const activeStreamAbortControllersRef = useRef<AbortController[]>([])
   const chatUserInputRefs = useRef<Map<string, ChatUserInputRef>>(new Map())
   const chatMessagesRef = useRef<HTMLDivElement>(null)
@@ -146,7 +144,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   }
 
   const handleNewChat = async () => {
-    setCurrentConversationId(null)
+    setCurrentConversationId(uuidv4())
     setChatMessages([])
     const newInputMessage = getNewInputMessage(app)
     setInputMessage(newInputMessage)
@@ -267,13 +265,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     const updateConversationAsync = async () => {
       try {
         if (chatMessages.length > 0) {
-          if (!currentConversationId) {
-            const newConversation = await createConversation()
-            setCurrentConversationId(newConversation.id)
-            updateConversation(newConversation.id, chatMessages)
-          } else {
-            updateConversation(currentConversationId, chatMessages)
-          }
+          createOrUpdateConversation(currentConversationId, chatMessages)
         }
       } catch (error) {
         new Notice('Failed to save chat history')

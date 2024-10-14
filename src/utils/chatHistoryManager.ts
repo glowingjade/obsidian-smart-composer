@@ -1,5 +1,4 @@
 import { App, normalizePath } from 'obsidian'
-import { v4 as uuidv4 } from 'uuid'
 
 import { ChatConversation, ChatConversationMeta } from '../types/chat'
 
@@ -14,10 +13,10 @@ export class ChatConversationManager {
     this.app = app
   }
 
-  async createChatConversation(): Promise<ChatConversation> {
+  async createChatConversation(id: string): Promise<ChatConversation> {
     const newChatConversation: ChatConversation = {
       schemaVersion: CURRENT_SCHEMA_VERSION,
-      id: uuidv4(),
+      id,
       title: 'New Chat',
       createdAt: Date.now(),
       updatedAt: Date.now(),
