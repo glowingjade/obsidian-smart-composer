@@ -116,6 +116,6 @@ The user has full access to the file, so they prefer seeing only the changes in 
   return [
     systemMessage,
     ...(currentFileMessage ? [currentFileMessage] : []),
-    ...parsedMessages,
+    ...parsedMessages.filter((message) => !!message.content),
   ] as ChatCompletionMessageParam[]
 }
