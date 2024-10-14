@@ -1,6 +1,6 @@
 import { TFile } from 'obsidian'
 
-import { editorStateToPlainText } from '../components/chat-input/utils/editor-state-to-plain-text'
+import { editorStateToPlainText } from '../components/chat-view/chat-input/utils/editor-state-to-plain-text'
 import { LLMContextType } from '../contexts/llm-context'
 import { ChatMessage, ChatUserMessage } from '../types/chat'
 import { RequestMessage } from '../types/llm/request'

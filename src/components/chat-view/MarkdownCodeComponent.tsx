@@ -6,7 +6,7 @@ import {
   oneLight,
 } from 'react-syntax-highlighter/dist/esm/styles/prism'
 
-import { useDarkModeContext } from '../contexts/dark-mode-context'
+import { useDarkModeContext } from '../../contexts/dark-mode-context'
 
 export default function MarkdownCodeComponent({
   onApply,

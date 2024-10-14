@@ -1,7 +1,7 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { Trash2 } from 'lucide-react'
 
-import { ChatConversationMeta } from '../types/chat'
+import { ChatConversationMeta } from '../../types/chat'
 
 export function ChatListDropdown({
   chatList,

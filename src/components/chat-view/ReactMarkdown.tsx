@@ -3,7 +3,7 @@ import Markdown from 'react-markdown'
 import {
   ParsedSmtcmpBlock,
   parsesmtcmpBlocks,
-} from '../utils/parse-smtcmp-block'
+} from '../../utils/parse-smtcmp-block'
 
 import MarkdownCodeComponent from './MarkdownCodeComponent'
 

@@ -1,7 +1,7 @@
 import { TFile, Vault } from 'obsidian'
 import { ChatCompletionMessageParam } from 'openai/resources'
 
-import { editorStateToPlainText } from '../components/chat-input/utils/editor-state-to-plain-text'
+import { editorStateToPlainText } from '../components/chat-view/chat-input/utils/editor-state-to-plain-text'
 import { ChatMessage, ChatUserMessage } from '../types/chat'
 import { MentionableBlock, MentionableFile } from '../types/mentionable'
 

@@ -18,8 +18,8 @@ import {
   useRef,
 } from 'react'
 
-import { useApp } from '../../contexts/app-context'
-import { Mentionable } from '../../types/mentionable'
+import { useApp } from '../../../contexts/app-context'
+import { Mentionable } from '../../../types/mentionable'
 
 import MentionableBadge from './MentionableBadge'
 import { MentionNode } from './plugins/mention/MentionNode'

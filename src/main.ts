@@ -2,7 +2,7 @@ import { Editor, MarkdownView, Plugin } from 'obsidian'
 
 import { ApplyView } from './ApplyView'
 import { ChatView } from './ChatView'
-import { ChatProps } from './components/Chat'
+import { ChatProps } from './components/chat-view/Chat'
 import { APPLY_VIEW_TYPE, CHAT_VIEW_TYPE, DEFAULT_SETTINGS } from './constants'
 import { SmartCopilotSettingTab } from './settings/SettingTab'
 import { SmartCopilotSettings } from './types/settings'
