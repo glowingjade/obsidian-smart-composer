@@ -1,21 +1,33 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 
 import { SmartCopilotSettings } from '../types/settings'
 
+type SettingsContextType = {
+  settings: SmartCopilotSettings
+  setSettings: (newSettings: SmartCopilotSettings) => void
+}
+
 // Settings context
-const SettingsContext = React.createContext<SmartCopilotSettings | undefined>(
+const SettingsContext = React.createContext<SettingsContextType | undefined>(
   undefined,
 )
 
 export const SettingsProvider = ({
   children,
   settings,
+  setSettings,
 }: {
   children: React.ReactNode
   settings: SmartCopilotSettings
+  setSettings: (newSettings: SmartCopilotSettings) => void
 }) => {
+  const value = useMemo(
+    () => ({ settings, setSettings }),
+    [settings, setSettings],
+  )
+
   return (
-    <SettingsContext.Provider value={settings}>
+    <SettingsContext.Provider value={value}>
       {children}
     </SettingsContext.Provider>
   )

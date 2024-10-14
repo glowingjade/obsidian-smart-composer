@@ -21,8 +21,10 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
         .setPlaceholder('Enter your API key')
         .setValue(this.plugin.settings.openAIApiKey)
         .onChange(async (value) => {
-          this.plugin.settings.openAIApiKey = value
-          await this.plugin.saveSettings()
+          await this.plugin.setSettings({
+            ...this.plugin.settings,
+            openAIApiKey: value,
+          })
         }),
     )
 
@@ -31,8 +33,10 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
         .setPlaceholder('Enter your API key')
         .setValue(this.plugin.settings.groqApiKey)
         .onChange(async (value) => {
-          this.plugin.settings.groqApiKey = value
-          await this.plugin.saveSettings()
+          await this.plugin.setSettings({
+            ...this.plugin.settings,
+            groqApiKey: value,
+          })
         }),
     )
 
@@ -41,8 +45,10 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
         .setPlaceholder('Enter your API key')
         .setValue(this.plugin.settings.anthropicApiKey)
         .onChange(async (value) => {
-          this.plugin.settings.anthropicApiKey = value
-          await this.plugin.saveSettings()
+          await this.plugin.setSettings({
+            ...this.plugin.settings,
+            anthropicApiKey: value,
+          })
         }),
     )
 
@@ -56,8 +62,10 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
         )
         .setValue(this.plugin.settings.chatModel)
         .onChange(async (value) => {
-          this.plugin.settings.chatModel = value
-          await this.plugin.saveSettings()
+          await this.plugin.setSettings({
+            ...this.plugin.settings,
+            chatModel: value,
+          })
         }),
     )
 
@@ -71,8 +79,10 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
         )
         .setValue(this.plugin.settings.applyModel)
         .onChange(async (value) => {
-          this.plugin.settings.applyModel = value
-          await this.plugin.saveSettings()
+          await this.plugin.setSettings({
+            ...this.plugin.settings,
+            applyModel: value,
+          })
         }),
     )
   }
