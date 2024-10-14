@@ -11,22 +11,23 @@ import {
 } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 
-import { ApplyViewState } from '../ApplyView'
-import { APPLY_VIEW_TYPE } from '../constants'
-import { useApp } from '../contexts/app-context'
-import { useLLM } from '../contexts/llm-context'
-import { useSettings } from '../contexts/settings-context'
-import { useChatHistory } from '../hooks/useChatHistory'
-import { ChatMessage, ChatUserMessage } from '../types/chat'
-import { RequestMessage } from '../types/llm/request'
+import { ApplyViewState } from '../../ApplyView'
+import { APPLY_VIEW_TYPE } from '../../constants'
+import { useApp } from '../../contexts/app-context'
+import { useLLM } from '../../contexts/llm-context'
+import { useSettings } from '../../contexts/settings-context'
+import useDebounce from '../../hooks/use-debounce'
+import { useChatHistory } from '../../hooks/useChatHistory'
+import { ChatMessage, ChatUserMessage } from '../../types/chat'
+import { RequestMessage } from '../../types/llm/request'
 import {
   MentionableBlock,
   MentionableBlockData,
   MentionableCurrentFile,
-} from '../types/mentionable'
-import { applyChangesToFile } from '../utils/apply'
-import { readTFileContent } from '../utils/obsidian'
-import { parseRequestMessages } from '../utils/prompt'
+} from '../../types/mentionable'
+import { applyChangesToFile } from '../../utils/apply'
+import { readTFileContent } from '../../utils/obsidian'
+import { parseRequestMessages } from '../../utils/prompt'
 
 import ChatUserInput, { ChatUserInputRef } from './chat-input/ChatUserInput'
 import { editorStateToPlainText } from './chat-input/utils/editor-state-to-plain-text'
@@ -64,11 +65,10 @@ export type ChatProps = {
 
 const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const app = useApp()
-  const settings = useSettings()
+  const { settings } = useSettings()
 
   const {
-    createConversation,
-    updateConversation,
+    createOrUpdateConversation,
     deleteConversation,
     getChatMessagesById,
     chatList,
@@ -94,9 +94,8 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   })
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
   const [focusedMessageId, setFocusedMessageId] = useState<string | null>(null)
-  const [currentConversationId, setCurrentConversationId] = useState<
-    string | null
-  >(null)
+  const [currentConversationId, setCurrentConversationId] =
+    useState<string>(uuidv4())
   const activeStreamAbortControllersRef = useRef<AbortController[]>([])
   const chatUserInputRefs = useRef<Map<string, ChatUserInputRef>>(new Map())
   const chatMessagesRef = useRef<HTMLDivElement>(null)
@@ -146,7 +145,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   }
 
   const handleNewChat = async () => {
-    setCurrentConversationId(null)
+    setCurrentConversationId(uuidv4())
     setChatMessages([])
     const newInputMessage = getNewInputMessage(app)
     setInputMessage(newInputMessage)
@@ -263,17 +262,14 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     setFocusedMessageId(inputMessage.id)
   }, [])
 
+  const debouncedChatMessages = useDebounce(chatMessages, 300)
+
   useEffect(() => {
     const updateConversationAsync = async () => {
       try {
+        console.log('updating conversation')
         if (chatMessages.length > 0) {
-          if (!currentConversationId) {
-            const newConversation = await createConversation()
-            setCurrentConversationId(newConversation.id)
-            updateConversation(newConversation.id, chatMessages)
-          } else {
-            updateConversation(currentConversationId, chatMessages)
-          }
+          createOrUpdateConversation(currentConversationId, chatMessages)
         }
       } catch (error) {
         new Notice('Failed to save chat history')
@@ -281,7 +277,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       }
     }
     updateConversationAsync()
-  }, [chatMessages, currentConversationId])
+  }, [debouncedChatMessages, currentConversationId])
 
   // Updates the currentFile of the focused message (input or chat history)
   // This happens when active file changes or focused message changes
@@ -421,7 +417,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         {chatMessages.map((message, index) =>
           message.role === 'user' ? (
             <ChatUserInput
-              key={index}
+              key={message.id}
               ref={(ref) => registerChatUserInputRef(message.id, ref)}
               message={message.content}
               onChange={(content) => {

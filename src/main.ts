@@ -2,7 +2,7 @@ import { Editor, MarkdownView, Plugin } from 'obsidian'
 
 import { ApplyView } from './ApplyView'
 import { ChatView } from './ChatView'
-import { ChatProps } from './components/Chat'
+import { ChatProps } from './components/chat-view/Chat'
 import { APPLY_VIEW_TYPE, CHAT_VIEW_TYPE, DEFAULT_SETTINGS } from './constants'
 import { SmartCopilotSettingTab } from './settings/SettingTab'
 import { SmartCopilotSettings } from './types/settings'
@@ -12,6 +12,7 @@ import { getMentionableBlockData } from './utils/obsidian'
 export default class SmartCopilotPlugin extends Plugin {
   settings: SmartCopilotSettings
   initialChatProps?: ChatProps // TODO: change this to use view state like ApplyView
+  settingsChangeListeners: ((newSettings: SmartCopilotSettings) => void)[] = []
 
   async onload() {
     await this.loadSettings()
@@ -49,8 +50,21 @@ export default class SmartCopilotPlugin extends Plugin {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData())
   }
 
-  async saveSettings() {
-    await this.saveData(this.settings)
+  async setSettings(newSettings: SmartCopilotSettings) {
+    this.settings = newSettings
+    await this.saveData(newSettings)
+    this.settingsChangeListeners.forEach((listener) => listener(newSettings))
+  }
+
+  addSettingsChangeListener(
+    listener: (newSettings: SmartCopilotSettings) => void,
+  ) {
+    this.settingsChangeListeners.push(listener)
+    return () => {
+      this.settingsChangeListeners = this.settingsChangeListeners.filter(
+        (l) => l !== listener,
+      )
+    }
   }
 
   async openChatView() {
