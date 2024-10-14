@@ -51,7 +51,7 @@ export function LLMProvider({ children }: PropsWithChildren) {
       if (!llmManager) {
         throw new Error('LLMManager is not initialized')
       }
-      return llmManager.generateResponse(request, options)
+      return await llmManager.generateResponse(request, options)
     },
     [llmManager],
   )
@@ -61,7 +61,7 @@ export function LLMProvider({ children }: PropsWithChildren) {
       if (!llmManager) {
         throw new Error('LLMManager is not initialized')
       }
-      return llmManager.streamResponse(request, options)
+      return await llmManager.streamResponse(request, options)
     },
     [llmManager],
   )
