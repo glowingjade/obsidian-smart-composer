@@ -158,7 +158,6 @@ export function useChatHistory() {
     () =>
       debounce(
         async (id: string, messages: ChatMessage[]): Promise<void> => {
-          console.log('createOrUpdateConversation', id, messages)
           const conversation =
             (await chatConversationManager.findChatConversation(id)) ??
             (await chatConversationManager.createChatConversation(id))
