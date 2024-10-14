@@ -23,30 +23,20 @@ export function ChatListDropdown({
       </DropdownMenu.Trigger>
 
       <DropdownMenu.Portal>
-        <DropdownMenu.Content className="smtcmp-chat-list-dropdown-content smtcmp-typeahead-popover">
+        <DropdownMenu.Content className="smtcmp-popover">
           <ul>
             {chatList.length === 0 ? (
-              <li
-                style={{
-                  background: 'transparent',
-                  cursor: 'default',
-                  color: 'var(--text-faint)',
-                }}
-              >
+              <li className="smtcmp-chat-list-dropdown-empty">
                 No conversations
               </li>
             ) : (
               chatList.map((chat) => (
-                <li key={chat.id}>
-                  <DropdownMenu.Item
-                    onSelect={() => onSelectConversation(chat.id)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      width: '100%',
-                    }}
-                  >
+                <DropdownMenu.Item
+                  onSelect={() => onSelectConversation(chat.id)}
+                  asChild
+                  key={chat.id}
+                >
+                  <li>
                     <div>{chat.title}</div>
                     <div
                       onClick={(e) => {
@@ -57,8 +47,8 @@ export function ChatListDropdown({
                     >
                       <Trash2 size={14} />
                     </div>
-                  </DropdownMenu.Item>
-                </li>
+                  </li>
+                </DropdownMenu.Item>
               ))
             )}
           </ul>
