@@ -37,16 +37,18 @@ export function ChatListDropdown({
               </li>
             ) : (
               chatList.map((chat) => (
-                <li key={chat.id}>
-                  <DropdownMenu.Item
-                    onSelect={() => onSelectConversation(chat.id)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      width: '100%',
-                    }}
-                  >
+                <DropdownMenu.Item
+                  onSelect={() => onSelectConversation(chat.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    width: '100%',
+                  }}
+                  asChild
+                  key={chat.id}
+                >
+                  <li>
                     <div>{chat.title}</div>
                     <div
                       onClick={(e) => {
@@ -57,8 +59,8 @@ export function ChatListDropdown({
                     >
                       <Trash2 size={14} />
                     </div>
-                  </DropdownMenu.Item>
-                </li>
+                  </li>
+                </DropdownMenu.Item>
               ))
             )}
           </ul>

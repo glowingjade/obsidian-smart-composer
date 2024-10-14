@@ -22,6 +22,7 @@ import { useApp } from '../../../contexts/app-context'
 import { Mentionable } from '../../../types/mentionable'
 
 import MentionableBadge from './MentionableBadge'
+import { ModelSelect } from './ModelSelect'
 import { MentionNode } from './plugins/mention/MentionNode'
 import MentionPlugin from './plugins/mention/MentionPlugin'
 import OnEnterPlugin from './plugins/on-enter/OnEnterPlugin'
@@ -198,6 +199,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
           />
           <EditorRefPlugin editorRef={editorRef} />
         </LexicalComposer>
+        <ModelSelect />
       </div>
     )
   },

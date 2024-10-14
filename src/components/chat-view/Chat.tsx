@@ -402,9 +402,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   return (
     <div className="smtcmp-chat-container">
       <div className="smtcmp-chat-header">
-        <h1 className="smtcmp-chat-header-title">
-          Chat ({settings.chatModel})
-        </h1>
+        <h1 className="smtcmp-chat-header-title">Chat</h1>
         <div className="smtcmp-chat-header-buttons">
           <button
             onClick={() => void handleNewChat()}
@@ -413,6 +411,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
             <Plus size={18} />
           </button>
           <ChatListDropdown
+            key={currentConversationId}
             chatList={chatList}
             onSelectConversation={(conversationId) =>
               void handleLoadConversation(conversationId)
