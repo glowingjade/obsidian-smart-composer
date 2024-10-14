@@ -14,7 +14,7 @@ import { TFile } from 'obsidian'
 import { useCallback, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-import { Mentionable, MentionableFile } from '../../../../types/mentionable'
+import { Mentionable, MentionableFile } from '../../../../../types/mentionable'
 import { generateMentionableId } from '../../utils/get-mentionable-id'
 import { MenuOption, MenuTextMatch } from '../shared/LexicalMenu'
 import {

@@ -3,7 +3,7 @@ import isEqual from 'lodash.isequal'
 import { App } from 'obsidian'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { editorStateToPlainText } from '../components/chat-input/utils/editor-state-to-plain-text'
+import { editorStateToPlainText } from '../components/chat-view/chat-input/utils/editor-state-to-plain-text'
 import { useApp } from '../contexts/app-context'
 import {
   ChatConversation,

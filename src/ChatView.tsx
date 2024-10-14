@@ -3,7 +3,7 @@ import { ItemView, WorkspaceLeaf } from 'obsidian'
 import React from 'react'
 import { Root, createRoot } from 'react-dom/client'
 
-import Chat, { ChatProps, ChatRef } from './components/Chat'
+import Chat, { ChatProps, ChatRef } from './components/chat-view/Chat'
 import { CHAT_VIEW_TYPE } from './constants'
 import { AppProvider } from './contexts/app-context'
 import { DarkModeProvider } from './contexts/dark-mode-context'

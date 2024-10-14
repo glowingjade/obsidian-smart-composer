@@ -2,7 +2,7 @@ import {
   Mentionable,
   MentionableBlock,
   MentionableFile,
-} from '../../../types/mentionable'
+} from '../../../../types/mentionable'
 
 export function generateMentionableId(
   mentionable: Omit<Mentionable, 'id'>,

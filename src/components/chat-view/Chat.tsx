@@ -11,22 +11,22 @@ import {
 } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 
-import { ApplyViewState } from '../ApplyView'
-import { APPLY_VIEW_TYPE } from '../constants'
-import { useApp } from '../contexts/app-context'
-import { useLLM } from '../contexts/llm-context'
-import { useSettings } from '../contexts/settings-context'
-import { useChatHistory } from '../hooks/useChatHistory'
-import { ChatMessage, ChatUserMessage } from '../types/chat'
-import { RequestMessage } from '../types/llm/request'
+import { ApplyViewState } from '../../ApplyView'
+import { APPLY_VIEW_TYPE } from '../../constants'
+import { useApp } from '../../contexts/app-context'
+import { useLLM } from '../../contexts/llm-context'
+import { useSettings } from '../../contexts/settings-context'
+import { useChatHistory } from '../../hooks/useChatHistory'
+import { ChatMessage, ChatUserMessage } from '../../types/chat'
+import { RequestMessage } from '../../types/llm/request'
 import {
   MentionableBlock,
   MentionableBlockData,
   MentionableCurrentFile,
-} from '../types/mentionable'
-import { applyChangesToFile } from '../utils/apply'
-import { readTFileContent } from '../utils/obsidian'
-import { parseRequestMessages } from '../utils/prompt'
+} from '../../types/mentionable'
+import { applyChangesToFile } from '../../utils/apply'
+import { readTFileContent } from '../../utils/obsidian'
+import { parseRequestMessages } from '../../utils/prompt'
 
 import ChatUserInput, { ChatUserInputRef } from './chat-input/ChatUserInput'
 import { editorStateToPlainText } from './chat-input/utils/editor-state-to-plain-text'
@@ -421,7 +421,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         {chatMessages.map((message, index) =>
           message.role === 'user' ? (
             <ChatUserInput
-              key={index}
+              key={message.id}
               ref={(ref) => registerChatUserInputRef(message.id, ref)}
               message={message.content}
               onChange={(content) => {

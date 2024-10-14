@@ -6,7 +6,7 @@ import {
   MentionableBlock,
   MentionableCurrentFile,
   MentionableFile,
-} from '../../types/mentionable'
+} from '../../../types/mentionable'
 
 function BadgeBase({
   children,
