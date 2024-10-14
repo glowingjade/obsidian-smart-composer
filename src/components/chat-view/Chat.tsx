@@ -477,6 +477,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
                   ),
                 )
               }}
+              readonly={focusedMessageId !== message.id}
             />
           ) : (
             <div key={index}>

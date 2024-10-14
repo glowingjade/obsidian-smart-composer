@@ -31,6 +31,7 @@ import OnMutationPlugin, {
 import UpdaterPlugin, {
   UpdaterPluginRef,
 } from './plugins/updater/UpdaterPlugin'
+import { editorStateToPlainText } from './utils/editor-state-to-plain-text'
 
 export type ChatUserInputRef = {
   focus: () => void
@@ -44,6 +45,7 @@ export type ChatUserInputProps = {
   onFocus: () => void
   mentionables: Mentionable[]
   setMentionables: (mentionables: Mentionable[]) => void
+  readonly?: boolean
   autoFocus?: boolean
 }
 
@@ -57,6 +59,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
       mentionables,
       setMentionables,
       autoFocus = false,
+      readonly = false,
     },
     ref,
   ) => {
@@ -158,46 +161,53 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
           ))}
         </div>
 
-        <LexicalComposer initialConfig={initialConfig}>
-          <PlainTextPlugin
-            contentEditable={
-              <ContentEditable
-                className="obsidian-default-textarea"
-                style={{
-                  background: 'transparent',
-                }}
-                onFocus={onFocus}
-                ref={contentEditableRef}
-              />
-            }
-            ErrorBoundary={LexicalErrorBoundary}
-          />
-          <HistoryPlugin />
-          {autoFocus && <AutoFocusPlugin />}
-          <MentionPlugin
-            searchFilesByQuery={searchFilesByQuery}
-            onAddMention={handleMentionFile}
-          />
-          <OnChangePlugin
-            onChange={(editorState) => {
-              onChange(editorState.toJSON())
-            }}
-          />
-          <UpdaterPlugin updaterRef={updaterRef} />
-          <OnEnterPlugin
-            onEnter={(evt) => {
-              evt.preventDefault()
-              evt.stopPropagation()
-              const content = editorRef.current?.getEditorState()?.toJSON()
-              content && onSubmit(content)
-            }}
-          />
-          <OnMutationPlugin
-            nodeClass={MentionNode}
-            onMutation={handleMentionNodeMutation}
-          />
-          <EditorRefPlugin editorRef={editorRef} />
-        </LexicalComposer>
+        {readonly ? (
+          <div className="obsidian-default-textarea">
+            {/* TODO: fix new line style */}
+            {message ? editorStateToPlainText(message) : ''}
+          </div>
+        ) : (
+          <LexicalComposer initialConfig={initialConfig}>
+            <PlainTextPlugin
+              contentEditable={
+                <ContentEditable
+                  className="obsidian-default-textarea"
+                  style={{
+                    background: 'transparent',
+                  }}
+                  onFocus={onFocus}
+                  ref={contentEditableRef}
+                />
+              }
+              ErrorBoundary={LexicalErrorBoundary}
+            />
+            <HistoryPlugin />
+            {autoFocus && <AutoFocusPlugin />}
+            <MentionPlugin
+              searchFilesByQuery={searchFilesByQuery}
+              onAddMention={handleMentionFile}
+            />
+            <OnChangePlugin
+              onChange={(editorState) => {
+                onChange(editorState.toJSON())
+              }}
+            />
+            <UpdaterPlugin updaterRef={updaterRef} />
+            <OnEnterPlugin
+              onEnter={(evt) => {
+                evt.preventDefault()
+                evt.stopPropagation()
+                const content = editorRef.current?.getEditorState()?.toJSON()
+                content && onSubmit(content)
+              }}
+            />
+            <OnMutationPlugin
+              nodeClass={MentionNode}
+              onMutation={handleMentionNodeMutation}
+            />
+            <EditorRefPlugin editorRef={editorRef} />
+          </LexicalComposer>
+        )}
       </div>
     )
   },
