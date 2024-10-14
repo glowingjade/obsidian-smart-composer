@@ -23,7 +23,7 @@ export function ChatListDropdown({
       </DropdownMenu.Trigger>
 
       <DropdownMenu.Portal>
-        <DropdownMenu.Content className="smtcmp-typeahead-popover">
+        <DropdownMenu.Content className="smtcmp-popover">
           <ul>
             {chatList.length === 0 ? (
               <li className="smtcmp-chat-list-dropdown-empty">

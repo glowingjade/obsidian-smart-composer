@@ -229,7 +229,7 @@ export default function NewMentionsPlugin({
         anchorElementRef.current && results.length
           ? createPortal(
               <div
-                className="smtcmp-typeahead-popover"
+                className="smtcmp-popover"
                 style={{
                   position: 'fixed',
                 }}

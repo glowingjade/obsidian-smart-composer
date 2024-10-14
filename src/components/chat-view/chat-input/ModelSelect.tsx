@@ -15,7 +15,7 @@ export function ModelSelect() {
       </DropdownMenu.Trigger>
 
       <DropdownMenu.Portal>
-        <DropdownMenu.Content className="smtcmp-typeahead-popover">
+        <DropdownMenu.Content className="smtcmp-popover">
           <ul>
             {CHAT_MODEL_OPTIONS.map((model) => (
               <DropdownMenu.Item
