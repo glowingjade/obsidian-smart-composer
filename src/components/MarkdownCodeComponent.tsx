@@ -1,4 +1,4 @@
-import { Check, CopyIcon, Loader, Loader2 } from 'lucide-react'
+import { Check, CopyIcon, Loader2 } from 'lucide-react'
 import { PropsWithChildren, useMemo, useState } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import {
