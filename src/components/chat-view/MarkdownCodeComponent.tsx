@@ -1,5 +1,5 @@
 import { Check, CopyIcon, Loader2 } from 'lucide-react'
-import { PropsWithChildren, useMemo, useState } from 'react'
+import { PropsWithChildren, memo, useMemo, useState } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import {
   oneDark,
@@ -75,32 +75,59 @@ export default function MarkdownCodeComponent({
           </button>
         </div>
       </div>
-      <SyntaxHighlighter
+      <MemoizedSyntaxHighlighterWrapper
+        isDarkMode={isDarkMode}
         language={language}
-        style={isDarkMode ? oneDark : oneLight}
-        customStyle={{
-          borderRadius: filename
-            ? '0 0 var(--radius-s) var(--radius-s)'
-            : 'var(--radius-s)',
-          margin: 0,
-          padding: 'var(--size-4-2)',
-          fontSize: 'var(--font-ui-small)',
-          fontFamily:
-            language === 'markdown' ? 'var(--font-interface)' : 'inherit',
-        }}
+        hasFilename={!!filename}
         wrapLines={wrapLines}
-        lineProps={
-          // Wrapping should work without lineProps, but Obsidian's default CSS seems to override SyntaxHighlighter's styles.
-          // We manually override the white-space property to ensure proper wrapping.
-          wrapLines
-            ? {
-                style: { whiteSpace: 'pre-wrap' },
-              }
-            : undefined
-        }
       >
         {String(children)}
-      </SyntaxHighlighter>
+      </MemoizedSyntaxHighlighterWrapper>
     </div>
   )
 }
+
+function SyntaxHighlighterWrapper({
+  isDarkMode,
+  language,
+  hasFilename,
+  wrapLines,
+  children,
+}: {
+  isDarkMode: boolean
+  language: string | undefined
+  hasFilename: boolean
+  wrapLines: boolean
+  children: string
+}) {
+  return (
+    <SyntaxHighlighter
+      language={language}
+      style={isDarkMode ? oneDark : oneLight}
+      customStyle={{
+        borderRadius: hasFilename
+          ? '0 0 var(--radius-s) var(--radius-s)'
+          : 'var(--radius-s)',
+        margin: 0,
+        padding: 'var(--size-4-2)',
+        fontSize: 'var(--font-ui-small)',
+        fontFamily:
+          language === 'markdown' ? 'var(--font-interface)' : 'inherit',
+      }}
+      wrapLines={wrapLines}
+      lineProps={
+        // Wrapping should work without lineProps, but Obsidian's default CSS seems to override SyntaxHighlighter's styles.
+        // We manually override the white-space property to ensure proper wrapping.
+        wrapLines
+          ? {
+              style: { whiteSpace: 'pre-wrap' },
+            }
+          : undefined
+      }
+    >
+      {children}
+    </SyntaxHighlighter>
+  )
+}
+
+const MemoizedSyntaxHighlighterWrapper = memo(SyntaxHighlighterWrapper)
