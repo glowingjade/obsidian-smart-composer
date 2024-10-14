@@ -277,6 +277,11 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
 }
 
 .smtcmp-typeahead-popover li {
+  z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
+  background-color: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
   margin: 0 8px 0 8px;
   padding: var(--size-2-3) var(--size-4-2);
   color: var(--text-normal);
@@ -292,6 +297,14 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   border: 0;
   min-height: 20px;
   align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.smtcmp-chat-list-dropdown-empty {
+  background: transparent;
+  cursor: default;
+  color: var(--text-faint);
 }
 
 .smtcmp-typeahead-popover li.active {
@@ -318,20 +331,6 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   width: 250px;
 }
 
-.smtcmp-chat-list-dropdown-content {
-  z-index: 1000;
-  max-height: 300px;
-  overflow-y: auto;
-  background-color: var(--background-primary);
-  border: 1px solid var(--background-modifier-border);
-}
-/* .smtcmp-chat-list-dropdown-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 2rem;
-  padding: 0.25rem;
-} */
 .smtcmp-typeahead-popover li:hover {
   background-color: var(--background-modifier-hover);
   cursor: pointer;

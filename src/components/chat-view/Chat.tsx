@@ -411,7 +411,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
             <Plus size={18} />
           </button>
           <ChatListDropdown
-            key={currentConversationId}
             chatList={chatList}
             onSelectConversation={(conversationId) =>
               void handleLoadConversation(conversationId)
