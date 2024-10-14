@@ -1,3 +1,4 @@
+import React, { useMemo } from 'react'
 import Markdown from 'react-markdown'
 
 import {
@@ -7,7 +8,7 @@ import {
 
 import MarkdownCodeComponent from './MarkdownCodeComponent'
 
-export default function ReactMarkdown({
+function ReactMarkdown({
   onApply,
   isApplying,
   children,
@@ -16,7 +17,12 @@ export default function ReactMarkdown({
   children: string
   isApplying: boolean
 }) {
-  const blocks: ParsedSmtcmpBlock[] = parsesmtcmpBlocks(children)
+  console.log('ReactMarkdown')
+  const blocks: ParsedSmtcmpBlock[] = useMemo(
+    () => parsesmtcmpBlocks(children),
+    [children],
+  )
+
   return (
     <>
       {blocks.map((block, index) =>
@@ -39,3 +45,5 @@ export default function ReactMarkdown({
     </>
   )
 }
+
+export default React.memo(ReactMarkdown)

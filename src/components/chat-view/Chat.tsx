@@ -278,9 +278,12 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     },
   })
 
-  const handleApply = (blockToApply: string, chatMessages: ChatMessage[]) => {
-    applyMutation.mutate({ blockToApply, chatMessages })
-  }
+  const handleApply = useCallback(
+    (blockToApply: string, chatMessages: ChatMessage[]) => {
+      applyMutation.mutate({ blockToApply, chatMessages })
+    },
+    [applyMutation.mutate],
+  )
 
   useEffect(() => {
     setFocusedMessageId(inputMessage.id)
@@ -479,16 +482,14 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
               }}
             />
           ) : (
-            <div key={index}>
-              <ReactMarkdown
-                onApply={(blockToApply: string) => {
-                  handleApply(blockToApply, chatMessages.slice(0, index + 1))
-                }}
-                isApplying={applyMutation.isPending}
-              >
-                {message.content}
-              </ReactMarkdown>
-            </div>
+            <ReactMarkdownItem
+              index={index}
+              chatMessages={chatMessages}
+              handleApply={handleApply}
+              isApplying={applyMutation.isPending}
+            >
+              {message.content}
+            </ReactMarkdownItem>
           ),
         )}
       </div>
@@ -524,5 +525,32 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     </div>
   )
 })
+
+function ReactMarkdownItem({
+  index,
+  chatMessages,
+  handleApply,
+  isApplying,
+  children,
+}: {
+  index: number
+  chatMessages: ChatMessage[]
+  handleApply: (blockToApply: string, chatMessages: ChatMessage[]) => void
+  isApplying: boolean
+  children: string
+}) {
+  const onApply = useCallback(
+    (blockToApply: string) => {
+      handleApply(blockToApply, chatMessages.slice(0, index + 1))
+    },
+    [handleApply, chatMessages, index],
+  )
+
+  return (
+    <ReactMarkdown onApply={onApply} isApplying={isApplying}>
+      {children}
+    </ReactMarkdown>
+  )
+}
 
 export default Chat
