@@ -562,3 +562,20 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
     transform: rotate(360deg);
   }
 }
+
+button.smtcmp-chat-input-model-select {
+  background-color: transparent;
+  box-shadow: none;
+  border: 0;
+  padding: 0;
+  font-size: var(--font-smallest);
+  font-weight: var(--font-medium);
+  color: var(--text-muted);
+  justify-content: flex-start;
+  height: var(--size-4-4);
+  width: fit-content;
+
+  &:hover {
+    color: var(--text-normal);
+  }
+}
