@@ -144,48 +144,51 @@ export function useChatHistory() {
   )
   const [chatList, setChatList] = useState<ChatConversationMeta[]>([])
 
-  const fetchChatList = async () => {
+  const fetchChatList = useCallback(async () => {
     const list = await chatConversationManager.getChatList()
     setChatList(list)
-  }
+  }, [chatConversationManager])
 
   useEffect(() => {
     void fetchChatList()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const createOrUpdateConversation = useCallback(
-    debounce(
-      async (id: string, messages: ChatMessage[]): Promise<void> => {
-        const conversation =
-          (await chatConversationManager.findChatConversation(id)) ??
-          (await chatConversationManager.createChatConversation(id))
+  const createOrUpdateConversation = useMemo(
+    () =>
+      debounce(
+        async (id: string, messages: ChatMessage[]): Promise<void> => {
+          console.log('createOrUpdateConversation', id, messages)
+          const conversation =
+            (await chatConversationManager.findChatConversation(id)) ??
+            (await chatConversationManager.createChatConversation(id))
 
-        const serializedMessages = messages.map(serializeChatMessage)
-        if (isEqual(conversation.messages, serializedMessages)) {
-          return
-        }
+          const serializedMessages = messages.map(serializeChatMessage)
+          if (isEqual(conversation.messages, serializedMessages)) {
+            return
+          }
 
-        const firstUserMessage = messages.find((v) => v.role === 'user')
+          const firstUserMessage = messages.find((v) => v.role === 'user')
 
-        await chatConversationManager.saveChatConversation({
-          ...conversation,
-          title: firstUserMessage?.content
-            ? editorStateToPlainText(firstUserMessage.content).substring(
-                0,
-                20,
-              ) || 'New Chat'
-            : 'New Chat',
-          messages: serializedMessages,
-          updatedAt: Date.now(),
-        })
-        await fetchChatList()
-      },
-      300,
-      {
-        maxWait: 1000,
-      },
-    ),
-    [chatConversationManager],
+          await chatConversationManager.saveChatConversation({
+            ...conversation,
+            title: firstUserMessage?.content
+              ? editorStateToPlainText(firstUserMessage.content).substring(
+                  0,
+                  20,
+                ) || 'New Chat'
+              : 'New Chat',
+            messages: serializedMessages,
+            updatedAt: Date.now(),
+          })
+          await fetchChatList()
+        },
+        300,
+        {
+          maxWait: 1000,
+        },
+      ),
+    [chatConversationManager, fetchChatList],
   )
 
   const deleteConversation = useCallback(
@@ -193,7 +196,7 @@ export function useChatHistory() {
       await chatConversationManager.deleteChatConversation(id)
       await fetchChatList()
     },
-    [chatConversationManager],
+    [chatConversationManager, fetchChatList],
   )
 
   const getChatMessagesById = useCallback(
