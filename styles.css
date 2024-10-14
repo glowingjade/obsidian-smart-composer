@@ -408,6 +408,7 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
 .smtcmp-code-block.has-filename .smtcmp-code-block-header-button {
   gap: 0;
   overflow: hidden;
+  min-width: fit-content;
 }
 
 .smtcmp-code-block.has-filename .smtcmp-code-block-header-button button {
@@ -546,5 +547,18 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
       font-weight: var(--font-medium);
       gap: 2px;
     }
+  }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }

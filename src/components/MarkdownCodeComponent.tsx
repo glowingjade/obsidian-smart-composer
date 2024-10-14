@@ -1,4 +1,4 @@
-import { Check, CopyIcon } from 'lucide-react'
+import { Check, CopyIcon, Loader, Loader2 } from 'lucide-react'
 import { PropsWithChildren, useMemo, useState } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import {
@@ -65,7 +65,13 @@ export default function MarkdownCodeComponent({
             }}
             disabled={isApplying}
           >
-            {isApplying ? 'Applying...' : 'Apply'}
+            {isApplying ? (
+              <>
+                <Loader2 className="spinner" size={14} /> Applying...
+              </>
+            ) : (
+              'Apply'
+            )}
           </button>
         </div>
       </div>
