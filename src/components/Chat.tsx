@@ -64,7 +64,7 @@ export type ChatProps = {
 
 const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const app = useApp()
-  const settings = useSettings()
+  const { settings } = useSettings()
 
   const {
     createConversation,

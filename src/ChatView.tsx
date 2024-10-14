@@ -26,6 +26,10 @@ export class ChatView extends ItemView {
     super(leaf)
     this.settings = plugin.settings
     this.initialChatProps = plugin.initialChatProps
+
+    this.plugin.addSettingsChangeListener((newSettings) => {
+      this.onSettingsChange(newSettings)
+    })
   }
 
   getViewType() {
@@ -41,12 +45,34 @@ export class ChatView extends ItemView {
   }
 
   async onOpen() {
+    this.render()
+
+    // Consume chatProps
+    this.initialChatProps = undefined
+  }
+
+  async onClose() {
+    this.root?.unmount()
+  }
+
+  onSettingsChange(newSettings: SmartCopilotSettings) {
+    this.settings = newSettings
+    this.render()
+  }
+
+  render() {
+    if (!this.root) {
+      this.root = createRoot(this.containerEl.children[1])
+    }
+
     const queryClient = new QueryClient()
 
-    this.root = createRoot(this.containerEl.children[1])
     this.root.render(
       <AppProvider app={this.app}>
-        <SettingsProvider settings={this.settings}>
+        <SettingsProvider
+          settings={this.settings}
+          setSettings={(newSettings) => this.plugin.setSettings(newSettings)}
+        >
           <DarkModeProvider>
             <LLMProvider>
               <QueryClientProvider client={queryClient}>
@@ -59,13 +85,6 @@ export class ChatView extends ItemView {
         </SettingsProvider>
       </AppProvider>,
     )
-
-    // Consume chatProps
-    this.initialChatProps = undefined
-  }
-
-  async onClose() {
-    this.root?.unmount()
   }
 
   addSelectionToChat(data: MentionableBlockData) {

@@ -35,7 +35,7 @@ const LLMContext = createContext<LLMContextType | null>(null)
 
 export function LLMProvider({ children }: PropsWithChildren) {
   const [llmManager, setLLMManager] = useState<LLMManager | null>(null)
-  const settings = useSettings()
+  const { settings } = useSettings()
 
   useEffect(() => {
     const manager = new LLMManager({
