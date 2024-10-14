@@ -93,6 +93,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
       if (message) {
         updaterRef.current?.update(message)
       }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const searchFilesByQuery = useCallback(
@@ -204,5 +205,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
     )
   },
 )
+
+ChatUserInput.displayName = 'ChatUserInput'
 
 export default ChatUserInput

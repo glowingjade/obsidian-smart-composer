@@ -20,6 +20,8 @@ const config = {
     'plugin:import/recommended',
     'plugin:import/typescript',
     'prettier',
+    'plugin:react/recommended',
+    'plugin:react-hooks/recommended',
   ],
   rules: {
     '@typescript-eslint/no-empty-function': 'off',
@@ -33,6 +35,7 @@ const config = {
     '@typescript-eslint/no-floating-promises': 'off',
     '@typescript-eslint/no-unnecessary-condition': 'off',
     '@typescript-eslint/no-misused-promises': 'off',
+    'react/react-in-jsx-scope': 'off',
 
     'import/no-unresolved': 'off',
 

@@ -16,7 +16,6 @@ import { APPLY_VIEW_TYPE } from '../../constants'
 import { useApp } from '../../contexts/app-context'
 import { useLLM } from '../../contexts/llm-context'
 import { useSettings } from '../../contexts/settings-context'
-import useDebounce from '../../hooks/use-debounce'
 import { useChatHistory } from '../../hooks/useChatHistory'
 import { OpenSettingsModal } from '../../OpenSettingsModal'
 import { ChatMessage, ChatUserMessage } from '../../types/chat'
@@ -282,14 +281,13 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     (blockToApply: string, chatMessages: ChatMessage[]) => {
       applyMutation.mutate({ blockToApply, chatMessages })
     },
-    [applyMutation.mutate],
+    [applyMutation],
   )
 
   useEffect(() => {
     setFocusedMessageId(inputMessage.id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  const debouncedChatMessages = useDebounce(chatMessages, 300)
 
   useEffect(() => {
     const updateConversationAsync = async () => {
@@ -303,7 +301,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       }
     }
     updateConversationAsync()
-  }, [debouncedChatMessages, currentConversationId])
+  }, [currentConversationId, chatMessages, createOrUpdateConversation])
 
   // Updates the currentFile of the focused message (input or chat history)
   // This happens when active file changes or focused message changes
@@ -481,6 +479,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
             />
           ) : (
             <ReactMarkdownItem
+              key={message.id}
               index={index}
               chatMessages={chatMessages}
               handleApply={handleApply}
@@ -550,5 +549,7 @@ function ReactMarkdownItem({
     </ReactMarkdown>
   )
 }
+
+Chat.displayName = 'Chat'
 
 export default Chat
