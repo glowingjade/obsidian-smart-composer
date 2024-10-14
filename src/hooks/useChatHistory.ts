@@ -6,7 +6,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { editorStateToPlainText } from '../components/chat-view/chat-input/utils/editor-state-to-plain-text'
 import { useApp } from '../contexts/app-context'
 import {
-  ChatConversation,
   ChatConversationMeta,
   ChatMessage,
   SerializedChatMessage,
@@ -154,22 +153,12 @@ export function useChatHistory() {
     void fetchChatList()
   }, [])
 
-  const createConversation =
-    useCallback(async (): Promise<ChatConversation> => {
-      const conversation =
-        await chatConversationManager.createChatConversation()
-      await fetchChatList()
-      return conversation
-    }, [chatConversationManager])
-
-  const updateConversation = useCallback(
+  const createOrUpdateConversation = useCallback(
     debounce(
       async (id: string, messages: ChatMessage[]): Promise<void> => {
         const conversation =
-          await chatConversationManager.findChatConversation(id)
-        if (!conversation) {
-          throw new Error('Conversation not found')
-        }
+          (await chatConversationManager.findChatConversation(id)) ??
+          (await chatConversationManager.createChatConversation(id))
 
         const serializedMessages = messages.map(serializeChatMessage)
         if (isEqual(conversation.messages, serializedMessages)) {
@@ -222,8 +211,7 @@ export function useChatHistory() {
   )
 
   return {
-    createConversation,
-    updateConversation,
+    createOrUpdateConversation,
     deleteConversation,
     getChatMessagesById,
     chatList,
