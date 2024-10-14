@@ -17,14 +17,18 @@ import {
 } from '../../types/llm/response'
 
 import { BaseLLMProvider } from './base'
+import {
+  LLMAPIKeyInvalidException,
+  LLMAPIKeyNotSetException,
+} from './exception'
 
 export type OpenAIModel = 'gpt-4o' | 'gpt-4o-mini'
 export const OPENAI_MODELS: OpenAIModel[] = ['gpt-4o', 'gpt-4o-mini']
 
 export class OpenAIProvider implements BaseLLMProvider {
-  private client: OpenAI | null = null
+  private client: OpenAI
 
-  async initialize({ apiKey }: { apiKey: string }): Promise<void> {
+  constructor(apiKey: string) {
     this.client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true })
   }
 
@@ -32,63 +36,87 @@ export class OpenAIProvider implements BaseLLMProvider {
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
-    if (!this.client) {
-      throw new Error('OpenAI client not initialized')
+    if (!this.client.apiKey) {
+      throw new LLMAPIKeyNotSetException(
+        'OpenAI API key is missing. Please set it in settings menu.',
+      )
     }
-    const response = await this.client.chat.completions.create(
-      {
-        model: request.model,
-        messages: request.messages.map((m) =>
-          OpenAIProvider.parseRequestMessage(m),
-        ),
-        max_tokens: request.max_tokens,
-        temperature: request.temperature,
-        top_p: request.top_p,
-        frequency_penalty: request.frequency_penalty,
-        presence_penalty: request.presence_penalty,
-        logit_bias: request.logit_bias,
-      },
-      {
-        signal: options?.signal,
-      },
-    )
-    return OpenAIProvider.parseNonStreamingResponse(response)
+
+    try {
+      const response = await this.client.chat.completions.create(
+        {
+          model: request.model,
+          messages: request.messages.map((m) =>
+            OpenAIProvider.parseRequestMessage(m),
+          ),
+          max_tokens: request.max_tokens,
+          temperature: request.temperature,
+          top_p: request.top_p,
+          frequency_penalty: request.frequency_penalty,
+          presence_penalty: request.presence_penalty,
+          logit_bias: request.logit_bias,
+        },
+        {
+          signal: options?.signal,
+        },
+      )
+      return OpenAIProvider.parseNonStreamingResponse(response)
+    } catch (error) {
+      if (error instanceof OpenAI.AuthenticationError) {
+        throw new LLMAPIKeyInvalidException(
+          'OpenAI API key is invalid. Please update it in settings menu.',
+        )
+      }
+      throw error
+    }
   }
 
   async streamResponse(
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
-    if (!this.client) {
-      throw new Error('OpenAI client not initialized')
+    if (!this.client.apiKey) {
+      throw new LLMAPIKeyNotSetException(
+        'OpenAI API key is missing. Please set it in settings menu.',
+      )
     }
 
-    const stream = await this.client.chat.completions.create(
-      {
-        model: request.model,
-        messages: request.messages.map((m) =>
-          OpenAIProvider.parseRequestMessage(m),
-        ),
-        max_completion_tokens: request.max_tokens,
-        temperature: request.temperature,
-        top_p: request.top_p,
-        frequency_penalty: request.frequency_penalty,
-        presence_penalty: request.presence_penalty,
-        logit_bias: request.logit_bias,
-        stream: true,
-      },
-      {
-        signal: options?.signal,
-      },
-    )
+    try {
+      const stream = await this.client.chat.completions.create(
+        {
+          model: request.model,
+          messages: request.messages.map((m) =>
+            OpenAIProvider.parseRequestMessage(m),
+          ),
+          max_completion_tokens: request.max_tokens,
+          temperature: request.temperature,
+          top_p: request.top_p,
+          frequency_penalty: request.frequency_penalty,
+          presence_penalty: request.presence_penalty,
+          logit_bias: request.logit_bias,
+          stream: true,
+        },
+        {
+          signal: options?.signal,
+        },
+      )
 
-    async function* streamResponse(): AsyncIterable<LLMResponseStreaming> {
-      for await (const chunk of stream) {
-        yield OpenAIProvider.parseStreamingResponseChunk(chunk)
+      // eslint-disable-next-line no-inner-declarations
+      async function* streamResponse(): AsyncIterable<LLMResponseStreaming> {
+        for await (const chunk of stream) {
+          yield OpenAIProvider.parseStreamingResponseChunk(chunk)
+        }
       }
-    }
 
-    return streamResponse()
+      return streamResponse()
+    } catch (error) {
+      if (error instanceof OpenAI.AuthenticationError) {
+        throw new LLMAPIKeyInvalidException(
+          'OpenAI API key is invalid. Please update it in settings menu.',
+        )
+      }
+      throw error
+    }
   }
 
   static parseRequestMessage(

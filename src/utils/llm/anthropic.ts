@@ -16,14 +16,18 @@ import {
 } from '../../types/llm/response'
 
 import { BaseLLMProvider } from './base'
+import {
+  LLMAPIKeyInvalidException,
+  LLMAPIKeyNotSetException,
+} from './exception'
 
 export type AnthropicModel = 'claude-3-5-sonnet-20240620'
 export const ANTHROPIC_MODELS: AnthropicModel[] = ['claude-3-5-sonnet-20240620']
 
 export class AnthropicProvider implements BaseLLMProvider {
-  private client: Anthropic | null = null
+  private client: Anthropic
 
-  async initialize({ apiKey }: { apiKey: string }): Promise<void> {
+  constructor(apiKey: string) {
     this.client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true })
   }
 
@@ -31,8 +35,10 @@ export class AnthropicProvider implements BaseLLMProvider {
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
-    if (!this.client) {
-      throw new Error('Anthropic client not initialized')
+    if (!this.client.apiKey) {
+      throw new LLMAPIKeyNotSetException(
+        'Anthropic API key is missing. Please set it in settings menu.',
+      )
     }
 
     const systemMessages = request.messages.filter((m) => m.role === 'system')
@@ -40,31 +46,44 @@ export class AnthropicProvider implements BaseLLMProvider {
       throw new Error('Anthropic does not support more than one system message')
     }
 
-    const response = await this.client.messages.create(
-      {
-        model: request.model,
-        messages: request.messages
-          .filter((m) => m.role !== 'system')
-          .map((m) => AnthropicProvider.parseRequestMessage(m)),
-        system:
-          systemMessages.length > 0 ? systemMessages[0].content : undefined,
-        max_tokens: request.max_tokens ?? 4096,
-        temperature: request.temperature,
-        top_p: request.top_p,
-      },
-      {
-        signal: options?.signal,
-      },
-    )
-    return AnthropicProvider.parseNonStreamingResponse(response)
+    try {
+      const response = await this.client.messages.create(
+        {
+          model: request.model,
+          messages: request.messages
+            .filter((m) => m.role !== 'system')
+            .map((m) => AnthropicProvider.parseRequestMessage(m)),
+          system:
+            systemMessages.length > 0 ? systemMessages[0].content : undefined,
+          max_tokens: request.max_tokens ?? 4096,
+          temperature: request.temperature,
+          top_p: request.top_p,
+        },
+        {
+          signal: options?.signal,
+        },
+      )
+
+      return AnthropicProvider.parseNonStreamingResponse(response)
+    } catch (error) {
+      if (error instanceof Anthropic.AuthenticationError) {
+        throw new LLMAPIKeyInvalidException(
+          'Anthropic API key is invalid. Please update it in settings menu.',
+        )
+      }
+
+      throw error
+    }
   }
 
   async streamResponse(
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
-    if (!this.client) {
-      throw new Error('Anthropic client not initialized')
+    if (!this.client.apiKey) {
+      throw new LLMAPIKeyNotSetException(
+        'Anthropic API key is missing. Please set it in settings menu.',
+      )
     }
 
     const systemMessages = request.messages.filter((m) => m.role === 'system')
@@ -72,44 +91,55 @@ export class AnthropicProvider implements BaseLLMProvider {
       throw new Error('Anthropic does not support more than one system message')
     }
 
-    const stream = await this.client.messages.create(
-      {
-        model: request.model,
-        messages: request.messages
-          .filter((m) => m.role !== 'system')
-          .map((m) => AnthropicProvider.parseRequestMessage(m)),
-        system:
-          systemMessages.length > 0 ? systemMessages[0].content : undefined,
-        max_tokens: request.max_tokens ?? 4096,
-        temperature: request.temperature,
-        top_p: request.top_p,
-        stream: true,
-      },
-      {
-        signal: options?.signal,
-      },
-    )
+    try {
+      const stream = await this.client.messages.create(
+        {
+          model: request.model,
+          messages: request.messages
+            .filter((m) => m.role !== 'system')
+            .map((m) => AnthropicProvider.parseRequestMessage(m)),
+          system:
+            systemMessages.length > 0 ? systemMessages[0].content : undefined,
+          max_tokens: request.max_tokens ?? 4096,
+          temperature: request.temperature,
+          top_p: request.top_p,
+          stream: true,
+        },
+        {
+          signal: options?.signal,
+        },
+      )
 
-    async function* streamResponse(): AsyncIterable<LLMResponseStreaming> {
-      let messageId = ''
-      let model = ''
-      for await (const chunk of stream) {
-        if (chunk.type === 'message_start') {
-          messageId = chunk.message.id
-          model = chunk.message.model
-          continue
-        }
-        if (chunk.type === 'content_block_delta') {
-          yield AnthropicProvider.parseStreamingResponseChunk(
-            chunk,
-            messageId,
-            model,
-          )
+      // eslint-disable-next-line no-inner-declarations
+      async function* streamResponse(): AsyncIterable<LLMResponseStreaming> {
+        let messageId = ''
+        let model = ''
+        for await (const chunk of stream) {
+          if (chunk.type === 'message_start') {
+            messageId = chunk.message.id
+            model = chunk.message.model
+            continue
+          }
+          if (chunk.type === 'content_block_delta') {
+            yield AnthropicProvider.parseStreamingResponseChunk(
+              chunk,
+              messageId,
+              model,
+            )
+          }
         }
       }
-    }
 
-    return streamResponse()
+      return streamResponse()
+    } catch (error) {
+      if (error instanceof Anthropic.AuthenticationError) {
+        throw new LLMAPIKeyInvalidException(
+          'Anthropic API key is invalid. Please update it in settings menu.',
+        )
+      }
+
+      throw error
+    }
   }
 
   static parseRequestMessage(message: RequestMessage): MessageParam {

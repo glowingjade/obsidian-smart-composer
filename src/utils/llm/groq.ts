@@ -17,6 +17,10 @@ import {
 } from '../../types/llm/response'
 
 import { BaseLLMProvider } from './base'
+import {
+  LLMAPIKeyInvalidException,
+  LLMAPIKeyNotSetException,
+} from './exception'
 
 export type GroqModel =
   | 'llama-3.1-8b-instant'
@@ -33,9 +37,9 @@ export const GROQ_MODELS: GroqModel[] = [
 ]
 
 export class GroqProvider implements BaseLLMProvider {
-  private client: Groq | null = null
+  private client: Groq
 
-  async initialize({ apiKey }: { apiKey: string }): Promise<void> {
+  constructor(apiKey: string) {
     this.client = new Groq({
       apiKey,
       dangerouslyAllowBrowser: true,
@@ -46,9 +50,12 @@ export class GroqProvider implements BaseLLMProvider {
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
-    if (!this.client) {
-      throw new Error('Groq client not initialized')
+    if (!this.client.apiKey) {
+      throw new LLMAPIKeyNotSetException(
+        'Groq API key is missing. Please set it in settings menu.',
+      )
     }
+
     try {
       const response = await this.client.chat.completions.create(
         {
@@ -66,7 +73,11 @@ export class GroqProvider implements BaseLLMProvider {
       )
       return GroqProvider.parseNonStreamingResponse(response)
     } catch (error) {
-      console.error(error)
+      if (error instanceof Groq.AuthenticationError) {
+        throw new LLMAPIKeyInvalidException(
+          'Groq API key is invalid. Please update it in settings menu.',
+        )
+      }
       throw error
     }
   }
@@ -75,32 +86,45 @@ export class GroqProvider implements BaseLLMProvider {
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
-    if (!this.client) {
-      throw new Error('Groq client not initialized')
+    if (!this.client.apiKey) {
+      throw new LLMAPIKeyNotSetException(
+        'Groq API key is missing. Please set it in settings menu.',
+      )
     }
-    const stream = await this.client.chat.completions.create(
-      {
-        model: request.model,
-        messages: request.messages.map((m) =>
-          GroqProvider.parseRequestMessage(m),
-        ),
-        max_tokens: request.max_tokens,
-        temperature: request.temperature,
-        top_p: request.top_p,
-        stream: true,
-      },
-      {
-        signal: options?.signal,
-      },
-    )
 
-    async function* streamResponse(): AsyncIterable<LLMResponseStreaming> {
-      for await (const chunk of stream) {
-        yield GroqProvider.parseStreamingResponseChunk(chunk)
+    try {
+      const stream = await this.client.chat.completions.create(
+        {
+          model: request.model,
+          messages: request.messages.map((m) =>
+            GroqProvider.parseRequestMessage(m),
+          ),
+          max_tokens: request.max_tokens,
+          temperature: request.temperature,
+          top_p: request.top_p,
+          stream: true,
+        },
+        {
+          signal: options?.signal,
+        },
+      )
+
+      // eslint-disable-next-line no-inner-declarations
+      async function* streamResponse(): AsyncIterable<LLMResponseStreaming> {
+        for await (const chunk of stream) {
+          yield GroqProvider.parseStreamingResponseChunk(chunk)
+        }
       }
-    }
 
-    return streamResponse()
+      return streamResponse()
+    } catch (error) {
+      if (error instanceof Groq.AuthenticationError) {
+        throw new LLMAPIKeyInvalidException(
+          'Groq API key is invalid. Please update it in settings menu.',
+        )
+      }
+      throw error
+    }
   }
 
   static parseRequestMessage(

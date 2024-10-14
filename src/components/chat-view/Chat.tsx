@@ -18,6 +18,7 @@ import { useLLM } from '../../contexts/llm-context'
 import { useSettings } from '../../contexts/settings-context'
 import useDebounce from '../../hooks/use-debounce'
 import { useChatHistory } from '../../hooks/useChatHistory'
+import { OpenSettingsModal } from '../../OpenSettingsModal'
 import { ChatMessage, ChatUserMessage } from '../../types/chat'
 import { RequestMessage } from '../../types/llm/request'
 import {
@@ -26,6 +27,10 @@ import {
   MentionableCurrentFile,
 } from '../../types/mentionable'
 import { applyChangesToFile } from '../../utils/apply'
+import {
+  LLMAPIKeyInvalidException,
+  LLMAPIKeyNotSetException,
+} from '../../utils/llm/exception'
 import { readTFileContent } from '../../utils/obsidian'
 import { parseRequestMessages } from '../../utils/prompt'
 
@@ -197,14 +202,31 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       } catch (error) {
         if (error.name === 'AbortError') {
           return
+        } else if (
+          error instanceof LLMAPIKeyNotSetException ||
+          error instanceof LLMAPIKeyInvalidException
+        ) {
+          throw error
         } else {
           throw new Error('Failed to generate response')
         }
       }
     },
     onError: (error) => {
-      new Notice(error.message)
-      console.error('Failed to generate response', error)
+      if (
+        error instanceof LLMAPIKeyNotSetException ||
+        error instanceof LLMAPIKeyInvalidException
+      ) {
+        new OpenSettingsModal(app, error.message, () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const setting = (app as any).setting
+          setting.open()
+          setting.openTabById('smart-composer')
+        }).open()
+      } else {
+        new Notice(error.message)
+        console.error('Failed to generate response', error)
+      }
     },
   })
 
@@ -222,7 +244,9 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     }) => {
       const activeFile = app.workspace.getActiveFile()
       if (!activeFile) {
-        throw new Error('File not found')
+        throw new Error(
+          'No file is currently open to apply changes. Please open a file and try again.',
+        )
       }
       const activeFileContent = await readTFileContent(activeFile, app.vault)
 
@@ -267,7 +291,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   useEffect(() => {
     const updateConversationAsync = async () => {
       try {
-        console.log('updating conversation')
         if (chatMessages.length > 0) {
           createOrUpdateConversation(currentConversationId, chatMessages)
         }

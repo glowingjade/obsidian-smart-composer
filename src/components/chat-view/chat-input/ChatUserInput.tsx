@@ -185,7 +185,9 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
           />
           <UpdaterPlugin updaterRef={updaterRef} />
           <OnEnterPlugin
-            onEnter={() => {
+            onEnter={(evt) => {
+              evt.preventDefault()
+              evt.stopPropagation()
               const content = editorRef.current?.getEditorState()?.toJSON()
               content && onSubmit(content)
             }}

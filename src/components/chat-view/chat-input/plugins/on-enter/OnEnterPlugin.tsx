@@ -2,7 +2,11 @@ import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext
 import { COMMAND_PRIORITY_LOW, KEY_ENTER_COMMAND } from 'lexical'
 import { useEffect } from 'react'
 
-export default function OnEnterPlugin({ onEnter }: { onEnter: () => void }) {
+export default function OnEnterPlugin({
+  onEnter,
+}: {
+  onEnter: (evt: KeyboardEvent) => void
+}) {
   const [editor] = useLexicalComposerContext()
 
   useEffect(() => {
@@ -12,7 +16,7 @@ export default function OnEnterPlugin({ onEnter }: { onEnter: () => void }) {
         if (evt.shiftKey) {
           return false
         }
-        onEnter()
+        onEnter(evt)
         return true
       },
       COMMAND_PRIORITY_LOW,

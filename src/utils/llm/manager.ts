@@ -24,28 +24,14 @@ export type LLMManagerInterface = {
 }
 
 class LLMManager implements LLMManagerInterface {
-  private openaiProvider: OpenAIProvider = new OpenAIProvider()
-  private groqProvider: GroqProvider = new GroqProvider()
-  private anthropicProvider: AnthropicProvider = new AnthropicProvider()
+  private openaiProvider: OpenAIProvider
+  private groqProvider: GroqProvider
+  private anthropicProvider: AnthropicProvider
 
   constructor(apiKeys: { openai?: string; groq?: string; anthropic?: string }) {
-    this.initializeProviders(apiKeys)
-  }
-
-  private initializeProviders(apiKeys: {
-    openai?: string
-    groq?: string
-    anthropic?: string
-  }) {
-    if (apiKeys.openai) {
-      this.openaiProvider.initialize({ apiKey: apiKeys.openai })
-    }
-    if (apiKeys.groq) {
-      this.groqProvider.initialize({ apiKey: apiKeys.groq })
-    }
-    if (apiKeys.anthropic) {
-      this.anthropicProvider.initialize({ apiKey: apiKeys.anthropic })
-    }
+    this.openaiProvider = new OpenAIProvider(apiKeys.openai ?? '')
+    this.groqProvider = new GroqProvider(apiKeys.groq ?? '')
+    this.anthropicProvider = new AnthropicProvider(apiKeys.anthropic ?? '')
   }
 
   async generateResponse(
@@ -53,13 +39,13 @@ class LLMManager implements LLMManagerInterface {
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
     if (this.openaiProvider.getSupportedModels().includes(request.model)) {
-      return this.openaiProvider.generateResponse(request, options)
+      return await this.openaiProvider.generateResponse(request, options)
     }
     if (this.groqProvider.getSupportedModels().includes(request.model)) {
-      return this.groqProvider.generateResponse(request, options)
+      return await this.groqProvider.generateResponse(request, options)
     }
     if (this.anthropicProvider.getSupportedModels().includes(request.model)) {
-      return this.anthropicProvider.generateResponse(request, options)
+      return await this.anthropicProvider.generateResponse(request, options)
     }
     throw new Error(`Unsupported model: ${request.model}`)
   }
@@ -69,13 +55,13 @@ class LLMManager implements LLMManagerInterface {
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
     if (this.openaiProvider.getSupportedModels().includes(request.model)) {
-      return this.openaiProvider.streamResponse(request, options)
+      return await this.openaiProvider.streamResponse(request, options)
     }
     if (this.groqProvider.getSupportedModels().includes(request.model)) {
-      return this.groqProvider.streamResponse(request, options)
+      return await this.groqProvider.streamResponse(request, options)
     }
     if (this.anthropicProvider.getSupportedModels().includes(request.model)) {
-      return this.anthropicProvider.streamResponse(request, options)
+      return await this.anthropicProvider.streamResponse(request, options)
     }
     throw new Error(`Unsupported model: ${request.model}`)
   }

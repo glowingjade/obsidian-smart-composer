@@ -9,7 +9,6 @@ import {
 } from '../../types/llm/response'
 
 export type BaseLLMProvider = {
-  initialize(props: unknown): Promise<void>
   generateResponse(
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
