@@ -46,41 +46,34 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
         }),
     )
 
-    new Setting(containerEl)
-      .setName('Default Chat Model')
-      .addDropdown((dropdown) =>
-        dropdown
-          .addOptions(
-            CHAT_MODEL_OPTIONS.reduce<Record<string, string>>((acc, option) => {
-              acc[option.value] = option.name
-              return acc
-            }, {}),
-          )
-          .setValue(this.plugin.settings.chatModel)
-          .onChange(async (value) => {
-            this.plugin.settings.chatModel = value
-            await this.plugin.saveSettings()
-          }),
-      )
+    new Setting(containerEl).setName('Chat Model').addDropdown((dropdown) =>
+      dropdown
+        .addOptions(
+          CHAT_MODEL_OPTIONS.reduce<Record<string, string>>((acc, option) => {
+            acc[option.value] = option.name
+            return acc
+          }, {}),
+        )
+        .setValue(this.plugin.settings.chatModel)
+        .onChange(async (value) => {
+          this.plugin.settings.chatModel = value
+          await this.plugin.saveSettings()
+        }),
+    )
 
-    new Setting(containerEl)
-      .setName('Default Apply Model')
-      .addDropdown((dropdown) =>
-        dropdown
-          .addOptions(
-            APPLY_MODEL_OPTIONS.reduce<Record<string, string>>(
-              (acc, option) => {
-                acc[option.value] = option.name
-                return acc
-              },
-              {},
-            ),
-          )
-          .setValue(this.plugin.settings.applyModel)
-          .onChange(async (value) => {
-            this.plugin.settings.applyModel = value
-            await this.plugin.saveSettings()
-          }),
-      )
+    new Setting(containerEl).setName('Apply Model').addDropdown((dropdown) =>
+      dropdown
+        .addOptions(
+          APPLY_MODEL_OPTIONS.reduce<Record<string, string>>((acc, option) => {
+            acc[option.value] = option.name
+            return acc
+          }, {}),
+        )
+        .setValue(this.plugin.settings.applyModel)
+        .onChange(async (value) => {
+          this.plugin.settings.applyModel = value
+          await this.plugin.saveSettings()
+        }),
+    )
   }
 }
