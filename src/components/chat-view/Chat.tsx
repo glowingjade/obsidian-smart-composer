@@ -18,6 +18,7 @@ import { useLLM } from '../../contexts/llm-context'
 import { useSettings } from '../../contexts/settings-context'
 import useDebounce from '../../hooks/use-debounce'
 import { useChatHistory } from '../../hooks/useChatHistory'
+import { OpenSettingsModal } from '../../OpenSettingsModal'
 import { ChatMessage, ChatUserMessage } from '../../types/chat'
 import { RequestMessage } from '../../types/llm/request'
 import {
@@ -212,8 +213,20 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       }
     },
     onError: (error) => {
-      new Notice(error.message)
-      console.error('Failed to generate response', error)
+      if (
+        error instanceof LLMAPIKeyNotSetException ||
+        error instanceof LLMAPIKeyInvalidException
+      ) {
+        new OpenSettingsModal(app, error.message, () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const setting = (app as any).setting
+          setting.open()
+          setting.openTabById('smart-composer')
+        }).open()
+      } else {
+        new Notice(error.message)
+        console.error('Failed to generate response', error)
+      }
     },
   })
 
