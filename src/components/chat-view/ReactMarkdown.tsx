@@ -17,7 +17,6 @@ function ReactMarkdown({
   children: string
   isApplying: boolean
 }) {
-  console.log('ReactMarkdown')
   const blocks: ParsedSmtcmpBlock[] = useMemo(
     () => parsesmtcmpBlocks(children),
     [children],
