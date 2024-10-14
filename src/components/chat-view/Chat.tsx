@@ -16,6 +16,7 @@ import { APPLY_VIEW_TYPE } from '../../constants'
 import { useApp } from '../../contexts/app-context'
 import { useLLM } from '../../contexts/llm-context'
 import { useSettings } from '../../contexts/settings-context'
+import useDebounce from '../../hooks/use-debounce'
 import { useChatHistory } from '../../hooks/useChatHistory'
 import { ChatMessage, ChatUserMessage } from '../../types/chat'
 import { RequestMessage } from '../../types/llm/request'
@@ -261,9 +262,12 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     setFocusedMessageId(inputMessage.id)
   }, [])
 
+  const debouncedChatMessages = useDebounce(chatMessages, 300)
+
   useEffect(() => {
     const updateConversationAsync = async () => {
       try {
+        console.log('updating conversation')
         if (chatMessages.length > 0) {
           createOrUpdateConversation(currentConversationId, chatMessages)
         }
@@ -273,7 +277,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       }
     }
     updateConversationAsync()
-  }, [chatMessages, currentConversationId])
+  }, [debouncedChatMessages, currentConversationId])
 
   // Updates the currentFile of the focused message (input or chat history)
   // This happens when active file changes or focused message changes
