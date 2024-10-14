@@ -8,10 +8,14 @@ export const DEFAULT_SETTINGS: SmartCopilotSettings = {
   groqApiKey: '',
   anthropicApiKey: '',
   chatModel: 'claude-3-5-sonnet-20240620',
-  applyModel: 'llama-3.1-8b-instant',
+  applyModel: 'gpt-4o-mini',
 }
 
 export const CHAT_MODEL_OPTIONS = [
+  {
+    name: 'claude-3.5-sonnet (Recommended)',
+    value: 'claude-3-5-sonnet-20240620',
+  },
   {
     name: 'gpt-4o',
     value: 'gpt-4o',
@@ -21,10 +25,6 @@ export const CHAT_MODEL_OPTIONS = [
     value: 'gpt-4o-mini',
   },
   {
-    name: 'claude-3.5-sonnet',
-    value: 'claude-3-5-sonnet-20240620',
-  },
-  {
     name: 'llama-3.1-70b (Groq)',
     value: 'llama-3.1-70b-versatile',
   },
@@ -32,7 +32,7 @@ export const CHAT_MODEL_OPTIONS = [
 
 export const APPLY_MODEL_OPTIONS = [
   {
-    name: 'gpt-4o-mini',
+    name: 'gpt-4o-mini (Recommended)',
     value: 'gpt-4o-mini',
   },
   {
