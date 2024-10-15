@@ -1,12 +1,16 @@
 # Obsidian Smart Composer
 
+![SC1_Title.gif](https://github.com/user-attachments/assets/a50a1f80-39ff-4eba-8090-e3d75e7be98c)
+
 Everytime we ask ChatGPT, we need to put so much context information for each query. Why spend time putting background infos that are already in your vault?
 
-Obsidian Smart Composer is a plugin that helps you write efficiently with AI by easily referencing your vault content. Inspired by Cursor AI and ChatGPT Canvas, this plugin unifies your note-taking and content creation process within Obsidian.
+**Obsidian Smart Composer is a plugin that helps you write efficiently with AI by easily referencing your vault content.** Inspired by Cursor AI and ChatGPT Canvas, this plugin unifies your note-taking and content creation process within Obsidian.
 
 ## Features
 
 ### Contextual Chat
+
+![SC2_ContextChat.gif](https://github.com/user-attachments/assets/8da4c189-399a-450a-9591-95f1c9af1bc8)
 
 > Upgrade your note-taking experience with our Contextual AI Assistant, inspired by Cursor AI. Unlike typical AI plugins, our assistant allows you to precisely select the context for your interactions.
 
@@ -15,7 +19,9 @@ Obsidian Smart Composer is a plugin that helps you write efficiently with AI by 
 
 ### Apply Edit
 
-> Smart Composer suggests edits to your document; You can apply with a single click.
+![SC3_ApplyEdit.gif](https://github.com/user-attachments/assets/35ee03ff-4a61-4d08-8032-ca61fb37dcf1)
+
+> Smart Composer suggests edits to your document. You can apply with a single click.
 
 - Offers document change recommendations
 - Apply suggested changes instantly
@@ -36,7 +42,7 @@ To install Obsidian Smart Composer as a beta plugin:
 
 1. Install the BRAT plugin if you haven't already. [Click here](obsidian://show-plugin?id=obsidian42-brat) to install BRAT in Obsidian.
 2. Open the command palette and run the command **"BRAT: Add a beta plugin for testing"**.
-3. Copy and paste this link into the modal: **https://github.com/glowingjade/obsidian-smart-composer**. Click "Add Plugin" and wait for the installation.
+3. Copy and paste this link into the modal: https://github.com/glowingjade/obsidian-smart-composer and click "Add Plugin" and wait for the installation.
 4. Go to `Settings > Community plugins` and refresh the list of plugins. Enable "Obsidian Smart Composer".
 
 ### Initial Setup
@@ -63,7 +69,7 @@ Obsidian Smart Composer adds a few commands to work with AI. You can set custom 
 
 ### Manual Installation
 
-1. Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/argenos/nldates-obsidian/releases/latest).
+1. Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/glowingjade/obsidian-smart-composer/releases/latest).
 2. Create a folder named `obsidian-smart-composer` in your vault's `<Vault>/.obsidian/plugins/` directory.
 3. Place the downloaded files into this new folder.
 4. Open Obsidian settings `Settings > Community plugins`, and enable Obsidian Smart Composer.
