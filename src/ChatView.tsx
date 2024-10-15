@@ -26,10 +26,6 @@ export class ChatView extends ItemView {
     super(leaf)
     this.settings = plugin.settings
     this.initialChatProps = plugin.initialChatProps
-
-    this.plugin.addSettingsChangeListener((newSettings) => {
-      this.onSettingsChange(newSettings)
-    })
   }
 
   getViewType() {
@@ -55,11 +51,6 @@ export class ChatView extends ItemView {
     this.root?.unmount()
   }
 
-  onSettingsChange(newSettings: SmartCopilotSettings) {
-    this.settings = newSettings
-    this.render()
-  }
-
   render() {
     if (!this.root) {
       this.root = createRoot(this.containerEl.children[1])
@@ -72,6 +63,9 @@ export class ChatView extends ItemView {
         <SettingsProvider
           settings={this.settings}
           setSettings={(newSettings) => this.plugin.setSettings(newSettings)}
+          addSettingsChangeListener={(listener) =>
+            this.plugin.addSettingsChangeListener(listener)
+          }
         >
           <DarkModeProvider>
             <LLMProvider>
