@@ -15,25 +15,10 @@ function BadgeBase({
   onDelete: () => void
 }>) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        backgroundColor: 'var(--background-secondary)',
-        border: '1px solid var(--background-modifier-border)',
-        borderRadius: 'var(--radius-s)',
-        fontSize: 'var(--font-smallest)',
-        padding: 'var(--size-2-1) var(--size-4-1)',
-        gap: 'var(--size-2-1)',
-      }}
-    >
+    <div className="smtcmp-chat-user-input-file-badge">
       {children}
       <div
-        style={{
-          cursor: 'pointer',
-          display: 'flex',
-          color: 'var(--text-muted)',
-        }}
+        className="smtcmp-chat-user-input-file-badge-delete"
         onClick={onDelete}
       >
         <X size={10} />
@@ -51,12 +36,8 @@ function FileBadge({
 }) {
   return (
     <BadgeBase onDelete={onDelete}>
-      <div
-        style={{
-          whiteSpace: 'nowrap',
-        }}
-      >
-        {mentionable.file.name}
+      <div className="smtcmp-chat-user-input-file-badge-name">
+        <span>{mentionable.file.name}</span>
       </div>
     </BadgeBase>
   )
@@ -71,19 +52,11 @@ function CurrentFileBadge({
 }) {
   return mentionable.file ? (
     <BadgeBase onDelete={onDelete}>
-      <div
-        style={{
-          whiteSpace: 'nowrap',
-        }}
-      >
-        {`${mentionable.file.name}`}
-        <span
-          style={{
-            color: 'var(--text-faint)',
-          }}
-        >
-          {' (Current File)'}
-        </span>
+      <div className="smtcmp-chat-user-input-file-badge-name">
+        <span>{`${mentionable.file.name}`}</span>
+      </div>
+      <div className="smtcmp-chat-user-input-file-badge-name-block-suffix">
+        {' (Current File)'}
       </div>
     </BadgeBase>
   ) : null
@@ -98,19 +71,11 @@ function BlockBadge({
 }) {
   return (
     <BadgeBase onDelete={onDelete}>
-      <div
-        style={{
-          whiteSpace: 'nowrap',
-        }}
-      >
-        {`${mentionable.file.name}`}
-        <span
-          style={{
-            color: 'var(--text-faint)',
-          }}
-        >
-          {` (${mentionable.startLine}:${mentionable.endLine})`}
-        </span>
+      <div className="smtcmp-chat-user-input-file-badge-name-block-name">
+        <span>{`${mentionable.file.name}`}</span>
+      </div>
+      <div className="smtcmp-chat-user-input-file-badge-name-block-suffix">
+        {` (${mentionable.startLine}:${mentionable.endLine})`}
       </div>
     </BadgeBase>
   )
