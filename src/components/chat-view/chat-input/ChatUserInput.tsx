@@ -20,6 +20,7 @@ import {
 
 import { useApp } from '../../../contexts/app-context'
 import { Mentionable } from '../../../types/mentionable'
+import { fuzzySearch } from '../../../utils/fuzzy-search'
 
 import MentionableBadge from './MentionableBadge'
 import { ModelSelect } from './ModelSelect'
@@ -97,17 +98,8 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
     }, [])
 
     const searchFilesByQuery = useCallback(
-      (query: string) => {
-        const allFiles = app.vault.getFiles()
-        const filteredFiles =
-          query === ''
-            ? allFiles
-            : allFiles.filter((file) =>
-                file.path.toLowerCase().includes(query.toLowerCase()),
-              )
-        return filteredFiles
-      },
-      [app.vault],
+      (query: string) => fuzzySearch(app, query),
+      [app],
     )
 
     const handleMentionFile = (mentionable: Mentionable) => {

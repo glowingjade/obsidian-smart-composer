@@ -1,4 +1,4 @@
-import { Editor, MarkdownView, TFile, Vault } from 'obsidian'
+import { App, Editor, MarkdownView, TFile, Vault } from 'obsidian'
 
 import { MentionableBlockData } from '../types/mentionable'
 
@@ -42,4 +42,41 @@ export async function getMentionableBlockData(
     startLine,
     endLine,
   }
+}
+
+export function getOpenFiles(app: App): TFile[] {
+  try {
+    const leaves = app.workspace.getLeavesOfType('markdown')
+
+    return leaves.map((v) => (v.view as MarkdownView).file).filter((v) => !!v)
+  } catch (e) {
+    return []
+  }
+}
+
+export function calculateFileDistance(
+  file1: TFile,
+  file2: TFile,
+): number | null {
+  const path1 = file1.path.split('/')
+  const path2 = file2.path.split('/')
+
+  // Check if files are in different top-level folders
+  if (path1[0] !== path2[0]) {
+    return null
+  }
+
+  let distance = 0
+  let i = 0
+
+  // Find the common ancestor
+  while (i < path1.length && i < path2.length && path1[i] === path2[i]) {
+    i++
+  }
+
+  // Calculate distance from common ancestor to each file
+  distance += path1.length - i
+  distance += path2.length - i
+
+  return distance
 }
