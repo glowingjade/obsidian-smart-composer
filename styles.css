@@ -181,7 +181,6 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
 .smtcmp-chat-user-input-container {
   display: flex;
   flex-direction: column;
-  /* gap: var(--size-2-3); */
   -webkit-app-region: no-drag;
   background: var(--background-modifier-form-field);
   border: var(--input-border-width) solid var(--background-modifier-border);
