@@ -181,7 +181,6 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
 .smtcmp-chat-user-input-container {
   display: flex;
   flex-direction: column;
-  gap: var(--size-2-3);
   -webkit-app-region: no-drag;
   background: var(--background-modifier-form-field);
   border: var(--input-border-width) solid var(--background-modifier-border);
@@ -207,6 +206,46 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   flex-direction: row;
   gap: var(--size-4-1);
   flex-wrap: wrap;
+  padding-bottom: var(--size-4-1);
+}
+
+.smtcmp-chat-user-input-file-badge {
+  display: flex;
+  align-items: center;
+  background-color: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  font-size: var(--font-smallest);
+  padding: var(--size-2-1) var(--size-4-1);
+  gap: var(--size-2-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smtcmp-chat-user-input-file-badge-delete {
+  cursor: pointer;
+  display: flex;
+  color: var(--text-muted);
+}
+
+.smtcmp-chat-user-input-file-badge-name {
+  display: flex;
+  flex-direction: row;
+  gap: var(--size-2-1);
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.smtcmp-chat-user-input-file-badge-name span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smtcmp-chat-user-input-file-badge-name-block-suffix {
+  color: var(--text-faint);
+  flex-grow: 0;
 }
 
 .smtcmp-chat-user-input-file-badge-current {
@@ -224,7 +263,7 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   border-radius: var(--radius-s);
   background-color: var(--tag-background);
   color: var(--tag-color);
-  padding: var(--size-2-1) calc(var(--size-2-1));
+  padding: 0 calc(var(--size-2-1));
   border-radius: var(--radius-s);
 }
 
@@ -355,6 +394,10 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   position: relative;
   border: 1px solid var(--background-modifier-border);
   border-radius: var(--radius-s);
+}
+
+.smtcmp-code-block code {
+  padding: 0;
 }
 
 .smtcmp-code-block-header {
