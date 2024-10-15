@@ -52,7 +52,6 @@ To install Obsidian Smart Composer as a beta plugin:
 2. In Obsidian, go to `Settings > Obsidian Smart Composer`.
 3. Enter your API key in the designated field.
 
-
 ### Commands and Hotkeys
 
 Obsidian Smart Composer adds a few commands to work with AI. You can set custom hotkeys for these commands by going to `Settings > Hotkeys` and searching for "Obsidian Smart Composer". (Note: Hotkeys are unset by default)
