@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import { SmartCopilotSettings } from '../types/settings'
 
@@ -14,16 +14,32 @@ const SettingsContext = React.createContext<SettingsContextType | undefined>(
 
 export const SettingsProvider = ({
   children,
-  settings,
+  settings: initialSettings,
   setSettings,
+  addSettingsChangeListener,
 }: {
   children: React.ReactNode
   settings: SmartCopilotSettings
   setSettings: (newSettings: SmartCopilotSettings) => void
+  addSettingsChangeListener: (
+    listener: (newSettings: SmartCopilotSettings) => void,
+  ) => () => void
 }) => {
+  const [settingsCached, setSettingsCached] = useState(initialSettings)
+
+  useEffect(() => {
+    const removeListener = addSettingsChangeListener((newSettings) => {
+      setSettingsCached(newSettings)
+    })
+
+    return () => {
+      removeListener()
+    }
+  }, [addSettingsChangeListener, setSettings])
+
   const value = useMemo(
-    () => ({ settings, setSettings }),
-    [settings, setSettings],
+    () => ({ settings: settingsCached, setSettings }),
+    [settingsCached, setSettings],
   )
 
   return (
