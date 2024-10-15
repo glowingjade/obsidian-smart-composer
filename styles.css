@@ -264,7 +264,7 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   border-radius: var(--radius-s);
   background-color: var(--tag-background);
   color: var(--tag-color);
-  padding: var(--size-2-1) calc(var(--size-2-1));
+  padding: 0 calc(var(--size-2-1));
   border-radius: var(--radius-s);
 }
 

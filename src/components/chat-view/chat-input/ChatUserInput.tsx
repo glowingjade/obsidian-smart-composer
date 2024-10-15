@@ -150,15 +150,17 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
 
     return (
       <div className="smtcmp-chat-user-input-container">
-        <div className="smtcmp-chat-user-input-files">
-          {mentionables.map((m) => (
-            <MentionableBadge
-              key={m.id}
-              mentionable={m}
-              onDelete={() => handleMentionableDelete(m)}
-            />
-          ))}
-        </div>
+        {mentionables.length > 0 && (
+          <div className="smtcmp-chat-user-input-files">
+            {mentionables.map((m) => (
+              <MentionableBadge
+                key={m.id}
+                mentionable={m}
+                onDelete={() => handleMentionableDelete(m)}
+              />
+            ))}
+          </div>
+        )}
 
         <LexicalComposer initialConfig={initialConfig}>
           <PlainTextPlugin
