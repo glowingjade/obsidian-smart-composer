@@ -40,3 +40,6 @@ lerna-debug.log*
 
 # Obsidian
 .obsidian
+
+# misc
+version-bump.mjs

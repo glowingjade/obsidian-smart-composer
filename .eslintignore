@@ -41,6 +41,7 @@ lerna-debug.log*
 # misc
 esbuild.config.mjs
 jest.config.js
+version-bump.mjs
 
 # Obsidian
 .obsidian
