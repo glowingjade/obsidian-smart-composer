@@ -38,8 +38,13 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
+# misc
+esbuild.config.mjs
+jest.config.js
+version-bump.mjs
+versions.json
+package.json
+manifest.json
+
 # Obsidian
 .obsidian
-
-# misc
-version-bump.mjs
