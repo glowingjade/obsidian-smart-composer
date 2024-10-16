@@ -9,7 +9,7 @@
 // original: https://github.com/facebook/lexical/blob/main/packages/lexical-playground/src/plugins/MentionsPlugin/index.tsx
 
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
-import { COMMAND_PRIORITY_NORMAL, TextNode } from 'lexical'
+import { $createTextNode, COMMAND_PRIORITY_NORMAL, TextNode } from 'lexical'
 import { TFile } from 'obsidian'
 import { useCallback, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -191,7 +191,11 @@ export default function NewMentionsPlugin({
         if (nodeToReplace) {
           nodeToReplace.replace(mentionNode)
         }
-        mentionNode.select()
+
+        const spaceNode = $createTextNode(' ')
+        mentionNode.insertAfter(spaceNode)
+
+        spaceNode.select()
         closeMenu()
       })
 
