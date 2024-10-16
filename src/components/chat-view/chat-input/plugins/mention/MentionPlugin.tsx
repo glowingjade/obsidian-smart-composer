@@ -103,7 +103,7 @@ class MentionTypeaheadOption extends MenuOption {
   file: TFile
 
   constructor(file: TFile) {
-    super(file.name)
+    super(file.path)
     this.name = file.name
     this.file = file
   }
