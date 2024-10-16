@@ -201,13 +201,8 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       } catch (error) {
         if (error.name === 'AbortError') {
           return
-        } else if (
-          error instanceof LLMAPIKeyNotSetException ||
-          error instanceof LLMAPIKeyInvalidException
-        ) {
-          throw error
         } else {
-          throw new Error('Failed to generate response')
+          throw error
         }
       }
     },
@@ -272,8 +267,20 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       })
     },
     onError: (error) => {
-      new Notice(error.message)
-      console.error('Failed to apply changes', error)
+      if (
+        error instanceof LLMAPIKeyNotSetException ||
+        error instanceof LLMAPIKeyInvalidException
+      ) {
+        new OpenSettingsModal(app, error.message, () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const setting = (app as any).setting
+          setting.open()
+          setting.openTabById('smart-composer')
+        }).open()
+      } else {
+        new Notice(error.message)
+        console.error('Failed to apply changes', error)
+      }
     },
   })
 
