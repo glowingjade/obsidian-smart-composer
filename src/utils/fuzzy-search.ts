@@ -19,12 +19,14 @@ function scoreFnWithBoost(score: number, fileWithMetadata: FileWithMetadata) {
   if (opened) boost = Math.max(boost, 3)
 
   // Boost for recently modified files
-  const recentBoost = 1 + 1 / (daysSinceLastModified + 1)
-  boost = Math.max(boost, recentBoost)
+  if (daysSinceLastModified < 30) {
+    const recentBoost = 1 + 2 / (daysSinceLastModified + 2)
+    boost = Math.max(boost, recentBoost)
+  }
 
   // Boost for nearby files
   if (distance !== null && distance > 0 && distance <= 5) {
-    const nearbyBoost = 1 + 1 / Math.max(distance - 1, 1)
+    const nearbyBoost = 1 + 0.5 / Math.max(distance - 1, 1)
     boost = Math.max(boost, nearbyBoost)
   }
 
