@@ -112,6 +112,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
     const handleMentionNodeMutation = (
       mutations: NodeMutations<MentionNode>,
     ) => {
+      const destroyedMentionableIds: string[] = []
       mutations.forEach((mutation) => {
         if (mutation.mutation !== 'destroyed') return
 
@@ -123,9 +124,13 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
 
         if (!nodeWithSameId) {
           // remove mentionable only if it's not present in the editor state
-          setMentionables(mentionables.filter((m) => m.id !== id))
+          destroyedMentionableIds.push(id)
         }
       })
+
+      setMentionables(
+        mentionables.filter((m) => !destroyedMentionableIds.includes(m.id)),
+      )
     }
 
     const handleMentionableDelete = (mentionable: Mentionable) => {
