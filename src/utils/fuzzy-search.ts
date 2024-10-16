@@ -55,20 +55,25 @@ export function fuzzySearch(app: App, query: string): TFile[] {
   const currentFile = app.workspace.getActiveFile()
   const openFiles = getOpenFiles(app)
 
-  const allFiles = app.vault.getFiles()
+  const allSupportedFiles = app.vault.getFiles().filter((file) => {
+    const extension = file.extension
+    return extension === 'md'
+  })
 
-  const allFilesWithMetadata: FileWithMetadata[] = allFiles.map((file) => ({
-    path: file.path,
-    file,
-    opened: openFiles.some((f) => f.path === file.path),
-    distance: currentFile
-      ? currentFile === file
-        ? null
-        : calculateFileDistance(currentFile, file)
-      : null,
-    daysSinceLastModified:
-      (Date.now() - file.stat.mtime) / (1000 * 60 * 60 * 24),
-  }))
+  const allFilesWithMetadata: FileWithMetadata[] = allSupportedFiles.map(
+    (file) => ({
+      path: file.path,
+      file,
+      opened: openFiles.some((f) => f.path === file.path),
+      distance: currentFile
+        ? currentFile === file
+          ? null
+          : calculateFileDistance(currentFile, file)
+        : null,
+      daysSinceLastModified:
+        (Date.now() - file.stat.mtime) / (1000 * 60 * 60 * 24),
+    }),
+  )
 
   if (!query) {
     return getEmptyQueryResult(allFilesWithMetadata, 20)
