@@ -8,6 +8,7 @@ import { CHAT_VIEW_TYPE } from './constants'
 import { AppProvider } from './contexts/app-context'
 import { DarkModeProvider } from './contexts/dark-mode-context'
 import { LLMProvider } from './contexts/llm-context'
+import { RAGProvider } from './contexts/rag-context'
 import { SettingsProvider } from './contexts/settings-context'
 import SmartCopilotPlugin from './main'
 import { MentionableBlockData } from './types/mentionable'
@@ -69,11 +70,13 @@ export class ChatView extends ItemView {
         >
           <DarkModeProvider>
             <LLMProvider>
-              <QueryClientProvider client={queryClient}>
-                <React.StrictMode>
-                  <Chat ref={this.chatRef} {...this.initialChatProps} />
-                </React.StrictMode>
-              </QueryClientProvider>
+              <RAGProvider>
+                <QueryClientProvider client={queryClient}>
+                  <React.StrictMode>
+                    <Chat ref={this.chatRef} {...this.initialChatProps} />
+                  </React.StrictMode>
+                </QueryClientProvider>
+              </RAGProvider>
             </LLMProvider>
           </DarkModeProvider>
         </SettingsProvider>

@@ -15,11 +15,11 @@ import { ApplyViewState } from '../../ApplyView'
 import { APPLY_VIEW_TYPE } from '../../constants'
 import { useApp } from '../../contexts/app-context'
 import { useLLM } from '../../contexts/llm-context'
+import { useRAG } from '../../contexts/rag-context'
 import { useSettings } from '../../contexts/settings-context'
 import { useChatHistory } from '../../hooks/useChatHistory'
 import { OpenSettingsModal } from '../../OpenSettingsModal'
 import { ChatMessage, ChatUserMessage } from '../../types/chat'
-import { RequestMessage } from '../../types/llm/request'
 import {
   MentionableBlock,
   MentionableBlockData,
@@ -78,6 +78,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     chatList,
   } = useChatHistory()
   const { generateResponse, streamResponse } = useLLM()
+  const { processQuery } = useRAG()
 
   const [inputMessage, setInputMessage] = useState<ChatUserMessage>(() => {
     const newMessage = getNewInputMessage(app)
@@ -161,6 +162,15 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     mutationFn: async (newChatHistory: ChatMessage[]) => {
       abortActiveStreams()
 
+      // Logging RAG result
+      const lastMessage = newChatHistory[
+        newChatHistory.length - 1
+      ] as ChatUserMessage
+      const ragResult = await processQuery(
+        lastMessage.content ? editorStateToPlainText(lastMessage.content) : '',
+      )
+      console.log('RAG result:\n', JSON.stringify(ragResult, null, 2))
+
       const responseMessageId = uuidv4()
       setChatMessages([
         ...newChatHistory,
@@ -179,7 +189,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         const stream = await streamResponse(
           {
             model: settings.chatModel,
-            messages: requestMessages as RequestMessage[],
+            messages: requestMessages,
             stream: true,
           },
           {
