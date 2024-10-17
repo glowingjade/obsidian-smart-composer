@@ -1,12 +1,10 @@
 import { TFile } from 'obsidian'
 
 export type MentionableFile = {
-  id: string
   type: 'file'
   file: TFile
 }
 export type MentionableCurrentFile = {
-  id: string
   type: 'current-file'
   file: TFile | null
 }
@@ -17,7 +15,6 @@ export type MentionableBlockData = {
   endLine: number
 }
 export type MentionableBlock = MentionableBlockData & {
-  id: string
   type: 'block'
 }
 export type Mentionable =
@@ -26,17 +23,14 @@ export type Mentionable =
   | MentionableBlock
 
 export type SerializedMentionableFile = {
-  id: string
   type: 'file'
   file: string
 }
 export type SerializedMentionableCurrentFile = {
-  id: string
   type: 'current-file'
   file: string | null
 }
 export type SerializedMentionableBlock = {
-  id: string
   type: 'block'
   content: string
   file: string

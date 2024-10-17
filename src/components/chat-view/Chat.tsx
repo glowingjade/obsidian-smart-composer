@@ -35,24 +35,19 @@ import { parseRequestMessages } from '../../utils/prompt'
 
 import ChatUserInput, { ChatUserInputRef } from './chat-input/ChatUserInput'
 import { editorStateToPlainText } from './chat-input/utils/editor-state-to-plain-text'
-import { generateMentionableId } from './chat-input/utils/get-mentionable-id'
 import { ChatListDropdown } from './ChatListDropdown'
 import ReactMarkdown from './ReactMarkdown'
 
 // Add an empty line here
 const getNewInputMessage = (app: App): ChatUserMessage => {
-  const mentionable: Omit<MentionableCurrentFile, 'id'> = {
-    type: 'current-file',
-    file: app.workspace.getActiveFile(),
-  }
   return {
     role: 'user',
     content: null,
     id: uuidv4(),
     mentionables: [
       {
-        id: generateMentionableId(mentionable),
-        ...mentionable,
+        type: 'current-file',
+        file: app.workspace.getActiveFile(),
       },
     ],
   }
@@ -82,15 +77,11 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const [inputMessage, setInputMessage] = useState<ChatUserMessage>(() => {
     const newMessage = getNewInputMessage(app)
     if (props.selectedBlock) {
-      const blockMentionable: Omit<MentionableBlock, 'id'> = {
-        type: 'block',
-        ...props.selectedBlock,
-      }
       newMessage.mentionables = [
         ...newMessage.mentionables,
         {
-          id: generateMentionableId(blockMentionable),
-          ...blockMentionable,
+          type: 'block',
+          ...props.selectedBlock,
         },
       ]
     }
@@ -326,10 +317,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       setInputMessage((prevInputMessage) => ({
         ...prevInputMessage,
         mentionables: [
-          {
-            id: generateMentionableId(mentionable),
-            ...mentionable,
-          },
+          mentionable,
           ...prevInputMessage.mentionables.filter(
             (mentionable) => mentionable.type !== 'current-file',
           ),
@@ -342,10 +330,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
             ? {
                 ...message,
                 mentionables: [
-                  {
-                    id: generateMentionableId(mentionable),
-                    ...mentionable,
-                  },
+                  mentionable,
                   ...message.mentionables.filter(
                     (mentionable) => mentionable.type !== 'current-file',
                   ),
@@ -374,13 +359,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       if (focusedMessageId === inputMessage.id) {
         setInputMessage((prevInputMessage) => ({
           ...prevInputMessage,
-          mentionables: [
-            ...prevInputMessage.mentionables,
-            {
-              id: generateMentionableId(mentionable),
-              ...mentionable,
-            },
-          ],
+          mentionables: [...prevInputMessage.mentionables, mentionable],
         }))
       } else {
         setChatMessages((prevChatHistory) =>
@@ -388,13 +367,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
             message.id === focusedMessageId && message.role === 'user'
               ? {
                   ...message,
-                  mentionables: [
-                    ...message.mentionables,
-                    {
-                      id: generateMentionableId(mentionable),
-                      ...mentionable,
-                    },
-                  ],
+                  mentionables: [...message.mentionables, mentionable],
                 }
               : message,
           ),

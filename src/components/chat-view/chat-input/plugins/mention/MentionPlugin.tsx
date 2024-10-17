@@ -13,9 +13,10 @@ import { $createTextNode, COMMAND_PRIORITY_NORMAL, TextNode } from 'lexical'
 import { TFile } from 'obsidian'
 import { useCallback, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { serializeMentionable } from 'src/utils/mentionable'
 
 import { Mentionable, MentionableFile } from '../../../../../types/mentionable'
-import { generateMentionableId } from '../../utils/get-mentionable-id'
+import { getMentionableName } from '../../../../../utils/mentionable'
 import { MenuOption, MenuTextMatch } from '../shared/LexicalMenu'
 import {
   LexicalTypeaheadMenuPlugin,
@@ -177,16 +178,14 @@ export default function NewMentionsPlugin({
       nodeToReplace: TextNode | null,
       closeMenu: () => void,
     ) => {
-      const mentionable: Omit<MentionableFile, 'id'> = {
+      const mentionable: MentionableFile = {
         type: 'file',
         file: selectedOption.file,
       }
-      const mentionableId = generateMentionableId(mentionable)
-
       editor.update(() => {
         const mentionNode = $createMentionNode(
-          mentionableId,
-          selectedOption.name,
+          getMentionableName(mentionable),
+          serializeMentionable(mentionable),
         )
         if (nodeToReplace) {
           nodeToReplace.replace(mentionNode)
@@ -199,10 +198,7 @@ export default function NewMentionsPlugin({
         closeMenu()
       })
 
-      onAddMention({
-        id: mentionableId,
-        ...mentionable,
-      })
+      onAddMention(mentionable)
     },
     [editor, onAddMention],
   )
