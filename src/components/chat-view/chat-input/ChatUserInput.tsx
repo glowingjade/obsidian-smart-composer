@@ -8,7 +8,7 @@ import { EditorRefPlugin } from '@lexical/react/LexicalEditorRefPlugin'
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary'
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin'
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin'
-import { PlainTextPlugin } from '@lexical/react/LexicalPlainTextPlugin'
+import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
 import { $nodesOfType, LexicalEditor, SerializedEditorState } from 'lexical'
 import {
   forwardRef,
@@ -17,15 +17,21 @@ import {
   useImperativeHandle,
   useRef,
 } from 'react'
+import {
+  deserializeMentionable,
+  serializeMentionable,
+} from 'src/utils/mentionable'
 
 import { useApp } from '../../../contexts/app-context'
-import { Mentionable } from '../../../types/mentionable'
+import { Mentionable, SerializedMentionable } from '../../../types/mentionable'
 import { fuzzySearch } from '../../../utils/fuzzy-search'
+import { getMentionableKey } from '../../../utils/mentionable'
 
 import MentionableBadge from './MentionableBadge'
 import { ModelSelect } from './ModelSelect'
 import { MentionNode } from './plugins/mention/MentionNode'
 import MentionPlugin from './plugins/mention/MentionPlugin'
+import NoFormatPlugin from './plugins/no-format/NoFormatPlugin'
 import OnEnterPlugin from './plugins/on-enter/OnEnterPlugin'
 import OnMutationPlugin, {
   NodeMutations,
@@ -103,7 +109,14 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
     )
 
     const handleMentionFile = (mentionable: Mentionable) => {
-      if (mentionables.some((m) => m.id === mentionable.id)) {
+      const mentionableKey = getMentionableKey(
+        serializeMentionable(mentionable),
+      )
+      if (
+        mentionables.some(
+          (m) => getMentionableKey(serializeMentionable(m)) === mentionableKey,
+        )
+      ) {
         return
       }
       setMentionables([...mentionables, mentionable])
@@ -112,33 +125,71 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
     const handleMentionNodeMutation = (
       mutations: NodeMutations<MentionNode>,
     ) => {
-      const destroyedMentionableIds: string[] = []
+      const destroyedMentionableKeys: string[] = []
+      const addedMentionables: SerializedMentionable[] = []
       mutations.forEach((mutation) => {
-        if (mutation.mutation !== 'destroyed') return
+        const mentionable = mutation.node.getMentionable()
+        const mentionableKey = getMentionableKey(mentionable)
 
-        const id = mutation.node.getId()
+        if (mutation.mutation === 'destroyed') {
+          const nodeWithSameMentionable = editorRef.current?.read(() =>
+            $nodesOfType(MentionNode).find(
+              (node) =>
+                getMentionableKey(node.getMentionable()) === mentionableKey,
+            ),
+          )
 
-        const nodeWithSameId = editorRef.current?.read(() =>
-          $nodesOfType(MentionNode).find((node) => node.getId() === id),
-        )
+          if (!nodeWithSameMentionable) {
+            // remove mentionable only if it's not present in the editor state
+            destroyedMentionableKeys.push(mentionableKey)
+          }
+        } else if (mutation.mutation === 'created') {
+          if (
+            mentionables.some(
+              (m) =>
+                getMentionableKey(serializeMentionable(m)) === mentionableKey,
+            ) ||
+            addedMentionables.some(
+              (m) => getMentionableKey(m) === mentionableKey,
+            )
+          ) {
+            // do nothing if mentionable is already added
+            return
+          }
 
-        if (!nodeWithSameId) {
-          // remove mentionable only if it's not present in the editor state
-          destroyedMentionableIds.push(id)
+          addedMentionables.push(mentionable)
         }
       })
 
       setMentionables(
-        mentionables.filter((m) => !destroyedMentionableIds.includes(m.id)),
+        mentionables
+          .filter(
+            (m) =>
+              !destroyedMentionableKeys.includes(
+                getMentionableKey(serializeMentionable(m)),
+              ),
+          )
+          .concat(
+            addedMentionables
+              .map((m) => deserializeMentionable(m, app))
+              .filter((v) => !!v),
+          ),
       )
     }
 
     const handleMentionableDelete = (mentionable: Mentionable) => {
-      setMentionables(mentionables.filter((m) => m.id !== mentionable.id))
+      const mentionableKey = getMentionableKey(
+        serializeMentionable(mentionable),
+      )
+      setMentionables(
+        mentionables.filter(
+          (m) => getMentionableKey(serializeMentionable(m)) !== mentionableKey,
+        ),
+      )
 
       editorRef.current?.update(() => {
         $nodesOfType(MentionNode).forEach((node) => {
-          if (node.getId() === mentionable.id) {
+          if (getMentionableKey(node.getMentionable()) === mentionableKey) {
             node.remove()
           }
         })
@@ -151,7 +202,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
           <div className="smtcmp-chat-user-input-files">
             {mentionables.map((m) => (
               <MentionableBadge
-                key={m.id}
+                key={getMentionableKey(serializeMentionable(m))}
                 mentionable={m}
                 onDelete={() => handleMentionableDelete(m)}
               />
@@ -160,7 +211,15 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
         )}
 
         <LexicalComposer initialConfig={initialConfig}>
-          <PlainTextPlugin
+          {/* 
+            There was two approach to make mentionable node copy and pasteable.
+            1. use RichTextPlugin and reset text format when paste
+              - so I implemented NoFormatPlugin to reset text format when paste
+            2. use PlainTextPlugin and override paste command
+              - PlainTextPlugin only pastes text, so we need to implement custom paste handler.
+              - https://github.com/facebook/lexical/discussions/5112
+           */}
+          <RichTextPlugin
             contentEditable={
               <ContentEditable
                 className="obsidian-default-textarea"
@@ -198,6 +257,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
             onMutation={handleMentionNodeMutation}
           />
           <EditorRefPlugin editorRef={editorRef} />
+          <NoFormatPlugin />
         </LexicalComposer>
         <ModelSelect />
       </div>

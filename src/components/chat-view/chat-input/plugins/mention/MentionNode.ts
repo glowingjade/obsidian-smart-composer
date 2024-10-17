@@ -8,6 +8,9 @@
 
 import {
   $applyNodeReplacement,
+  DOMConversionMap,
+  DOMConversionOutput,
+  DOMExportOutput,
   type EditorConfig,
   type LexicalNode,
   type NodeKey,
@@ -16,47 +19,61 @@ import {
   TextNode,
 } from 'lexical'
 
+import { SerializedMentionable } from '../../../../../types/mentionable'
+
 export const MENTION_NODE_TYPE = 'mention'
 export const MENTION_NODE_ATTRIBUTE = 'data-lexical-mention'
+export const MENTION_NODE_MENTION_NAME_ATTRIBUTE = 'data-lexical-mention-name'
+export const MENTION_NODE_MENTIONABLE_ATTRIBUTE = 'data-lexical-mentionable'
 
 export type SerializedMentionNode = Spread<
   {
-    id: string
     mentionName: string
+    mentionable: SerializedMentionable
   },
   SerializedTextNode
 >
 
-// function $convertMentionElement(
-//   domNode: HTMLElement,
-// ): DOMConversionOutput | null {
-//   const textContent = domNode.textContent
+function $convertMentionElement(
+  domNode: HTMLElement,
+): DOMConversionOutput | null {
+  const textContent = domNode.textContent
+  const mentionName =
+    domNode.getAttribute(MENTION_NODE_MENTION_NAME_ATTRIBUTE) ??
+    domNode.textContent ??
+    ''
+  const mentionable = JSON.parse(
+    domNode.getAttribute(MENTION_NODE_MENTIONABLE_ATTRIBUTE) ?? '{}',
+  )
 
-//   if (textContent !== null) {
-//     const node = $createMentionNode(textContent)
-//     return {
-//       node,
-//     }
-//   }
+  if (textContent !== null) {
+    const node = $createMentionNode(
+      mentionName,
+      mentionable as SerializedMentionable,
+    )
+    return {
+      node,
+    }
+  }
 
-//   return null
-// }
+  return null
+}
 
 export class MentionNode extends TextNode {
-  __id: string
-  __mention: string
+  __mentionName: string
+  __mentionable: SerializedMentionable
 
   static getType(): string {
     return MENTION_NODE_TYPE
   }
 
   static clone(node: MentionNode): MentionNode {
-    return new MentionNode(node.__id, node.__mention, node.__text, node.__key)
+    return new MentionNode(node.__mentionName, node.__mentionable, node.__key)
   }
   static importJSON(serializedNode: SerializedMentionNode): MentionNode {
     const node = $createMentionNode(
-      serializedNode.id,
       serializedNode.mentionName,
+      serializedNode.mentionable,
     )
     node.setTextContent(serializedNode.text)
     node.setFormat(serializedNode.format)
@@ -66,18 +83,21 @@ export class MentionNode extends TextNode {
     return node
   }
 
-  constructor(id: string, mentionName: string, text?: string, key?: NodeKey) {
-    // super(text ?? mentionName, key);
+  constructor(
+    mentionName: string,
+    mentionable: SerializedMentionable,
+    key?: NodeKey,
+  ) {
     super(`@${mentionName}`, key)
-    this.__id = id
-    this.__mention = mentionName
+    this.__mentionName = mentionName
+    this.__mentionable = mentionable
   }
 
   exportJSON(): SerializedMentionNode {
     return {
       ...super.exportJSON(),
-      id: this.__id,
-      mentionName: this.__mention,
+      mentionName: this.__mentionName,
+      mentionable: this.__mentionable,
       type: MENTION_NODE_TYPE,
       version: 1,
     }
@@ -89,26 +109,38 @@ export class MentionNode extends TextNode {
     return dom
   }
 
-  // exportDOM(): DOMExportOutput {
-  //   const element = document.createElement('span')
-  //   element.setAttribute(MENTION_NODE_ATTRIBUTE, 'true')
-  //   element.textContent = this.__text
-  //   return { element }
-  // }
+  exportDOM(): DOMExportOutput {
+    const element = document.createElement('span')
+    element.setAttribute(MENTION_NODE_ATTRIBUTE, 'true')
+    element.setAttribute(
+      MENTION_NODE_MENTION_NAME_ATTRIBUTE,
+      this.__mentionName,
+    )
+    element.setAttribute(
+      MENTION_NODE_MENTIONABLE_ATTRIBUTE,
+      JSON.stringify(this.__mentionable),
+    )
+    element.textContent = this.__text
+    return { element }
+  }
 
-  // static importDOM(): DOMConversionMap | null {
-  //   return {
-  //     span: (domNode: HTMLElement) => {
-  //       if (!domNode.hasAttribute(MENTION_NODE_ATTRIBUTE)) {
-  //         return null
-  //       }
-  //       return {
-  //         conversion: $convertMentionElement,
-  //         priority: 1,
-  //       }
-  //     },
-  //   }
-  // }
+  static importDOM(): DOMConversionMap | null {
+    return {
+      span: (domNode: HTMLElement) => {
+        if (
+          !domNode.hasAttribute(MENTION_NODE_ATTRIBUTE) ||
+          !domNode.hasAttribute(MENTION_NODE_MENTION_NAME_ATTRIBUTE) ||
+          !domNode.hasAttribute(MENTION_NODE_MENTIONABLE_ATTRIBUTE)
+        ) {
+          return null
+        }
+        return {
+          conversion: $convertMentionElement,
+          priority: 1,
+        }
+      },
+    }
+  }
 
   isTextEntity(): true {
     return true
@@ -122,16 +154,16 @@ export class MentionNode extends TextNode {
     return false
   }
 
-  getId(): string {
-    return this.__id
+  getMentionable(): SerializedMentionable {
+    return this.__mentionable
   }
 }
 
 export function $createMentionNode(
-  id: string,
   mentionName: string,
+  mentionable: SerializedMentionable,
 ): MentionNode {
-  const mentionNode = new MentionNode(id, mentionName)
+  const mentionNode = new MentionNode(mentionName, mentionable)
   mentionNode.setMode('token').toggleDirectionless()
   return $applyNodeReplacement(mentionNode)
 }
