@@ -1,8 +1,8 @@
 import { TFile, Vault } from 'obsidian'
-import { ChatCompletionMessageParam } from 'openai/resources'
 
 import { editorStateToPlainText } from '../components/chat-view/chat-input/utils/editor-state-to-plain-text'
 import { ChatMessage, ChatUserMessage } from '../types/chat'
+import { RequestMessage } from '../types/llm/request'
 import { MentionableBlock, MentionableFile } from '../types/mentionable'
 
 import { readMultipleTFiles, readTFileContent } from './obsidian'
@@ -10,7 +10,7 @@ import { readMultipleTFiles, readTFileContent } from './obsidian'
 const getCurrentFileMessage = async (
   currentFile: TFile,
   vault: Vault,
-): Promise<ChatCompletionMessageParam> => {
+): Promise<RequestMessage> => {
   const fileContent = await readTFileContent(currentFile, vault)
   return {
     role: 'user',
@@ -52,7 +52,7 @@ const parseUserMessage = async (
 export const parseRequestMessages = async (
   messages: ChatMessage[],
   vault: Vault,
-): Promise<ChatCompletionMessageParam[]> => {
+): Promise<RequestMessage[]> => {
   if (messages.length === 0) {
     throw new Error('No messages provided')
   }
@@ -117,5 +117,5 @@ The user has full access to the file, so they prefer seeing only the changes in 
     systemMessage,
     ...(currentFileMessage ? [currentFileMessage] : []),
     ...parsedMessages.filter((message) => !!message.content),
-  ] as ChatCompletionMessageParam[]
+  ] as RequestMessage[]
 }

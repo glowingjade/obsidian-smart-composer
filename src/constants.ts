@@ -1,3 +1,4 @@
+import { EmbeddingModelOption } from './types/embedding'
 import { SmartCopilotSettings } from './types/settings'
 
 export const CHAT_VIEW_TYPE = 'smtcmp-chat-view'
@@ -9,6 +10,14 @@ export const DEFAULT_SETTINGS: SmartCopilotSettings = {
   anthropicApiKey: '',
   chatModel: 'claude-3-5-sonnet-20240620',
   applyModel: 'gpt-4o-mini',
+  embeddingModel: 'text-embedding-3-small',
+  chunkOptions: {
+    chunkSize: 1000,
+  },
+  ragOptions: {
+    minSimilarity: 0.0,
+    limit: 5,
+  },
 }
 
 export const CHAT_MODEL_OPTIONS = [
@@ -48,3 +57,18 @@ export const APPLY_MODEL_OPTIONS = [
     value: 'llama-3.1-70b-versatile',
   },
 ]
+
+export const EMBEDDING_MODEL_OPTIONS: EmbeddingModelOption[] = [
+  {
+    name: 'text-embedding-3-small',
+    value: 'text-embedding-3-small',
+    dimension: 1536,
+  },
+  {
+    name: 'text-embedding-3-large',
+    value: 'text-embedding-3-large',
+    dimension: 3072,
+  },
+]
+
+export const PGLITE_DB_PATH = '.smtcmp_vector_db.tar.gz'
