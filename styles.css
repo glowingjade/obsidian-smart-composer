@@ -265,6 +265,7 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   color: var(--tag-color);
   padding: 0 calc(var(--size-2-1));
   border-radius: var(--radius-s);
+  word-break: break-all;
 }
 
 .smtcmp-chat-input-paragraph {

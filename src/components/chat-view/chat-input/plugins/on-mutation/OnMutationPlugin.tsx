@@ -17,6 +17,8 @@ export default function OnMutationPlugin<T extends LexicalNode>({
     const removeListener = editor.registerMutationListener(
       nodeClass,
       (mutatedNodes, payload) => {
+        const editorState = editor.getEditorState()
+
         const mutations = new Map<
           NodeKey,
           { mutation: NodeMutation; node: T }
@@ -24,7 +26,10 @@ export default function OnMutationPlugin<T extends LexicalNode>({
         for (const [key, mutation] of mutatedNodes) {
           mutations.set(key, {
             mutation,
-            node: payload.prevEditorState._nodeMap.get(key) as T,
+            node:
+              mutation === 'destroyed'
+                ? (payload.prevEditorState._nodeMap.get(key) as T)
+                : (editorState._nodeMap.get(key) as T),
           })
         }
 

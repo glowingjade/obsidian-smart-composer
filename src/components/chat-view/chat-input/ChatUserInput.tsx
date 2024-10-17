@@ -17,10 +17,13 @@ import {
   useImperativeHandle,
   useRef,
 } from 'react'
-import { serializeMentionable } from 'src/utils/mentionable'
+import {
+  deserializeMentionable,
+  serializeMentionable,
+} from 'src/utils/mentionable'
 
 import { useApp } from '../../../contexts/app-context'
-import { Mentionable } from '../../../types/mentionable'
+import { Mentionable, SerializedMentionable } from '../../../types/mentionable'
 import { fuzzySearch } from '../../../utils/fuzzy-search'
 import { getMentionableKey } from '../../../utils/mentionable'
 
@@ -123,34 +126,54 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
       mutations: NodeMutations<MentionNode>,
     ) => {
       const destroyedMentionableKeys: string[] = []
+      const addedMentionables: SerializedMentionable[] = []
       mutations.forEach((mutation) => {
-        console.log('mutation', mutation)
-
-        if (mutation.mutation !== 'destroyed') return
-
         const mentionable = mutation.node.getMentionable()
         const mentionableKey = getMentionableKey(mentionable)
 
-        const nodeWithSameMentionable = editorRef.current?.read(() =>
-          $nodesOfType(MentionNode).find(
-            (node) =>
-              getMentionableKey(node.getMentionable()) === mentionableKey,
-          ),
-        )
+        if (mutation.mutation === 'destroyed') {
+          const nodeWithSameMentionable = editorRef.current?.read(() =>
+            $nodesOfType(MentionNode).find(
+              (node) =>
+                getMentionableKey(node.getMentionable()) === mentionableKey,
+            ),
+          )
 
-        if (!nodeWithSameMentionable) {
-          // remove mentionable only if it's not present in the editor state
-          destroyedMentionableKeys.push(mentionableKey)
+          if (!nodeWithSameMentionable) {
+            // remove mentionable only if it's not present in the editor state
+            destroyedMentionableKeys.push(mentionableKey)
+          }
+        } else if (mutation.mutation === 'created') {
+          if (
+            mentionables.some(
+              (m) =>
+                getMentionableKey(serializeMentionable(m)) === mentionableKey,
+            ) ||
+            addedMentionables.some(
+              (m) => getMentionableKey(m) === mentionableKey,
+            )
+          ) {
+            // do nothing if mentionable is already added
+            return
+          }
+
+          addedMentionables.push(mentionable)
         }
       })
 
       setMentionables(
-        mentionables.filter(
-          (m) =>
-            !destroyedMentionableKeys.includes(
-              getMentionableKey(serializeMentionable(m)),
-            ),
-        ),
+        mentionables
+          .filter(
+            (m) =>
+              !destroyedMentionableKeys.includes(
+                getMentionableKey(serializeMentionable(m)),
+              ),
+          )
+          .concat(
+            addedMentionables
+              .map((m) => deserializeMentionable(m, app))
+              .filter((v) => !!v),
+          ),
       )
     }
 
