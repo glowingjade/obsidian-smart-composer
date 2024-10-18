@@ -2,7 +2,7 @@ import { App, normalizePath } from 'obsidian'
 
 import { ChatConversation, ChatConversationMeta } from '../types/chat'
 
-const CURRENT_SCHEMA_VERSION = 1
+const CURRENT_SCHEMA_VERSION = 2
 const CHAT_HISTORY_DIR = '.smtcmp_chat_histories'
 const CHAT_LIST_FILE = 'chat_list.json'
 
@@ -63,7 +63,10 @@ export class ChatConversationManager {
     const chatListPath = this.getChatListPath()
     if (await this.app.vault.adapter.exists(chatListPath)) {
       const content = await this.app.vault.adapter.read(chatListPath)
-      return JSON.parse(content) as ChatConversationMeta[]
+      const chatList = JSON.parse(content) as ChatConversationMeta[]
+      return chatList.filter(
+        (chat) => chat.schemaVersion === CURRENT_SCHEMA_VERSION,
+      )
     }
     return []
   }

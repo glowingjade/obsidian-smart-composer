@@ -9,13 +9,14 @@
 // original: https://github.com/facebook/lexical/blob/main/packages/lexical-playground/src/plugins/MentionsPlugin/index.tsx
 
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
-import { COMMAND_PRIORITY_NORMAL, TextNode } from 'lexical'
+import { $createTextNode, COMMAND_PRIORITY_NORMAL, TextNode } from 'lexical'
 import { TFile } from 'obsidian'
 import { useCallback, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { serializeMentionable } from 'src/utils/mentionable'
 
 import { Mentionable, MentionableFile } from '../../../../../types/mentionable'
-import { generateMentionableId } from '../../utils/get-mentionable-id'
+import { getMentionableName } from '../../../../../utils/mentionable'
 import { MenuOption, MenuTextMatch } from '../shared/LexicalMenu'
 import {
   LexicalTypeaheadMenuPlugin,
@@ -103,7 +104,7 @@ class MentionTypeaheadOption extends MenuOption {
   file: TFile
 
   constructor(file: TFile) {
-    super(file.name)
+    super(file.path)
     this.name = file.name
     this.file = file
   }
@@ -177,28 +178,27 @@ export default function NewMentionsPlugin({
       nodeToReplace: TextNode | null,
       closeMenu: () => void,
     ) => {
-      const mentionable: Omit<MentionableFile, 'id'> = {
+      const mentionable: MentionableFile = {
         type: 'file',
         file: selectedOption.file,
       }
-      const mentionableId = generateMentionableId(mentionable)
-
       editor.update(() => {
         const mentionNode = $createMentionNode(
-          mentionableId,
-          selectedOption.name,
+          getMentionableName(mentionable),
+          serializeMentionable(mentionable),
         )
         if (nodeToReplace) {
           nodeToReplace.replace(mentionNode)
         }
-        mentionNode.select()
+
+        const spaceNode = $createTextNode(' ')
+        mentionNode.insertAfter(spaceNode)
+
+        spaceNode.select()
         closeMenu()
       })
 
-      onAddMention({
-        id: mentionableId,
-        ...mentionable,
-      })
+      onAddMention(mentionable)
     },
     [editor, onAddMention],
   )

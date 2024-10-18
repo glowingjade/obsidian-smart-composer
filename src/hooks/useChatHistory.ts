@@ -10,89 +10,12 @@ import {
   ChatMessage,
   SerializedChatMessage,
 } from '../types/chat'
-import { Mentionable, SerializedMentionable } from '../types/mentionable'
+import { Mentionable } from '../types/mentionable'
 import { ChatConversationManager } from '../utils/chatHistoryManager'
-
-const serializeMentionable = (
-  mentionable: Mentionable,
-): SerializedMentionable => {
-  switch (mentionable.type) {
-    case 'file':
-      return {
-        id: mentionable.id,
-        type: 'file',
-        file: mentionable.file.path,
-      }
-    case 'current-file':
-      return {
-        id: mentionable.id,
-        type: 'current-file',
-        file: mentionable.file?.path ?? null,
-      }
-    case 'block':
-      return {
-        id: mentionable.id,
-        type: 'block',
-        content: mentionable.content,
-        file: mentionable.file.path,
-        startLine: mentionable.startLine,
-        endLine: mentionable.endLine,
-      }
-  }
-}
-
-const deserializeMentionable = (
-  mentionable: SerializedMentionable,
-  app: App,
-): Mentionable | null => {
-  try {
-    switch (mentionable.type) {
-      case 'file': {
-        const file = app.vault.getFileByPath(mentionable.file)
-        if (!file) {
-          return null
-        }
-        return {
-          id: mentionable.id,
-          type: 'file',
-          file: file,
-        }
-      }
-      case 'current-file': {
-        if (!mentionable.file) {
-          return {
-            id: mentionable.id,
-            type: 'current-file',
-            file: null,
-          }
-        }
-        const file = app.vault.getFileByPath(mentionable.file)
-        return {
-          id: mentionable.id,
-          type: 'current-file',
-          file: file,
-        }
-      }
-      case 'block': {
-        const file = app.vault.getFileByPath(mentionable.file)
-        if (!file) {
-          return null
-        }
-        return {
-          id: mentionable.id,
-          type: 'block',
-          content: mentionable.content,
-          file: file,
-          startLine: mentionable.startLine,
-          endLine: mentionable.endLine,
-        }
-      }
-    }
-  } catch (e) {
-    console.error('Error deserializing mentionable', e)
-    return null
-  }
-}
+import {
+  deserializeMentionable,
+  serializeMentionable,
+} from '../utils/mentionable'
 
 const serializeChatMessage = (message: ChatMessage): SerializedChatMessage => {
   switch (message.role) {
