@@ -25,6 +25,7 @@ export type IndexProgress = {
   totalFiles: number
 }
 
+// TODO: Update style
 export default function QueryProgress({
   state,
 }: {
