@@ -11,6 +11,15 @@ export const serializeMentionable = (
         type: 'file',
         file: mentionable.file.path,
       }
+    case 'folder':
+      return {
+        type: 'folder',
+        folder: mentionable.folder.path,
+      }
+    case 'vault':
+      return {
+        type: 'vault',
+      }
     case 'current-file':
       return {
         type: 'current-file',
@@ -43,6 +52,20 @@ export const deserializeMentionable = (
           file: file,
         }
       }
+      case 'folder': {
+        const folder = app.vault.getFolderByPath(mentionable.folder)
+        if (!folder) {
+          return null
+        }
+        return {
+          type: 'folder',
+          folder: folder,
+        }
+      }
+      case 'vault':
+        return {
+          type: 'vault',
+        }
       case 'current-file': {
         if (!mentionable.file) {
           return {
@@ -80,6 +103,10 @@ export function getMentionableKey(mentionable: SerializedMentionable): string {
   switch (mentionable.type) {
     case 'file':
       return `file:${mentionable.file}`
+    case 'folder':
+      return `folder:${mentionable.folder}`
+    case 'vault':
+      return 'vault'
     case 'current-file':
       return `current-file:${mentionable.file ?? 'current'}`
     case 'block':
@@ -91,6 +118,10 @@ export function getMentionableName(mentionable: Mentionable): string {
   switch (mentionable.type) {
     case 'file':
       return mentionable.file.name
+    case 'folder':
+      return mentionable.folder.name
+    case 'vault':
+      return '[[vault]]'
     case 'current-file':
       return mentionable.file?.name ?? 'Current File'
     case 'block':

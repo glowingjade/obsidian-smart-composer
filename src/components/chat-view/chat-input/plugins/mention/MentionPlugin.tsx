@@ -10,12 +10,12 @@
 
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import { $createTextNode, COMMAND_PRIORITY_NORMAL, TextNode } from 'lexical'
-import { TFile } from 'obsidian'
 import { useCallback, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { serializeMentionable } from 'src/utils/mentionable'
 
-import { Mentionable, MentionableFile } from '../../../../../types/mentionable'
+import { Mentionable } from '../../../../../types/mentionable'
+import { SearchResultItem } from '../../../../../utils/fuzzy-search'
 import { getMentionableName } from '../../../../../utils/mentionable'
 import { MenuOption, MenuTextMatch } from '../shared/LexicalMenu'
 import {
@@ -101,12 +101,26 @@ function getPossibleQueryMatch(text: string): MenuTextMatch | null {
 
 class MentionTypeaheadOption extends MenuOption {
   name: string
-  file: TFile
+  mentionable: Mentionable
 
-  constructor(file: TFile) {
-    super(file.path)
-    this.name = file.name
-    this.file = file
+  constructor(result: SearchResultItem) {
+    switch (result.type) {
+      case 'file':
+        super(result.file.path)
+        this.name = result.file.name
+        this.mentionable = result
+        break
+      case 'folder':
+        super(result.folder.path)
+        this.name = `[${result.folder.name}]` // TODO: Replace [] with folder icon
+        this.mentionable = result
+        break
+      case 'vault':
+        super('vault')
+        this.name = '[[vault]]' // TODO: Replace [[]] with vault icon
+        this.mentionable = result
+        break
+    }
   }
 }
 
@@ -145,10 +159,10 @@ function MentionsTypeaheadMenuItem({
 }
 
 export default function NewMentionsPlugin({
-  searchFilesByQuery,
+  searchResultByQuery,
   onAddMention,
 }: {
-  searchFilesByQuery: (query: string) => TFile[]
+  searchResultByQuery: (query: string) => SearchResultItem[]
   onAddMention: (mentionable: Mentionable) => void
 }): JSX.Element | null {
   const [editor] = useLexicalComposerContext()
@@ -157,8 +171,8 @@ export default function NewMentionsPlugin({
 
   const results = useMemo(() => {
     if (queryString == null) return []
-    return searchFilesByQuery(queryString)
-  }, [queryString, searchFilesByQuery])
+    return searchResultByQuery(queryString)
+  }, [queryString, searchResultByQuery])
 
   const checkForSlashTriggerMatch = useBasicTypeaheadTriggerMatch('/', {
     minLength: 0,
@@ -178,14 +192,10 @@ export default function NewMentionsPlugin({
       nodeToReplace: TextNode | null,
       closeMenu: () => void,
     ) => {
-      const mentionable: MentionableFile = {
-        type: 'file',
-        file: selectedOption.file,
-      }
       editor.update(() => {
         const mentionNode = $createMentionNode(
-          getMentionableName(mentionable),
-          serializeMentionable(mentionable),
+          getMentionableName(selectedOption.mentionable),
+          serializeMentionable(selectedOption.mentionable),
         )
         if (nodeToReplace) {
           nodeToReplace.replace(mentionNode)
@@ -198,7 +208,7 @@ export default function NewMentionsPlugin({
         closeMenu()
       })
 
-      onAddMention(mentionable)
+      onAddMention(selectedOption.mentionable)
     },
     [editor, onAddMention],
   )
