@@ -70,7 +70,11 @@ export class ChatView extends ItemView {
         >
           <DarkModeProvider>
             <LLMProvider>
-              <RAGProvider>
+              <RAGProvider
+                setPluginRAGEngine={(ragEngine) =>
+                  (this.plugin.ragEngine = ragEngine)
+                }
+              >
                 <QueryClientProvider client={queryClient}>
                   <React.StrictMode>
                     <Chat ref={this.chatRef} {...this.initialChatProps} />

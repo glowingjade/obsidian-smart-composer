@@ -1,24 +1,7 @@
 import { EmbeddingModelOption } from './types/embedding'
-import { SmartCopilotSettings } from './types/settings'
 
 export const CHAT_VIEW_TYPE = 'smtcmp-chat-view'
 export const APPLY_VIEW_TYPE = 'smtcmp-apply-view'
-
-export const DEFAULT_SETTINGS: SmartCopilotSettings = {
-  openAIApiKey: '',
-  groqApiKey: '',
-  anthropicApiKey: '',
-  chatModel: 'claude-3-5-sonnet-20240620',
-  applyModel: 'gpt-4o-mini',
-  embeddingModel: 'text-embedding-3-small',
-  chunkOptions: {
-    chunkSize: 1000,
-  },
-  ragOptions: {
-    minSimilarity: 0.0,
-    limit: 5,
-  },
-}
 
 export const CHAT_MODEL_OPTIONS = [
   {

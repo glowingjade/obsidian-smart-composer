@@ -3,16 +3,21 @@ import { Editor, MarkdownView, Plugin } from 'obsidian'
 import { ApplyView } from './ApplyView'
 import { ChatView } from './ChatView'
 import { ChatProps } from './components/chat-view/Chat'
-import { APPLY_VIEW_TYPE, CHAT_VIEW_TYPE, DEFAULT_SETTINGS } from './constants'
+import { APPLY_VIEW_TYPE, CHAT_VIEW_TYPE } from './constants'
 import { SmartCopilotSettingTab } from './settings/SettingTab'
-import { SmartCopilotSettings } from './types/settings'
+import {
+  SmartCopilotSettings,
+  parseSmartCopilotSettings,
+} from './types/settings'
 import { getMentionableBlockData } from './utils/obsidian'
+import { RAGEngine } from './utils/ragEngine'
 
 // Remember to rename these classes and interfaces!
 export default class SmartCopilotPlugin extends Plugin {
   settings: SmartCopilotSettings
   initialChatProps?: ChatProps // TODO: change this to use view state like ApplyView
   settingsChangeListeners: ((newSettings: SmartCopilotSettings) => void)[] = []
+  ragEngine: RAGEngine | null = null
 
   async onload() {
     await this.loadSettings()
@@ -40,6 +45,12 @@ export default class SmartCopilotPlugin extends Plugin {
       },
     })
 
+    this.addCommand({
+      id: 're-index-vault',
+      name: 'Re-index vault',
+      callback: () => this.ragEngine?.updateVaultIndex({ overwrite: true }),
+    })
+
     // This adds a settings tab so the user can configure various aspects of the plugin
     this.addSettingTab(new SmartCopilotSettingTab(this.app, this))
   }
@@ -47,7 +58,7 @@ export default class SmartCopilotPlugin extends Plugin {
   onunload() {}
 
   async loadSettings() {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData())
+    this.settings = parseSmartCopilotSettings(await this.loadData())
   }
 
   async setSettings(newSettings: SmartCopilotSettings) {
