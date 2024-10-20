@@ -37,6 +37,7 @@ import { PromptGenerator } from '../../utils/promptGenerator'
 import ChatUserInput, { ChatUserInputRef } from './chat-input/ChatUserInput'
 import { editorStateToPlainText } from './chat-input/utils/editor-state-to-plain-text'
 import { ChatListDropdown } from './ChatListDropdown'
+import QueryProgress, { QueryProgressState } from './QueryProgress'
 import ReactMarkdown from './ReactMarkdown'
 
 // Add an empty line here
@@ -101,6 +102,9 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const [focusedMessageId, setFocusedMessageId] = useState<string | null>(null)
   const [currentConversationId, setCurrentConversationId] =
     useState<string>(uuidv4())
+  const [queryProgress, setQueryProgress] = useState<QueryProgressState>({
+    type: 'idle',
+  })
   const activeStreamAbortControllersRef = useRef<AbortController[]>([])
   const chatUserInputRefs = useRef<Map<string, ChatUserInputRef>>(new Map())
   const chatMessagesRef = useRef<HTMLDivElement>(null)
@@ -143,6 +147,9 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       const newInputMessage = getNewInputMessage(app)
       setInputMessage(newInputMessage)
       setFocusedMessageId(newInputMessage.id)
+      setQueryProgress({
+        type: 'idle',
+      })
     } catch (error) {
       new Notice('Failed to load conversation')
       console.error('Failed to load conversation', error)
@@ -155,6 +162,9 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     const newInputMessage = getNewInputMessage(app)
     setInputMessage(newInputMessage)
     setFocusedMessageId(newInputMessage.id)
+    setQueryProgress({
+      type: 'idle',
+    })
     abortActiveStreams()
   }
 
@@ -165,6 +175,9 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       newChatHistory: ChatMessage[]
     }) => {
       abortActiveStreams()
+      setQueryProgress({
+        type: 'idle',
+      })
 
       if (!promptGenerator) {
         throw new Error('Prompt generator is not initialized')
@@ -180,14 +193,22 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         const abortController = new AbortController()
         activeStreamAbortControllersRef.current.push(abortController)
 
-        // TODO: Add loading UI for RAG
         const { requestMessages, parsedMessages } =
-          await promptGenerator.generateRequestMessages(newChatHistory)
+          await promptGenerator.generateRequestMessages(
+            newChatHistory,
+            (queryProgress) => {
+              console.log('queryProgress', queryProgress)
+              setQueryProgress(queryProgress)
+            },
+          )
+        setQueryProgress({
+          type: 'idle',
+        })
+
         setChatMessages([
           ...parsedMessages,
           { role: 'assistant', content: '', id: responseMessageId },
         ])
-
         const stream = await streamResponse(
           {
             model: settings.chatModel,
@@ -219,6 +240,9 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       }
     },
     onError: (error) => {
+      setQueryProgress({
+        type: 'idle',
+      })
       if (
         error instanceof LLMAPIKeyNotSetException ||
         error instanceof LLMAPIKeyInvalidException
@@ -490,6 +514,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
             </ReactMarkdownItem>
           ),
         )}
+        <QueryProgress state={queryProgress} />
       </div>
       <ChatUserInput
         key={inputMessage.id}

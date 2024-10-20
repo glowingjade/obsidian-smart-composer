@@ -2,6 +2,7 @@ import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter'
 import { App, TFile, normalizePath } from 'obsidian'
 import pLimit from 'p-limit'
 
+import { IndexProgress } from '../../components/chat-view/QueryProgress'
 import { PGLITE_DB_PATH } from '../../constants'
 import { EmbeddingModel } from '../../types/embedding'
 import { VectorData } from '../../types/vector-db'
@@ -47,11 +48,12 @@ export class VectorDbManager {
     embeddingModel: EmbeddingModel,
     options: {
       chunkSize: number
+      overwrite?: boolean
     },
-    overwrite = false,
+    updateProgress?: (indexProgress: IndexProgress) => void,
   ): Promise<void> {
     let filesToIndex: TFile[]
-    if (overwrite) {
+    if (options.overwrite) {
       filesToIndex = this.app.vault.getMarkdownFiles()
       await this.repository.clearAllVectors(embeddingModel)
     } else {
@@ -135,6 +137,12 @@ export class VectorDbManager {
       )
     ).flat()
 
+    updateProgress?.({
+      completedChunks: 0,
+      totalChunks: contentChunks.length,
+      totalFiles: filesToIndex.length,
+    })
+
     const embeddingProgress = { completed: 0 }
     const embeddingChunks: VectorData[] = []
     const limit = pLimit(50)
@@ -165,9 +173,11 @@ export class VectorDbManager {
             }
             embeddingChunks.push(embeddedChunk)
             embeddingProgress.completed++
-            console.log(
-              `Embedded ${embeddingProgress.completed}/${contentChunks.length} chunks`,
-            )
+            updateProgress?.({
+              completedChunks: embeddingProgress.completed,
+              totalChunks: contentChunks.length,
+              totalFiles: filesToIndex.length,
+            })
             return
           } catch (error) {
             console.log('Error embedding chunk:', error)

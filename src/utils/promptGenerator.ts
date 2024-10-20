@@ -1,6 +1,7 @@
 import { App, TFile } from 'obsidian'
 
 import { editorStateToPlainText } from '../components/chat-view/chat-input/utils/editor-state-to-plain-text'
+import { QueryProgressState } from '../components/chat-view/QueryProgress'
 import { ChatMessage, ChatUserMessage } from '../types/chat'
 import { RequestMessage } from '../types/llm/request'
 import {
@@ -30,7 +31,10 @@ export class PromptGenerator {
     this.settings = settings
   }
 
-  public async generateRequestMessages(messages: ChatMessage[]): Promise<{
+  public async generateRequestMessages(
+    messages: ChatMessage[],
+    setQueryProgress: (queryProgress: QueryProgressState) => void,
+  ): Promise<{
     requestMessages: RequestMessage[]
     parsedMessages: ChatMessage[]
   }> {
@@ -42,8 +46,10 @@ export class PromptGenerator {
       throw new Error('Last message is not a user message')
     }
 
-    const { parsedContent, shouldUseRAG } =
-      await this.parseUserMessage(lastUserMessage)
+    const { parsedContent, shouldUseRAG } = await this.parseUserMessage(
+      lastUserMessage,
+      setQueryProgress,
+    )
     let parsedMessages = [
       ...messages.slice(0, -1),
       {
@@ -100,7 +106,10 @@ export class PromptGenerator {
     }
   }
 
-  private async parseUserMessage(message: ChatUserMessage): Promise<{
+  private async parseUserMessage(
+    message: ChatUserMessage,
+    setQueryProgress?: (queryProgress: QueryProgressState) => void,
+  ): Promise<{
     parsedContent: string
     shouldUseRAG: boolean
   }> {
@@ -119,6 +128,9 @@ export class PromptGenerator {
       (m): m is MentionableVault => m.type === 'vault',
     )
 
+    setQueryProgress?.({
+      type: 'reading-mentionables',
+    })
     const files = message.mentionables
       .filter((m): m is MentionableFile => m.type === 'file')
       .map((m) => m.file)
@@ -148,10 +160,17 @@ export class PromptGenerator {
     let filePrompt: string
     if (shouldUseRAG) {
       const results = useVaultWideContext
-        ? await this.ragEngine.processQuery(query) // TODO: Add similarity boosting for mentioned files or folders
-        : await this.ragEngine.processQuery(query, {
-            files: files.map((f) => f.path),
-            folders: folders.map((f) => f.path),
+        ? await this.ragEngine.processQuery({
+            query,
+            setQueryProgress,
+          }) // TODO: Add similarity boosting for mentioned files or folders
+        : await this.ragEngine.processQuery({
+            query,
+            scope: {
+              files: files.map((f) => f.path),
+              folders: folders.map((f) => f.path),
+            },
+            setQueryProgress,
           })
       filePrompt = `## Potentially Relevant Snippets from the current vault
 ${results

@@ -1,5 +1,6 @@
 import { App } from 'obsidian'
 
+import { QueryProgressState } from '../components/chat-view/QueryProgress'
 import { EmbeddingModel } from '../types/embedding'
 import { SmartCopilotSettings } from '../types/settings'
 import { VectorData } from '../types/vector-db'
@@ -35,6 +36,7 @@ export class RAGEngine {
     options: { overwrite: boolean } = {
       overwrite: false,
     },
+    setQueryProgress?: (queryProgress: QueryProgressState) => void,
   ): Promise<void> {
     if (!this.embeddingModel) {
       throw new Error('Embedding model is not set')
@@ -43,18 +45,29 @@ export class RAGEngine {
       this.embeddingModel,
       {
         chunkSize: this.settings.ragOptions.chunkSize,
+        overwrite: options.overwrite,
       },
-      options.overwrite,
+      (indexProgress) => {
+        setQueryProgress?.({
+          type: 'indexing',
+          indexProgress,
+        })
+      },
     )
   }
 
-  async processQuery(
-    query: string,
+  async processQuery({
+    query,
+    scope,
+    setQueryProgress,
+  }: {
+    query: string
     scope?: {
       files: string[]
       folders: string[]
-    },
-  ): Promise<
+    }
+    setQueryProgress?: (queryProgress: QueryProgressState) => void
+  }): Promise<
     (Omit<VectorData, 'embedding'> & {
       similarity: number
     })[]
@@ -64,9 +77,12 @@ export class RAGEngine {
     }
     // TODO: Decide the vault index update strategy.
     // Current approach: Update on every query.
-    await this.updateVaultIndex()
+    await this.updateVaultIndex({ overwrite: false }, setQueryProgress)
     const queryEmbedding = await this.getQueryEmbedding(query)
-    return await this.vectorDbManager.performSimilaritySearch(
+    setQueryProgress?.({
+      type: 'querying',
+    })
+    const queryResult = await this.vectorDbManager.performSimilaritySearch(
       queryEmbedding,
       this.embeddingModel,
       {
@@ -75,6 +91,11 @@ export class RAGEngine {
         scope,
       },
     )
+    setQueryProgress?.({
+      type: 'querying-done',
+      queryResult,
+    })
+    return queryResult
   }
 
   private async getQueryEmbedding(query: string): Promise<number[]> {
