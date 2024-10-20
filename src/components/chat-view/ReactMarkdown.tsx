@@ -7,6 +7,7 @@ import {
 } from '../../utils/parse-smtcmp-block'
 
 import MarkdownCodeComponent from './MarkdownCodeComponent'
+import MarkdownReferenceBlock from './MarkdownReferenceBlock'
 
 function ReactMarkdown({
   onApply,
@@ -29,6 +30,13 @@ function ReactMarkdown({
           <Markdown key={index} className="smtcmp-markdown">
             {block.content}
           </Markdown>
+        ) : block.startLine && block.endLine && block.filename ? (
+          <MarkdownReferenceBlock
+            key={index}
+            filename={block.filename}
+            startLine={block.startLine}
+            endLine={block.endLine}
+          />
         ) : (
           <MarkdownCodeComponent
             key={index}
