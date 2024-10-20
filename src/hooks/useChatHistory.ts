@@ -23,6 +23,7 @@ const serializeChatMessage = (message: ChatMessage): SerializedChatMessage => {
       return {
         role: 'user',
         content: message.content,
+        parsedContent: message.parsedContent,
         id: message.id,
         mentionables: message.mentionables.map(serializeMentionable),
       }
@@ -44,6 +45,7 @@ const deserializeChatMessage = (
       return {
         role: 'user',
         content: message.content,
+        parsedContent: message.parsedContent,
         id: message.id,
         mentionables: message.mentionables
           .map((m) => deserializeMentionable(m, app))

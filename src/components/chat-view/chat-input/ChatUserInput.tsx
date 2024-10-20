@@ -103,7 +103,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
-    const searchFilesByQuery = useCallback(
+    const searchResultByQuery = useCallback(
       (query: string) => fuzzySearch(app, query),
       [app],
     )
@@ -235,7 +235,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
           <HistoryPlugin />
           {autoFocus && <AutoFocusPlugin />}
           <MentionPlugin
-            searchFilesByQuery={searchFilesByQuery}
+            searchResultByQuery={searchResultByQuery}
             onAddMention={handleMentionFile}
           />
           <OnChangePlugin

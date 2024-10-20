@@ -46,7 +46,7 @@ export class VectorDbRepository {
     }
     const tableName = this.getTableName(embeddingModel)
     const query = `
-      SELECT path, mtime, content, embedding
+      SELECT path, mtime, content, embedding, metadata
       FROM ${tableName}
       WHERE path = $1
     `
@@ -107,14 +107,15 @@ export class VectorDbRepository {
     await this.db.transaction(async (client) => {
       for (const item of data) {
         const insertQuery = `
-          INSERT INTO ${tableName} (path, mtime, content, embedding)
-          VALUES ($1, $2, $3, $4)
+          INSERT INTO ${tableName} (path, mtime, content, embedding, metadata)
+          VALUES ($1, $2, $3, $4, $5)
         `
         await client.query(insertQuery, [
           item.path,
           item.mtime,
           item.content,
           JSON.stringify(item.embedding),
+          JSON.stringify(item.metadata),
         ])
       }
     })
@@ -126,6 +127,10 @@ export class VectorDbRepository {
     options: {
       minSimilarity: number
       limit: number
+      scope?: {
+        files: string[]
+        folders: string[]
+      }
     },
   ): Promise<
     (Omit<VectorData, 'embedding'> & {
@@ -137,20 +142,45 @@ export class VectorDbRepository {
     }
     const tableName = this.getTableName(embeddingModel)
 
+    let filterCondition = ''
+    const params: unknown[] = [
+      JSON.stringify(queryVector),
+      options.minSimilarity,
+      options.limit,
+    ]
+
+    if (
+      options.scope &&
+      (options.scope.files.length > 0 || options.scope.folders.length > 0)
+    ) {
+      const conditions: string[] = []
+
+      if (options.scope.files.length > 0) {
+        conditions.push(`path = ANY($${params.length + 1})`)
+        params.push(options.scope.files)
+      }
+
+      if (options.scope.folders.length > 0) {
+        conditions.push(
+          `(${options.scope.folders.map((_, index) => `path LIKE $${params.length + index + 1}`).join(' OR ')})`,
+        )
+        params.push(...options.scope.folders.map((folder) => `${folder}/%`))
+      }
+
+      filterCondition = `AND (${conditions.join(' OR ')})`
+    }
+
     const query = `
-      SELECT path, mtime, content, 1 - (embedding <=> $1) AS similarity
+      SELECT path, mtime, content, metadata, 1 - (embedding <=> $1) AS similarity
       FROM ${tableName}
       WHERE 1 - (embedding <=> $1) >= $2
+      ${filterCondition}
       ORDER BY similarity DESC
       LIMIT $3
     `
 
     try {
-      const result = await this.db.query(query, [
-        JSON.stringify(queryVector),
-        options.minSimilarity,
-        options.limit,
-      ])
+      const result = await this.db.query(query, params)
       return result.rows as (Omit<VectorData, 'embedding'> & {
         similarity: number
       })[]
@@ -242,13 +272,13 @@ export class VectorDbRepository {
         path TEXT NOT NULL,
         mtime BIGINT NOT NULL,
         content TEXT NOT NULL,
-        embedding vector($1) NOT NULL
+        embedding vector(${embeddingModel.dimension}) NOT NULL,
+        metadata JSONB NOT NULL
       )
     `,
-      [embeddingModel.dimension],
     )
 
-    // TODO: Create HNSW index
+    // TODO: Create HNSW index for faster search
   }
 
   async save(): Promise<void> {

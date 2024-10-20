@@ -1,5 +1,6 @@
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter'
 import { App, TFile, normalizePath } from 'obsidian'
+import pLimit from 'p-limit'
 
 import { PGLITE_DB_PATH } from '../../constants'
 import { EmbeddingModel } from '../../types/embedding'
@@ -25,6 +26,10 @@ export class VectorDbManager {
     options: {
       minSimilarity: number
       limit: number
+      scope?: {
+        files: string[]
+        folders: string[]
+      }
     },
   ): Promise<
     (Omit<VectorData, 'embedding'> & {
@@ -60,67 +65,144 @@ export class VectorDbManager {
           )
         }
       }
-      filesToIndex = this.app.vault.getMarkdownFiles().filter(async (file) => {
-        const fileChunks = await this.repository.getFileChunks(
-          file.path,
-          embeddingModel,
-        )
-        if (fileChunks.length === 0) return true
-        return file.stat.mtime > fileChunks[0].mtime
-      })
+      const markdownFiles = this.app.vault.getMarkdownFiles()
+
+      filesToIndex = await Promise.all(
+        markdownFiles.map(async (file) => {
+          const fileChunks = await this.repository.getFileChunks(
+            file.path,
+            embeddingModel,
+          )
+          if (fileChunks.length === 0) {
+            const fileContent = await this.app.vault.cachedRead(file)
+            if (fileContent.length === 0) {
+              return null
+            }
+            return file
+          }
+          const outOfDate = file.stat.mtime > fileChunks[0].mtime
+          if (outOfDate) {
+            return file
+          }
+          return null
+        }),
+      ).then((files) => files.filter(Boolean) as TFile[])
+
       await this.repository.deleteChunksByFilePaths(
         filesToIndex.map((file) => file.path),
         embeddingModel,
       )
     }
 
-    filesToIndex = filesToIndex.slice(0, 30)
-    console.log(`Updating vault index for ${filesToIndex.length} files.`)
-    await Promise.all(
-      filesToIndex.map(async (file) => {
-        const embeddedChunks = await this.generateEmbeddingsForFile(
-          file,
-          embeddingModel,
-          {
-            chunkSize: options.chunkSize,
-          },
-        )
-        await this.repository.insertVectorData(embeddedChunks, embeddingModel)
-      }),
-    )
-    await this.repository.save()
-    console.log('Vault index updated.')
-  }
+    if (filesToIndex.length === 0) {
+      console.log('Everything is up to date.')
+      return
+    }
 
-  private async generateEmbeddingsForFile(
-    file: TFile,
-    embeddingModel: EmbeddingModel,
-    options: {
-      chunkSize: number
-    },
-  ): Promise<VectorData[]> {
     const textSplitter = RecursiveCharacterTextSplitter.fromLanguage(
       'markdown',
       {
         chunkSize: options.chunkSize,
-        // TODO: Use token count for length function
+        // TODO: Use token-based chunking after migrating to WebAssembly-based tiktoken
+        // Current token counting method is too slow for practical use
+        // lengthFunction: async (text) => {
+        //   return await tokenCount(text)
+        // },
       },
     )
 
-    const fileContent = await this.app.vault.cachedRead(file)
-    const contentChunks = await textSplitter.createDocuments([fileContent])
+    console.log(`Indexing ${filesToIndex.length} files...`)
 
-    const embeddedChunks: VectorData[] = await Promise.all(
-      contentChunks.map(async (chunk) => {
-        const embedding = await embeddingModel.getEmbedding(chunk.pageContent)
-        return {
-          path: file.path,
-          mtime: file.stat.mtime,
-          content: chunk.pageContent,
-          embedding,
+    const contentChunks = (
+      await Promise.all(
+        filesToIndex.map(async (file) => {
+          const fileContent = await this.app.vault.cachedRead(file)
+          const fileDocuments = await textSplitter.createDocuments([
+            fileContent,
+          ])
+          return fileDocuments.map((chunk) => {
+            return {
+              path: file.path,
+              mtime: file.stat.mtime,
+              content: chunk.pageContent,
+              metadata: {
+                startLine: chunk.metadata.loc.lines.from as number,
+                endLine: chunk.metadata.loc.lines.to as number,
+              },
+            }
+          })
+        }),
+      )
+    ).flat()
+
+    const embeddingProgress = { completed: 0 }
+    const embeddingChunks: VectorData[] = []
+    const limit = pLimit(50)
+    const tasks = contentChunks.map((chunk) =>
+      limit(async () => {
+        const maxRetries = 5
+        const exponentialBackoff = 1.5
+        let retryCount = 0
+        let delay = 1000
+
+        // Retry wait times:
+        // 1. 1000 ms (1 second)
+        // 2. 1500 ms (1.5 seconds)
+        // 3. 2250 ms (2.25 seconds)
+        // 4. 3375 ms (3.375 seconds
+        // 5. 5062.5 ms (5.0625 seconds)
+        // This will be enough for OpenAI API rate limit (3000 RPM)
+
+        while (retryCount < maxRetries) {
+          try {
+            const embedding = await embeddingModel.getEmbedding(chunk.content)
+            const embeddedChunk = {
+              path: chunk.path,
+              mtime: chunk.mtime,
+              content: chunk.content,
+              embedding,
+              metadata: chunk.metadata,
+            }
+            embeddingChunks.push(embeddedChunk)
+            embeddingProgress.completed++
+            console.log(
+              `Embedded ${embeddingProgress.completed}/${contentChunks.length} chunks`,
+            )
+            return
+          } catch (error) {
+            console.log('Error embedding chunk:', error)
+            if (
+              error.status === 429 &&
+              error.message.toLowerCase().includes('rate limit')
+            ) {
+              // OpenAI API returns 429 status code for rate limit errors
+              // See: https://platform.openai.com/docs/guides/error-codes/api-errors
+              retryCount++
+              console.warn(
+                `Rate limit reached. Retrying in ${delay / 1000} seconds...`,
+              )
+              await new Promise((resolve) => setTimeout(resolve, delay))
+              delay *= exponentialBackoff
+            } else {
+              throw error
+            }
+          }
         }
+        throw new Error(`Failed to process chunk after ${maxRetries} retries`)
       }),
     )
-    return embeddedChunks
+
+    try {
+      await Promise.all(tasks)
+      await this.repository.insertVectorData(embeddingChunks, embeddingModel)
+      await this.repository.save()
+      console.log('Vault index updated.')
+    } catch (error) {
+      console.error('Error updating vault index:', error)
+      // Save processed chunks
+      await this.repository.insertVectorData(embeddingChunks, embeddingModel)
+      await this.repository.save()
+      throw error
+    }
   }
 }

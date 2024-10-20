@@ -6,6 +6,7 @@ import {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from 'react'
@@ -31,7 +32,7 @@ import {
   LLMAPIKeyNotSetException,
 } from '../../utils/llm/exception'
 import { readTFileContent } from '../../utils/obsidian'
-import { parseRequestMessages } from '../../utils/prompt'
+import { PromptGenerator } from '../../utils/promptGenerator'
 
 import ChatUserInput, { ChatUserInputRef } from './chat-input/ChatUserInput'
 import { editorStateToPlainText } from './chat-input/utils/editor-state-to-plain-text'
@@ -43,6 +44,7 @@ const getNewInputMessage = (app: App): ChatUserMessage => {
   return {
     role: 'user',
     content: null,
+    parsedContent: null,
     id: uuidv4(),
     mentionables: [
       {
@@ -65,6 +67,7 @@ export type ChatProps = {
 const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const app = useApp()
   const { settings } = useSettings()
+  const { ragEngine } = useRAG()
 
   const {
     createOrUpdateConversation,
@@ -73,7 +76,13 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     chatList,
   } = useChatHistory()
   const { generateResponse, streamResponse } = useLLM()
-  const { processQuery } = useRAG()
+
+  const promptGenerator: PromptGenerator | null = useMemo(() => {
+    if (!ragEngine) {
+      return null
+    }
+    return new PromptGenerator(ragEngine, app, settings)
+  }, [ragEngine, app, settings])
 
   const [inputMessage, setInputMessage] = useState<ChatUserMessage>(() => {
     const newMessage = getNewInputMessage(app)
@@ -150,17 +159,16 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   }
 
   const submitMutation = useMutation({
-    mutationFn: async (newChatHistory: ChatMessage[]) => {
+    mutationFn: async ({
+      newChatHistory,
+    }: {
+      newChatHistory: ChatMessage[]
+    }) => {
       abortActiveStreams()
 
-      // Logging RAG result
-      const lastMessage = newChatHistory[
-        newChatHistory.length - 1
-      ] as ChatUserMessage
-      const ragResult = await processQuery(
-        lastMessage.content ? editorStateToPlainText(lastMessage.content) : '',
-      )
-      console.log('RAG result:\n', JSON.stringify(ragResult, null, 2))
+      if (!promptGenerator) {
+        throw new Error('Prompt generator is not initialized')
+      }
 
       const responseMessageId = uuidv4()
       setChatMessages([
@@ -172,10 +180,13 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         const abortController = new AbortController()
         activeStreamAbortControllersRef.current.push(abortController)
 
-        const requestMessages = await parseRequestMessages(
-          newChatHistory,
-          app.vault,
-        )
+        // TODO: Add loading UI for RAG
+        const { requestMessages, parsedMessages } =
+          await promptGenerator.generateRequestMessages(newChatHistory)
+        setChatMessages([
+          ...parsedMessages,
+          { role: 'assistant', content: '', id: responseMessageId },
+        ])
 
         const stream = await streamResponse(
           {
@@ -226,7 +237,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   })
 
   const handleSubmit = (newChatHistory: ChatMessage[]) => {
-    submitMutation.mutate(newChatHistory)
+    submitMutation.mutate({ newChatHistory })
   }
 
   const applyMutation = useMutation({

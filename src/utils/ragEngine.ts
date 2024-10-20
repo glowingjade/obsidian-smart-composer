@@ -29,20 +29,31 @@ export class RAGEngine {
     this.settings = settings
   }
 
-  async updateVaultIndex(overwrite = false): Promise<void> {
+  // TODO: Auto update vault index if the settings are changed.
+  async updateVaultIndex(
+    options: { overwrite: boolean } = {
+      overwrite: false,
+    },
+  ): Promise<void> {
     if (!this.embeddingModel) {
       throw new Error('Embedding model is not set')
     }
     await this.vectorDbManager.updateVaultIndex(
       this.embeddingModel,
       {
-        chunkSize: this.settings.chunkOptions.chunkSize,
+        chunkSize: this.settings.ragOptions.chunkSize,
       },
-      overwrite,
+      options.overwrite,
     )
   }
 
-  async processQuery(query: string): Promise<
+  async processQuery(
+    query: string,
+    scope?: {
+      files: string[]
+      folders: string[]
+    },
+  ): Promise<
     (Omit<VectorData, 'embedding'> & {
       similarity: number
     })[]
@@ -50,7 +61,9 @@ export class RAGEngine {
     if (!this.embeddingModel) {
       throw new Error('Embedding model is not set')
     }
-    await this.updateVaultIndex() // FIXME: Checking the index every time is not efficient.
+    // TODO: Decide the vault index update strategy.
+    // Current approach: Update on every query.
+    await this.updateVaultIndex()
     const queryEmbedding = await this.getQueryEmbedding(query)
     return await this.vectorDbManager.performSimilaritySearch(
       queryEmbedding,
@@ -58,6 +71,7 @@ export class RAGEngine {
       {
         minSimilarity: this.settings.ragOptions.minSimilarity,
         limit: this.settings.ragOptions.limit,
+        scope,
       },
     )
   }
