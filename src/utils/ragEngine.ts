@@ -29,7 +29,8 @@ export class RAGEngine {
     this.settings = settings
   }
 
-  // TODO: Auto update vault index if the settings are changed.
+  // TODO: Implement automatic vault re-indexing when settings are changed.
+  // Currently, users must manually re-index the vault.
   async updateVaultIndex(
     options: { overwrite: boolean } = {
       overwrite: false,
