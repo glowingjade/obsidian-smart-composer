@@ -36,28 +36,39 @@ export default function QueryProgress({
       return null
     case 'reading-mentionables':
       return (
-        <div>
-          <p>Reading mentioned files...</p>
+        <div className="smtcmp-query-progress">
+          <p>
+            Reading mentioned files
+            <DotLoader />
+          </p>
         </div>
       )
     case 'indexing':
       return (
-        <div>
-          <p>Indexing vault...</p>
-          <p>{`Indexing ${state.indexProgress.totalFiles} files...`}</p>
-          <p>{`${state.indexProgress.completedChunks}/${state.indexProgress.totalChunks} chunks indexed`}</p>
+        <div className="smtcmp-query-progress">
+          <p>
+            {`Indexing ${state.indexProgress.totalFiles} file`}
+            <DotLoader />
+          </p>
+          <p className="smtcmp-query-progress-detail">{`${state.indexProgress.completedChunks}/${state.indexProgress.totalChunks} chunks indexed`}</p>
         </div>
       )
     case 'querying':
       return (
-        <div>
-          <p>Querying vault...</p>
+        <div className="smtcmp-query-progress">
+          <p>
+            Querying the vault
+            <DotLoader />
+          </p>
         </div>
       )
     case 'querying-done':
       return (
-        <div>
-          <p>Reading related files...</p>
+        <div className="smtcmp-query-progress">
+          <p>
+            Reading related files
+            <DotLoader />
+          </p>
           {state.queryResult.map((result) => (
             <div key={result.path}>
               <p>{result.path}</p>
@@ -67,4 +78,8 @@ export default function QueryProgress({
         </div>
       )
   }
+}
+
+function DotLoader() {
+  return <span className="smtcmp-dot-loader" aria-label="Loading"></span>
 }

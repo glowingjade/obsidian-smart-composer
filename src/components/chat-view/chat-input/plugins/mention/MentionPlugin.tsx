@@ -17,6 +17,7 @@ import { serializeMentionable } from 'src/utils/mentionable'
 import { Mentionable } from '../../../../../types/mentionable'
 import { SearchResultItem } from '../../../../../utils/fuzzy-search'
 import { getMentionableName } from '../../../../../utils/mentionable'
+import { getMentionableIcon } from '../../utils/get-metionable-icon'
 import { MenuOption, MenuTextMatch } from '../shared/LexicalMenu'
 import {
   LexicalTypeaheadMenuPlugin,
@@ -102,6 +103,7 @@ function getPossibleQueryMatch(text: string): MenuTextMatch | null {
 class MentionTypeaheadOption extends MenuOption {
   name: string
   mentionable: Mentionable
+  icon: React.ReactNode
 
   constructor(result: SearchResultItem) {
     switch (result.type) {
@@ -112,12 +114,12 @@ class MentionTypeaheadOption extends MenuOption {
         break
       case 'folder':
         super(result.folder.path)
-        this.name = `[${result.folder.name}]` // TODO: Replace [] with folder icon
+        this.name = result.folder.name
         this.mentionable = result
         break
       case 'vault':
         super('vault')
-        this.name = '[[vault]]' // TODO: Replace [[]] with vault icon
+        this.name = 'Vault'
         this.mentionable = result
         break
     }
@@ -141,6 +143,8 @@ function MentionsTypeaheadMenuItem({
   if (isSelected) {
     className += ' selected'
   }
+
+  const Icon = getMentionableIcon(option.mentionable)
   return (
     <li
       key={option.key}
@@ -153,6 +157,7 @@ function MentionsTypeaheadMenuItem({
       onMouseEnter={onMouseEnter}
       onClick={onClick}
     >
+      {Icon && <Icon size={14} className="smtcmp-popover-item-icon" />}
       <span className="text">{option.name}</span>
     </li>
   )

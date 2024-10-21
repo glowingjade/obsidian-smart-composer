@@ -121,7 +121,7 @@ export function getMentionableName(mentionable: Mentionable): string {
     case 'folder':
       return mentionable.folder.name
     case 'vault':
-      return '[[vault]]'
+      return 'Vault'
     case 'current-file':
       return mentionable.file?.name ?? 'Current File'
     case 'block':

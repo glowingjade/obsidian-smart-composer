@@ -39,6 +39,7 @@ import OnMutationPlugin, {
 import UpdaterPlugin, {
   UpdaterPluginRef,
 } from './plugins/updater/UpdaterPlugin'
+import { VaultRagButton } from './VaultRagButton'
 
 export type ChatUserInputRef = {
   focus: () => void
@@ -259,7 +260,10 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
           <EditorRefPlugin editorRef={editorRef} />
           <NoFormatPlugin />
         </LexicalComposer>
-        <ModelSelect />
+        <div className="smtcmp-chat-user-input-controls">
+          <ModelSelect />
+          <VaultRagButton />
+        </div>
       </div>
     )
   },
