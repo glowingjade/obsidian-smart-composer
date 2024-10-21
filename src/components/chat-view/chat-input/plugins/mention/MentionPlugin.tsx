@@ -10,6 +10,12 @@
 
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import { $createTextNode, COMMAND_PRIORITY_NORMAL, TextNode } from 'lexical'
+import {
+  FileIcon,
+  FolderClosedIcon,
+  FolderIcon,
+  FoldersIcon,
+} from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { serializeMentionable } from 'src/utils/mentionable'
@@ -102,22 +108,26 @@ function getPossibleQueryMatch(text: string): MenuTextMatch | null {
 class MentionTypeaheadOption extends MenuOption {
   name: string
   mentionable: Mentionable
+  icon: React.ReactNode
 
   constructor(result: SearchResultItem) {
     switch (result.type) {
       case 'file':
         super(result.file.path)
         this.name = result.file.name
+        this.icon = <FileIcon size={12} />
         this.mentionable = result
         break
       case 'folder':
         super(result.folder.path)
-        this.name = `[${result.folder.name}]` // TODO: Replace [] with folder icon
+        this.name = result.folder.name
+        this.icon = <FolderClosedIcon size={12} />
         this.mentionable = result
         break
       case 'vault':
         super('vault')
-        this.name = '[[vault]]' // TODO: Replace [[]] with vault icon
+        this.icon = <FoldersIcon size={12} />
+        this.name = 'Vault'
         this.mentionable = result
         break
     }
@@ -153,6 +163,7 @@ function MentionsTypeaheadMenuItem({
       onMouseEnter={onMouseEnter}
       onClick={onClick}
     >
+      {option.icon && <span className="icon">{option.icon}</span>}
       <span className="text">{option.name}</span>
     </li>
   )

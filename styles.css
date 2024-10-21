@@ -306,7 +306,7 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
 .smtcmp-popover ul li {
   margin: 0;
   min-width: 180px;
-  font-size: 14px;
+  font-size: var(--font-ui-smaller);
   outline: none;
   cursor: pointer;
   border-radius: 0;
@@ -337,8 +337,8 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   border: 0;
   min-height: 20px;
   align-items: center;
-  justify-content: space-between;
-  gap: 2rem;
+  gap: var(--size-4-1);
+  align-items: start;
 }
 
 .smtcmp-chat-list-dropdown-empty {
@@ -360,15 +360,14 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
 
 .smtcmp-popover li .icon {
   display: flex;
-  width: 20px;
-  height: 20px;
   user-select: none;
-  margin-right: 8px;
   line-height: 16px;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  width: 250px;
+  height: 15.6px;
+  align-items: center;
+  color: var(--text-faint);
 }
 
 .smtcmp-popover li:hover {
