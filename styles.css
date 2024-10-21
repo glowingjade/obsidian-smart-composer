@@ -622,3 +622,40 @@ button.smtcmp-chat-input-model-select {
     color: var(--text-normal);
   }
 }
+
+.smtcmp-query-progress {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
+
+.smtcmp-query-progress-detail {
+  font-size: var(--font-smallest);
+  color: var(--text-faint);
+}
+
+.smtcmp-dot-loader {
+  display: inline-block;
+  text-align: left;
+}
+
+.smtcmp-dot-loader::after {
+  content: '...';
+  animation: dotFade 0.75s steps(4, end) infinite;
+  color: var(--text-muted);
+}
+
+@keyframes dotFade {
+  0%,
+  100% {
+    content: '';
+  }
+  25% {
+    content: '.';
+  }
+  50% {
+    content: '..';
+  }
+  75% {
+    content: '...';
+  }
+}
