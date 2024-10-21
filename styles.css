@@ -218,10 +218,10 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   height: var(--size-4-4);
 }
 
-.smtcmp-chat-user-input-controls .smtcmp-chat-user-input-vault-rag-button {
+.smtcmp-chat-user-input-controls .smtcmp-chat-user-input-vault-search-button {
   display: flex;
   align-items: center;
-  gap: var(--size-4-1);
+  gap: var(--size-2-3);
   font-size: var(--font-smallest);
   color: var(--text-muted);
   background-color: transparent;
@@ -237,10 +237,10 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
     color: var(--text-normal);
   }
 
-  .smtcmp-chat-user-input-vault-rag-button-icons {
+  .smtcmp-chat-user-input-vault-search-button-icons {
     display: flex;
     align-items: center;
-    gap: 1px;
+    gap: 0.5px;
   }
 }
 

@@ -171,8 +171,10 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const submitMutation = useMutation({
     mutationFn: async ({
       newChatHistory,
+      useVaultSearch,
     }: {
       newChatHistory: ChatMessage[]
+      useVaultSearch?: boolean
     }) => {
       abortActiveStreams()
       setQueryProgress({
@@ -194,12 +196,11 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         activeStreamAbortControllersRef.current.push(abortController)
 
         const { requestMessages, parsedMessages } =
-          await promptGenerator.generateRequestMessages(
-            newChatHistory,
-            (queryProgress) => {
-              setQueryProgress(queryProgress)
-            },
-          )
+          await promptGenerator.generateRequestMessages({
+            messages: newChatHistory,
+            useVaultSearch,
+            setQueryProgress,
+          })
         setQueryProgress({
           type: 'idle',
         })
@@ -259,8 +260,11 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     },
   })
 
-  const handleSubmit = (newChatHistory: ChatMessage[]) => {
-    submitMutation.mutate({ newChatHistory })
+  const handleSubmit = (
+    newChatHistory: ChatMessage[],
+    useVaultSearch?: boolean,
+  ) => {
+    submitMutation.mutate({ newChatHistory, useVaultSearch })
   }
 
   const applyMutation = useMutation({
@@ -478,15 +482,18 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
                   ),
                 )
               }}
-              onSubmit={(content) => {
+              onSubmit={(content, useVaultSearch) => {
                 if (editorStateToPlainText(content).trim() === '') return
-                handleSubmit([
-                  ...chatMessages.slice(0, index),
-                  {
-                    ...message,
-                    content,
-                  },
-                ])
+                handleSubmit(
+                  [
+                    ...chatMessages.slice(0, index),
+                    {
+                      ...message,
+                      content,
+                    },
+                  ],
+                  useVaultSearch,
+                )
                 chatUserInputRefs.current.get(inputMessage.id)?.focus()
               }}
               onFocus={() => {
@@ -525,9 +532,12 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
             content,
           }))
         }}
-        onSubmit={(content) => {
+        onSubmit={(content, useVaultSearch) => {
           if (editorStateToPlainText(content).trim() === '') return
-          handleSubmit([...chatMessages, { ...inputMessage, content }])
+          handleSubmit(
+            [...chatMessages, { ...inputMessage, content }],
+            useVaultSearch,
+          )
           chatUserInputRefs.current.get(inputMessage.id)?.clear()
           setInputMessage(getNewInputMessage(app))
           handleScrollToBottom()

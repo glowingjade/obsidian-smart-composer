@@ -31,10 +31,15 @@ export class PromptGenerator {
     this.settings = settings
   }
 
-  public async generateRequestMessages(
-    messages: ChatMessage[],
-    setQueryProgress: (queryProgress: QueryProgressState) => void,
-  ): Promise<{
+  public async generateRequestMessages({
+    messages,
+    useVaultSearch,
+    setQueryProgress,
+  }: {
+    messages: ChatMessage[]
+    useVaultSearch?: boolean
+    setQueryProgress?: (queryProgress: QueryProgressState) => void
+  }): Promise<{
     requestMessages: RequestMessage[]
     parsedMessages: ChatMessage[]
   }> {
@@ -46,10 +51,11 @@ export class PromptGenerator {
       throw new Error('Last message is not a user message')
     }
 
-    const { parsedContent, shouldUseRAG } = await this.parseUserMessage(
-      lastUserMessage,
+    const { parsedContent, shouldUseRAG } = await this.parseUserMessage({
+      message: lastUserMessage,
+      useVaultSearch,
       setQueryProgress,
-    )
+    })
     let parsedMessages = [
       ...messages.slice(0, -1),
       {
@@ -62,7 +68,7 @@ export class PromptGenerator {
     parsedMessages = await Promise.all(
       parsedMessages.map(async (message) => {
         if (message.role === 'user' && !message.parsedContent) {
-          const { parsedContent } = await this.parseUserMessage(message)
+          const { parsedContent } = await this.parseUserMessage({ message })
           return {
             ...message,
             parsedContent: parsedContent,
@@ -106,10 +112,15 @@ export class PromptGenerator {
     }
   }
 
-  private async parseUserMessage(
-    message: ChatUserMessage,
-    setQueryProgress?: (queryProgress: QueryProgressState) => void,
-  ): Promise<{
+  private async parseUserMessage({
+    message,
+    useVaultSearch,
+    setQueryProgress,
+  }: {
+    message: ChatUserMessage
+    useVaultSearch?: boolean
+    setQueryProgress?: (queryProgress: QueryProgressState) => void
+  }): Promise<{
     parsedContent: string
     shouldUseRAG: boolean
   }> {
@@ -124,9 +135,11 @@ export class PromptGenerator {
     }
     const query = editorStateToPlainText(message.content)
 
-    const useVaultWideContext = message.mentionables.some(
-      (m): m is MentionableVault => m.type === 'vault',
-    )
+    useVaultSearch =
+      useVaultSearch ||
+      message.mentionables.some(
+        (m): m is MentionableVault => m.type === 'vault',
+      )
 
     setQueryProgress?.({
       type: 'reading-mentionables',
@@ -155,11 +168,11 @@ export class PromptGenerator {
       }
       return false
     }
-    const shouldUseRAG = useVaultWideContext || (await exceedsTokenThreshold())
+    const shouldUseRAG = useVaultSearch || (await exceedsTokenThreshold())
 
     let filePrompt: string
     if (shouldUseRAG) {
-      const results = useVaultWideContext
+      const results = useVaultSearch
         ? await this.ragEngine.processQuery({
             query,
             setQueryProgress,
