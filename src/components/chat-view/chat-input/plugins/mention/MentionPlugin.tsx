@@ -17,6 +17,7 @@ import { serializeMentionable } from 'src/utils/mentionable'
 import { Mentionable } from '../../../../../types/mentionable'
 import { SearchResultItem } from '../../../../../utils/fuzzy-search'
 import { getMentionableName } from '../../../../../utils/mentionable'
+import { getMentionableIcon } from '../../utils/get-metionable-icon'
 import { MenuOption, MenuTextMatch } from '../shared/LexicalMenu'
 import {
   LexicalTypeaheadMenuPlugin,
@@ -24,7 +25,6 @@ import {
 } from '../typeahead-menu/LexicalTypeaheadMenuPlugin'
 
 import { $createMentionNode } from './MentionNode'
-import { getMentionableIcon } from '../../utils/get-metionable-icon'
 
 const PUNCTUATION =
   '\\.,\\+\\*\\?\\$\\@\\|#{}\\(\\)\\^\\-\\[\\]\\\\/!%\'"~=<>_:;'
