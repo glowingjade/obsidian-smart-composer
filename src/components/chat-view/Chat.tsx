@@ -197,7 +197,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           await promptGenerator.generateRequestMessages(
             newChatHistory,
             (queryProgress) => {
-              console.log('queryProgress', queryProgress)
               setQueryProgress(queryProgress)
             },
           )

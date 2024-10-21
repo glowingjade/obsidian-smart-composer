@@ -3,9 +3,9 @@ import { App } from 'obsidian'
 import { QueryProgressState } from '../components/chat-view/QueryProgress'
 import { EmbeddingModel } from '../types/embedding'
 import { SmartCopilotSettings } from '../types/settings'
-import { VectorData } from '../types/vector-db'
 
 import { VectorDbManager } from './vector-db/manager'
+import { SelectVector } from '../db/schema'
 
 export class RAGEngine {
   private settings: SmartCopilotSettings
@@ -68,7 +68,7 @@ export class RAGEngine {
     }
     setQueryProgress?: (queryProgress: QueryProgressState) => void
   }): Promise<
-    (Omit<VectorData, 'embedding'> & {
+    (Omit<SelectVector, 'embedding'> & {
       similarity: number
     })[]
   > {

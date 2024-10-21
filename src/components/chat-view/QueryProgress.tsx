@@ -1,4 +1,4 @@
-import { VectorData } from '../../types/vector-db'
+import { SelectVector } from '../../db/schema'
 
 export type QueryProgressState =
   | {
@@ -13,7 +13,7 @@ export type QueryProgressState =
     }
   | {
       type: 'querying-done'
-      queryResult: (Omit<VectorData, 'embedding'> & { similarity: number })[]
+      queryResult: (Omit<SelectVector, 'embedding'> & { similarity: number })[]
     }
   | {
       type: 'idle'

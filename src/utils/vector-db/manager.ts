@@ -5,9 +5,9 @@ import pLimit from 'p-limit'
 import { IndexProgress } from '../../components/chat-view/QueryProgress'
 import { PGLITE_DB_PATH } from '../../constants'
 import { EmbeddingModel } from '../../types/embedding'
-import { VectorData } from '../../types/vector-db'
 
 import { VectorDbRepository } from './repository'
+import { InsertVector, SelectVector } from '../../db/schema'
 
 export class VectorDbManager {
   private repository: VectorDbRepository
@@ -33,7 +33,7 @@ export class VectorDbManager {
       }
     },
   ): Promise<
-    (Omit<VectorData, 'embedding'> & {
+    (Omit<SelectVector, 'embedding'> & {
       similarity: number
     })[]
   > {
@@ -61,7 +61,7 @@ export class VectorDbManager {
         await this.repository.getIndexedFilePaths(embeddingModel)
       for (const filePath of indexedFilePaths) {
         if (!this.app.vault.getAbstractFileByPath(filePath)) {
-          await this.repository.deleteChunksByFilePaths(
+          await this.repository.deleteVectorsForMultipleFiles(
             [filePath],
             embeddingModel,
           )
@@ -71,7 +71,7 @@ export class VectorDbManager {
 
       filesToIndex = await Promise.all(
         markdownFiles.map(async (file) => {
-          const fileChunks = await this.repository.getFileChunks(
+          const fileChunks = await this.repository.getVectorsByFilePath(
             file.path,
             embeddingModel,
           )
@@ -90,14 +90,13 @@ export class VectorDbManager {
         }),
       ).then((files) => files.filter(Boolean) as TFile[])
 
-      await this.repository.deleteChunksByFilePaths(
+      await this.repository.deleteVectorsForMultipleFiles(
         filesToIndex.map((file) => file.path),
         embeddingModel,
       )
     }
 
     if (filesToIndex.length === 0) {
-      console.log('Everything is up to date.')
       return
     }
 
@@ -112,8 +111,6 @@ export class VectorDbManager {
         // },
       },
     )
-
-    console.log(`Indexing ${filesToIndex.length} files...`)
 
     const contentChunks = (
       await Promise.all(
@@ -144,7 +141,7 @@ export class VectorDbManager {
     })
 
     const embeddingProgress = { completed: 0 }
-    const embeddingChunks: VectorData[] = []
+    const embeddingChunks: InsertVector[] = []
     const limit = pLimit(50)
     const tasks = contentChunks.map((chunk) =>
       limit(async () => {
@@ -180,7 +177,6 @@ export class VectorDbManager {
             })
             return
           } catch (error) {
-            console.log('Error embedding chunk:', error)
             if (
               error.status === 429 &&
               error.message.toLowerCase().includes('rate limit')
@@ -204,13 +200,12 @@ export class VectorDbManager {
 
     try {
       await Promise.all(tasks)
-      await this.repository.insertVectorData(embeddingChunks, embeddingModel)
+      await this.repository.insertVectors(embeddingChunks, embeddingModel)
       await this.repository.save()
-      console.log('Vault index updated.')
     } catch (error) {
       console.error('Error updating vault index:', error)
       // Save processed chunks
-      await this.repository.insertVectorData(embeddingChunks, embeddingModel)
+      await this.repository.insertVectors(embeddingChunks, embeddingModel)
       await this.repository.save()
       throw error
     }

@@ -41,6 +41,7 @@ export const APPLY_MODEL_OPTIONS = [
   },
 ]
 
+// IMPORTANT: Update src/db/schema.ts when updating this
 export const EMBEDDING_MODEL_OPTIONS: EmbeddingModelOption[] = [
   {
     name: 'text-embedding-3-small',

@@ -1,12 +1,28 @@
 import { PGlite } from '@electric-sql/pglite'
+import {
+  cosineDistance,
+  SQL,
+  desc,
+  eq,
+  and,
+  inArray,
+  like,
+  or,
+  sql,
+  gt,
+} from 'drizzle-orm'
+import { PgliteDatabase, drizzle } from 'drizzle-orm/pglite'
+import { getTableColumns } from 'drizzle-orm'
+
 import { App } from 'obsidian'
 
-import { EMBEDDING_MODEL_OPTIONS } from '../../constants'
-import { VectorData } from '../../types/vector-db'
+import migrations from '../../db/migrations.json'
+import { InsertVector, SelectVector, vectorTables } from '../../db/schema'
 
 export class VectorDbRepository {
   private app: App
-  private db: PGlite | null = null
+  private pgClient: PGlite | null = null
+  private db: PgliteDatabase | null = null
   private dbPath: string
 
   constructor(app: App, dbPath: string) {
@@ -17,9 +33,11 @@ export class VectorDbRepository {
   async initialize(): Promise<void> {
     this.db = await this.loadExistingDatabase()
     if (!this.db) {
-      await this.initializeNewDatabase()
-      await this.save()
+      this.db = await this.createNewDatabase()
     }
+    await this.migrateDatabase()
+    await this.save()
+    console.log('Smart composer database initialized.')
   }
 
   async getIndexedFilePaths(embeddingModel: {
@@ -28,97 +46,69 @@ export class VectorDbRepository {
     if (!this.db) {
       throw new Error('Database not initialized')
     }
-    const tableName = this.getTableName(embeddingModel)
-    const query = `
-      SELECT path
-      FROM ${tableName}
-    `
-    const result = await this.db.query(query)
-    return result.rows.map((row: { path: string }) => row.path)
+    const vectors = vectorTables[embeddingModel.name]
+    const indexedFiles = await this.db
+      .select({
+        path: vectors.path,
+      })
+      .from(vectors)
+    return indexedFiles.map((row) => row.path)
   }
 
-  async getFileChunks(
+  async getVectorsByFilePath(
     filePath: string,
     embeddingModel: { name: string },
-  ): Promise<VectorData[]> {
+  ): Promise<SelectVector[]> {
     if (!this.db) {
       throw new Error('Database not initialized')
     }
-    const tableName = this.getTableName(embeddingModel)
-    const query = `
-      SELECT path, mtime, content, embedding, metadata
-      FROM ${tableName}
-      WHERE path = $1
-    `
-    const result = await this.db.query(query, [filePath])
-    return result.rows as VectorData[]
+    const vectors = vectorTables[embeddingModel.name]
+    const fileVectors = await this.db
+      .select()
+      .from(vectors)
+      .where(eq(vectors.path, filePath))
+    return fileVectors
   }
 
-  async deleteChunksByFilePath(
+  async deleteVectorsForSingleFile(
     filePath: string,
     embeddingModel: { name: string },
   ): Promise<void> {
     if (!this.db) {
       throw new Error('Database not initialized')
     }
-    const tableName = this.getTableName(embeddingModel)
-    const query = `
-      DELETE FROM ${tableName}
-      WHERE path = $1
-    `
-    await this.db.query(query, [filePath])
+    const vectors = vectorTables[embeddingModel.name]
+    await this.db.delete(vectors).where(eq(vectors.path, filePath))
   }
 
-  async deleteChunksByFilePaths(
+  async deleteVectorsForMultipleFiles(
     filePaths: string[],
     embeddingModel: { name: string },
   ): Promise<void> {
     if (!this.db) {
       throw new Error('Database not initialized')
     }
-    const tableName = this.getTableName(embeddingModel)
-    const query = `
-      DELETE FROM ${tableName}
-      WHERE path = ANY($1)
-    `
-    await this.db.query(query, [filePaths])
+    const vectors = vectorTables[embeddingModel.name]
+    await this.db.delete(vectors).where(inArray(vectors.path, filePaths))
   }
 
   async clearAllVectors(embeddingModel: { name: string }): Promise<void> {
     if (!this.db) {
       throw new Error('Database not initialized')
     }
-    const tableName = this.getTableName(embeddingModel)
-    const query = `
-      DELETE FROM ${tableName}
-    `
-    await this.db.query(query)
+    const vectors = vectorTables[embeddingModel.name]
+    await this.db.delete(vectors)
   }
 
-  async insertVectorData(
-    data: VectorData[],
+  async insertVectors(
+    data: InsertVector[],
     embeddingModel: { name: string },
   ): Promise<void> {
     if (!this.db) {
       throw new Error('Database not initialized')
     }
-    const tableName = this.getTableName(embeddingModel)
-
-    await this.db.transaction(async (client) => {
-      for (const item of data) {
-        const insertQuery = `
-          INSERT INTO ${tableName} (path, mtime, content, embedding, metadata)
-          VALUES ($1, $2, $3, $4, $5)
-        `
-        await client.query(insertQuery, [
-          item.path,
-          item.mtime,
-          item.content,
-          JSON.stringify(item.embedding),
-          JSON.stringify(item.metadata),
-        ])
-      }
-    })
+    const vectors = vectorTables[embeddingModel.name]
+    await this.db.insert(vectors).values(data)
   }
 
   async performSimilaritySearch(
@@ -133,70 +123,94 @@ export class VectorDbRepository {
       }
     },
   ): Promise<
-    (Omit<VectorData, 'embedding'> & {
+    (Omit<SelectVector, 'embedding'> & {
       similarity: number
     })[]
   > {
     if (!this.db) {
       throw new Error('Database not initialized')
     }
-    const tableName = this.getTableName(embeddingModel)
+    const vectors = vectorTables[embeddingModel.name]
 
-    let filterCondition = ''
-    const params: unknown[] = [
-      JSON.stringify(queryVector),
-      options.minSimilarity,
-      options.limit,
-    ]
+    const similarity = sql<number>`1 - (${cosineDistance(vectors.embedding, queryVector)})`
+    const similarityCondition = gt(similarity, options.minSimilarity)
 
-    if (
-      options.scope &&
-      (options.scope.files.length > 0 || options.scope.folders.length > 0)
-    ) {
-      const conditions: string[] = []
-
-      if (options.scope.files.length > 0) {
-        conditions.push(`path = ANY($${params.length + 1})`)
-        params.push(options.scope.files)
+    const getScopeCondition = (): SQL | undefined => {
+      if (!options.scope) {
+        return undefined
       }
-
+      const conditions: (SQL | undefined)[] = []
+      if (options.scope.files.length > 0) {
+        conditions.push(inArray(vectors.path, options.scope.files))
+      }
       if (options.scope.folders.length > 0) {
         conditions.push(
-          `(${options.scope.folders.map((_, index) => `path LIKE $${params.length + index + 1}`).join(' OR ')})`,
+          or(
+            ...options.scope.folders.map((folder) =>
+              like(vectors.path, `${folder}/%`),
+            ),
+          ),
         )
-        params.push(...options.scope.folders.map((folder) => `${folder}/%`))
       }
-
-      filterCondition = `AND (${conditions.join(' OR ')})`
+      if (conditions.length === 0) {
+        return undefined
+      }
+      return or(...conditions)
     }
+    const scopeCondition = getScopeCondition()
 
-    const query = `
-      SELECT path, mtime, content, metadata, 1 - (embedding <=> $1) AS similarity
-      FROM ${tableName}
-      WHERE 1 - (embedding <=> $1) >= $2
-      ${filterCondition}
-      ORDER BY similarity DESC
-      LIMIT $3
-    `
+    const similaritySearchResult = await this.db
+      .select({
+        ...(() => {
+          const { embedding, ...rest } = getTableColumns(vectors)
+          return rest
+        })(),
+        similarity,
+      })
+      .from(vectors)
+      .where(and(similarityCondition, scopeCondition))
+      .orderBy((t) => desc(t.similarity))
+      .limit(options.limit)
 
+    return similaritySearchResult
+  }
+
+  async save(): Promise<void> {
+    if (!this.pgClient) {
+      return
+    }
     try {
-      const result = await this.db.query(query, params)
-      return result.rows as (Omit<VectorData, 'embedding'> & {
-        similarity: number
-      })[]
+      const blob: Blob = await this.pgClient.dumpDataDir('gzip')
+      await this.app.vault.adapter.writeBinary(
+        this.dbPath,
+        Buffer.from(await blob.arrayBuffer()),
+      )
     } catch (error) {
-      console.error('Error performing vector search:', error)
-      throw error
+      console.error('Error saving database:', error)
     }
   }
 
-  private async loadExistingDatabase(): Promise<PGlite | null> {
+  private async createNewDatabase() {
+    const { fsBundle, wasmModule, vectorExtensionBundlePath } =
+      await this.loadPGliteResources()
+    this.pgClient = await PGlite.create({
+      fsBundle: fsBundle,
+      wasmModule: wasmModule,
+      extensions: {
+        vector: vectorExtensionBundlePath,
+      },
+    })
+    const db = drizzle(this.pgClient)
+    return db
+  }
+
+  private async loadExistingDatabase(): Promise<PgliteDatabase | null> {
     try {
       const fileBuffer = await this.app.vault.adapter.readBinary(this.dbPath)
       const fileBlob = new Blob([fileBuffer], { type: 'application/x-gzip' })
       const { fsBundle, wasmModule, vectorExtensionBundlePath } =
         await this.loadPGliteResources()
-      const db = await PGlite.create({
+      this.pgClient = await PGlite.create({
         loadDataDir: fileBlob,
         fsBundle: fsBundle,
         wasmModule: wasmModule,
@@ -204,11 +218,22 @@ export class VectorDbRepository {
           vector: vectorExtensionBundlePath,
         },
       })
-      return db as PGlite
+      return drizzle(this.pgClient)
     } catch (error) {
       console.error('Error loading database:', error)
       return null
     }
+  }
+
+  private async migrateDatabase(): Promise<void> {
+    // Workaround for running Drizzle migrations in a browser environment
+    // This method uses an undocumented API to perform migrations
+    // See: https://github.com/drizzle-team/drizzle-orm/discussions/2532#discussioncomment-10780523
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    await this.db.dialect.migrate(migrations, this.db.session, {
+      migrationsTable: 'drizzle_migrations',
+    })
   }
 
   private async loadPGliteResources(): Promise<{
@@ -239,65 +264,5 @@ export class VectorDbRepository {
     )
 
     return { fsBundle, wasmModule, vectorExtensionBundlePath }
-  }
-
-  private async initializeNewDatabase() {
-    const { fsBundle, wasmModule, vectorExtensionBundlePath } =
-      await this.loadPGliteResources()
-    this.db = await PGlite.create({
-      fsBundle: fsBundle,
-      wasmModule: wasmModule,
-      extensions: {
-        vector: vectorExtensionBundlePath,
-      },
-    })
-    await this.db.query('CREATE EXTENSION IF NOT EXISTS vector')
-    for (const { name, dimension } of EMBEDDING_MODEL_OPTIONS) {
-      await this.createVectorTable({ name, dimension })
-    }
-  }
-
-  private async createVectorTable(embeddingModel: {
-    name: string
-    dimension: number
-  }): Promise<void> {
-    if (!this.db) {
-      throw new Error('Database not initialized')
-    }
-    const tableName = this.getTableName(embeddingModel)
-    await this.db.query(
-      `
-      CREATE TABLE IF NOT EXISTS ${tableName} (
-        id SERIAL PRIMARY KEY,
-        path TEXT NOT NULL,
-        mtime BIGINT NOT NULL,
-        content TEXT NOT NULL,
-        embedding vector(${embeddingModel.dimension}) NOT NULL,
-        metadata JSONB NOT NULL
-      )
-    `,
-    )
-
-    // TODO: Create HNSW index for faster search
-  }
-
-  async save(): Promise<void> {
-    if (!this.db) {
-      return
-    }
-    try {
-      const blob: Blob = await this.db.dumpDataDir('gzip')
-      await this.app.vault.adapter.writeBinary(
-        this.dbPath,
-        Buffer.from(await blob.arrayBuffer()),
-      )
-    } catch (error) {
-      console.error('Error saving database:', error)
-    }
-  }
-
-  private getTableName(embeddingModel: { name: string }): string {
-    const sanitizedName = embeddingModel.name.replace(/[^a-zA-Z0-9]/g, '_')
-    return `vector_data_${sanitizedName}`
   }
 }
