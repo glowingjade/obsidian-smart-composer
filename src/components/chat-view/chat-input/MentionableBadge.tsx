@@ -10,6 +10,8 @@ import {
   MentionableVault,
 } from '../../../types/mentionable'
 
+import { getMentionableIcon } from './utils/get-metionable-icon'
+
 function BadgeBase({
   children,
   onDelete,
@@ -36,9 +38,16 @@ function FileBadge({
   mentionable: MentionableFile
   onDelete: () => void
 }) {
+  const Icon = getMentionableIcon(mentionable)
   return (
     <BadgeBase onDelete={onDelete}>
       <div className="smtcmp-chat-user-input-file-badge-name">
+        {Icon && (
+          <Icon
+            size={10}
+            className="smtcmp-chat-user-input-file-badge-name-icon"
+          />
+        )}
         <span>{mentionable.file.name}</span>
       </div>
     </BadgeBase>
@@ -52,10 +61,17 @@ function FolderBadge({
   mentionable: MentionableFolder
   onDelete: () => void
 }) {
+  const Icon = getMentionableIcon(mentionable)
   return (
     <BadgeBase onDelete={onDelete}>
       {/* TODO: Update style */}
       <div className="smtcmp-chat-user-input-file-badge-name">
+        {Icon && (
+          <Icon
+            size={10}
+            className="smtcmp-chat-user-input-file-badge-name-icon"
+          />
+        )}
         <span>{mentionable.folder.name}</span>
       </div>
     </BadgeBase>
@@ -70,10 +86,17 @@ function VaultBadge({
   mentionable: MentionableVault
   onDelete: () => void
 }) {
+  const Icon = getMentionableIcon(mentionable)
   return (
     <BadgeBase onDelete={onDelete}>
       {/* TODO: Update style */}
       <div className="smtcmp-chat-user-input-file-badge-name">
+        {Icon && (
+          <Icon
+            size={10}
+            className="smtcmp-chat-user-input-file-badge-name-icon"
+          />
+        )}
         <span>Vault</span>
       </div>
     </BadgeBase>
@@ -87,9 +110,16 @@ function CurrentFileBadge({
   mentionable: MentionableCurrentFile
   onDelete: () => void
 }) {
+  const Icon = getMentionableIcon(mentionable)
   return mentionable.file ? (
     <BadgeBase onDelete={onDelete}>
       <div className="smtcmp-chat-user-input-file-badge-name">
+        {Icon && (
+          <Icon
+            size={10}
+            className="smtcmp-chat-user-input-file-badge-name-icon"
+          />
+        )}
         <span>{`${mentionable.file.name}`}</span>
       </div>
       <div className="smtcmp-chat-user-input-file-badge-name-block-suffix">
@@ -106,9 +136,16 @@ function BlockBadge({
   mentionable: MentionableBlock
   onDelete: () => void
 }) {
+  const Icon = getMentionableIcon(mentionable)
   return (
     <BadgeBase onDelete={onDelete}>
       <div className="smtcmp-chat-user-input-file-badge-name-block-name">
+        {Icon && (
+          <Icon
+            size={10}
+            className="smtcmp-chat-user-input-file-badge-name-block-name-icon"
+          />
+        )}
         <span>{`${mentionable.file.name}`}</span>
       </div>
       <div className="smtcmp-chat-user-input-file-badge-name-block-suffix">

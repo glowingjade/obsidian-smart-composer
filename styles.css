@@ -235,6 +235,11 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   gap: var(--size-2-1);
   flex-grow: 1;
   overflow: hidden;
+  align-items: center;
+}
+
+.smtcmp-chat-user-input-file-badge-name-icon {
+  color: var(--text-muted);
 }
 
 .smtcmp-chat-user-input-file-badge-name span {
@@ -358,16 +363,18 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   background-color: var(--background-modifier-hover);
 }
 
-.smtcmp-popover li .icon {
+.smtcmp-popover-item-icon {
   display: flex;
   user-select: none;
   line-height: 16px;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  height: 15.6px;
+  height: 14px;
+  padding-top: 1px;
   align-items: center;
   color: var(--text-faint);
+  min-width: fit-content;
 }
 
 .smtcmp-popover li:hover {

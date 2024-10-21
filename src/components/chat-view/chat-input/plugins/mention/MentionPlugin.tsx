@@ -10,12 +10,6 @@
 
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import { $createTextNode, COMMAND_PRIORITY_NORMAL, TextNode } from 'lexical'
-import {
-  FileIcon,
-  FolderClosedIcon,
-  FolderIcon,
-  FoldersIcon,
-} from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { serializeMentionable } from 'src/utils/mentionable'
@@ -30,6 +24,7 @@ import {
 } from '../typeahead-menu/LexicalTypeaheadMenuPlugin'
 
 import { $createMentionNode } from './MentionNode'
+import { getMentionableIcon } from '../../utils/get-metionable-icon'
 
 const PUNCTUATION =
   '\\.,\\+\\*\\?\\$\\@\\|#{}\\(\\)\\^\\-\\[\\]\\\\/!%\'"~=<>_:;'
@@ -115,18 +110,15 @@ class MentionTypeaheadOption extends MenuOption {
       case 'file':
         super(result.file.path)
         this.name = result.file.name
-        this.icon = <FileIcon size={12} />
         this.mentionable = result
         break
       case 'folder':
         super(result.folder.path)
         this.name = result.folder.name
-        this.icon = <FolderClosedIcon size={12} />
         this.mentionable = result
         break
       case 'vault':
         super('vault')
-        this.icon = <FoldersIcon size={12} />
         this.name = 'Vault'
         this.mentionable = result
         break
@@ -151,6 +143,8 @@ function MentionsTypeaheadMenuItem({
   if (isSelected) {
     className += ' selected'
   }
+
+  const Icon = getMentionableIcon(option.mentionable)
   return (
     <li
       key={option.key}
@@ -163,7 +157,7 @@ function MentionsTypeaheadMenuItem({
       onMouseEnter={onMouseEnter}
       onClick={onClick}
     >
-      {option.icon && <span className="icon">{option.icon}</span>}
+      {Icon && <Icon size={14} className="smtcmp-popover-item-icon" />}
       <span className="text">{option.name}</span>
     </li>
   )
