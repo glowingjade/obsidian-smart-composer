@@ -4,10 +4,10 @@ import pLimit from 'p-limit'
 
 import { IndexProgress } from '../../components/chat-view/QueryProgress'
 import { PGLITE_DB_PATH } from '../../constants'
+import { InsertVector, SelectVector } from '../../db/schema'
 import { EmbeddingModel } from '../../types/embedding'
 
 import { VectorDbRepository } from './repository'
-import { InsertVector, SelectVector } from '../../db/schema'
 
 export class VectorDbManager {
   private repository: VectorDbRepository

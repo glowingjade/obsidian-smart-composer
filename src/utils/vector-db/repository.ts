@@ -1,19 +1,18 @@
 import { PGlite } from '@electric-sql/pglite'
 import {
-  cosineDistance,
   SQL,
+  and,
+  cosineDistance,
   desc,
   eq,
-  and,
+  getTableColumns,
+  gt,
   inArray,
   like,
   or,
   sql,
-  gt,
 } from 'drizzle-orm'
 import { PgliteDatabase, drizzle } from 'drizzle-orm/pglite'
-import { getTableColumns } from 'drizzle-orm'
-
 import { App } from 'obsidian'
 
 import migrations from '../../db/migrations.json'

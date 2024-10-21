@@ -45,6 +45,8 @@ version-bump.mjs
 versions.json
 package.json
 manifest.json
+compile-migration.js
+import-meta-url-shim.js
 
 # Obsidian
 .obsidian

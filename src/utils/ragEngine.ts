@@ -1,11 +1,11 @@
 import { App } from 'obsidian'
 
 import { QueryProgressState } from '../components/chat-view/QueryProgress'
+import { SelectVector } from '../db/schema'
 import { EmbeddingModel } from '../types/embedding'
 import { SmartCopilotSettings } from '../types/settings'
 
 import { VectorDbManager } from './vector-db/manager'
-import { SelectVector } from '../db/schema'
 
 export class RAGEngine {
   private settings: SmartCopilotSettings

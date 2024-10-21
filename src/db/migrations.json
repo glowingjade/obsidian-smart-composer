@@ -1,1 +1,20 @@
-[{"sql":["-- Custom SQL migration file, put you code below! --\nCREATE EXTENSION IF NOT EXISTS vector;"],"bps":true,"folderMillis":1729496457718,"hash":"6c20ce195f8fc8f8ccb136af42a856f90c3e62e0727ad2e9cd1f01e59efc3a86"},{"sql":["CREATE TABLE IF NOT EXISTS \"vector_data_text_embedding_3_small\" (\n\t\"id\" serial PRIMARY KEY NOT NULL,\n\t\"path\" text NOT NULL,\n\t\"mtime\" bigint NOT NULL,\n\t\"content\" text NOT NULL,\n\t\"embedding\" vector(1536),\n\t\"metadata\" jsonb NOT NULL\n);\n","\nCREATE TABLE IF NOT EXISTS \"vector_data_text_embedding_3_large\" (\n\t\"id\" serial PRIMARY KEY NOT NULL,\n\t\"path\" text NOT NULL,\n\t\"mtime\" bigint NOT NULL,\n\t\"content\" text NOT NULL,\n\t\"embedding\" vector(3072),\n\t\"metadata\" jsonb NOT NULL\n);\n","\nCREATE INDEX IF NOT EXISTS \"embeddingIndex_text_embedding_3_small\" ON \"vector_data_text_embedding_3_small\" USING hnsw (\"embedding\" vector_cosine_ops);"],"bps":true,"folderMillis":1729496469157,"hash":"30520313039892c9c07b13185b6e4aa0b0f9a09b851db96e0f6e400303560aec"}]
+[
+  {
+    "sql": [
+      "-- Custom SQL migration file, put you code below! --\nCREATE EXTENSION IF NOT EXISTS vector;"
+    ],
+    "bps": true,
+    "folderMillis": 1729509950412,
+    "hash": "6c20ce195f8fc8f8ccb136af42a856f90c3e62e0727ad2e9cd1f01e59efc3a86"
+  },
+  {
+    "sql": [
+      "CREATE TABLE IF NOT EXISTS \"vector_data_text_embedding_3_small\" (\n\t\"id\" serial PRIMARY KEY NOT NULL,\n\t\"path\" text NOT NULL,\n\t\"mtime\" bigint NOT NULL,\n\t\"content\" text NOT NULL,\n\t\"embedding\" vector(1536),\n\t\"metadata\" jsonb NOT NULL\n);\n",
+      "\nCREATE TABLE IF NOT EXISTS \"vector_data_text_embedding_3_large\" (\n\t\"id\" serial PRIMARY KEY NOT NULL,\n\t\"path\" text NOT NULL,\n\t\"mtime\" bigint NOT NULL,\n\t\"content\" text NOT NULL,\n\t\"embedding\" vector(3072),\n\t\"metadata\" jsonb NOT NULL\n);\n",
+      "\nCREATE INDEX IF NOT EXISTS \"embeddingIndex_text_embedding_3_small\" ON \"vector_data_text_embedding_3_small\" USING hnsw (\"embedding\" vector_cosine_ops);"
+    ],
+    "bps": true,
+    "folderMillis": 1729509994653,
+    "hash": "30520313039892c9c07b13185b6e4aa0b0f9a09b851db96e0f6e400303560aec"
+  }
+]
