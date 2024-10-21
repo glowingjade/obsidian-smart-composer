@@ -81,5 +81,5 @@ export default function QueryProgress({
 }
 
 function DotLoader() {
-  return <span className="smtcmp-dot-loader"></span>
+  return <span className="smtcmp-dot-loader" aria-label="Loading"></span>
 }

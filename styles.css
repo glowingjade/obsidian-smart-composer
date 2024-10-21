@@ -421,6 +421,7 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   border-bottom: 1px solid var(--background-modifier-border);
   background-color: var(--background-primary);
   border-radius: var(--radius-s) var(--radius-s) 0 0;
+  height: calc(var(--size-4-8) - var(--size-4-1));
 }
 
 .smtcmp-code-block.has-filename:hover .smtcmp-code-block-header {
@@ -452,6 +453,7 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   gap: 0;
   overflow: hidden;
   min-width: fit-content;
+  height: 100%;
 }
 
 .smtcmp-code-block.has-filename .smtcmp-code-block-header-button button {
@@ -461,6 +463,8 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   border-radius: 0;
   background-color: var(--background-primary);
   font-size: var(--font-medium);
+  height: 100%;
+  cursor: pointer;
 
   &:hover {
     background-color: var(--background-modifier-hover);
