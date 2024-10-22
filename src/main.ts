@@ -1,4 +1,4 @@
-import { Editor, MarkdownView, Plugin } from 'obsidian'
+import { Editor, MarkdownView, Notice, Plugin } from 'obsidian'
 
 import { ApplyView } from './ApplyView'
 import { ChatView } from './ChatView'
@@ -48,7 +48,61 @@ export default class SmartCopilotPlugin extends Plugin {
     this.addCommand({
       id: 're-index-vault',
       name: 'Re-index vault',
-      callback: () => this.ragEngine?.updateVaultIndex({ overwrite: true }),
+      callback: async () => {
+        const notice = new Notice('Re-indexing vault...', 0)
+        try {
+          await this.ragEngine?.updateVaultIndex(
+            { overwrite: true },
+            (queryProgress) => {
+              if (queryProgress.type === 'indexing') {
+                const { completedChunks, totalChunks } =
+                  queryProgress.indexProgress
+                notice.setMessage(
+                  `Indexing chunks: ${completedChunks} / ${totalChunks}`,
+                )
+              }
+            },
+          )
+          notice.setMessage('Re-indexing vault complete')
+        } catch (error) {
+          console.error(error)
+          notice.setMessage('Re-indexing vault failed')
+        } finally {
+          setTimeout(() => {
+            notice.hide()
+          }, 1000)
+        }
+      },
+    })
+
+    this.addCommand({
+      id: 'update-vault-index',
+      name: 'Update vault index',
+      callback: async () => {
+        const notice = new Notice('Updating vault index...', 0)
+        try {
+          await this.ragEngine?.updateVaultIndex(
+            { overwrite: false },
+            (queryProgress) => {
+              if (queryProgress.type === 'indexing') {
+                const { completedChunks, totalChunks } =
+                  queryProgress.indexProgress
+                notice.setMessage(
+                  `Indexing chunks: ${completedChunks} / ${totalChunks}`,
+                )
+              }
+            },
+          )
+          notice.setMessage('Vault index updated')
+        } catch (error) {
+          console.error(error)
+          notice.setMessage('Vault index update failed')
+        } finally {
+          setTimeout(() => {
+            notice.hide()
+          }, 1000)
+        }
+      },
     })
 
     // This adds a settings tab so the user can configure various aspects of the plugin
