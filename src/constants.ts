@@ -1,5 +1,3 @@
-import { EmbeddingModelOption } from './types/embedding'
-
 export const CHAT_VIEW_TYPE = 'smtcmp-chat-view'
 export const APPLY_VIEW_TYPE = 'smtcmp-apply-view'
 
@@ -41,10 +39,10 @@ export const APPLY_MODEL_OPTIONS = [
   },
 ]
 
-// IMPORTANT: Update src/db/schema.ts when updating this
-export const EMBEDDING_MODEL_OPTIONS: EmbeddingModelOption[] = [
+// Update table exports in src/db/schema.ts when updating this
+export const EMBEDDING_MODEL_OPTIONS = [
   {
-    name: 'text-embedding-3-small',
+    name: 'text-embedding-3-small (Recommended)',
     value: 'text-embedding-3-small',
     dimension: 1536,
   },
