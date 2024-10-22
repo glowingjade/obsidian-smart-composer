@@ -136,6 +136,7 @@ export class PromptGenerator {
     const query = editorStateToPlainText(message.content)
 
     useVaultSearch =
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
       useVaultSearch ||
       message.mentionables.some(
         (m): m is MentionableVault => m.type === 'vault',
