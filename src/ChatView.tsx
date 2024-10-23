@@ -13,13 +13,11 @@ import { SettingsProvider } from './contexts/settings-context'
 import SmartCopilotPlugin from './main'
 import { MentionableBlockData } from './types/mentionable'
 import { SmartCopilotSettings } from './types/settings'
-import { RAGEngine } from './utils/ragEngine'
 
 export class ChatView extends ItemView {
   private root: Root | null = null
   private settings: SmartCopilotSettings
   private initialChatProps?: ChatProps
-  private ragEngine: RAGEngine | null
   private chatRef: React.RefObject<ChatRef> = React.createRef()
 
   constructor(
@@ -29,9 +27,6 @@ export class ChatView extends ItemView {
     super(leaf)
     this.settings = plugin.settings
     this.initialChatProps = plugin.initialChatProps
-    plugin.getRAGEngine().then((ragEngine) => {
-      this.ragEngine = ragEngine
-    })
   }
 
   getViewType() {
@@ -47,7 +42,7 @@ export class ChatView extends ItemView {
   }
 
   async onOpen() {
-    this.render()
+    await this.render()
 
     // Consume chatProps
     this.initialChatProps = undefined
@@ -57,12 +52,13 @@ export class ChatView extends ItemView {
     this.root?.unmount()
   }
 
-  render() {
+  async render() {
     if (!this.root) {
       this.root = createRoot(this.containerEl.children[1])
     }
 
     const queryClient = new QueryClient()
+    const ragEngine = await this.plugin.getRAGEngine()
 
     this.root.render(
       <AppProvider app={this.app}>
@@ -75,7 +71,7 @@ export class ChatView extends ItemView {
         >
           <DarkModeProvider>
             <LLMProvider>
-              <RAGProvider ragEngine={this.ragEngine}>
+              <RAGProvider ragEngine={ragEngine}>
                 <QueryClientProvider client={queryClient}>
                   <React.StrictMode>
                     <Chat ref={this.chatRef} {...this.initialChatProps} />
