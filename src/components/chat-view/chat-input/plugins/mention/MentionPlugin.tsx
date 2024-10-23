@@ -15,7 +15,7 @@ import { createPortal } from 'react-dom'
 import { serializeMentionable } from 'src/utils/mentionable'
 
 import { Mentionable } from '../../../../../types/mentionable'
-import { SearchResultItem } from '../../../../../utils/fuzzy-search'
+import { SearchableMentionable } from '../../../../../utils/fuzzy-search'
 import { getMentionableName } from '../../../../../utils/mentionable'
 import { getMentionableIcon } from '../../utils/get-metionable-icon'
 import { MenuOption, MenuTextMatch } from '../shared/LexicalMenu'
@@ -105,7 +105,7 @@ class MentionTypeaheadOption extends MenuOption {
   mentionable: Mentionable
   icon: React.ReactNode
 
-  constructor(result: SearchResultItem) {
+  constructor(result: SearchableMentionable) {
     switch (result.type) {
       case 'file':
         super(result.file.path)
@@ -167,7 +167,7 @@ export default function NewMentionsPlugin({
   searchResultByQuery,
   onAddMention,
 }: {
-  searchResultByQuery: (query: string) => SearchResultItem[]
+  searchResultByQuery: (query: string) => SearchableMentionable[]
   onAddMention: (mentionable: Mentionable) => void
 }): JSX.Element | null {
   const [editor] = useLexicalComposerContext()

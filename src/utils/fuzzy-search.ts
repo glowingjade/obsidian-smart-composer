@@ -9,7 +9,7 @@ import {
 
 import { calculateFileDistance, getOpenFiles } from './obsidian'
 
-export type SearchResultItem =
+export type SearchableMentionable =
   | MentionableFile
   | MentionableFolder
   | MentionableVault
@@ -76,7 +76,7 @@ function scoreFnWithBoost(score: number, searchItem: SearchItem) {
 function getEmptyQueryResult(
   searchItems: SearchItem[],
   limit: number,
-): SearchResultItem[] {
+): SearchableMentionable[] {
   // Sort files based on a custom scoring function
   const sortedFiles = searchItems.sort((a, b) => {
     const scoreA = scoreFnWithBoost(0.5, a) // Use 0.5 as a base score
@@ -85,27 +85,12 @@ function getEmptyQueryResult(
   })
 
   // Return only the top 'limit' files
-  return sortedFiles.slice(0, limit).map((item) => {
-    switch (item.type) {
-      case 'file':
-        return {
-          type: 'file',
-          file: item.file,
-        }
-      case 'folder':
-        return {
-          type: 'folder',
-          folder: item.folder,
-        }
-      case 'vault':
-        return {
-          type: 'vault',
-        }
-    }
-  })
+  return sortedFiles
+    .slice(0, limit)
+    .map((item) => searchItemToMentionable(item))
 }
 
-export function fuzzySearch(app: App, query: string): SearchResultItem[] {
+export function fuzzySearch(app: App, query: string): SearchableMentionable[] {
   const currentFile = app.workspace.getActiveFile()
   const openFiles = getOpenFiles(app)
 
@@ -158,22 +143,24 @@ export function fuzzySearch(app: App, query: string): SearchResultItem[] {
     scoreFn: (result) => scoreFnWithBoost(result.score, result.obj),
   })
 
-  return results.map((result) => {
-    switch (result.obj.type) {
-      case 'file':
-        return {
-          type: 'file',
-          file: result.obj.file,
-        }
-      case 'folder':
-        return {
-          type: 'folder',
-          folder: result.obj.folder,
-        }
-      case 'vault':
-        return {
-          type: 'vault',
-        }
-    }
-  })
+  return results.map((result) => searchItemToMentionable(result.obj))
+}
+
+function searchItemToMentionable(item: SearchItem): SearchableMentionable {
+  switch (item.type) {
+    case 'file':
+      return {
+        type: 'file',
+        file: item.file,
+      }
+    case 'folder':
+      return {
+        type: 'folder',
+        folder: item.folder,
+      }
+    case 'vault':
+      return {
+        type: 'vault',
+      }
+  }
 }

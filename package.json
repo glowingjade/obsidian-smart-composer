@@ -53,6 +53,7 @@
     "@tanstack/react-query": "^5.56.2",
     "diff": "^7.0.0",
     "drizzle-orm": "^0.35.2",
+    "exponential-backoff": "^3.1.1",
     "fuzzysort": "^3.1.0",
     "groq-sdk": "^0.7.0",
     "js-tiktoken": "^1.0.15",

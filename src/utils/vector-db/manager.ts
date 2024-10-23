@@ -1,3 +1,4 @@
+import { backOff } from 'exponential-backoff'
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter'
 import { App, TFile, normalizePath } from 'obsidian'
 import pLimit from 'p-limit'
@@ -158,21 +159,8 @@ export class VectorDbManager {
     const limit = pLimit(50)
     const tasks = contentChunks.map((chunk) =>
       limit(async () => {
-        const maxRetries = 5
-        const exponentialBackoff = 1.5
-        let retryCount = 0
-        let delay = 1000
-
-        // Retry wait times:
-        // 1. 1000 ms (1 second)
-        // 2. 1500 ms (1.5 seconds)
-        // 3. 2250 ms (2.25 seconds)
-        // 4. 3375 ms (3.375 seconds
-        // 5. 5062.5 ms (5.0625 seconds)
-        // This will be enough for OpenAI API rate limit (3000 RPM)
-
-        while (retryCount < maxRetries) {
-          try {
+        await backOff(
+          async () => {
             const embedding = await embeddingModel.getEmbedding(chunk.content)
             const embeddedChunk = {
               path: chunk.path,
@@ -188,39 +176,32 @@ export class VectorDbManager {
               totalChunks: contentChunks.length,
               totalFiles: filesToIndex.length,
             })
-            return
-          } catch (error) {
-            if (
-              error.status === 429 &&
-              error.message.toLowerCase().includes('rate limit')
-            ) {
-              // OpenAI API returns 429 status code for rate limit errors
-              // See: https://platform.openai.com/docs/guides/error-codes/api-errors
-              retryCount++
-              console.warn(
-                `Rate limit reached. Retrying in ${delay / 1000} seconds...`,
-              )
-              await new Promise((resolve) => setTimeout(resolve, delay))
-              delay *= exponentialBackoff
-            } else {
-              throw error
-            }
-          }
-        }
-        throw new Error(`Failed to process chunk after ${maxRetries} retries`)
+          },
+          {
+            numOfAttempts: 5,
+            startingDelay: 1000,
+            timeMultiple: 1.5,
+            jitter: 'full',
+            retry: (error) => {
+              console.error(error)
+              const isRateLimitError =
+                error.status === 429 &&
+                error.message.toLowerCase().includes('rate limit')
+              return !!isRateLimitError // retry only for rate limit errors
+            },
+          },
+        )
       }),
     )
 
     try {
       await Promise.all(tasks)
-      await this.repository.insertVectors(embeddingChunks, embeddingModel)
-      await this.repository.save()
     } catch (error) {
-      console.error('Error updating vault index:', error)
-      // Save processed chunks
+      console.error('Error embedding chunks:', error)
+      throw error
+    } finally {
       await this.repository.insertVectors(embeddingChunks, embeddingModel)
       await this.repository.save()
-      throw error
     }
   }
 }
