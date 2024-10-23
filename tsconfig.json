@@ -17,5 +17,5 @@
     "skipLibCheck": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "drizzle.config.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "drizzle.config.ts", "__mocks__"]
 }
