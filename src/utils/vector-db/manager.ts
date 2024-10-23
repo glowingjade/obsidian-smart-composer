@@ -113,8 +113,9 @@ export class VectorDbManager {
       totalFiles: filesToIndex.length,
     })
 
-    const embeddingProgress = { completed: 0 }
+    const embeddingProgress = { completed: 0, inserted: 0 }
     const embeddingChunks: InsertVector[] = []
+    const batchSize = 100
     const limit = pLimit(50)
     const tasks = contentChunks.map((chunk) =>
       limit(async () => {
@@ -135,6 +136,22 @@ export class VectorDbManager {
               totalChunks: contentChunks.length,
               totalFiles: filesToIndex.length,
             })
+
+            // Insert vectors in batches
+            if (
+              embeddingChunks.length >=
+                embeddingProgress.inserted + batchSize ||
+              embeddingChunks.length === contentChunks.length
+            ) {
+              await this.repository.insertVectors(
+                embeddingChunks.slice(
+                  embeddingProgress.inserted,
+                  embeddingProgress.inserted + batchSize,
+                ),
+                embeddingModel,
+              )
+              embeddingProgress.inserted += batchSize
+            }
           },
           {
             numOfAttempts: 5,
@@ -159,7 +176,6 @@ export class VectorDbManager {
       console.error('Error embedding chunks:', error)
       throw error
     } finally {
-      await this.repository.insertVectors(embeddingChunks, embeddingModel)
       await this.repository.save()
     }
   }
