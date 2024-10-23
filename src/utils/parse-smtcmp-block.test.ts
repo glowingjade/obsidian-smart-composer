@@ -155,4 +155,20 @@ Some text after without closing tag`,
     const result = parsesmtcmpBlocks(input)
     expect(result).toEqual(expected)
   })
+
+  it('should handle smtcmp_block with startline and endline attributes', () => {
+    const input = `<smtcmp_block language="markdown" startline="2" endline="5"></smtcmp_block>`
+    const expected: ParsedSmtcmpBlock[] = [
+      {
+        type: 'smtcmp_block',
+        content: '',
+        language: 'markdown',
+        startLine: 2,
+        endLine: 5,
+      },
+    ]
+
+    const result = parsesmtcmpBlocks(input)
+    expect(result).toEqual(expected)
+  })
 })

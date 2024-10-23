@@ -1,3 +1,4 @@
+import path from 'path'
 import esbuild from 'esbuild'
 import process from 'process'
 import builtins from 'builtin-modules'
@@ -14,7 +15,7 @@ const context = await esbuild.context({
   banner: {
     js: banner,
   },
-  entryPoints: ['src/main.ts'], // Change this line
+  entryPoints: ['src/main.ts'],
   bundle: true,
   external: [
     'obsidian',
@@ -33,12 +34,19 @@ const context = await esbuild.context({
     ...builtins,
   ],
   format: 'cjs',
-  target: 'es2018',
+  define: {
+    'import.meta.url': 'import_meta_url',
+    process: '{}',
+    'process.env.NODE_ENV': JSON.stringify(prod ? 'production' : 'development'),
+  },
+  inject: [path.resolve('import-meta-url-shim.js')],
+  target: 'es2020',
   logLevel: 'info',
   sourcemap: prod ? false : 'inline',
   treeShaking: true,
-  outfile: 'main.js', // Changed back to main.js
+  outfile: 'main.js',
   minify: prod,
+  // logLevel: 'debug',
 })
 
 if (prod) {

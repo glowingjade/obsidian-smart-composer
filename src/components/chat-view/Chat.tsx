@@ -6,6 +6,7 @@ import {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from 'react'
@@ -15,11 +16,11 @@ import { ApplyViewState } from '../../ApplyView'
 import { APPLY_VIEW_TYPE } from '../../constants'
 import { useApp } from '../../contexts/app-context'
 import { useLLM } from '../../contexts/llm-context'
+import { useRAG } from '../../contexts/rag-context'
 import { useSettings } from '../../contexts/settings-context'
 import { useChatHistory } from '../../hooks/useChatHistory'
 import { OpenSettingsModal } from '../../OpenSettingsModal'
 import { ChatMessage, ChatUserMessage } from '../../types/chat'
-import { RequestMessage } from '../../types/llm/request'
 import {
   MentionableBlock,
   MentionableBlockData,
@@ -31,11 +32,12 @@ import {
   LLMAPIKeyNotSetException,
 } from '../../utils/llm/exception'
 import { readTFileContent } from '../../utils/obsidian'
-import { parseRequestMessages } from '../../utils/prompt'
+import { PromptGenerator } from '../../utils/promptGenerator'
 
 import ChatUserInput, { ChatUserInputRef } from './chat-input/ChatUserInput'
 import { editorStateToPlainText } from './chat-input/utils/editor-state-to-plain-text'
 import { ChatListDropdown } from './ChatListDropdown'
+import QueryProgress, { QueryProgressState } from './QueryProgress'
 import ReactMarkdown from './ReactMarkdown'
 
 // Add an empty line here
@@ -43,6 +45,7 @@ const getNewInputMessage = (app: App): ChatUserMessage => {
   return {
     role: 'user',
     content: null,
+    promptContent: null,
     id: uuidv4(),
     mentionables: [
       {
@@ -65,6 +68,7 @@ export type ChatProps = {
 const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const app = useApp()
   const { settings } = useSettings()
+  const { ragEngine } = useRAG()
 
   const {
     createOrUpdateConversation,
@@ -73,6 +77,13 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     chatList,
   } = useChatHistory()
   const { generateResponse, streamResponse } = useLLM()
+
+  const promptGenerator: PromptGenerator | null = useMemo(() => {
+    if (!ragEngine) {
+      return null
+    }
+    return new PromptGenerator(ragEngine, app, settings)
+  }, [ragEngine, app, settings])
 
   const [inputMessage, setInputMessage] = useState<ChatUserMessage>(() => {
     const newMessage = getNewInputMessage(app)
@@ -91,6 +102,9 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const [focusedMessageId, setFocusedMessageId] = useState<string | null>(null)
   const [currentConversationId, setCurrentConversationId] =
     useState<string>(uuidv4())
+  const [queryProgress, setQueryProgress] = useState<QueryProgressState>({
+    type: 'idle',
+  })
   const activeStreamAbortControllersRef = useRef<AbortController[]>([])
   const chatUserInputRefs = useRef<Map<string, ChatUserInputRef>>(new Map())
   const chatMessagesRef = useRef<HTMLDivElement>(null)
@@ -133,6 +147,9 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       const newInputMessage = getNewInputMessage(app)
       setInputMessage(newInputMessage)
       setFocusedMessageId(newInputMessage.id)
+      setQueryProgress({
+        type: 'idle',
+      })
     } catch (error) {
       new Notice('Failed to load conversation')
       console.error('Failed to load conversation', error)
@@ -145,12 +162,28 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     const newInputMessage = getNewInputMessage(app)
     setInputMessage(newInputMessage)
     setFocusedMessageId(newInputMessage.id)
+    setQueryProgress({
+      type: 'idle',
+    })
     abortActiveStreams()
   }
 
   const submitMutation = useMutation({
-    mutationFn: async (newChatHistory: ChatMessage[]) => {
+    mutationFn: async ({
+      newChatHistory,
+      useVaultSearch,
+    }: {
+      newChatHistory: ChatMessage[]
+      useVaultSearch?: boolean
+    }) => {
       abortActiveStreams()
+      setQueryProgress({
+        type: 'idle',
+      })
+
+      if (!promptGenerator) {
+        throw new Error('Prompt generator is not initialized')
+      }
 
       const responseMessageId = uuidv4()
       setChatMessages([
@@ -162,15 +195,24 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         const abortController = new AbortController()
         activeStreamAbortControllersRef.current.push(abortController)
 
-        const requestMessages = await parseRequestMessages(
-          newChatHistory,
-          app.vault,
-        )
+        const { requestMessages, compiledMessages } =
+          await promptGenerator.generateRequestMessages({
+            messages: newChatHistory,
+            useVaultSearch,
+            onQueryProgressChange: setQueryProgress,
+          })
+        setQueryProgress({
+          type: 'idle',
+        })
 
+        setChatMessages([
+          ...compiledMessages,
+          { role: 'assistant', content: '', id: responseMessageId },
+        ])
         const stream = await streamResponse(
           {
             model: settings.chatModel,
-            messages: requestMessages as RequestMessage[],
+            messages: requestMessages,
             stream: true,
           },
           {
@@ -198,6 +240,9 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       }
     },
     onError: (error) => {
+      setQueryProgress({
+        type: 'idle',
+      })
       if (
         error instanceof LLMAPIKeyNotSetException ||
         error instanceof LLMAPIKeyInvalidException
@@ -215,8 +260,11 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     },
   })
 
-  const handleSubmit = (newChatHistory: ChatMessage[]) => {
-    submitMutation.mutate(newChatHistory)
+  const handleSubmit = (
+    newChatHistory: ChatMessage[],
+    useVaultSearch?: boolean,
+  ) => {
+    submitMutation.mutate({ newChatHistory, useVaultSearch })
   }
 
   const applyMutation = useMutation({
@@ -434,15 +482,18 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
                   ),
                 )
               }}
-              onSubmit={(content) => {
+              onSubmit={(content, useVaultSearch) => {
                 if (editorStateToPlainText(content).trim() === '') return
-                handleSubmit([
-                  ...chatMessages.slice(0, index),
-                  {
-                    ...message,
-                    content,
-                  },
-                ])
+                handleSubmit(
+                  [
+                    ...chatMessages.slice(0, index),
+                    {
+                      ...message,
+                      content,
+                    },
+                  ],
+                  useVaultSearch,
+                )
                 chatUserInputRefs.current.get(inputMessage.id)?.focus()
               }}
               onFocus={() => {
@@ -469,6 +520,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
             </ReactMarkdownItem>
           ),
         )}
+        <QueryProgress state={queryProgress} />
       </div>
       <ChatUserInput
         key={inputMessage.id}
@@ -480,9 +532,12 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
             content,
           }))
         }}
-        onSubmit={(content) => {
+        onSubmit={(content, useVaultSearch) => {
           if (editorStateToPlainText(content).trim() === '') return
-          handleSubmit([...chatMessages, { ...inputMessage, content }])
+          handleSubmit(
+            [...chatMessages, { ...inputMessage, content }],
+            useVaultSearch,
+          )
           chatUserInputRefs.current.get(inputMessage.id)?.clear()
           setInputMessage(getNewInputMessage(app))
           handleScrollToBottom()

@@ -1,8 +1,15 @@
-import { TFile } from 'obsidian'
+import { TFile, TFolder } from 'obsidian'
 
 export type MentionableFile = {
   type: 'file'
   file: TFile
+}
+export type MentionableFolder = {
+  type: 'folder'
+  folder: TFolder
+}
+export type MentionableVault = {
+  type: 'vault'
 }
 export type MentionableCurrentFile = {
   type: 'current-file'
@@ -23,6 +30,8 @@ export type MentionableUrl = {
 }
 export type Mentionable =
   | MentionableFile
+  | MentionableFolder
+  | MentionableVault
   | MentionableCurrentFile
   | MentionableBlock
   | MentionableUrl
@@ -30,6 +39,13 @@ export type Mentionable =
 export type SerializedMentionableFile = {
   type: 'file'
   file: string
+}
+export type SerializedMentionableFolder = {
+  type: 'folder'
+  folder: string
+}
+export type SerializedMentionableVault = {
+  type: 'vault'
 }
 export type SerializedMentionableCurrentFile = {
   type: 'current-file'
@@ -48,6 +64,8 @@ export type SerializedMentionableUrl = {
 }
 export type SerializedMentionable =
   | SerializedMentionableFile
+  | SerializedMentionableFolder
+  | SerializedMentionableVault
   | SerializedMentionableCurrentFile
   | SerializedMentionableBlock
   | SerializedMentionableUrl

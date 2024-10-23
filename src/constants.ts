@@ -1,15 +1,5 @@
-import { SmartCopilotSettings } from './types/settings'
-
 export const CHAT_VIEW_TYPE = 'smtcmp-chat-view'
 export const APPLY_VIEW_TYPE = 'smtcmp-apply-view'
-
-export const DEFAULT_SETTINGS: SmartCopilotSettings = {
-  openAIApiKey: '',
-  groqApiKey: '',
-  anthropicApiKey: '',
-  chatModel: 'claude-3-5-sonnet-20240620',
-  applyModel: 'gpt-4o-mini',
-}
 
 export const CHAT_MODEL_OPTIONS = [
   {
@@ -48,3 +38,19 @@ export const APPLY_MODEL_OPTIONS = [
     value: 'llama-3.1-70b-versatile',
   },
 ]
+
+// Update table exports in src/db/schema.ts when updating this
+export const EMBEDDING_MODEL_OPTIONS = [
+  {
+    name: 'text-embedding-3-small (Recommended)',
+    value: 'text-embedding-3-small',
+    dimension: 1536,
+  },
+  {
+    name: 'text-embedding-3-large',
+    value: 'text-embedding-3-large',
+    dimension: 3072,
+  },
+]
+
+export const PGLITE_DB_PATH = '.smtcmp_vector_db.tar.gz'

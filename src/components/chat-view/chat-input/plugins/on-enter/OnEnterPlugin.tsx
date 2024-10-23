@@ -1,11 +1,12 @@
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import { COMMAND_PRIORITY_LOW, KEY_ENTER_COMMAND } from 'lexical'
+import { Platform } from 'obsidian'
 import { useEffect } from 'react'
 
 export default function OnEnterPlugin({
   onEnter,
 }: {
-  onEnter: (evt: KeyboardEvent) => void
+  onEnter: (evt: KeyboardEvent, useVaultSearch?: boolean) => void
 }) {
   const [editor] = useLexicalComposerContext()
 
@@ -14,9 +15,13 @@ export default function OnEnterPlugin({
       KEY_ENTER_COMMAND,
       (evt: KeyboardEvent) => {
         if (evt.shiftKey) {
+          if (Platform.isMacOS ? evt.metaKey : evt.ctrlKey) {
+            onEnter(evt, true)
+            return true
+          }
           return false
         }
-        onEnter(evt)
+        onEnter(evt, false)
         return true
       },
       COMMAND_PRIORITY_LOW,
