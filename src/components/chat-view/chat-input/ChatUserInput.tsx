@@ -26,10 +26,12 @@ import {
 } from 'src/utils/mentionable'
 
 import { useApp } from '../../../contexts/app-context'
+import { useDarkModeContext } from '../../../contexts/dark-mode-context'
 import { Mentionable, SerializedMentionable } from '../../../types/mentionable'
 import { fuzzySearch } from '../../../utils/fuzzy-search'
 import { getMentionableKey } from '../../../utils/mentionable'
 import { readTFileContent } from '../../../utils/obsidian'
+import { MemoizedSyntaxHighlighterWrapper } from '../SyntaxHighlighterWrapper'
 
 import MentionableBadge from './MentionableBadge'
 import { ModelSelect } from './ModelSelect'
@@ -76,6 +78,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
     ref,
   ) => {
     const app = useApp()
+    const { isDarkMode } = useDarkModeContext()
 
     const editorRef = useRef<LexicalEditor | null>(null)
     const contentEditableRef = useRef<HTMLDivElement>(null)
@@ -309,7 +312,14 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
 
         {fileContent && (
           <div className="smtcmp-chat-user-input-file-content-preview">
-            {fileContent}
+            <MemoizedSyntaxHighlighterWrapper
+              isDarkMode={isDarkMode}
+              language="markdown"
+              hasFilename={false}
+              wrapLines={false}
+            >
+              {fileContent}
+            </MemoizedSyntaxHighlighterWrapper>
           </div>
         )}
 

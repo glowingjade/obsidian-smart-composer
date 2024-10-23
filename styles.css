@@ -304,8 +304,7 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   background-color: var(--background-primary);
   border-radius: var(--radius-s);
   border: 1px solid var(--background-modifier-border);
-  padding: var(--size-4-2);
-  max-height: 400px;
+  max-height: 350px;
   overflow-y: auto;
   white-space: pre-line;
 }
