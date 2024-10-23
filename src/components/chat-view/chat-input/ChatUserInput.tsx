@@ -29,6 +29,7 @@ import { getMentionableKey } from '../../../utils/mentionable'
 
 import MentionableBadge from './MentionableBadge'
 import { ModelSelect } from './ModelSelect'
+import AutoLinkMentionPlugin from './plugins/mention/AutoLinkMentionPlugin'
 import { MentionNode } from './plugins/mention/MentionNode'
 import MentionPlugin from './plugins/mention/MentionPlugin'
 import NoFormatPlugin from './plugins/no-format/NoFormatPlugin'
@@ -258,6 +259,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
           />
           <EditorRefPlugin editorRef={editorRef} />
           <NoFormatPlugin />
+          <AutoLinkMentionPlugin />
         </LexicalComposer>
         <ModelSelect />
       </div>

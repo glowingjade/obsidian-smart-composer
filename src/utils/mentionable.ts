@@ -24,6 +24,11 @@ export const serializeMentionable = (
         startLine: mentionable.startLine,
         endLine: mentionable.endLine,
       }
+    case 'url':
+      return {
+        type: 'url',
+        url: mentionable.url,
+      }
   }
 }
 
@@ -69,6 +74,12 @@ export const deserializeMentionable = (
           endLine: mentionable.endLine,
         }
       }
+      case 'url': {
+        return {
+          type: 'url',
+          url: mentionable.url,
+        }
+      }
     }
   } catch (e) {
     console.error('Error deserializing mentionable', e)
@@ -84,6 +95,8 @@ export function getMentionableKey(mentionable: SerializedMentionable): string {
       return `current-file:${mentionable.file ?? 'current'}`
     case 'block':
       return `block:${mentionable.file}:${mentionable.startLine}:${mentionable.endLine}:${mentionable.content}`
+    case 'url':
+      return `url:${mentionable.url}`
   }
 }
 
@@ -95,5 +108,7 @@ export function getMentionableName(mentionable: Mentionable): string {
       return mentionable.file?.name ?? 'Current File'
     case 'block':
       return `${mentionable.file.name} (${mentionable.startLine}:${mentionable.endLine})`
+    case 'url':
+      return mentionable.url
   }
 }
