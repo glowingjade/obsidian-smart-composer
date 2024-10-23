@@ -39,6 +39,7 @@ import OnMutationPlugin, {
 import UpdaterPlugin, {
   UpdaterPluginRef,
 } from './plugins/updater/UpdaterPlugin'
+import { VaultSearchButton } from './VaultSearchButton'
 
 export type ChatUserInputRef = {
   focus: () => void
@@ -48,7 +49,7 @@ export type ChatUserInputRef = {
 export type ChatUserInputProps = {
   message: SerializedEditorState | null // TODO: fix name to initialContent
   onChange: (content: SerializedEditorState) => void
-  onSubmit: (content: SerializedEditorState) => void
+  onSubmit: (content: SerializedEditorState, useVaultSearch?: boolean) => void
   onFocus: () => void
   mentionables: Mentionable[]
   setMentionables: (mentionables: Mentionable[]) => void
@@ -103,7 +104,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
-    const searchFilesByQuery = useCallback(
+    const searchResultByQuery = useCallback(
       (query: string) => fuzzySearch(app, query),
       [app],
     )
@@ -196,6 +197,11 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
       })
     }
 
+    const handleSubmit = (useVaultSearch?: boolean) => {
+      const content = editorRef.current?.getEditorState()?.toJSON()
+      content && onSubmit(content, useVaultSearch)
+    }
+
     return (
       <div className="smtcmp-chat-user-input-container">
         {mentionables.length > 0 && (
@@ -235,7 +241,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
           <HistoryPlugin />
           {autoFocus && <AutoFocusPlugin />}
           <MentionPlugin
-            searchFilesByQuery={searchFilesByQuery}
+            searchResultByQuery={searchResultByQuery}
             onAddMention={handleMentionFile}
           />
           <OnChangePlugin
@@ -245,11 +251,10 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
           />
           <UpdaterPlugin updaterRef={updaterRef} />
           <OnEnterPlugin
-            onEnter={(evt) => {
+            onEnter={(evt, useVaultSearch?: boolean) => {
               evt.preventDefault()
               evt.stopPropagation()
-              const content = editorRef.current?.getEditorState()?.toJSON()
-              content && onSubmit(content)
+              handleSubmit(useVaultSearch)
             }}
           />
           <OnMutationPlugin
@@ -259,7 +264,14 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
           <EditorRefPlugin editorRef={editorRef} />
           <NoFormatPlugin />
         </LexicalComposer>
-        <ModelSelect />
+        <div className="smtcmp-chat-user-input-controls">
+          <ModelSelect />
+          <VaultSearchButton
+            onClick={() => {
+              handleSubmit(true)
+            }}
+          />
+        </div>
       </div>
     )
   },

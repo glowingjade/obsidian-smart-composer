@@ -8,6 +8,7 @@ import { CHAT_VIEW_TYPE } from './constants'
 import { AppProvider } from './contexts/app-context'
 import { DarkModeProvider } from './contexts/dark-mode-context'
 import { LLMProvider } from './contexts/llm-context'
+import { RAGProvider } from './contexts/rag-context'
 import { SettingsProvider } from './contexts/settings-context'
 import SmartCopilotPlugin from './main'
 import { MentionableBlockData } from './types/mentionable'
@@ -41,7 +42,7 @@ export class ChatView extends ItemView {
   }
 
   async onOpen() {
-    this.render()
+    await this.render()
 
     // Consume chatProps
     this.initialChatProps = undefined
@@ -51,12 +52,13 @@ export class ChatView extends ItemView {
     this.root?.unmount()
   }
 
-  render() {
+  async render() {
     if (!this.root) {
       this.root = createRoot(this.containerEl.children[1])
     }
 
     const queryClient = new QueryClient()
+    const ragEngine = await this.plugin.getRAGEngine()
 
     this.root.render(
       <AppProvider app={this.app}>
@@ -69,11 +71,13 @@ export class ChatView extends ItemView {
         >
           <DarkModeProvider>
             <LLMProvider>
-              <QueryClientProvider client={queryClient}>
-                <React.StrictMode>
-                  <Chat ref={this.chatRef} {...this.initialChatProps} />
-                </React.StrictMode>
-              </QueryClientProvider>
+              <RAGProvider ragEngine={ragEngine}>
+                <QueryClientProvider client={queryClient}>
+                  <React.StrictMode>
+                    <Chat ref={this.chatRef} {...this.initialChatProps} />
+                  </React.StrictMode>
+                </QueryClientProvider>
+              </RAGProvider>
             </LLMProvider>
           </DarkModeProvider>
         </SettingsProvider>

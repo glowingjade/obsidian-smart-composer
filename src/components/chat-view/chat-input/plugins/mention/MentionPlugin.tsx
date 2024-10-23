@@ -10,13 +10,14 @@
 
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import { $createTextNode, COMMAND_PRIORITY_NORMAL, TextNode } from 'lexical'
-import { TFile } from 'obsidian'
 import { useCallback, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { serializeMentionable } from 'src/utils/mentionable'
 
-import { Mentionable, MentionableFile } from '../../../../../types/mentionable'
+import { Mentionable } from '../../../../../types/mentionable'
+import { SearchableMentionable } from '../../../../../utils/fuzzy-search'
 import { getMentionableName } from '../../../../../utils/mentionable'
+import { getMentionableIcon } from '../../utils/get-metionable-icon'
 import { MenuOption, MenuTextMatch } from '../shared/LexicalMenu'
 import {
   LexicalTypeaheadMenuPlugin,
@@ -101,12 +102,27 @@ function getPossibleQueryMatch(text: string): MenuTextMatch | null {
 
 class MentionTypeaheadOption extends MenuOption {
   name: string
-  file: TFile
+  mentionable: Mentionable
+  icon: React.ReactNode
 
-  constructor(file: TFile) {
-    super(file.path)
-    this.name = file.name
-    this.file = file
+  constructor(result: SearchableMentionable) {
+    switch (result.type) {
+      case 'file':
+        super(result.file.path)
+        this.name = result.file.name
+        this.mentionable = result
+        break
+      case 'folder':
+        super(result.folder.path)
+        this.name = result.folder.name
+        this.mentionable = result
+        break
+      case 'vault':
+        super('vault')
+        this.name = 'Vault'
+        this.mentionable = result
+        break
+    }
   }
 }
 
@@ -127,6 +143,8 @@ function MentionsTypeaheadMenuItem({
   if (isSelected) {
     className += ' selected'
   }
+
+  const Icon = getMentionableIcon(option.mentionable)
   return (
     <li
       key={option.key}
@@ -139,16 +157,17 @@ function MentionsTypeaheadMenuItem({
       onMouseEnter={onMouseEnter}
       onClick={onClick}
     >
+      {Icon && <Icon size={14} className="smtcmp-popover-item-icon" />}
       <span className="text">{option.name}</span>
     </li>
   )
 }
 
 export default function NewMentionsPlugin({
-  searchFilesByQuery,
+  searchResultByQuery,
   onAddMention,
 }: {
-  searchFilesByQuery: (query: string) => TFile[]
+  searchResultByQuery: (query: string) => SearchableMentionable[]
   onAddMention: (mentionable: Mentionable) => void
 }): JSX.Element | null {
   const [editor] = useLexicalComposerContext()
@@ -157,8 +176,8 @@ export default function NewMentionsPlugin({
 
   const results = useMemo(() => {
     if (queryString == null) return []
-    return searchFilesByQuery(queryString)
-  }, [queryString, searchFilesByQuery])
+    return searchResultByQuery(queryString)
+  }, [queryString, searchResultByQuery])
 
   const checkForSlashTriggerMatch = useBasicTypeaheadTriggerMatch('/', {
     minLength: 0,
@@ -178,14 +197,10 @@ export default function NewMentionsPlugin({
       nodeToReplace: TextNode | null,
       closeMenu: () => void,
     ) => {
-      const mentionable: MentionableFile = {
-        type: 'file',
-        file: selectedOption.file,
-      }
       editor.update(() => {
         const mentionNode = $createMentionNode(
-          getMentionableName(mentionable),
-          serializeMentionable(mentionable),
+          getMentionableName(selectedOption.mentionable),
+          serializeMentionable(selectedOption.mentionable),
         )
         if (nodeToReplace) {
           nodeToReplace.replace(mentionNode)
@@ -198,7 +213,7 @@ export default function NewMentionsPlugin({
         closeMenu()
       })
 
-      onAddMention(mentionable)
+      onAddMention(selectedOption.mentionable)
     },
     [editor, onAddMention],
   )

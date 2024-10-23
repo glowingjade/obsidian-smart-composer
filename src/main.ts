@@ -1,18 +1,23 @@
-import { Editor, MarkdownView, Plugin } from 'obsidian'
+import { Editor, MarkdownView, Notice, Plugin } from 'obsidian'
 
 import { ApplyView } from './ApplyView'
 import { ChatView } from './ChatView'
 import { ChatProps } from './components/chat-view/Chat'
-import { APPLY_VIEW_TYPE, CHAT_VIEW_TYPE, DEFAULT_SETTINGS } from './constants'
+import { APPLY_VIEW_TYPE, CHAT_VIEW_TYPE } from './constants'
 import { SmartCopilotSettingTab } from './settings/SettingTab'
-import { SmartCopilotSettings } from './types/settings'
+import {
+  SmartCopilotSettings,
+  parseSmartCopilotSettings,
+} from './types/settings'
 import { getMentionableBlockData } from './utils/obsidian'
+import { RAGEngine } from './utils/ragEngine'
 
 // Remember to rename these classes and interfaces!
 export default class SmartCopilotPlugin extends Plugin {
   settings: SmartCopilotSettings
   initialChatProps?: ChatProps // TODO: change this to use view state like ApplyView
   settingsChangeListeners: ((newSettings: SmartCopilotSettings) => void)[] = []
+  ragEngine: RAGEngine | null = null
 
   async onload() {
     await this.loadSettings()
@@ -40,6 +45,68 @@ export default class SmartCopilotPlugin extends Plugin {
       },
     })
 
+    this.addCommand({
+      id: 'rebuild-vault-index',
+      name: 'Rebuild entire vault index',
+      callback: async () => {
+        const notice = new Notice('Rebuilding vault index...', 0)
+        try {
+          const ragEngine = await this.getRAGEngine()
+          await ragEngine.updateVaultIndex(
+            { reindexAll: true },
+            (queryProgress) => {
+              if (queryProgress.type === 'indexing') {
+                const { completedChunks, totalChunks } =
+                  queryProgress.indexProgress
+                notice.setMessage(
+                  `Indexing chunks: ${completedChunks} / ${totalChunks}`,
+                )
+              }
+            },
+          )
+          notice.setMessage('Rebuilding vault index complete')
+        } catch (error) {
+          console.error(error)
+          notice.setMessage('Rebuilding vault index failed')
+        } finally {
+          setTimeout(() => {
+            notice.hide()
+          }, 1000)
+        }
+      },
+    })
+
+    this.addCommand({
+      id: 'update-vault-index',
+      name: 'Update index for modified files',
+      callback: async () => {
+        const notice = new Notice('Updating vault index...', 0)
+        try {
+          const ragEngine = await this.getRAGEngine()
+          await ragEngine.updateVaultIndex(
+            { reindexAll: false },
+            (queryProgress) => {
+              if (queryProgress.type === 'indexing') {
+                const { completedChunks, totalChunks } =
+                  queryProgress.indexProgress
+                notice.setMessage(
+                  `Indexing chunks: ${completedChunks} / ${totalChunks}`,
+                )
+              }
+            },
+          )
+          notice.setMessage('Vault index updated')
+        } catch (error) {
+          console.error(error)
+          notice.setMessage('Vault index update failed')
+        } finally {
+          setTimeout(() => {
+            notice.hide()
+          }, 1000)
+        }
+      },
+    })
+
     // This adds a settings tab so the user can configure various aspects of the plugin
     this.addSettingTab(new SmartCopilotSettingTab(this.app, this))
   }
@@ -47,12 +114,13 @@ export default class SmartCopilotPlugin extends Plugin {
   onunload() {}
 
   async loadSettings() {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData())
+    this.settings = parseSmartCopilotSettings(await this.loadData())
   }
 
   async setSettings(newSettings: SmartCopilotSettings) {
     this.settings = newSettings
     await this.saveData(newSettings)
+    this.ragEngine?.setSettings(newSettings)
     this.settingsChangeListeners.forEach((listener) => listener(newSettings))
   }
 
@@ -115,5 +183,12 @@ export default class SmartCopilotPlugin extends Plugin {
       .view as ChatView
     chatView.addSelectionToChat(data)
     chatView.focusMessage()
+  }
+
+  async getRAGEngine(): Promise<RAGEngine> {
+    if (!this.ragEngine) {
+      this.ragEngine = await RAGEngine.create(this.app, this.settings)
+    }
+    return this.ragEngine
   }
 }

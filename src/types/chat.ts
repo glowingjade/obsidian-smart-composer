@@ -5,6 +5,7 @@ import { Mentionable, SerializedMentionable } from './mentionable'
 export type ChatUserMessage = {
   role: 'user'
   content: SerializedEditorState | null
+  promptContent: string | null
   id: string
   mentionables: Mentionable[]
 }
@@ -18,6 +19,7 @@ export type ChatMessage = ChatUserMessage | ChatAssistantMessage
 export type SerializedChatUserMessage = {
   role: 'user'
   content: SerializedEditorState | null
+  promptContent: string | null
   id: string
   mentionables: SerializedMentionable[]
 }
