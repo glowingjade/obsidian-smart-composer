@@ -37,7 +37,7 @@ export class ChatView extends ItemView {
   }
 
   getDisplayText() {
-    return 'Copilot Chat'
+    return 'Smart Composer Chat'
   }
 
   async onOpen() {
