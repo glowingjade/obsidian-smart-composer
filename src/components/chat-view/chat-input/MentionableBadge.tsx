@@ -1,6 +1,10 @@
+import * as HoverCard from '@radix-ui/react-hover-card'
+import { useQuery } from '@tanstack/react-query'
 import { X } from 'lucide-react'
+import { MarkdownView } from 'obsidian'
 import { PropsWithChildren } from 'react'
 
+import { useApp } from '../../../contexts/app-context'
 import {
   Mentionable,
   MentionableBlock,
@@ -34,12 +38,44 @@ function FileBadge({
   mentionable: MentionableFile
   onDelete: () => void
 }) {
+  const app = useApp()
+  const { data: fileContent } = useQuery({
+    queryKey: ['file', mentionable.file.path],
+    queryFn: () => app.vault.cachedRead(mentionable.file),
+  })
+
+  const handleClick = () => {
+    const existingLeaf = app.workspace
+      .getLeavesOfType('markdown')
+      .find(
+        (leaf) =>
+          leaf.view instanceof MarkdownView &&
+          leaf.view.file?.path === mentionable.file.path,
+      )
+
+    if (existingLeaf) {
+      app.workspace.setActiveLeaf(existingLeaf, { focus: true })
+    } else {
+      const leaf = app.workspace.getLeaf('tab')
+      leaf.openFile(mentionable.file)
+    }
+  }
+
   return (
-    <BadgeBase onDelete={onDelete}>
-      <div className="smtcmp-chat-user-input-file-badge-name">
-        <span>{mentionable.file.name}</span>
-      </div>
-    </BadgeBase>
+    <HoverCard.Root>
+      <HoverCard.Trigger onClick={handleClick}>
+        <BadgeBase onDelete={onDelete}>
+          <div className="smtcmp-chat-user-input-file-badge-name">
+            <span>{mentionable.file.name}</span>
+          </div>
+        </BadgeBase>
+      </HoverCard.Trigger>
+      <HoverCard.Portal>
+        <HoverCard.Content className="smtcmp-chat-mentionable-hover-content">
+          {fileContent}
+        </HoverCard.Content>
+      </HoverCard.Portal>
+    </HoverCard.Root>
   )
 }
 
@@ -50,15 +86,31 @@ function CurrentFileBadge({
   mentionable: MentionableCurrentFile
   onDelete: () => void
 }) {
+  const app = useApp()
+  const { data: fileContent } = useQuery({
+    queryKey: ['file', mentionable.file?.path],
+    queryFn: () =>
+      mentionable.file ? app.vault.cachedRead(mentionable?.file) : null,
+  })
+
   return mentionable.file ? (
-    <BadgeBase onDelete={onDelete}>
-      <div className="smtcmp-chat-user-input-file-badge-name">
-        <span>{`${mentionable.file.name}`}</span>
-      </div>
-      <div className="smtcmp-chat-user-input-file-badge-name-block-suffix">
-        {' (Current File)'}
-      </div>
-    </BadgeBase>
+    <HoverCard.Root>
+      <HoverCard.Trigger>
+        <BadgeBase onDelete={onDelete}>
+          <div className="smtcmp-chat-user-input-file-badge-name">
+            <span>{`${mentionable.file.name}`}</span>
+          </div>
+          <div className="smtcmp-chat-user-input-file-badge-name-block-suffix">
+            {' (Current File)'}
+          </div>
+        </BadgeBase>
+      </HoverCard.Trigger>
+      <HoverCard.Portal>
+        <HoverCard.Content className="smtcmp-chat-mentionable-hover-content">
+          {fileContent}
+        </HoverCard.Content>
+      </HoverCard.Portal>
+    </HoverCard.Root>
   ) : null
 }
 

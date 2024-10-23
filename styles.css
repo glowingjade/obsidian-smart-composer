@@ -252,6 +252,20 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   color: var(--color-base-50);
 }
 
+.smtcmp-chat-mentionable-hover-content {
+  background-color: var(--background-primary);
+  border-radius: var(--radius-m);
+  border: 1px solid var(--background-modifier-border);
+  padding: var(--size-4-2);
+  box-shadow: var(--shadow-s);
+  white-space: pre-line;
+  max-width: 300px;
+  z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
+  font-size: var(--font-ui-small);
+}
+
 /**
  * ChatUserInput
  */
