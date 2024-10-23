@@ -46,10 +46,10 @@ export default class SmartCopilotPlugin extends Plugin {
     })
 
     this.addCommand({
-      id: 're-index-vault',
-      name: 'Re-index vault',
+      id: 'rebuild-vault-index',
+      name: 'Rebuild entire vault index',
       callback: async () => {
-        const notice = new Notice('Re-indexing vault...', 0)
+        const notice = new Notice('Rebuilding vault index...', 0)
         try {
           const ragEngine = await this.getRAGEngine()
           await ragEngine.updateVaultIndex(
@@ -64,10 +64,10 @@ export default class SmartCopilotPlugin extends Plugin {
               }
             },
           )
-          notice.setMessage('Re-indexing vault complete')
+          notice.setMessage('Rebuilding vault index complete')
         } catch (error) {
           console.error(error)
-          notice.setMessage('Re-indexing vault failed')
+          notice.setMessage('Rebuilding vault index failed')
         } finally {
           setTimeout(() => {
             notice.hide()
@@ -78,7 +78,7 @@ export default class SmartCopilotPlugin extends Plugin {
 
     this.addCommand({
       id: 'update-vault-index',
-      name: 'Update vault index',
+      name: 'Update index for modified files',
       callback: async () => {
         const notice = new Notice('Updating vault index...', 0)
         try {
@@ -120,6 +120,7 @@ export default class SmartCopilotPlugin extends Plugin {
   async setSettings(newSettings: SmartCopilotSettings) {
     this.settings = newSettings
     await this.saveData(newSettings)
+    this.ragEngine?.setSettings(newSettings)
     this.settingsChangeListeners.forEach((listener) => listener(newSettings))
   }
 

@@ -195,7 +195,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         const abortController = new AbortController()
         activeStreamAbortControllersRef.current.push(abortController)
 
-        const { requestMessages, parsedMessages } =
+        const { requestMessages, compiledMessages } =
           await promptGenerator.generateRequestMessages({
             messages: newChatHistory,
             useVaultSearch,
@@ -206,7 +206,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         })
 
         setChatMessages([
-          ...parsedMessages,
+          ...compiledMessages,
           { role: 'assistant', content: '', id: responseMessageId },
         ])
         const stream = await streamResponse(

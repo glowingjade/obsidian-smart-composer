@@ -144,7 +144,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName('Chunk Size')
       .setDesc(
-        'Set the chunk size for text splitting. After changing this, please re-index your vault manually using the "Re-index Vault" command.',
+        'Set the chunk size for text splitting. After changing this, please re-index the vault using the "Rebuild entire vault index" command.',
       )
       .addText((text) =>
         text

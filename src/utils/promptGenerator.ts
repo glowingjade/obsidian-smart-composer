@@ -41,7 +41,7 @@ export class PromptGenerator {
     onQueryProgressChange?: (queryProgress: QueryProgressState) => void
   }): Promise<{
     requestMessages: RequestMessage[]
-    parsedMessages: ChatMessage[]
+    compiledMessages: ChatMessage[]
   }> {
     if (messages.length === 0) {
       throw new Error('No messages provided')
@@ -58,7 +58,7 @@ export class PromptGenerator {
         onQueryProgressChange: onQueryProgressChange,
       },
     )
-    let parsedMessages = [
+    let compiledMessages = [
       ...messages.slice(0, -1),
       {
         ...lastUserMessage,
@@ -67,8 +67,8 @@ export class PromptGenerator {
     ]
 
     // Safeguard: ensure all user messages have parsed content
-    parsedMessages = await Promise.all(
-      parsedMessages.map(async (message) => {
+    compiledMessages = await Promise.all(
+      compiledMessages.map(async (message) => {
         if (message.role === 'user' && !message.promptContent) {
           const { promptContent } = await this.compileUserMessagePrompt({
             message,
@@ -94,7 +94,7 @@ export class PromptGenerator {
     const requestMessages: RequestMessage[] = [
       systemMessage,
       ...(currentFileMessage ? [currentFileMessage] : []),
-      ...parsedMessages.map((message): RequestMessage => {
+      ...compiledMessages.map((message): RequestMessage => {
         if (message.role === 'user') {
           return {
             role: 'user',
@@ -112,7 +112,7 @@ export class PromptGenerator {
 
     return {
       requestMessages,
-      parsedMessages,
+      compiledMessages,
     }
   }
 

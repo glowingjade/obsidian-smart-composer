@@ -19,8 +19,8 @@ export class ChatView extends ItemView {
   private root: Root | null = null
   private settings: SmartCopilotSettings
   private initialChatProps?: ChatProps
+  private ragEngine: RAGEngine | null
   private chatRef: React.RefObject<ChatRef> = React.createRef()
-  private onRAGEngineChange: (ragEngine: RAGEngine) => void
 
   constructor(
     leaf: WorkspaceLeaf,
@@ -29,9 +29,7 @@ export class ChatView extends ItemView {
     super(leaf)
     this.settings = plugin.settings
     this.initialChatProps = plugin.initialChatProps
-    this.onRAGEngineChange = (ragEngine) => {
-      plugin.ragEngine = ragEngine
-    }
+    this.ragEngine = plugin.ragEngine
   }
 
   getViewType() {
@@ -75,7 +73,7 @@ export class ChatView extends ItemView {
         >
           <DarkModeProvider>
             <LLMProvider>
-              <RAGProvider onRAGEngineChange={this.onRAGEngineChange}>
+              <RAGProvider ragEngine={this.ragEngine}>
                 <QueryClientProvider client={queryClient}>
                   <React.StrictMode>
                     <Chat ref={this.chatRef} {...this.initialChatProps} />

@@ -61,49 +61,8 @@ export class VectorDbManager {
       filesToIndex = this.app.vault.getMarkdownFiles()
       await this.repository.clearAllVectors(embeddingModel)
     } else {
-      const deleteVectorsForDeletedFiles = async () => {
-        const indexedFilePaths =
-          await this.repository.getIndexedFilePaths(embeddingModel)
-        for (const filePath of indexedFilePaths) {
-          if (!this.app.vault.getAbstractFileByPath(filePath)) {
-            await this.repository.deleteVectorsForMultipleFiles(
-              [filePath],
-              embeddingModel,
-            )
-          }
-        }
-      }
-
-      const getFilesToIndex = async (): Promise<TFile[]> => {
-        const markdownFiles = this.app.vault.getMarkdownFiles()
-        const filesToIndex = await Promise.all(
-          markdownFiles.map(async (file) => {
-            const fileChunks = await this.repository.getVectorsByFilePath(
-              file.path,
-              embeddingModel,
-            )
-            if (fileChunks.length === 0) {
-              // File is not indexed, so we need to index it
-              const fileContent = await this.app.vault.cachedRead(file)
-              if (fileContent.length === 0) {
-                // Ignore empty files
-                return null
-              }
-              return file
-            }
-            const outOfDate = file.stat.mtime > fileChunks[0].mtime
-            if (outOfDate) {
-              // File has changed, so we need to re-index it
-              return file
-            }
-            return null
-          }),
-        ).then((files) => files.filter(Boolean) as TFile[])
-        return filesToIndex
-      }
-
-      await deleteVectorsForDeletedFiles()
-      filesToIndex = await getFilesToIndex()
+      await this.deleteVectorsForDeletedFiles(embeddingModel)
+      filesToIndex = await this.getFilesToIndex(embeddingModel)
       await this.repository.deleteVectorsForMultipleFiles(
         filesToIndex.map((file) => file.path),
         embeddingModel,
@@ -203,5 +162,46 @@ export class VectorDbManager {
       await this.repository.insertVectors(embeddingChunks, embeddingModel)
       await this.repository.save()
     }
+  }
+
+  async deleteVectorsForDeletedFiles(embeddingModel: EmbeddingModel) {
+    const indexedFilePaths =
+      await this.repository.getIndexedFilePaths(embeddingModel)
+    for (const filePath of indexedFilePaths) {
+      if (!this.app.vault.getAbstractFileByPath(filePath)) {
+        await this.repository.deleteVectorsForMultipleFiles(
+          [filePath],
+          embeddingModel,
+        )
+      }
+    }
+  }
+
+  async getFilesToIndex(embeddingModel: EmbeddingModel): Promise<TFile[]> {
+    const markdownFiles = this.app.vault.getMarkdownFiles()
+    const filesToIndex = await Promise.all(
+      markdownFiles.map(async (file) => {
+        const fileChunks = await this.repository.getVectorsByFilePath(
+          file.path,
+          embeddingModel,
+        )
+        if (fileChunks.length === 0) {
+          // File is not indexed, so we need to index it
+          const fileContent = await this.app.vault.cachedRead(file)
+          if (fileContent.length === 0) {
+            // Ignore empty files
+            return null
+          }
+          return file
+        }
+        const outOfDate = file.stat.mtime > fileChunks[0].mtime
+        if (outOfDate) {
+          // File has changed, so we need to re-index it
+          return file
+        }
+        return null
+      }),
+    ).then((files) => files.filter(Boolean) as TFile[])
+    return filesToIndex
   }
 }

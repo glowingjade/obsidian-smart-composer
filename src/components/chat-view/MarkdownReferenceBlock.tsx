@@ -51,7 +51,9 @@ export default function MarkdownReferenceBlock({
     const existingLeaf = app.workspace
       .getLeavesOfType('markdown')
       .find(
-        (leaf) => leaf.view instanceof MarkdownView && leaf.view.file === file,
+        (leaf) =>
+          leaf.view instanceof MarkdownView &&
+          leaf.view.file?.path === file.path,
       )
 
     if (existingLeaf) {
