@@ -223,6 +223,11 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   white-space: nowrap;
 }
 
+.smtcmp-chat-user-input-file-badge:hover {
+  background-color: var(--background-modifier-hover);
+  cursor: pointer;
+}
+
 .smtcmp-chat-user-input-file-badge-delete {
   cursor: pointer;
   display: flex;
@@ -252,18 +257,17 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   color: var(--color-base-50);
 }
 
-.smtcmp-chat-mentionable-hover-content {
+/*
+ * TODO: Fix style
+ */
+.smtcmp-chat-user-input-file-content-preview {
   background-color: var(--background-primary);
-  border-radius: var(--radius-m);
+  border-radius: var(--radius-s);
   border: 1px solid var(--background-modifier-border);
   padding: var(--size-4-2);
-  box-shadow: var(--shadow-s);
-  white-space: pre-line;
-  max-width: 300px;
-  z-index: 1000;
-  max-height: 300px;
+  max-height: 400px;
   overflow-y: auto;
-  font-size: var(--font-ui-small);
+  white-space: pre-line;
 }
 
 /**

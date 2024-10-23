@@ -1,10 +1,6 @@
-import * as HoverCard from '@radix-ui/react-hover-card'
-import { useQuery } from '@tanstack/react-query'
 import { X } from 'lucide-react'
-import { MarkdownView } from 'obsidian'
 import { PropsWithChildren } from 'react'
 
-import { useApp } from '../../../contexts/app-context'
 import {
   Mentionable,
   MentionableBlock,
@@ -15,15 +11,20 @@ import {
 function BadgeBase({
   children,
   onDelete,
+  onClick,
 }: PropsWithChildren<{
   onDelete: () => void
+  onClick: () => void
 }>) {
   return (
-    <div className="smtcmp-chat-user-input-file-badge">
+    <div className="smtcmp-chat-user-input-file-badge" onClick={onClick}>
       {children}
       <div
         className="smtcmp-chat-user-input-file-badge-delete"
-        onClick={onDelete}
+        onClick={(evt) => {
+          evt.stopPropagation()
+          onDelete()
+        }}
       >
         <X size={10} />
       </div>
@@ -34,95 +35,53 @@ function BadgeBase({
 function FileBadge({
   mentionable,
   onDelete,
+  onClick,
 }: {
   mentionable: MentionableFile
   onDelete: () => void
+  onClick: () => void
 }) {
-  const app = useApp()
-  const { data: fileContent } = useQuery({
-    queryKey: ['file', mentionable.file.path],
-    queryFn: () => app.vault.cachedRead(mentionable.file),
-  })
-
-  const handleClick = () => {
-    const existingLeaf = app.workspace
-      .getLeavesOfType('markdown')
-      .find(
-        (leaf) =>
-          leaf.view instanceof MarkdownView &&
-          leaf.view.file?.path === mentionable.file.path,
-      )
-
-    if (existingLeaf) {
-      app.workspace.setActiveLeaf(existingLeaf, { focus: true })
-    } else {
-      const leaf = app.workspace.getLeaf('tab')
-      leaf.openFile(mentionable.file)
-    }
-  }
-
   return (
-    <HoverCard.Root>
-      <HoverCard.Trigger onClick={handleClick}>
-        <BadgeBase onDelete={onDelete}>
-          <div className="smtcmp-chat-user-input-file-badge-name">
-            <span>{mentionable.file.name}</span>
-          </div>
-        </BadgeBase>
-      </HoverCard.Trigger>
-      <HoverCard.Portal>
-        <HoverCard.Content className="smtcmp-chat-mentionable-hover-content">
-          {fileContent}
-        </HoverCard.Content>
-      </HoverCard.Portal>
-    </HoverCard.Root>
+    <BadgeBase onDelete={onDelete} onClick={onClick}>
+      <div className="smtcmp-chat-user-input-file-badge-name">
+        <span>{mentionable.file.name}</span>
+      </div>
+    </BadgeBase>
   )
 }
 
 function CurrentFileBadge({
   mentionable,
   onDelete,
+  onClick,
 }: {
   mentionable: MentionableCurrentFile
   onDelete: () => void
+  onClick: () => void
 }) {
-  const app = useApp()
-  const { data: fileContent } = useQuery({
-    queryKey: ['file', mentionable.file?.path],
-    queryFn: () =>
-      mentionable.file ? app.vault.cachedRead(mentionable?.file) : null,
-  })
-
   return mentionable.file ? (
-    <HoverCard.Root>
-      <HoverCard.Trigger>
-        <BadgeBase onDelete={onDelete}>
-          <div className="smtcmp-chat-user-input-file-badge-name">
-            <span>{`${mentionable.file.name}`}</span>
-          </div>
-          <div className="smtcmp-chat-user-input-file-badge-name-block-suffix">
-            {' (Current File)'}
-          </div>
-        </BadgeBase>
-      </HoverCard.Trigger>
-      <HoverCard.Portal>
-        <HoverCard.Content className="smtcmp-chat-mentionable-hover-content">
-          {fileContent}
-        </HoverCard.Content>
-      </HoverCard.Portal>
-    </HoverCard.Root>
+    <BadgeBase onDelete={onDelete} onClick={onClick}>
+      <div className="smtcmp-chat-user-input-file-badge-name">
+        <span>{`${mentionable.file.name}`}</span>
+      </div>
+      <div className="smtcmp-chat-user-input-file-badge-name-block-suffix">
+        {' (Current File)'}
+      </div>
+    </BadgeBase>
   ) : null
 }
 
 function BlockBadge({
   mentionable,
   onDelete,
+  onClick,
 }: {
   mentionable: MentionableBlock
   onDelete: () => void
+  onClick: () => void
 }) {
   return (
-    <BadgeBase onDelete={onDelete}>
+    <BadgeBase onDelete={onDelete} onClick={onClick}>
       <div className="smtcmp-chat-user-input-file-badge-name-block-name">
         <span>{`${mentionable.file.name}`}</span>
       </div>
@@ -136,16 +95,36 @@ function BlockBadge({
 export default function MentionableBadge({
   mentionable,
   onDelete,
+  onClick,
 }: {
   mentionable: Mentionable
   onDelete: () => void
+  onClick: () => void
 }) {
   switch (mentionable.type) {
     case 'file':
-      return <FileBadge mentionable={mentionable} onDelete={onDelete} />
+      return (
+        <FileBadge
+          mentionable={mentionable}
+          onDelete={onDelete}
+          onClick={onClick}
+        />
+      )
     case 'current-file':
-      return <CurrentFileBadge mentionable={mentionable} onDelete={onDelete} />
+      return (
+        <CurrentFileBadge
+          mentionable={mentionable}
+          onDelete={onDelete}
+          onClick={onClick}
+        />
+      )
     case 'block':
-      return <BlockBadge mentionable={mentionable} onDelete={onDelete} />
+      return (
+        <BlockBadge
+          mentionable={mentionable}
+          onDelete={onDelete}
+          onClick={onClick}
+        />
+      )
   }
 }
