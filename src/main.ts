@@ -51,8 +51,9 @@ export default class SmartCopilotPlugin extends Plugin {
       callback: async () => {
         const notice = new Notice('Re-indexing vault...', 0)
         try {
-          await this.ragEngine?.updateVaultIndex(
-            { overwrite: true },
+          const ragEngine = await this.getRAGEngine()
+          await ragEngine.updateVaultIndex(
+            { reindexAll: true },
             (queryProgress) => {
               if (queryProgress.type === 'indexing') {
                 const { completedChunks, totalChunks } =
@@ -81,8 +82,9 @@ export default class SmartCopilotPlugin extends Plugin {
       callback: async () => {
         const notice = new Notice('Updating vault index...', 0)
         try {
-          await this.ragEngine?.updateVaultIndex(
-            { overwrite: false },
+          const ragEngine = await this.getRAGEngine()
+          await ragEngine.updateVaultIndex(
+            { reindexAll: false },
             (queryProgress) => {
               if (queryProgress.type === 'indexing') {
                 const { completedChunks, totalChunks } =
@@ -180,5 +182,12 @@ export default class SmartCopilotPlugin extends Plugin {
       .view as ChatView
     chatView.addSelectionToChat(data)
     chatView.focusMessage()
+  }
+
+  async getRAGEngine(): Promise<RAGEngine> {
+    if (!this.ragEngine) {
+      this.ragEngine = await RAGEngine.create(this.app, this.settings)
+    }
+    return this.ragEngine
   }
 }

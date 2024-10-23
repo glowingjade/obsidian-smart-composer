@@ -29,14 +29,16 @@ export class VectorDbRepository {
     this.dbPath = dbPath
   }
 
-  async initialize(): Promise<void> {
-    this.db = await this.loadExistingDatabase()
-    if (!this.db) {
-      this.db = await this.createNewDatabase()
+  static async create(app: App, dbPath: string): Promise<VectorDbRepository> {
+    const repo = new VectorDbRepository(app, dbPath)
+    repo.db = await repo.loadExistingDatabase()
+    if (!repo.db) {
+      repo.db = await repo.createNewDatabase()
     }
-    await this.migrateDatabase()
-    await this.save()
+    await repo.migrateDatabase()
+    await repo.save()
     console.log('Smart composer database initialized.')
+    return repo
   }
 
   async getIndexedFilePaths(embeddingModel: {
@@ -235,6 +237,7 @@ export class VectorDbRepository {
     })
   }
 
+  // TODO: This function is a temporary workaround chosen due to the difficulty of bundling postgres.wasm and postgres.data from node_modules into a single JS file. The ultimate goal is to bundle everything into one JS file in the future.
   private async loadPGliteResources(): Promise<{
     fsBundle: Blob
     wasmModule: WebAssembly.Module

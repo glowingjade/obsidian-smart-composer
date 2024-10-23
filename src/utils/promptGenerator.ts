@@ -34,11 +34,11 @@ export class PromptGenerator {
   public async generateRequestMessages({
     messages,
     useVaultSearch,
-    setQueryProgress,
+    onQueryProgressChange,
   }: {
     messages: ChatMessage[]
     useVaultSearch?: boolean
-    setQueryProgress?: (queryProgress: QueryProgressState) => void
+    onQueryProgressChange?: (queryProgress: QueryProgressState) => void
   }): Promise<{
     requestMessages: RequestMessage[]
     parsedMessages: ChatMessage[]
@@ -54,7 +54,7 @@ export class PromptGenerator {
     const { parsedContent, shouldUseRAG } = await this.parseUserMessage({
       message: lastUserMessage,
       useVaultSearch,
-      setQueryProgress,
+      onQueryProgressChange: onQueryProgressChange,
     })
     let parsedMessages = [
       ...messages.slice(0, -1),
@@ -115,11 +115,11 @@ export class PromptGenerator {
   private async parseUserMessage({
     message,
     useVaultSearch,
-    setQueryProgress,
+    onQueryProgressChange,
   }: {
     message: ChatUserMessage
     useVaultSearch?: boolean
-    setQueryProgress?: (queryProgress: QueryProgressState) => void
+    onQueryProgressChange?: (queryProgress: QueryProgressState) => void
   }): Promise<{
     parsedContent: string
     shouldUseRAG: boolean
@@ -142,7 +142,7 @@ export class PromptGenerator {
         (m): m is MentionableVault => m.type === 'vault',
       )
 
-    setQueryProgress?.({
+    onQueryProgressChange?.({
       type: 'reading-mentionables',
     })
     const files = message.mentionables
@@ -176,7 +176,7 @@ export class PromptGenerator {
       const results = useVaultSearch
         ? await this.ragEngine.processQuery({
             query,
-            setQueryProgress,
+            onQueryProgressChange: onQueryProgressChange,
           }) // TODO: Add similarity boosting for mentioned files or folders
         : await this.ragEngine.processQuery({
             query,
@@ -184,7 +184,7 @@ export class PromptGenerator {
               files: files.map((f) => f.path),
               folders: folders.map((f) => f.path),
             },
-            setQueryProgress,
+            onQueryProgressChange: onQueryProgressChange,
           })
       filePrompt = `## Potentially Relevant Snippets from the current vault
 ${results

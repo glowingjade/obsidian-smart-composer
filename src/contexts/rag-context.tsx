@@ -3,10 +3,9 @@ import {
   createContext,
   useContext,
   useEffect,
-  useMemo,
+  useState,
 } from 'react'
 
-import { getEmbeddingModel } from '../utils/embedding'
 import { RAGEngine } from '../utils/ragEngine'
 
 import { useApp } from './app-context'
@@ -19,39 +18,27 @@ export type RAGContextType = {
 const RAGContext = createContext<RAGContextType | null>(null)
 
 export function RAGProvider({
-  setPluginRAGEngine,
   children,
-}: PropsWithChildren<{ setPluginRAGEngine: (ragEngine: RAGEngine) => void }>) {
+  onRAGEngineChange,
+}: PropsWithChildren<{ onRAGEngineChange: (ragEngine: RAGEngine) => void }>) {
   const app = useApp()
   const { settings } = useSettings()
+  const [ragEngine, setRagEngine] = useState<RAGEngine | null>(null)
 
-  const ragEngine = useMemo(() => {
-    return new RAGEngine(app, settings)
+  useEffect(() => {
+    RAGEngine.create(app, settings).then(setRagEngine)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [app])
 
-  const embeddingModel = useMemo(() => {
-    return getEmbeddingModel(settings.embeddingModel, {
-      openAIApiKey: settings.openAIApiKey,
-    })
-  }, [settings.embeddingModel, settings.openAIApiKey])
-
   useEffect(() => {
-    void ragEngine.initialize(embeddingModel)
-    setPluginRAGEngine(ragEngine)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ragEngine])
+    if (ragEngine) {
+      onRAGEngineChange(ragEngine)
+    }
+  }, [ragEngine, onRAGEngineChange])
 
   useEffect(() => {
     ragEngine?.setSettings(settings)
   }, [ragEngine, settings])
-
-  useEffect(() => {
-    if (!ragEngine || !embeddingModel) {
-      return
-    }
-    ragEngine.setEmbeddingModel(embeddingModel)
-  }, [ragEngine, embeddingModel])
 
   return (
     <RAGContext.Provider value={{ ragEngine }}>{children}</RAGContext.Provider>

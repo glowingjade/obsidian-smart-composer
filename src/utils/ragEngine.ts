@@ -5,38 +5,46 @@ import { SelectVector } from '../db/schema'
 import { EmbeddingModel } from '../types/embedding'
 import { SmartCopilotSettings } from '../types/settings'
 
+import { getEmbeddingModel } from './embedding'
 import { VectorDbManager } from './vector-db/manager'
 
 export class RAGEngine {
+  private app: App
   private settings: SmartCopilotSettings
   private vectorDbManager: VectorDbManager
   private embeddingModel: EmbeddingModel | null = null
 
   constructor(app: App, settings: SmartCopilotSettings) {
+    this.app = app
     this.settings = settings
-    this.vectorDbManager = new VectorDbManager(app)
   }
 
-  async initialize(embeddingModel: EmbeddingModel): Promise<void> {
-    await this.vectorDbManager.initialize()
-    this.setEmbeddingModel(embeddingModel)
-  }
-
-  setEmbeddingModel(embeddingModel: EmbeddingModel) {
-    this.embeddingModel = embeddingModel
+  static async create(
+    app: App,
+    settings: SmartCopilotSettings,
+  ): Promise<RAGEngine> {
+    const ragEngine = new RAGEngine(app, settings)
+    ragEngine.vectorDbManager = await VectorDbManager.create(app)
+    ragEngine.embeddingModel = getEmbeddingModel(settings.embeddingModel, {
+      openAIApiKey: settings.openAIApiKey,
+    })
+    return ragEngine
   }
 
   setSettings(settings: SmartCopilotSettings) {
     this.settings = settings
+    this.embeddingModel = getEmbeddingModel(settings.embeddingModel, {
+      openAIApiKey: settings.openAIApiKey,
+    })
   }
 
   // TODO: Implement automatic vault re-indexing when settings are changed.
   // Currently, users must manually re-index the vault.
   async updateVaultIndex(
-    options: { overwrite: boolean } = {
-      overwrite: false,
+    options: { reindexAll: boolean } = {
+      reindexAll: false,
     },
-    setQueryProgress?: (queryProgress: QueryProgressState) => void,
+    onQueryProgressChange?: (queryProgress: QueryProgressState) => void,
   ): Promise<void> {
     if (!this.embeddingModel) {
       throw new Error('Embedding model is not set')
@@ -45,10 +53,10 @@ export class RAGEngine {
       this.embeddingModel,
       {
         chunkSize: this.settings.ragOptions.chunkSize,
-        overwrite: options.overwrite,
+        reindexAll: options.reindexAll,
       },
       (indexProgress) => {
-        setQueryProgress?.({
+        onQueryProgressChange?.({
           type: 'indexing',
           indexProgress,
         })
@@ -59,14 +67,14 @@ export class RAGEngine {
   async processQuery({
     query,
     scope,
-    setQueryProgress,
+    onQueryProgressChange,
   }: {
     query: string
     scope?: {
       files: string[]
       folders: string[]
     }
-    setQueryProgress?: (queryProgress: QueryProgressState) => void
+    onQueryProgressChange?: (queryProgress: QueryProgressState) => void
   }): Promise<
     (Omit<SelectVector, 'embedding'> & {
       similarity: number
@@ -77,9 +85,9 @@ export class RAGEngine {
     }
     // TODO: Decide the vault index update strategy.
     // Current approach: Update on every query.
-    await this.updateVaultIndex({ overwrite: false }, setQueryProgress)
+    await this.updateVaultIndex({ reindexAll: false }, onQueryProgressChange)
     const queryEmbedding = await this.getQueryEmbedding(query)
-    setQueryProgress?.({
+    onQueryProgressChange?.({
       type: 'querying',
     })
     const queryResult = await this.vectorDbManager.performSimilaritySearch(
@@ -91,7 +99,7 @@ export class RAGEngine {
         scope,
       },
     )
-    setQueryProgress?.({
+    onQueryProgressChange?.({
       type: 'querying-done',
       queryResult,
     })

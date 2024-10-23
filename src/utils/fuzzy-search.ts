@@ -14,8 +14,6 @@ export type SearchResultItem =
   | MentionableFolder
   | MentionableVault
 
-type SearchItem = FolderWithMetadata | FileWithMetadata | VaultSearchItem
-
 type VaultSearchItem = {
   type: 'vault'
   path: string
@@ -35,6 +33,8 @@ type FolderWithMetadata = {
   path: string
   folder: TFolder
 }
+
+type SearchItem = FolderWithMetadata | FileWithMetadata | VaultSearchItem
 
 function scoreFnWithBoost(score: number, searchItem: SearchItem) {
   switch (searchItem.type) {

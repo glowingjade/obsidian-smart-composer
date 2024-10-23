@@ -199,7 +199,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           await promptGenerator.generateRequestMessages({
             messages: newChatHistory,
             useVaultSearch,
-            setQueryProgress,
+            onQueryProgressChange: setQueryProgress,
           })
         setQueryProgress({
           type: 'idle',
