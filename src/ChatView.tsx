@@ -29,7 +29,9 @@ export class ChatView extends ItemView {
     super(leaf)
     this.settings = plugin.settings
     this.initialChatProps = plugin.initialChatProps
-    this.ragEngine = plugin.ragEngine
+    plugin.getRAGEngine().then((ragEngine) => {
+      this.ragEngine = ragEngine
+    })
   }
 
   getViewType() {
