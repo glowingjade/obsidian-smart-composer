@@ -51,27 +51,31 @@ export class PromptGenerator {
       throw new Error('Last message is not a user message')
     }
 
-    const { parsedContent, shouldUseRAG } = await this.parseUserMessage({
-      message: lastUserMessage,
-      useVaultSearch,
-      onQueryProgressChange: onQueryProgressChange,
-    })
+    const { promptContent, shouldUseRAG } = await this.compileUserMessagePrompt(
+      {
+        message: lastUserMessage,
+        useVaultSearch,
+        onQueryProgressChange: onQueryProgressChange,
+      },
+    )
     let parsedMessages = [
       ...messages.slice(0, -1),
       {
         ...lastUserMessage,
-        parsedContent: parsedContent,
+        promptContent: promptContent,
       },
     ]
 
     // Safeguard: ensure all user messages have parsed content
     parsedMessages = await Promise.all(
       parsedMessages.map(async (message) => {
-        if (message.role === 'user' && !message.parsedContent) {
-          const { parsedContent } = await this.parseUserMessage({ message })
+        if (message.role === 'user' && !message.promptContent) {
+          const { promptContent } = await this.compileUserMessagePrompt({
+            message,
+          })
           return {
             ...message,
-            parsedContent: parsedContent,
+            promptContent: promptContent,
           }
         }
         return message
@@ -94,7 +98,7 @@ export class PromptGenerator {
         if (message.role === 'user') {
           return {
             role: 'user',
-            content: message.parsedContent ?? '',
+            content: message.promptContent ?? '',
           }
         } else {
           return {
@@ -112,7 +116,7 @@ export class PromptGenerator {
     }
   }
 
-  private async parseUserMessage({
+  private async compileUserMessagePrompt({
     message,
     useVaultSearch,
     onQueryProgressChange,
@@ -121,7 +125,7 @@ export class PromptGenerator {
     useVaultSearch?: boolean
     onQueryProgressChange?: (queryProgress: QueryProgressState) => void
   }): Promise<{
-    parsedContent: string
+    promptContent: string
     shouldUseRAG: boolean
   }> {
     if (!this.ragEngine) {
@@ -129,7 +133,7 @@ export class PromptGenerator {
     }
     if (!message.content) {
       return {
-        parsedContent: '',
+        promptContent: '',
         shouldUseRAG: false,
       }
     }
@@ -214,7 +218,7 @@ ${results
       .join('')
 
     return {
-      parsedContent: `${filePrompt}${blockPrompt}\n\n${query}\n\n`,
+      promptContent: `${filePrompt}${blockPrompt}\n\n${query}\n\n`,
       shouldUseRAG,
     }
   }

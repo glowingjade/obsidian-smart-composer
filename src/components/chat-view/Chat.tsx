@@ -45,7 +45,7 @@ const getNewInputMessage = (app: App): ChatUserMessage => {
   return {
     role: 'user',
     content: null,
-    parsedContent: null,
+    promptContent: null,
     id: uuidv4(),
     mentionables: [
       {
