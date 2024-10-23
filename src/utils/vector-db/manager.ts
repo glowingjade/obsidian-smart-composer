@@ -180,7 +180,7 @@ export class VectorDbManager {
     }
   }
 
-  async deleteVectorsForDeletedFiles(embeddingModel: EmbeddingModel) {
+  private async deleteVectorsForDeletedFiles(embeddingModel: EmbeddingModel) {
     const indexedFilePaths =
       await this.repository.getIndexedFilePaths(embeddingModel)
     for (const filePath of indexedFilePaths) {
@@ -193,7 +193,9 @@ export class VectorDbManager {
     }
   }
 
-  async getFilesToIndex(embeddingModel: EmbeddingModel): Promise<TFile[]> {
+  private async getFilesToIndex(
+    embeddingModel: EmbeddingModel,
+  ): Promise<TFile[]> {
     const markdownFiles = this.app.vault.getMarkdownFiles()
     const filesToIndex = await Promise.all(
       markdownFiles.map(async (file) => {
