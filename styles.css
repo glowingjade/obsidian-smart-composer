@@ -209,6 +209,41 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   padding-bottom: var(--size-4-1);
 }
 
+.smtcmp-chat-user-input-controls {
+  display: flex;
+  flex-direction: row;
+  gap: var(--size-4-1);
+  justify-content: space-between;
+  align-items: center;
+  height: var(--size-4-4);
+}
+
+.smtcmp-chat-user-input-controls .smtcmp-chat-user-input-vault-search-button {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2-3);
+  font-size: var(--font-smallest);
+  color: var(--text-muted);
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0 var(--size-2-1);
+  border-radius: var(--radius-s);
+  height: var(--size-4-4);
+  cursor: pointer;
+  transition: color 0.15s ease-in-out;
+
+  &:hover {
+    color: var(--text-normal);
+  }
+
+  .smtcmp-chat-user-input-vault-search-button-icons {
+    display: flex;
+    align-items: center;
+    gap: 0.5px;
+  }
+}
+
 .smtcmp-chat-user-input-file-badge {
   display: flex;
   align-items: center;
@@ -240,6 +275,11 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   gap: var(--size-2-1);
   flex-grow: 1;
   overflow: hidden;
+  align-items: center;
+}
+
+.smtcmp-chat-user-input-file-badge-name-icon {
+  color: var(--text-muted);
 }
 
 .smtcmp-chat-user-input-file-badge-name span {
@@ -324,7 +364,7 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
 .smtcmp-popover ul li {
   margin: 0;
   min-width: 180px;
-  font-size: 14px;
+  font-size: var(--font-ui-smaller);
   outline: none;
   cursor: pointer;
   border-radius: 0;
@@ -355,8 +395,8 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   border: 0;
   min-height: 20px;
   align-items: center;
-  justify-content: space-between;
-  gap: 2rem;
+  gap: var(--size-4-1);
+  align-items: start;
 }
 
 .smtcmp-chat-list-dropdown-empty {
@@ -376,17 +416,18 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   background-color: var(--background-modifier-hover);
 }
 
-.smtcmp-popover li .icon {
+.smtcmp-popover-item-icon {
   display: flex;
-  width: 20px;
-  height: 20px;
   user-select: none;
-  margin-right: 8px;
   line-height: 16px;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  width: 250px;
+  height: 14px;
+  padding-top: 1px;
+  align-items: center;
+  color: var(--text-muted);
+  min-width: fit-content;
 }
 
 .smtcmp-popover li:hover {
@@ -439,6 +480,7 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   border-bottom: 1px solid var(--background-modifier-border);
   background-color: var(--background-primary);
   border-radius: var(--radius-s) var(--radius-s) 0 0;
+  height: calc(var(--size-4-8) - var(--size-4-1));
 }
 
 .smtcmp-code-block.has-filename:hover .smtcmp-code-block-header {
@@ -470,6 +512,7 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   gap: 0;
   overflow: hidden;
   min-width: fit-content;
+  height: 100%;
 }
 
 .smtcmp-code-block.has-filename .smtcmp-code-block-header-button button {
@@ -479,6 +522,8 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   border-radius: 0;
   background-color: var(--background-primary);
   font-size: var(--font-medium);
+  height: 100%;
+  cursor: pointer;
 
   &:hover {
     background-color: var(--background-modifier-hover);
@@ -638,5 +683,60 @@ button.smtcmp-chat-input-model-select {
 
   &:hover {
     color: var(--text-normal);
+  }
+}
+
+.smtcmp-query-progress {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
+
+.smtcmp-query-progress-detail {
+  font-size: var(--font-smallest);
+  color: var(--text-faint);
+}
+
+.smtcmp-dot-loader {
+  display: inline-block;
+  text-align: left;
+}
+
+.smtcmp-dot-loader::after {
+  content: '...';
+  animation: dotFade 0.75s steps(4, end) infinite;
+  color: var(--text-muted);
+}
+
+@keyframes dotFade {
+  0%,
+  100% {
+    content: '';
+  }
+  25% {
+    content: '.';
+  }
+  50% {
+    content: '..';
+  }
+  75% {
+    content: '...';
+  }
+}
+
+.smtcmp-tooltip-content {
+  background-color: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  padding: var(--size-4-1) var(--size-4-2);
+  font-size: var(--font-smallest);
+  animation: fadeIn 0.1s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }

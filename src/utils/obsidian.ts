@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, TFile, Vault } from 'obsidian'
+import { App, Editor, MarkdownView, TFile, TFolder, Vault } from 'obsidian'
 
 import { MentionableBlockData } from '../types/mentionable'
 
@@ -16,6 +16,18 @@ export async function readMultipleTFiles(
   // Read files in parallel
   const readPromises = files.map((file) => readTFileContent(file, vault))
   return await Promise.all(readPromises)
+}
+
+export function getNestedFiles(folder: TFolder, vault: Vault): TFile[] {
+  const files: TFile[] = []
+  for (const child of folder.children) {
+    if (child instanceof TFile) {
+      files.push(child)
+    } else if (child instanceof TFolder) {
+      files.push(...getNestedFiles(child, vault))
+    }
+  }
+  return files
 }
 
 export async function getMentionableBlockData(

@@ -7,6 +7,8 @@ export type ParsedSmtcmpBlock =
       content: string
       language?: string
       filename?: string
+      startLine?: number
+      endLine?: number
     }
 
 export function parsesmtcmpBlocks(input: string): ParsedSmtcmpBlock[] {
@@ -35,6 +37,10 @@ export function parsesmtcmpBlocks(input: string): ParsedSmtcmpBlock[] {
       const filename = node.attrs.find(
         (attr) => attr.name === 'filename',
       )?.value
+      const startLine = node.attrs.find(
+        (attr) => attr.name === 'startline',
+      )?.value
+      const endLine = node.attrs.find((attr) => attr.name === 'endline')?.value
 
       const children = node.childNodes
       if (children.length === 0) {
@@ -43,6 +49,8 @@ export function parsesmtcmpBlocks(input: string): ParsedSmtcmpBlock[] {
           content: '',
           language,
           filename,
+          startLine: startLine ? parseInt(startLine) : undefined,
+          endLine: endLine ? parseInt(endLine) : undefined,
         })
       } else {
         const innerContentStartOffset =
@@ -57,6 +65,8 @@ export function parsesmtcmpBlocks(input: string): ParsedSmtcmpBlock[] {
           content: input.slice(innerContentStartOffset, innerContentEndOffset),
           language,
           filename,
+          startLine: startLine ? parseInt(startLine) : undefined,
+          endLine: endLine ? parseInt(endLine) : undefined,
         })
       }
       lastEndOffset = endOffset

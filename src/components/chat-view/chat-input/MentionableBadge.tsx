@@ -6,7 +6,11 @@ import {
   MentionableBlock,
   MentionableCurrentFile,
   MentionableFile,
+  MentionableFolder,
+  MentionableVault,
 } from '../../../types/mentionable'
+
+import { getMentionableIcon } from './utils/get-metionable-icon'
 
 function BadgeBase({
   children,
@@ -41,10 +45,70 @@ function FileBadge({
   onDelete: () => void
   onClick: () => void
 }) {
+  const Icon = getMentionableIcon(mentionable)
   return (
     <BadgeBase onDelete={onDelete} onClick={onClick}>
       <div className="smtcmp-chat-user-input-file-badge-name">
+        {Icon && (
+          <Icon
+            size={10}
+            className="smtcmp-chat-user-input-file-badge-name-icon"
+          />
+        )}
         <span>{mentionable.file.name}</span>
+      </div>
+    </BadgeBase>
+  )
+}
+
+function FolderBadge({
+  mentionable,
+  onDelete,
+  onClick,
+}: {
+  mentionable: MentionableFolder
+  onDelete: () => void
+  onClick: () => void
+}) {
+  const Icon = getMentionableIcon(mentionable)
+  return (
+    <BadgeBase onDelete={onDelete} onClick={onClick}>
+      {/* TODO: Update style */}
+      <div className="smtcmp-chat-user-input-file-badge-name">
+        {Icon && (
+          <Icon
+            size={10}
+            className="smtcmp-chat-user-input-file-badge-name-icon"
+          />
+        )}
+        <span>{mentionable.folder.name}</span>
+      </div>
+    </BadgeBase>
+  )
+}
+
+function VaultBadge({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  mentionable,
+  onDelete,
+  onClick,
+}: {
+  mentionable: MentionableVault
+  onDelete: () => void
+  onClick: () => void
+}) {
+  const Icon = getMentionableIcon(mentionable)
+  return (
+    <BadgeBase onDelete={onDelete} onClick={onClick}>
+      {/* TODO: Update style */}
+      <div className="smtcmp-chat-user-input-file-badge-name">
+        {Icon && (
+          <Icon
+            size={10}
+            className="smtcmp-chat-user-input-file-badge-name-icon"
+          />
+        )}
+        <span>Vault</span>
       </div>
     </BadgeBase>
   )
@@ -59,9 +123,16 @@ function CurrentFileBadge({
   onDelete: () => void
   onClick: () => void
 }) {
+  const Icon = getMentionableIcon(mentionable)
   return mentionable.file ? (
     <BadgeBase onDelete={onDelete} onClick={onClick}>
       <div className="smtcmp-chat-user-input-file-badge-name">
+        {Icon && (
+          <Icon
+            size={10}
+            className="smtcmp-chat-user-input-file-badge-name-icon"
+          />
+        )}
         <span>{`${mentionable.file.name}`}</span>
       </div>
       <div className="smtcmp-chat-user-input-file-badge-name-block-suffix">
@@ -80,9 +151,16 @@ function BlockBadge({
   onDelete: () => void
   onClick: () => void
 }) {
+  const Icon = getMentionableIcon(mentionable)
   return (
     <BadgeBase onDelete={onDelete} onClick={onClick}>
       <div className="smtcmp-chat-user-input-file-badge-name-block-name">
+        {Icon && (
+          <Icon
+            size={10}
+            className="smtcmp-chat-user-input-file-badge-name-block-name-icon"
+          />
+        )}
         <span>{`${mentionable.file.name}`}</span>
       </div>
       <div className="smtcmp-chat-user-input-file-badge-name-block-suffix">
@@ -105,6 +183,22 @@ export default function MentionableBadge({
     case 'file':
       return (
         <FileBadge
+          mentionable={mentionable}
+          onDelete={onDelete}
+          onClick={onClick}
+        />
+      )
+    case 'folder':
+      return (
+        <FolderBadge
+          mentionable={mentionable}
+          onDelete={onDelete}
+          onClick={onClick}
+        />
+      )
+    case 'vault':
+      return (
+        <VaultBadge
           mentionable={mentionable}
           onDelete={onDelete}
           onClick={onClick}

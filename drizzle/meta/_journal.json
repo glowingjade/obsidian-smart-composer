@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1729509950412,
+      "tag": "0000_add_vector_extension",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1729509994653,
+      "tag": "0001_create_vector_data_tables",
+      "breakpoints": true
+    }
+  ]
+}
