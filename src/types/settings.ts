@@ -20,5 +20,10 @@ const smartCopilotSettingsSchema = z.object({
 export type SmartCopilotSettings = z.infer<typeof smartCopilotSettingsSchema>
 
 export function parseSmartCopilotSettings(data: unknown): SmartCopilotSettings {
-  return smartCopilotSettingsSchema.parse(data)
+  try {
+    return smartCopilotSettingsSchema.parse(data)
+  } catch (error) {
+    console.warn('Invalid settings provided, using defaults:', error)
+    return smartCopilotSettingsSchema.parse({})
+  }
 }
