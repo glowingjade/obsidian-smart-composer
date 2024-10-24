@@ -1,9 +1,8 @@
-import { MarkdownView } from 'obsidian'
 import { PropsWithChildren, useEffect, useMemo, useState } from 'react'
 
 import { useApp } from '../../contexts/app-context'
 import { useDarkModeContext } from '../../contexts/dark-mode-context'
-import { readTFileContent } from '../../utils/obsidian'
+import { openMarkdownFile, readTFileContent } from '../../utils/obsidian'
 
 import { MemoizedSyntaxHighlighterWrapper } from './SyntaxHighlighterWrapper'
 
@@ -45,27 +44,7 @@ export default function MarkdownReferenceBlock({
   }, [filename, startLine, endLine, app.vault])
 
   const handleClick = () => {
-    const file = app.vault.getFileByPath(filename)
-    if (!file) return
-
-    const existingLeaf = app.workspace
-      .getLeavesOfType('markdown')
-      .find(
-        (leaf) =>
-          leaf.view instanceof MarkdownView &&
-          leaf.view.file?.path === file.path,
-      )
-
-    if (existingLeaf) {
-      app.workspace.setActiveLeaf(existingLeaf, { focus: true })
-      const view = existingLeaf.view as MarkdownView
-      view.setEphemeralState({ line: startLine })
-    } else {
-      const leaf = app.workspace.getLeaf('tab')
-      leaf.openFile(file, {
-        eState: { line: startLine },
-      })
-    }
+    openMarkdownFile(app, filename, startLine)
   }
 
   // TODO: Update styles

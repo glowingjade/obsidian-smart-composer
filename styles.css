@@ -297,9 +297,6 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   color: var(--color-base-50);
 }
 
-/*
- * TODO: Fix style
- */
 .smtcmp-chat-user-input-file-content-preview {
   background-color: var(--background-primary);
   border-radius: var(--radius-s);

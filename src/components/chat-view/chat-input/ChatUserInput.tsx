@@ -11,7 +11,6 @@ import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin'
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
 import { useQuery } from '@tanstack/react-query'
 import { $nodesOfType, LexicalEditor, SerializedEditorState } from 'lexical'
-import { MarkdownView } from 'obsidian'
 import {
   forwardRef,
   useCallback,
@@ -30,7 +29,7 @@ import { useDarkModeContext } from '../../../contexts/dark-mode-context'
 import { Mentionable, SerializedMentionable } from '../../../types/mentionable'
 import { fuzzySearch } from '../../../utils/fuzzy-search'
 import { getMentionableKey } from '../../../utils/mentionable'
-import { readTFileContent } from '../../../utils/obsidian'
+import { openMarkdownFile, readTFileContent } from '../../../utils/obsidian'
 import { MemoizedSyntaxHighlighterWrapper } from '../SyntaxHighlighterWrapper'
 
 import MentionableBadge from './MentionableBadge'
@@ -284,21 +283,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
                     m.file &&
                     mentionableKey === displayedMentionableKey
                   ) {
-                    // Open the file if clicked again
-                    const existingLeaf = app.workspace
-                      .getLeavesOfType('markdown')
-                      .find(
-                        (leaf) =>
-                          leaf.view instanceof MarkdownView &&
-                          leaf.view.file?.path === m.file?.path,
-                      )
-
-                    if (existingLeaf) {
-                      app.workspace.setActiveLeaf(existingLeaf, { focus: true })
-                    } else {
-                      const leaf = app.workspace.getLeaf('tab')
-                      leaf.openFile(m.file)
-                    }
+                    openMarkdownFile(app, m.file.path)
                   } else {
                     setDisplayedMentionableKey(mentionableKey)
                   }
