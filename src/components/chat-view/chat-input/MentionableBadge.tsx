@@ -7,6 +7,7 @@ import {
   MentionableCurrentFile,
   MentionableFile,
   MentionableFolder,
+  MentionableUrl,
   MentionableVault,
 } from '../../../types/mentionable'
 
@@ -120,7 +121,7 @@ function CurrentFileBadge({
             className="smtcmp-chat-user-input-file-badge-name-icon"
           />
         )}
-        <span>{`${mentionable.file.name}`}</span>
+        <span>{mentionable.file.name}</span>
       </div>
       <div className="smtcmp-chat-user-input-file-badge-name-block-suffix">
         {' (Current File)'}
@@ -146,10 +147,33 @@ function BlockBadge({
             className="smtcmp-chat-user-input-file-badge-name-block-name-icon"
           />
         )}
-        <span>{`${mentionable.file.name}`}</span>
+        <span>{mentionable.file.name}</span>
       </div>
       <div className="smtcmp-chat-user-input-file-badge-name-block-suffix">
         {` (${mentionable.startLine}:${mentionable.endLine})`}
+      </div>
+    </BadgeBase>
+  )
+}
+
+function UrlBadge({
+  mentionable,
+  onDelete,
+}: {
+  mentionable: MentionableUrl
+  onDelete: () => void
+}) {
+  const Icon = getMentionableIcon(mentionable)
+  return (
+    <BadgeBase onDelete={onDelete}>
+      <div className="smtcmp-chat-user-input-file-badge-name">
+        {Icon && (
+          <Icon
+            size={10}
+            className="smtcmp-chat-user-input-file-badge-name-icon"
+          />
+        )}
+        <span>{mentionable.url}</span>
       </div>
     </BadgeBase>
   )
@@ -173,5 +197,7 @@ export default function MentionableBadge({
       return <CurrentFileBadge mentionable={mentionable} onDelete={onDelete} />
     case 'block':
       return <BlockBadge mentionable={mentionable} onDelete={onDelete} />
+    case 'url':
+      return <UrlBadge mentionable={mentionable} onDelete={onDelete} />
   }
 }

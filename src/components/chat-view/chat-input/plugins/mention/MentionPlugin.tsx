@@ -165,10 +165,8 @@ function MentionsTypeaheadMenuItem({
 
 export default function NewMentionsPlugin({
   searchResultByQuery,
-  onAddMention,
 }: {
   searchResultByQuery: (query: string) => SearchableMentionable[]
-  onAddMention: (mentionable: Mentionable) => void
 }): JSX.Element | null {
   const [editor] = useLexicalComposerContext()
 
@@ -212,10 +210,8 @@ export default function NewMentionsPlugin({
         spaceNode.select()
         closeMenu()
       })
-
-      onAddMention(selectedOption.mentionable)
     },
-    [editor, onAddMention],
+    [editor],
   )
 
   const checkForMentionMatch = useCallback(

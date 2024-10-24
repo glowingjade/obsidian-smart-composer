@@ -5,11 +5,12 @@ import {
   $isRangeSelection,
   COMMAND_PRIORITY_LOW,
   PASTE_COMMAND,
+  PasteCommandType,
   TextNode,
 } from 'lexical'
 import { useEffect } from 'react'
 
-import { MentionableUrl } from '../../../../../types/mentionable'
+import { Mentionable, MentionableUrl } from '../../../../../types/mentionable'
 import {
   getMentionableName,
   serializeMentionable,
@@ -108,68 +109,67 @@ function $textNodeTransform(node: TextNode) {
   spaceNode.select()
 }
 
+function $handlePaste(event: PasteCommandType) {
+  const clipboardData =
+    event instanceof ClipboardEvent ? event.clipboardData : null
+
+  if (!clipboardData) return false
+
+  const text = clipboardData.getData('text/plain')
+
+  const urlMatches = findURLs(text)
+  if (urlMatches.length === 0) {
+    return false
+  }
+
+  const selection = $getSelection()
+  if (!$isRangeSelection(selection)) {
+    return false
+  }
+
+  const nodes = []
+  const addedMentionables: Mentionable[] = []
+  let lastIndex = 0
+
+  urlMatches.forEach((urlMatch) => {
+    // Add text node for unmatched part
+    if (urlMatch.index > lastIndex) {
+      nodes.push($createTextNode(text.slice(lastIndex, urlMatch.index)))
+    }
+
+    const mentionable: MentionableUrl = {
+      type: 'url',
+      url: urlMatch.url,
+    }
+
+    // Add mention node
+    nodes.push(
+      $createMentionNode(urlMatch.text, serializeMentionable(mentionable)),
+    )
+    addedMentionables.push(mentionable)
+
+    lastIndex = urlMatch.index + urlMatch.length
+
+    // Add space node after mention if next character is not space or end of string
+    if (lastIndex >= text.length || text[lastIndex] !== ' ') {
+      nodes.push($createTextNode(' '))
+    }
+  })
+
+  // Add remaining text if any
+  if (lastIndex < text.length) {
+    nodes.push($createTextNode(text.slice(lastIndex)))
+  }
+
+  selection.insertNodes(nodes)
+  return true
+}
+
 export default function AutoLinkMentionPlugin() {
   const [editor] = useLexicalComposerContext()
 
   useEffect(() => {
-    editor.registerCommand(
-      PASTE_COMMAND,
-      (event) => {
-        const clipboardData =
-          event instanceof ClipboardEvent ? event.clipboardData : null
-
-        if (!clipboardData) return false
-
-        const text = clipboardData.getData('text/plain')
-
-        const urlMatches = findURLs(text)
-        if (urlMatches.length === 0) {
-          return false
-        }
-
-        const selection = $getSelection()
-        if (!$isRangeSelection(selection)) {
-          return false
-        }
-
-        const nodes = []
-        let lastIndex = 0
-
-        urlMatches.forEach((urlMatch) => {
-          // Add text node for unmatched part
-          if (urlMatch.index > lastIndex) {
-            nodes.push($createTextNode(text.slice(lastIndex, urlMatch.index)))
-          }
-
-          // Add mention node
-          nodes.push(
-            $createMentionNode(
-              urlMatch.text,
-              serializeMentionable({
-                type: 'url',
-                url: urlMatch.url,
-              }),
-            ),
-          )
-
-          lastIndex = urlMatch.index + urlMatch.length
-
-          // Add space node after mention if next character is not space or end of string
-          if (lastIndex >= text.length || text[lastIndex] !== ' ') {
-            nodes.push($createTextNode(' '))
-          }
-        })
-
-        // Add remaining text if any
-        if (lastIndex < text.length) {
-          nodes.push($createTextNode(text.slice(lastIndex)))
-        }
-
-        selection.insertNodes(nodes)
-        return true
-      },
-      COMMAND_PRIORITY_LOW,
-    )
+    editor.registerCommand(PASTE_COMMAND, $handlePaste, COMMAND_PRIORITY_LOW)
 
     editor.registerNodeTransform(TextNode, $textNodeTransform)
   }, [editor])

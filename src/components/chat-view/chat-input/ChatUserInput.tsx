@@ -110,20 +110,6 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
       [app],
     )
 
-    const handleMentionFile = (mentionable: Mentionable) => {
-      const mentionableKey = getMentionableKey(
-        serializeMentionable(mentionable),
-      )
-      if (
-        mentionables.some(
-          (m) => getMentionableKey(serializeMentionable(m)) === mentionableKey,
-        )
-      ) {
-        return
-      }
-      setMentionables([...mentionables, mentionable])
-    }
-
     const handleMentionNodeMutation = (
       mutations: NodeMutations<MentionNode>,
     ) => {
@@ -241,10 +227,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
           />
           <HistoryPlugin />
           {autoFocus && <AutoFocusPlugin />}
-          <MentionPlugin
-            searchResultByQuery={searchResultByQuery}
-            onAddMention={handleMentionFile}
-          />
+          <MentionPlugin searchResultByQuery={searchResultByQuery} />
           <OnChangePlugin
             onChange={(editorState) => {
               onChange(editorState.toJSON())
