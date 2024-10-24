@@ -46,7 +46,7 @@ import UpdaterPlugin, {
   UpdaterPluginRef,
 } from './plugins/updater/UpdaterPlugin'
 import { SubmitButton } from './SubmitButton'
-import { VaultSearchButton } from './VaultSearchButton'
+import { VaultChatButton } from './VaultChatButton'
 
 export type ChatUserInputRef = {
   focus: () => void
@@ -345,7 +345,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
           <ModelSelect />
           <div className="smtcmp-chat-user-input-controls-buttons">
             <SubmitButton onClick={() => handleSubmit()} />
-            <VaultSearchButton
+            <VaultChatButton
               onClick={() => {
                 handleSubmit(true)
               }}
