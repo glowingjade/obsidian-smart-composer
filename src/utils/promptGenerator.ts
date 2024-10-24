@@ -1,4 +1,5 @@
-import { App, TFile } from 'obsidian'
+import { App, TFile, requestUrl } from 'obsidian'
+import TurndownService from 'turndown'
 
 import { editorStateToPlainText } from '../components/chat-view/chat-input/utils/editor-state-to-plain-text'
 import { QueryProgressState } from '../components/chat-view/QueryProgress'
@@ -8,6 +9,7 @@ import {
   MentionableBlock,
   MentionableFile,
   MentionableFolder,
+  MentionableUrl,
   MentionableVault,
 } from '../types/mentionable'
 import { SmartCopilotSettings } from '../types/settings'
@@ -217,8 +219,29 @@ ${results
       })
       .join('')
 
+    const urls = message.mentionables.filter(
+      (m): m is MentionableUrl => m.type === 'url',
+    )
+
+    const urlPrompt =
+      urls.length > 0
+        ? `## Potentially Relevant Websearch Results
+${(
+  await Promise.all(
+    urls.map(
+      async ({ url }) => `\`\`\`
+Website URL: ${url}
+Website Content:
+${await this.getWebsiteContent(url)}
+\`\`\``,
+    ),
+  )
+).join('\n')}
+`
+        : ''
+
     return {
-      promptContent: `${filePrompt}${blockPrompt}\n\n${query}\n\n`,
+      promptContent: `${filePrompt}${blockPrompt}${urlPrompt}\n\n${query}\n\n`,
       shouldUseRAG,
     }
   }
@@ -325,5 +348,34 @@ When writing out new markdown blocks, remember not to include "line_number|" at 
       return `${startLine + index}|${line}`
     })
     return linesWithNumbers.join('\n')
+  }
+
+  /**
+   * TODO: Improve markdown conversion logic
+   * - filter visually hidden elements
+   * ...
+   */
+  private async getWebsiteContent(url: string): Promise<string> {
+    const response = await requestUrl({ url })
+
+    const turndown = new TurndownService()
+
+    turndown.addRule('ignoreEmptyLinks', {
+      filter: (node) => {
+        return (
+          node.nodeName === 'A' &&
+          node.textContent?.trim() === '' &&
+          !node.querySelector('img')
+        )
+      },
+      replacement: () => '',
+    })
+
+    turndown.remove('script')
+    turndown.remove('style')
+
+    const markdown: string = turndown.turndown(response.text)
+
+    return markdown
   }
 }
