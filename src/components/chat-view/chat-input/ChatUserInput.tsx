@@ -283,6 +283,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
                     m.file &&
                     mentionableKey === displayedMentionableKey
                   ) {
+                    // open file on click again
                     openMarkdownFile(app, m.file.path)
                   } else {
                     setDisplayedMentionableKey(mentionableKey)
