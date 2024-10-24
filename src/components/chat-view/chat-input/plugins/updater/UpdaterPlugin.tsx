@@ -1,10 +1,9 @@
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
-import { $getRoot, SerializedEditorState } from 'lexical'
+import { SerializedEditorState } from 'lexical'
 import { Ref, useImperativeHandle } from 'react'
 
 export type UpdaterPluginRef = {
   update: (content: SerializedEditorState) => void
-  clear: () => void
 }
 
 export default function UpdaterPlugin({
@@ -17,11 +16,6 @@ export default function UpdaterPlugin({
   useImperativeHandle(updaterRef, () => ({
     update: (content: SerializedEditorState) => {
       editor.setEditorState(editor.parseEditorState(content))
-    },
-    clear: () => {
-      editor.update(() => {
-        $getRoot().clear()
-      })
     },
   }))
 
