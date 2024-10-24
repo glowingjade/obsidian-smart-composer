@@ -31,6 +31,10 @@ import {
   LLMAPIKeyInvalidException,
   LLMAPIKeyNotSetException,
 } from '../../utils/llm/exception'
+import {
+  getMentionableKey,
+  serializeMentionable,
+} from '../../utils/mentionable'
 import { readTFileContent } from '../../utils/obsidian'
 import { PromptGenerator } from '../../utils/promptGenerator'
 
@@ -98,6 +102,16 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     }
     return newMessage
   })
+  const [addedBlockKey, setAddedBlockKey] = useState<string | null>(
+    props.selectedBlock
+      ? getMentionableKey(
+          serializeMentionable({
+            type: 'block',
+            ...props.selectedBlock,
+          }),
+        )
+      : null,
+  )
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
   const [focusedMessageId, setFocusedMessageId] = useState<string | null>(null)
   const [currentConversationId, setCurrentConversationId] =
@@ -404,6 +418,8 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         ...data,
       }
 
+      setAddedBlockKey(getMentionableKey(serializeMentionable(mentionable)))
+
       if (focusedMessageId === inputMessage.id) {
         setInputMessage((prevInputMessage) => ({
           ...prevInputMessage,
@@ -553,6 +569,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           }))
         }}
         autoFocus
+        addedBlockKey={addedBlockKey}
       />
     </div>
   )

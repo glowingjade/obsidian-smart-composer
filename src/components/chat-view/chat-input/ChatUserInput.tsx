@@ -9,6 +9,7 @@ import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary'
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin'
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin'
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
+import { useQuery } from '@tanstack/react-query'
 import { $nodesOfType, LexicalEditor, SerializedEditorState } from 'lexical'
 import {
   forwardRef,
@@ -16,6 +17,7 @@ import {
   useEffect,
   useImperativeHandle,
   useRef,
+  useState,
 } from 'react'
 import {
   deserializeMentionable,
@@ -23,9 +25,12 @@ import {
 } from 'src/utils/mentionable'
 
 import { useApp } from '../../../contexts/app-context'
+import { useDarkModeContext } from '../../../contexts/dark-mode-context'
 import { Mentionable, SerializedMentionable } from '../../../types/mentionable'
 import { fuzzySearch } from '../../../utils/fuzzy-search'
 import { getMentionableKey } from '../../../utils/mentionable'
+import { openMarkdownFile, readTFileContent } from '../../../utils/obsidian'
+import { MemoizedSyntaxHighlighterWrapper } from '../SyntaxHighlighterWrapper'
 
 import MentionableBadge from './MentionableBadge'
 import { ModelSelect } from './ModelSelect'
@@ -55,6 +60,7 @@ export type ChatUserInputProps = {
   mentionables: Mentionable[]
   setMentionables: (mentionables: Mentionable[]) => void
   autoFocus?: boolean
+  addedBlockKey?: string | null
 }
 
 const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
@@ -67,14 +73,26 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
       mentionables,
       setMentionables,
       autoFocus = false,
+      addedBlockKey,
     },
     ref,
   ) => {
     const app = useApp()
+    const { isDarkMode } = useDarkModeContext()
 
     const editorRef = useRef<LexicalEditor | null>(null)
     const contentEditableRef = useRef<HTMLDivElement>(null)
     const updaterRef = useRef<UpdaterPluginRef | null>(null)
+
+    const [displayedMentionableKey, setDisplayedMentionableKey] = useState<
+      string | null
+    >(addedBlockKey ?? null)
+
+    useEffect(() => {
+      if (addedBlockKey) {
+        setDisplayedMentionableKey(addedBlockKey)
+      }
+    }, [addedBlockKey])
 
     useImperativeHandle(ref, () => ({
       focus: () => {
@@ -184,6 +202,48 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
       })
     }
 
+    const { data: fileContent } = useQuery({
+      queryKey: [
+        'file',
+        displayedMentionableKey,
+        mentionables.map((m) => getMentionableKey(serializeMentionable(m))), // should be updated when mentionables change (especially on delete)
+      ],
+      queryFn: async () => {
+        if (!displayedMentionableKey) return null
+
+        const displayedMentionable = mentionables.find(
+          (m) =>
+            getMentionableKey(serializeMentionable(m)) ===
+            displayedMentionableKey,
+        )
+
+        if (!displayedMentionable) return null
+
+        if (
+          displayedMentionable.type === 'file' ||
+          displayedMentionable.type === 'current-file'
+        ) {
+          if (!displayedMentionable.file) return null
+          return await readTFileContent(displayedMentionable.file, app.vault)
+        } else if (displayedMentionable.type === 'block') {
+          const fileContent = await readTFileContent(
+            displayedMentionable.file,
+            app.vault,
+          )
+
+          return fileContent
+            .split('\n')
+            .slice(
+              displayedMentionable.startLine - 1,
+              displayedMentionable.endLine,
+            )
+            .join('\n')
+        }
+
+        return null
+      },
+    })
+
     const handleSubmit = (useVaultSearch?: boolean) => {
       const content = editorRef.current?.getEditorState()?.toJSON()
       content && onSubmit(content, useVaultSearch)
@@ -198,8 +258,38 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
                 key={getMentionableKey(serializeMentionable(m))}
                 mentionable={m}
                 onDelete={() => handleMentionableDelete(m)}
+                onClick={() => {
+                  const mentionableKey = getMentionableKey(
+                    serializeMentionable(m),
+                  )
+                  if (
+                    (m.type === 'current-file' ||
+                      m.type === 'file' ||
+                      m.type === 'block') &&
+                    m.file &&
+                    mentionableKey === displayedMentionableKey
+                  ) {
+                    // open file on click again
+                    openMarkdownFile(app, m.file.path)
+                  } else {
+                    setDisplayedMentionableKey(mentionableKey)
+                  }
+                }}
               />
             ))}
+          </div>
+        )}
+
+        {fileContent && (
+          <div className="smtcmp-chat-user-input-file-content-preview">
+            <MemoizedSyntaxHighlighterWrapper
+              isDarkMode={isDarkMode}
+              language="markdown"
+              hasFilename={false}
+              wrapLines={false}
+            >
+              {fileContent}
+            </MemoizedSyntaxHighlighterWrapper>
           </div>
         )}
 
