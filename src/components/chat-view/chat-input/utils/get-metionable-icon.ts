@@ -1,4 +1,4 @@
-import { FileIcon, FolderClosedIcon, FoldersIcon } from 'lucide-react'
+import { FileIcon, FolderClosedIcon, FoldersIcon, LinkIcon } from 'lucide-react'
 
 import { Mentionable } from '../../../../types/mentionable'
 
@@ -12,6 +12,10 @@ export const getMentionableIcon = (mentionable: Mentionable) => {
       return FoldersIcon
     case 'current-file':
       return FileIcon
+    case 'block':
+      return FileIcon
+    case 'url':
+      return LinkIcon
     default:
       return null
   }

@@ -24,12 +24,17 @@ export type MentionableBlockData = {
 export type MentionableBlock = MentionableBlockData & {
   type: 'block'
 }
+export type MentionableUrl = {
+  type: 'url'
+  url: string
+}
 export type Mentionable =
   | MentionableFile
   | MentionableFolder
   | MentionableVault
   | MentionableCurrentFile
   | MentionableBlock
+  | MentionableUrl
 
 export type SerializedMentionableFile = {
   type: 'file'
@@ -53,9 +58,14 @@ export type SerializedMentionableBlock = {
   startLine: number
   endLine: number
 }
+export type SerializedMentionableUrl = {
+  type: 'url'
+  url: string
+}
 export type SerializedMentionable =
   | SerializedMentionableFile
   | SerializedMentionableFolder
   | SerializedMentionableVault
   | SerializedMentionableCurrentFile
   | SerializedMentionableBlock
+  | SerializedMentionableUrl

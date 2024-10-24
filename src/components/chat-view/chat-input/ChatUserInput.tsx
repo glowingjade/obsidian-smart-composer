@@ -34,6 +34,7 @@ import { MemoizedSyntaxHighlighterWrapper } from '../SyntaxHighlighterWrapper'
 
 import MentionableBadge from './MentionableBadge'
 import { ModelSelect } from './ModelSelect'
+import AutoLinkMentionPlugin from './plugins/mention/AutoLinkMentionPlugin'
 import { MentionNode } from './plugins/mention/MentionNode'
 import MentionPlugin from './plugins/mention/MentionPlugin'
 import NoFormatPlugin from './plugins/no-format/NoFormatPlugin'
@@ -127,21 +128,6 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
       [app],
     )
 
-    const handleMentionFile = (mentionable: Mentionable) => {
-      const mentionableKey = getMentionableKey(
-        serializeMentionable(mentionable),
-      )
-      if (
-        mentionables.some(
-          (m) => getMentionableKey(serializeMentionable(m)) === mentionableKey,
-        )
-      ) {
-        return
-      }
-      setMentionables([...mentionables, mentionable])
-      setDisplayedMentionableKey(mentionableKey)
-    }
-
     const handleMentionNodeMutation = (
       mutations: NodeMutations<MentionNode>,
     ) => {
@@ -195,6 +181,11 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
               .filter((v) => !!v),
           ),
       )
+      if (addedMentionables.length > 0) {
+        setDisplayedMentionableKey(
+          getMentionableKey(addedMentionables[addedMentionables.length - 1]),
+        )
+      }
     }
 
     const handleMentionableDelete = (mentionable: Mentionable) => {
@@ -331,10 +322,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
           />
           <HistoryPlugin />
           {autoFocus && <AutoFocusPlugin />}
-          <MentionPlugin
-            searchResultByQuery={searchResultByQuery}
-            onAddMention={handleMentionFile}
-          />
+          <MentionPlugin searchResultByQuery={searchResultByQuery} />
           <OnChangePlugin
             onChange={(editorState) => {
               onChange(editorState.toJSON())
@@ -354,6 +342,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
           />
           <EditorRefPlugin editorRef={editorRef} />
           <NoFormatPlugin />
+          <AutoLinkMentionPlugin />
         </LexicalComposer>
         <div className="smtcmp-chat-user-input-controls">
           <ModelSelect />
