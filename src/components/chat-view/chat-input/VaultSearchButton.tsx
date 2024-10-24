@@ -14,17 +14,18 @@ export function VaultSearchButton({ onClick }: { onClick: () => void }) {
         <Tooltip.Root>
           <Tooltip.Trigger asChild>
             <button
-              className="smtcmp-chat-user-input-vault-search-button"
+              className="smtcmp-chat-user-input-submit-button"
               onClick={onClick}
             >
-              <div className="smtcmp-chat-user-input-vault-search-button-icons">
+              <div className="smtcmp-chat-user-input-submit-button-icons">
                 {Platform.isMacOS ? (
                   <Command size={10} />
                 ) : (
                   <ChevronUp size={12} />
                 )}
-                <ArrowBigUp size={14} />
-                <CornerDownLeftIcon size={10} />
+                {/* TODO: Replace with a custom icon */}
+                <ArrowBigUp size={12} />
+                <CornerDownLeftIcon size={12} />
               </div>
               <div>Vault Search</div>
             </button>
