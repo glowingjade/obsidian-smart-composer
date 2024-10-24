@@ -111,7 +111,10 @@ export default class SmartCopilotPlugin extends Plugin {
     this.addSettingTab(new SmartCopilotSettingTab(this.app, this))
   }
 
-  onunload() {}
+  onunload() {
+    this.ragEngine?.cleanup()
+    this.ragEngine = null
+  }
 
   async loadSettings() {
     this.settings = parseSmartCopilotSettings(await this.loadData())

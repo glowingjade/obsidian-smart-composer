@@ -41,6 +41,12 @@ export class VectorDbRepository {
     return repo
   }
 
+  async cleanup() {
+    this.pgClient?.close()
+    this.db = null
+    this.pgClient = null
+  }
+
   async getIndexedFilePaths(embeddingModel: {
     name: string
   }): Promise<string[]> {
