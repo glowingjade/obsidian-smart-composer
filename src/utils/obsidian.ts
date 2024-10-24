@@ -51,8 +51,8 @@ export async function getMentionableBlockData(
   return {
     content: selectionContent,
     file,
-    startLine,
-    endLine,
+    startLine: startLine + 1, // +1 because startLine is 0-indexed
+    endLine: endLine + 1, // +1 because startLine is 0-indexed
   }
 }
 
@@ -91,4 +91,34 @@ export function calculateFileDistance(
   distance += path2.length - i
 
   return distance
+}
+
+export function openMarkdownFile(
+  app: App,
+  filePath: string,
+  startLine?: number,
+) {
+  const file = app.vault.getFileByPath(filePath)
+  if (!file) return
+
+  const existingLeaf = app.workspace
+    .getLeavesOfType('markdown')
+    .find(
+      (leaf) =>
+        leaf.view instanceof MarkdownView && leaf.view.file?.path === file.path,
+    )
+
+  if (existingLeaf) {
+    app.workspace.setActiveLeaf(existingLeaf, { focus: true })
+
+    if (startLine) {
+      const view = existingLeaf.view as MarkdownView
+      view.setEphemeralState({ line: startLine })
+    }
+  } else {
+    const leaf = app.workspace.getLeaf('tab')
+    leaf.openFile(file, {
+      eState: startLine ? { line: startLine } : undefined,
+    })
+  }
 }

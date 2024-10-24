@@ -258,6 +258,11 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   white-space: nowrap;
 }
 
+.smtcmp-chat-user-input-file-badge:hover {
+  background-color: var(--background-modifier-hover);
+  cursor: pointer;
+}
+
 .smtcmp-chat-user-input-file-badge-delete {
   cursor: pointer;
   display: flex;
@@ -290,6 +295,15 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
 
 .smtcmp-chat-user-input-file-badge-current {
   color: var(--color-base-50);
+}
+
+.smtcmp-chat-user-input-file-content-preview {
+  background-color: var(--background-primary);
+  border-radius: var(--radius-s);
+  border: 1px solid var(--background-modifier-border);
+  max-height: 350px;
+  overflow-y: auto;
+  white-space: pre-line;
 }
 
 /**
