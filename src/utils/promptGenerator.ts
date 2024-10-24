@@ -96,7 +96,7 @@ export class PromptGenerator {
     const requestMessages: RequestMessage[] = [
       systemMessage,
       ...(currentFileMessage ? [currentFileMessage] : []),
-      ...compiledMessages.map((message): RequestMessage => {
+      ...compiledMessages.slice(-20).map((message): RequestMessage => {
         if (message.role === 'user') {
           return {
             role: 'user',
