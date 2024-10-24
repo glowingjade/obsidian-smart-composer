@@ -539,7 +539,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         <QueryProgress state={queryProgress} />
       </div>
       <ChatUserInput
-        key={inputMessage.id}
+        key={inputMessage.id} // this is needed to clear the editor when the user submits a new message
         ref={(ref) => registerChatUserInputRef(inputMessage.id, ref)}
         message={inputMessage.content}
         onChange={(content) => {
@@ -554,7 +554,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
             [...chatMessages, { ...inputMessage, content }],
             useVaultSearch,
           )
-          chatUserInputRefs.current.get(inputMessage.id)?.clear()
           setInputMessage(getNewInputMessage(app))
           handleScrollToBottom()
         }}

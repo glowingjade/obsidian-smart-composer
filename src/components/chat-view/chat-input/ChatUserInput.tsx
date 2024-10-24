@@ -49,7 +49,6 @@ import { VaultSearchButton } from './VaultSearchButton'
 
 export type ChatUserInputRef = {
   focus: () => void
-  clear: () => void
 }
 
 export type ChatUserInputProps = {
@@ -97,9 +96,6 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
     useImperativeHandle(ref, () => ({
       focus: () => {
         contentEditableRef.current?.focus()
-      },
-      clear: () => {
-        updaterRef.current?.clear()
       },
     }))
 
