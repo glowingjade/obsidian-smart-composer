@@ -45,7 +45,8 @@ import OnMutationPlugin, {
 import UpdaterPlugin, {
   UpdaterPluginRef,
 } from './plugins/updater/UpdaterPlugin'
-import { VaultSearchButton } from './VaultSearchButton'
+import { SubmitButton } from './SubmitButton'
+import { VaultChatButton } from './VaultChatButton'
 
 export type ChatUserInputRef = {
   focus: () => void
@@ -342,11 +343,14 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
         </LexicalComposer>
         <div className="smtcmp-chat-user-input-controls">
           <ModelSelect />
-          <VaultSearchButton
-            onClick={() => {
-              handleSubmit(true)
-            }}
-          />
+          <div className="smtcmp-chat-user-input-controls-buttons">
+            <SubmitButton onClick={() => handleSubmit()} />
+            <VaultChatButton
+              onClick={() => {
+                handleSubmit(true)
+              }}
+            />
+          </div>
         </div>
       </div>
     )
