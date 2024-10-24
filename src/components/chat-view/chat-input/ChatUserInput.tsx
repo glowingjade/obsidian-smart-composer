@@ -181,6 +181,11 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
               .filter((v) => !!v),
           ),
       )
+      if (addedMentionables.length > 0) {
+        setDisplayedMentionableKey(
+          getMentionableKey(addedMentionables[addedMentionables.length - 1]),
+        )
+      }
     }
 
     const handleMentionableDelete = (mentionable: Mentionable) => {
