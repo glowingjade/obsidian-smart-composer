@@ -284,8 +284,6 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
                     m.file &&
                     mentionableKey === displayedMentionableKey
                   ) {
-                    setDisplayedMentionableKey(null)
-
                     // Open the file if clicked again
                     const existingLeaf = app.workspace
                       .getLeavesOfType('markdown')
