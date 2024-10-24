@@ -31,6 +31,10 @@ export class RAGEngine {
     return ragEngine
   }
 
+  async cleanup() {
+    await this.vectorDbManager.cleanup()
+  }
+
   setSettings(settings: SmartCopilotSettings) {
     this.settings = settings
     this.embeddingModel = getEmbeddingModel(settings.embeddingModel, {

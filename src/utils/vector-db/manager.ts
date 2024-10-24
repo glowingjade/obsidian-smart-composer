@@ -25,6 +25,10 @@ export class VectorDbManager {
     return manager
   }
 
+  async cleanup() {
+    await this.repository.cleanup()
+  }
+
   async performSimilaritySearch(
     queryVector: number[],
     embeddingModel: EmbeddingModel,

@@ -57,7 +57,16 @@ export class ChatView extends ItemView {
       this.root = createRoot(this.containerEl.children[1])
     }
 
-    const queryClient = new QueryClient()
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          gcTime: 0, // Immediately garbage collect queries. It prevents memory leak on ChatView close.
+        },
+        mutations: {
+          gcTime: 0, // Immediately garbage collect mutations. It prevents memory leak on ChatView close.
+        },
+      },
+    })
     const ragEngine = await this.plugin.getRAGEngine()
 
     this.root.render(
