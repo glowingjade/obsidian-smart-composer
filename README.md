@@ -95,6 +95,32 @@ Obsidian Smart Composer adds a few commands to work with AI. You can set custom 
 - Copilot-like autocomplete
 - Context-aware suggestions based on your writing style and vault content
 
-## Contribution
+## Feedback and Support
 
-All kinds of contributions are welcome, including bug reports, bug fixes, improvements to documentation, and general enhancements. If you have an idea for a major feature, please create an issue to discuss its feasibility and the best implementation approach.
+We value your input and want to ensure you can easily share your thoughts and report any issues:
+
+- **Bug Reports**: If you encounter any bugs or unexpected behavior, please submit an issue on our [GitHub Issues](https://github.com/glowingjade/obsidian-smart-composer/issues) page. Be sure to include as much detail as possible to help us reproduce and address the problem.
+
+- **Feature Requests**: For new feature ideas or enhancements, please use our [GitHub Discussions - Ideas](https://github.com/glowingjade/obsidian-smart-composer/discussions/categories/ideas) page. Create a new discussion to share your suggestions. This allows for community engagement and helps us prioritize future developments.
+
+- **Show and Tell**: We love seeing how you use Obsidian Smart Composer! Share your unique use cases, workflows, or interesting applications of the plugin in the [GitHub Discussions - Show and Tell](https://github.com/glowingjade/obsidian-smart-composer/discussions/categories/show-and-tell) page.
+
+Your feedback and experiences are crucial in making Obsidian Smart Composer better for everyone!
+
+## Contributing
+
+We welcome all kinds of contributions to Obsidian Smart Composer, including bug reports, bug fixes, documentation improvements, and feature enhancements.
+
+If you're interested in contributing, please refer to our [CONTRIBUTING.md](CONTRIBUTING.md) file for detailed information on:
+
+- Setting up the development environment
+- Our development workflow
+- Working with the database schema
+- The process for submitting pull requests
+- Known issues and solutions for developers
+
+For major feature ideas, please create an issue first to discuss feasibility and implementation approach.
+
+## License
+
+This project is licensed under the [GPT-3.0 License](LICENSE).

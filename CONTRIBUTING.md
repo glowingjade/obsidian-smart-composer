@@ -104,6 +104,4 @@ A memory leak has been identified when reloading the plugin. This may not be cri
 
 ## License
 
-This project is licensed under the GPT-3.0 License. By contributing to this project, you agree that your contributions will be licensed under the GPT-3.0 License. Please make sure you understand and comply with the terms of this license before submitting any contributions.
-
-For more information about the GPT-3.0 License, please refer to the LICENSE file in the root of this repository or visit the official GPT-3.0 License website.
+This project is licensed under the [GPT-3.0 License](LICENSE). By contributing to this project, you agree that your contributions will be licensed under the GPT-3.0 License. Please make sure you understand and comply with the terms of this license before submitting any contributions.
