@@ -4,7 +4,7 @@
 
 Everytime we ask ChatGPT, we need to put so much context information for each query. Why spend time putting background infos that are already in your vault?
 
-**Obsidian Smart Composer is a plugin that helps you write efficiently with AI by easily referencing your vault content.** Inspired by Cursor AI and ChatGPT Canvas, this plugin unifies your note-taking and content creation process within Obsidian.
+**Smart Composer is a Obsidian plugin that helps you write efficiently with AI by easily referencing your vault content.** Inspired by Cursor AI and ChatGPT Canvas, this plugin unifies your note-taking and content creation process within Obsidian.
 
 ## Features
 
@@ -51,16 +51,16 @@ Note: The Apply Edit feature is currently slower than desired. We are working on
 
 ## Getting Started
 
-Currently, Obsidian Smart Composer is available through [Beta Quickstart](#beta-quickstart-recommended) or [Manual Installation](#manual-installation). Community plugin support is coming soon.
+Currently, Smart Composer is available through [Beta Quickstart](#beta-quickstart-recommended) or [Manual Installation](#manual-installation). Community plugin support is coming soon.
 
 ### Beta Quickstart (Recommended)
 
-To install Obsidian Smart Composer as a beta plugin:
+To install Smart Composer as a beta plugin:
 
 1. Install the BRAT plugin if you haven't already. [Click here](obsidian://show-plugin?id=obsidian42-brat) to install BRAT in Obsidian.
 2. Open the command palette and run the command **"BRAT: Add a beta plugin for testing"**.
 3. Copy and paste this link into the modal: https://github.com/glowingjade/obsidian-smart-composer and click "Add Plugin" and wait for the installation.
-4. Go to `Settings > Community plugins` and refresh the list of plugins. Enable "Obsidian Smart Composer".
+4. Go to `Settings > Community plugins` and refresh the list of plugins. Enable "Smart Composer".
 
 ### Initial Setup
 
@@ -72,12 +72,12 @@ To install Obsidian Smart Composer as a beta plugin:
    - Anthropic : [Claude API Keys](https://console.anthropic.com/settings/keys)
    - Groq : [Groq API Keys](https://console.groq.com/keys)
 
-2. In Obsidian, go to `Settings > Obsidian Smart Composer`.
+2. In Obsidian, go to `Settings > Smart Composer`.
 3. Enter your API key in the designated field.
 
 ### Commands and Hotkeys
 
-Obsidian Smart Composer adds a few commands to work with AI. You can set custom hotkeys for these commands by going to `Settings > Hotkeys` and searching for "Obsidian Smart Composer". (Note: Hotkeys are unset by default)
+Smart Composer adds a few commands to work with AI. You can set custom hotkeys for these commands by going to `Settings > Hotkeys` and searching for "Smart Composer". (Note: Hotkeys are unset by default)
 
 | Command                         | Description                                                 | Preferred Hotkey |
 | ------------------------------- | ----------------------------------------------------------- | ---------------- |
@@ -91,7 +91,7 @@ Obsidian Smart Composer adds a few commands to work with AI. You can set custom 
 1. Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/glowingjade/obsidian-smart-composer/releases/latest).
 2. Create a folder named `obsidian-smart-composer` in your vault's `<Vault>/.obsidian/plugins/` directory.
 3. Place the downloaded files into this new folder.
-4. Open Obsidian settings `Settings > Community plugins`, and enable Obsidian Smart Composer.
+4. Open Obsidian settings `Settings > Community plugins`, and enable Smart Composer.
 
 ## Roadmap
 
@@ -123,9 +123,9 @@ We value your input and want to ensure you can easily share your thoughts and re
 
 - **Feature Requests**: For new feature ideas or enhancements, please use our [GitHub Discussions - Ideas & Feature Requests](https://github.com/glowingjade/obsidian-smart-composer/discussions/categories/ideas-feature-requests) page. Create a new discussion to share your suggestions. This allows for community engagement and helps us prioritize future developments.
 
-- **Show and Tell**: We love seeing how you use Obsidian Smart Composer! Share your unique use cases, workflows, or interesting applications of the plugin in the [GitHub Discussions - Smart Composer Showcase](https://github.com/glowingjade/obsidian-smart-composer/discussions/categories/smart-composer-showcase) page.
+- **Show and Tell**: We love seeing how you use Smart Composer! Share your unique use cases, workflows, or interesting applications of the plugin in the [GitHub Discussions - Smart Composer Showcase](https://github.com/glowingjade/obsidian-smart-composer/discussions/categories/smart-composer-showcase) page.
 
-Your feedback and experiences are crucial in making Obsidian Smart Composer better for everyone!
+Your feedback and experiences are crucial in making Smart Composer better for everyone!
 
 ## Contributing
 
@@ -147,7 +147,7 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Support the Project
 
-If you find Obsidian Smart Composer valuable, consider supporting its development:
+If you find Smart Composer valuable, consider supporting its development:
 
 <a href="https://www.buymeacoffee.com/glowingjade" target="_blank">
   <img src="https://github.com/user-attachments/assets/e794767d-b7dd-40eb-9132-e48ae7088000" alt="Buy Me A Coffee" width="180">
