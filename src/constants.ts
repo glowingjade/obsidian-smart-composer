@@ -22,6 +22,10 @@ export const CHAT_MODEL_OPTIONS = [
     name: 'llama-3.1 (Ollama)',
     value: 'llama3.1',
   },
+  {
+    name: 'incept5/llama3.1-claude (Ollama)',
+    value: 'incept5/llama3.1-claude',
+  },
 ]
 
 export const APPLY_MODEL_OPTIONS = [
@@ -55,6 +59,12 @@ export const EMBEDDING_MODEL_OPTIONS = [
     value: 'text-embedding-3-large',
     dimension: 3072,
   },
+  {
+    name: 'nomic-embed-text (Ollama)',
+    value: 'nomic-embed-text',
+    dimension: 768,
+  },
+  
 ]
 
 export const PGLITE_DB_PATH = '.smtcmp_vector_db.tar.gz'

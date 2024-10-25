@@ -2,6 +2,8 @@ import { OpenAI } from 'openai'
 
 import { EmbeddingModel } from '../types/embedding'
 
+import { NoStainlessOpenAI } from './llm/ollama'
+
 export const getEmbeddingModel = (
   name: string,
   apiKeys: {
@@ -37,6 +39,24 @@ export const getEmbeddingModel = (
         getEmbedding: async (text: string) => {
           const embedding = await openai.embeddings.create({
             model: 'text-embedding-3-large',
+            input: text,
+          })
+          return embedding.data[0].embedding
+        },
+      }
+    }
+    case 'nomic-embed-text': {
+      const openai = new NoStainlessOpenAI({
+        apiKey: 'null',
+        dangerouslyAllowBrowser: true,
+        baseURL: 'http://127.0.0.1:11434/v1'
+      })
+      return {
+        name: 'nomic-embed-text',
+        dimension: 768,
+        getEmbedding: async (text: string) => {
+          const embedding = await openai.embeddings.create({
+            model: 'nomic-embed-text',
             input: text,
           })
           return embedding.data[0].embedding

@@ -15,6 +15,13 @@
       "when": 1729509994653,
       "tag": "0001_create_vector_data_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1729890971064,
+      "tag": "0002_perfect_talon",
+      "breakpoints": true
     }
   ]
 }

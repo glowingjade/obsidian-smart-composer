@@ -1,12 +1,12 @@
 import OpenAI from "openai";
 import { FinalRequestOptions } from "openai/core";
+import { LLMOptions, LLMRequestNonStreaming, LLMRequestStreaming } from "src/types/llm/request";
+import { LLMResponseNonStreaming, LLMResponseStreaming } from "src/types/llm/response";
 
 import { BaseLLMProvider } from './base'
-import { LLMRequestNonStreaming, LLMOptions, LLMRequestStreaming } from "src/types/llm/request";
-import { LLMResponseNonStreaming, LLMResponseStreaming } from "src/types/llm/response";
 import { OpenAIProvider } from "./openai";
 
-class NoStainlessOpenAI extends OpenAI {
+export class NoStainlessOpenAI extends OpenAI {
     defaultHeaders() {
       return {
         Accept: 'application/json',
@@ -26,8 +26,10 @@ class NoStainlessOpenAI extends OpenAI {
 
   export type OllamaModel =
   | 'llama3.1'
+  | 'incept5/llama3.1-claude'
   export const OLLAMA_MODELS: OllamaModel[] = [
-    'llama3.1'
+    'llama3.1', 
+    'incept5/llama3.1-claude',
   ]
 
   export class OllamaAIOpenAIProvider implements BaseLLMProvider {
