@@ -63,6 +63,24 @@ export const getEmbeddingModel = (
         },
       }
     }
+    case 'mxbai-embed-large': {
+      const openai = new NoStainlessOpenAI({
+        apiKey: 'null',
+        dangerouslyAllowBrowser: true,
+        baseURL: 'http://127.0.0.1:11434/v1'
+      })
+      return {
+        name: 'mxbai-embed-large',
+        dimension: 2048,
+        getEmbedding: async (text: string) => {
+          const embedding = await openai.embeddings.create({
+            model: 'mxbai-embed-large',
+            input: text,
+          })
+          return embedding.data[0].embedding
+        },
+      }
+    }
     default:
       throw new Error('Invalid embedding model')
   }

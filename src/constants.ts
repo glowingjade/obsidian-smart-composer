@@ -68,6 +68,11 @@ export const EMBEDDING_MODEL_OPTIONS = [
     value: 'nomic-embed-text',
     dimension: 768,
   },
+  {
+    name: 'mxbai-embed-large (Ollama)',
+    value: 'mxbai-embed-large',
+    dimension: 2048,
+  },
   
 ]
 
