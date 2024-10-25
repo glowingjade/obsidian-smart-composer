@@ -19,7 +19,7 @@ Everytime we ask ChatGPT, we need to put so much context information for each qu
 
 #### Multimedia Context
 
-<img src="https://github.com/user-attachments/assets/b22175d4-80a2-4122-8555-2b9dd4987f93" alt="SC2-2_MultiContext.png" width="500"/>
+<img src="https://github.com/user-attachments/assets/b22175d4-80a2-4122-8555-2b9dd4987f93" alt="SC2-2_MultiContext.png" width="360"/>
 
 Now, you can **add website links** as additional context for your queries.
 
