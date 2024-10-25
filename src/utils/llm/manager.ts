@@ -29,21 +29,19 @@ class LLMManager implements LLMManagerInterface {
   private groqProvider: GroqProvider
   private anthropicProvider: AnthropicProvider
   private ollamaProvider: OllamaAIOpenAIProvider;
-  private useOllama: boolean
 
-  constructor(apiKeys: { openai?: string; groq?: string; anthropic?: string }, useOllama?: boolean) {
+  constructor(apiKeys: { openai?: string; groq?: string; anthropic?: string }) {
     this.openaiProvider = new OpenAIProvider(apiKeys.openai ?? '')
     this.groqProvider = new GroqProvider(apiKeys.groq ?? '')
     this.anthropicProvider = new AnthropicProvider(apiKeys.anthropic ?? '')
     this.ollamaProvider = new OllamaAIOpenAIProvider();
-    this.useOllama = useOllama ?? false;
   }
 
   async generateResponse(
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
-    if(this.useOllama && this.ollamaProvider.getSupportedModels().includes(request.model)){
+    if(this.ollamaProvider.getSupportedModels().includes(request.model)){
       return await this.ollamaProvider.generateResponse(request, options);
     }
     if (this.openaiProvider.getSupportedModels().includes(request.model)) {
@@ -62,7 +60,7 @@ class LLMManager implements LLMManagerInterface {
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
-    if(this.useOllama && this.ollamaProvider.getSupportedModels().includes(request.model)){
+    if(this.ollamaProvider.getSupportedModels().includes(request.model)){
       return await this.ollamaProvider.streamResponse(request, options);
     }
     if (this.openaiProvider.getSupportedModels().includes(request.model)) {

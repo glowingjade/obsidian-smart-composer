@@ -45,6 +45,10 @@ export const APPLY_MODEL_OPTIONS = [
     name: 'llama-3.1-70b (Groq)',
     value: 'llama-3.1-70b-versatile',
   },
+  {
+    name: 'llama-3.1 (Ollama)',
+    value: 'llama3.1',
+  },
 ]
 
 // Update table exports in src/db/schema.ts when updating this

@@ -71,16 +71,6 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
         }),
     )
 
-    new Setting(containerEl).setName('Use Ollama').addToggle((toggle) => toggle
-      .setValue(this.plugin.settings.useOllama)
-      .onChange(async (value) => {
-        await this.plugin.setSettings({
-            ...this.plugin.settings,
-            useOllama: value,
-           })
-        })
-    )
-
     new Setting(containerEl).setHeading().setName('Model Settings')
 
     new Setting(containerEl)
