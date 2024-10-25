@@ -123,4 +123,4 @@ For major feature ideas, please create an issue first to discuss feasibility and
 
 ## License
 
-This project is licensed under the [GPT-3.0 License](LICENSE).
+This project is licensed under the [MIT License](LICENSE).
