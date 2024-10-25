@@ -24,6 +24,7 @@ We welcome contributions to Obsidian Smart Composer! This document will guide yo
    ```
 
 4. Start making changes to the plugin code. To test your changes:
+
    - Reload Obsidian manually, or
    - Use the [Hot Reload plugin](https://github.com/pjeby/hot-reload) for automatic reloading during development
 
