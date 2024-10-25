@@ -59,8 +59,7 @@ export class OpenAIProvider implements BaseLLMProvider {
           logit_bias: request.logit_bias,
         },
         {
-          signal: options?.signal,
-          headers: {"bar":"foo"},
+          signal: options?.signal
         },
       )
       return OpenAIProvider.parseNonStreamingResponse(response)
