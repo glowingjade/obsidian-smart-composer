@@ -4,6 +4,7 @@ const smartCopilotSettingsSchema = z.object({
   openAIApiKey: z.string().default(''),
   groqApiKey: z.string().default(''),
   anthropicApiKey: z.string().default(''),
+  useOllama: z.boolean().default(false),
   chatModel: z.string().default('claude-3-5-sonnet-20240620'),
   applyModel: z.string().default('gpt-4o-mini'),
   embeddingModel: z.string().default('text-embedding-3-small'),

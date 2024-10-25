@@ -25,11 +25,13 @@ import {
 export type OpenAIModel = 'gpt-4o' | 'gpt-4o-mini'
 export const OPENAI_MODELS: OpenAIModel[] = ['gpt-4o', 'gpt-4o-mini']
 
+
+
 export class OpenAIProvider implements BaseLLMProvider {
   private client: OpenAI
 
-  constructor(apiKey: string) {
-    this.client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true })
+  constructor(apiKey: string, client?: OpenAI | undefined) {
+    this.client = client ?? new OpenAI({ apiKey, dangerouslyAllowBrowser: true })
   }
 
   async generateResponse(
@@ -58,6 +60,7 @@ export class OpenAIProvider implements BaseLLMProvider {
         },
         {
           signal: options?.signal,
+          headers: {"bar":"foo"},
         },
       )
       return OpenAIProvider.parseNonStreamingResponse(response)

@@ -42,9 +42,9 @@ export function LLMProvider({ children }: PropsWithChildren) {
       openai: settings.openAIApiKey,
       groq: settings.groqApiKey,
       anthropic: settings.anthropicApiKey,
-    })
+    }, settings.useOllama)
     setLLMManager(manager)
-  }, [settings.openAIApiKey, settings.groqApiKey, settings.anthropicApiKey])
+  }, [settings.openAIApiKey, settings.groqApiKey, settings.anthropicApiKey, settings.useOllama])
 
   const generateResponse = useCallback(
     async (request: LLMRequestNonStreaming, options?: LLMOptions) => {
