@@ -101,9 +101,9 @@ We value your input and want to ensure you can easily share your thoughts and re
 
 - **Bug Reports**: If you encounter any bugs or unexpected behavior, please submit an issue on our [GitHub Issues](https://github.com/glowingjade/obsidian-smart-composer/issues) page. Be sure to include as much detail as possible to help us reproduce and address the problem.
 
-- **Feature Requests**: For new feature ideas or enhancements, please use our [GitHub Discussions - Ideas](https://github.com/glowingjade/obsidian-smart-composer/discussions/categories/ideas) page. Create a new discussion to share your suggestions. This allows for community engagement and helps us prioritize future developments.
+- **Feature Requests**: For new feature ideas or enhancements, please use our [GitHub Discussions - Ideas & Feature Requests](https://github.com/glowingjade/obsidian-smart-composer/discussions/categories/ideas-feature-requests) page. Create a new discussion to share your suggestions. This allows for community engagement and helps us prioritize future developments.
 
-- **Show and Tell**: We love seeing how you use Obsidian Smart Composer! Share your unique use cases, workflows, or interesting applications of the plugin in the [GitHub Discussions - Show and Tell](https://github.com/glowingjade/obsidian-smart-composer/discussions/categories/show-and-tell) page.
+- **Show and Tell**: We love seeing how you use Obsidian Smart Composer! Share your unique use cases, workflows, or interesting applications of the plugin in the [GitHub Discussions - Smart Composer Showcase](https://github.com/glowingjade/obsidian-smart-composer/discussions/categories/smart-composer-showcase) page.
 
 Your feedback and experiences are crucial in making Obsidian Smart Composer better for everyone!
 
