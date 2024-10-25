@@ -144,3 +144,13 @@ For major feature ideas, please create an issue first to discuss feasibility and
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
+
+## Support the Project
+
+If you find Obsidian Smart Composer valuable, consider supporting its development:
+
+<a href="https://www.buymeacoffee.com/glowingjade" target="_blank">
+  <img src="https://github.com/user-attachments/assets/e794767d-b7dd-40eb-9132-e48ae7088000" alt="Buy Me A Coffee" width="180">
+</a>
+
+Your support helps maintain and improve this plugin. Every contribution is appreciated and makes a difference. Thank you for your support!
