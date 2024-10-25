@@ -5,26 +5,29 @@ We welcome contributions to Obsidian Smart Composer! This document will guide yo
 ## Development Workflow
 
 1. Clone the repository to your Obsidian vault's plugins directory:
+
    ```
    git clone https://github.com/glowingjade/obsidian-smart-composer.git /path/to/your/vault/.obsidian/plugins/obsidian-smart-composer
    ```
+
 2. Navigate to the plugin directory:
+
    ```
    cd /path/to/your/vault/.obsidian/plugins/obsidian-smart-composer
    ```
+
 3. Run the following commands to install dependencies and start the development server:
+
    ```
    npm install
    npm run dev
    ```
+
 4. Start making changes to the plugin code. To test your changes:
    - Reload Obsidian manually, or
    - Use the [Hot Reload plugin](https://github.com/pjeby/hot-reload) for automatic reloading during development
-5. To check if everything is building correctly, set the `logLevel` to 'debug' in `esbuild.config.mjs`:
-   ```javascript
-   logLevel: 'debug',
-   ```
-   This will provide more detailed output during the build process, helping you identify any issues.
+
+5. To check if everything is building correctly, set the `logLevel: debug` in `esbuild.config.mjs`. This will provide more detailed output during the build process, helping you identify any issues.
 
 ## Database Development
 
@@ -42,14 +45,18 @@ To update the database schema:
 
 1. Modify the existing schema as needed in the `src/db/schema.ts` file.
 2. After making changes, run the following command to generate migration files:
+
    ```
    npm run migrate:generate
    ```
+
 3. Review the generated migration files in the `drizzle` directory.
 4. Compile the migration files into a single JSON file by running:
+
    ```
    npm run migrate:compile
    ```
+
    This will create or update the `src/db/migrations.json` file. Note that migration files in the 'drizzle' directory won't affect the project until they are compiled into this JSON file, which is used in the actual migration process.
 
 ### Handling Migration Files
@@ -60,6 +67,7 @@ We recommend creating a single migration file for each change. To squash multipl
 2. Delete the new snapshot.json files in the `drizzle/meta` directory.
 3. Remove new entries in `drizzle/meta/_journal.json`.
 4. Run the migration generation command again to create a final, consolidated migration file:
+
    ```
    npm run migrate:generate
    ```
