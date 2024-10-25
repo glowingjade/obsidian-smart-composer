@@ -41,12 +41,11 @@ const context = await esbuild.context({
   },
   inject: [path.resolve('import-meta-url-shim.js')],
   target: 'es2020',
-  logLevel: 'info',
+  logLevel: 'info', // 'debug' for more detailed output
   sourcemap: prod ? false : 'inline',
   treeShaking: true,
   outfile: 'main.js',
   minify: prod,
-  // logLevel: 'debug',
 })
 
 if (prod) {
