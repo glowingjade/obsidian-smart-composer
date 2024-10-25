@@ -30,11 +30,11 @@ class LLMManager implements LLMManagerInterface {
   private anthropicProvider: AnthropicProvider
   private ollamaProvider: OllamaAIOpenAIProvider;
 
-  constructor(apiKeys: { openai?: string; groq?: string; anthropic?: string }) {
+  constructor(apiKeys: { openai?: string; groq?: string; anthropic?: string}, ollamaBaseUrl?: string) {
     this.openaiProvider = new OpenAIProvider(apiKeys.openai ?? '')
     this.groqProvider = new GroqProvider(apiKeys.groq ?? '')
     this.anthropicProvider = new AnthropicProvider(apiKeys.anthropic ?? '')
-    this.ollamaProvider = new OllamaAIOpenAIProvider();
+    this.ollamaProvider = new OllamaAIOpenAIProvider(ollamaBaseUrl ?? '');
   }
 
   async generateResponse(

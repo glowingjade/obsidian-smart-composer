@@ -28,6 +28,7 @@ import {
 } from '../../types/mentionable'
 import { applyChangesToFile } from '../../utils/apply'
 import {
+  LLMABaseUrlNotSetException,
   LLMAPIKeyInvalidException,
   LLMAPIKeyNotSetException,
 } from '../../utils/llm/exception'
@@ -259,7 +260,8 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       })
       if (
         error instanceof LLMAPIKeyNotSetException ||
-        error instanceof LLMAPIKeyInvalidException
+        error instanceof LLMAPIKeyInvalidException ||
+        error instanceof LLMABaseUrlNotSetException
       ) {
         new OpenSettingsModal(app, error.message, () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

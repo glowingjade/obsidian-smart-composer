@@ -27,7 +27,7 @@ export class RAGEngine {
     ragEngine.vectorDbManager = await VectorDbManager.create(app)
     ragEngine.embeddingModel = getEmbeddingModel(settings.embeddingModel, {
       openAIApiKey: settings.openAIApiKey,
-    })
+    }, settings.ollamaBaseUrl)
     return ragEngine
   }
 
@@ -39,7 +39,7 @@ export class RAGEngine {
     this.settings = settings
     this.embeddingModel = getEmbeddingModel(settings.embeddingModel, {
       openAIApiKey: settings.openAIApiKey,
-    })
+    }, settings.ollamaBaseUrl)
   }
 
   // TODO: Implement automatic vault re-indexing when settings are changed.

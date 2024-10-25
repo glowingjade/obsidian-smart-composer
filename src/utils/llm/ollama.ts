@@ -5,6 +5,7 @@ import { LLMResponseNonStreaming, LLMResponseStreaming } from "src/types/llm/res
 
 import { BaseLLMProvider } from './base'
 import { OpenAIProvider } from "./openai";
+import { LLMABaseUrlNotSetException } from "./exception";
 
 export class NoStainlessOpenAI extends OpenAI {
     defaultHeaders() {
@@ -33,16 +34,28 @@ export class NoStainlessOpenAI extends OpenAI {
   ]
 
   export class OllamaAIOpenAIProvider implements BaseLLMProvider {
-      private wrappedOpenAIProvider: OpenAIProvider;
+    private wrappedOpenAIProvider: OpenAIProvider;
+    private ollamaBaseUrl: string;
     
-    constructor() {
-        this.wrappedOpenAIProvider = new OpenAIProvider('', new NoStainlessOpenAI({apiKey:'null', dangerouslyAllowBrowser: true, baseURL: 'http://127.0.0.1:11434/v1'}));
+    constructor(ollamaBaseUrl: string) {
+      this.ollamaBaseUrl = ollamaBaseUrl;
+        this.wrappedOpenAIProvider = new OpenAIProvider('', new NoStainlessOpenAI({apiKey:'null', dangerouslyAllowBrowser: true, baseURL: `${ollamaBaseUrl}/v1`}));
     }
       generateResponse(request: LLMRequestNonStreaming, options?: LLMOptions): Promise<LLMResponseNonStreaming> {
+        if (!this.ollamaBaseUrl) {
+          throw new LLMABaseUrlNotSetException(
+            'Ollama Address is missing. Please set it in settings menu.',
+          )
+        }
         return this.wrappedOpenAIProvider.generateResponse(request, options);
       }
       streamResponse(request: LLMRequestStreaming, options?: LLMOptions): Promise<AsyncIterable<LLMResponseStreaming>> {
-          return this.wrappedOpenAIProvider.streamResponse(request, options);
+        if (!this.ollamaBaseUrl) {
+          throw new LLMABaseUrlNotSetException(
+            'Ollama Address is missing. Please set it in settings menu.',
+          )
+        }
+        return this.wrappedOpenAIProvider.streamResponse(request, options);
       }
       getSupportedModels(): string[] {
           return OLLAMA_MODELS;

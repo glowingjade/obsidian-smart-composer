@@ -9,6 +9,7 @@ export const getEmbeddingModel = (
   apiKeys: {
     openAIApiKey: string
   },
+  ollamaBaseUrl: string
 ): EmbeddingModel => {
   switch (name) {
     case 'text-embedding-3-small': {
@@ -49,7 +50,7 @@ export const getEmbeddingModel = (
       const openai = new NoStainlessOpenAI({
         apiKey: 'null',
         dangerouslyAllowBrowser: true,
-        baseURL: 'http://127.0.0.1:11434/v1'
+        baseURL: `${ollamaBaseUrl}/v1`
       })
       return {
         name: 'nomic-embed-text',
@@ -67,7 +68,7 @@ export const getEmbeddingModel = (
       const openai = new NoStainlessOpenAI({
         apiKey: 'null',
         dangerouslyAllowBrowser: true,
-        baseURL: 'http://127.0.0.1:11434/v1'
+        baseURL: `${ollamaBaseUrl}/v1`
       })
       return {
         name: 'mxbai-embed-large',
