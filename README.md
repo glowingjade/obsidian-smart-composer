@@ -12,21 +12,38 @@ Everytime we ask ChatGPT, we need to put so much context information for each qu
 
 ![SC2_ContextChat.gif](https://github.com/user-attachments/assets/8da4c189-399a-450a-9591-95f1c9af1bc8)
 
-> Upgrade your note-taking experience with our Contextual AI Assistant, inspired by Cursor AI. Unlike typical AI plugins, our assistant allows you to precisely select the context for your interactions.
+> Upgrade your note-taking experience with our Contextual AI Assistant, inspired by Cursor AI. Unlike typical AI plugins, our assistant allows you to **precisely select the context for your conversation.**
 
-- Type `@<filename>` to choose specific files as your conversation context
+- Type `@<fname>` to choose specific files/folders as your conversation context
 - Get responses based on selected vault content
+
+#### Multimedia Context
+
+<img src="https://github.com/user-attachments/assets/b22175d4-80a2-4122-8555-2b9dd4987f93" alt="SC2-2_MultiContext.png" width="500"/>
+
+Now, you can **add website links** as additional context for your queries.
+
+- Coming soon: Support for image, and external files (PDF, DOCX, ...)
 
 ### Apply Edit
 
 ![SC3_ApplyEdit.gif](https://github.com/user-attachments/assets/35ee03ff-4a61-4d08-8032-ca61fb37dcf1)
 
-> Smart Composer suggests edits to your document. You can apply with a single click.
+> Smart Composer **suggests edits to your document.** You can apply with a single click.
 
 - Offers document change recommendations
 - Apply suggested changes instantly
 
 Note: The Apply Edit feature is currently slower than desired. We are working on improvements in future updates.
+
+### Vault Search (RAG)
+
+![SC4_RAG-ezgif.com-crop-video.gif](https://github.com/user-attachments/assets/91c3ab8d-56d7-43b8-bb4a-1e73615a40ec)
+
+> **Automatically find and use relevant notes** from your vault to enhance AI responses.
+
+- Hit `Cmd+Shift+Enter` to run Vault Search answer
+- Semantic search across your vault to find the most relevant context
 
 #### Additional Features
 
@@ -62,10 +79,12 @@ To install Obsidian Smart Composer as a beta plugin:
 
 Obsidian Smart Composer adds a few commands to work with AI. You can set custom hotkeys for these commands by going to `Settings > Hotkeys` and searching for "Obsidian Smart Composer". (Note: Hotkeys are unset by default)
 
-| Command               | Description                                | Preferred Hotkey |
-| --------------------- | ------------------------------------------ | ---------------- |
-| Open Chat View        | Opens the AI chat interface                | `Cmd+Shift+L`    |
-| Add Selection to Chat | Adds the selected text to the current chat | `Cmd+L`          |
+| Command                         | Description                                                 | Preferred Hotkey |
+| ------------------------------- | ----------------------------------------------------------- | ---------------- |
+| Open Chat View                  | Opens the AI chat interface                                 | `Cmd+Shift+L`    |
+| Add Selection to Chat           | Adds the selected text to the current chat                  | `Cmd+L`          |
+| Rebuild entire vault index      | Rebuilds the RAG embedding index for all files in the vault | -                |
+| Update index for modified files | Updates the RAG embedding index for recently modified files | -                |
 
 ### Manual Installation
 
@@ -78,22 +97,23 @@ Obsidian Smart Composer adds a few commands to work with AI. You can set custom 
 
 #### Expanded Context Support
 
-- Folder context mentioning, and auto context selection (RAG)
-- PDF, DOCX, and image understanding
-- Web content browsing
+- [x] Folder context mentioning, and auto context selection (RAG)
+- [x] Web content browsing
+- [ ] PDF, DOCX, and image understanding
+- [ ] Mention Obsidian tag
 
 #### Advanced Search
 
-- Chat with AI to find specific notes or content
+- [x] Chat with AI to find specific notes or content
 
 #### Prompt Presets
 
-- Save and reuse custom prompts for common tasks
+- [ ] Save and reuse custom prompts for common tasks
 
 #### Tab Completion
 
-- Copilot-like autocomplete
-- Context-aware suggestions based on your writing style and vault content
+- [ ] Copilot-like autocomplete
+- [ ] Context-aware suggestions based on your writing style and vault content
 
 ## Feedback and Support
 
