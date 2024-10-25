@@ -79,10 +79,12 @@ To install Obsidian Smart Composer as a beta plugin:
 
 Obsidian Smart Composer adds a few commands to work with AI. You can set custom hotkeys for these commands by going to `Settings > Hotkeys` and searching for "Obsidian Smart Composer". (Note: Hotkeys are unset by default)
 
-| Command               | Description                                | Preferred Hotkey |
-| --------------------- | ------------------------------------------ | ---------------- |
-| Open Chat View        | Opens the AI chat interface                | `Cmd+Shift+L`    |
-| Add Selection to Chat | Adds the selected text to the current chat | `Cmd+L`          |
+| Command                         | Description                                                 | Preferred Hotkey |
+| ------------------------------- | ----------------------------------------------------------- | ---------------- |
+| Open Chat View                  | Opens the AI chat interface                                 | `Cmd+Shift+L`    |
+| Add Selection to Chat           | Adds the selected text to the current chat                  | `Cmd+L`          |
+| Rebuild entire vault index      | Rebuilds the RAG embedding index for all files in the vault | -                |
+| Update index for modified files | Updates the RAG embedding index for recently modified files | -                |
 
 ### Manual Installation
 
