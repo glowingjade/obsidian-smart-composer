@@ -1,5 +1,5 @@
 {
-  "id": "801785d0-a0db-45b0-a9df-4b385439f4bf",
+  "id": "cd7adecf-9de7-40f7-bc6a-bcf78b36053a",
   "prevId": "66d66503-35b5-4c19-8433-529426a63956",
   "version": "7",
   "dialect": "postgresql",
@@ -209,7 +209,7 @@
         },
         "embedding": {
           "name": "embedding",
-          "type": "vector(2048)",
+          "type": "vector(1024)",
           "primaryKey": false,
           "notNull": false
         },
@@ -220,7 +220,24 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "embeddingIndex_mxbai_embed_large": {
+          "name": "embeddingIndex_mxbai_embed_large",
+          "columns": [
+            {
+              "expression": "embedding",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "vector_cosine_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "hnsw",
+          "with": {}
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},

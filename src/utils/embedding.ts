@@ -72,7 +72,7 @@ export const getEmbeddingModel = (
       })
       return {
         name: 'mxbai-embed-large',
-        dimension: 2048,
+        dimension: 1024,
         getEmbedding: async (text: string) => {
           const embedding = await openai.embeddings.create({
             model: 'mxbai-embed-large',

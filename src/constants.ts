@@ -71,7 +71,7 @@ export const EMBEDDING_MODEL_OPTIONS = [
   {
     name: 'mxbai-embed-large (Ollama)',
     value: 'mxbai-embed-large',
-    dimension: 2048,
+    dimension: 1024,
   },
   
 ]
