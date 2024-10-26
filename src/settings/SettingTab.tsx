@@ -82,11 +82,10 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             await this.plugin.setSettings({
               ...this.plugin.settings,
-              ollamaBaseUrl: value
+              ollamaBaseUrl: value,
             })
           }),
       )
-
 
     new Setting(containerEl).setHeading().setName('Model Settings')
 

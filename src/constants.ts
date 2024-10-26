@@ -73,7 +73,6 @@ export const EMBEDDING_MODEL_OPTIONS = [
     value: 'mxbai-embed-large',
     dimension: 1024,
   },
-  
 ]
 
 export const PGLITE_DB_PATH = '.smtcmp_vector_db.tar.gz'

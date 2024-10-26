@@ -28,21 +28,27 @@ class LLMManager implements LLMManagerInterface {
   private openaiProvider: OpenAIProvider
   private groqProvider: GroqProvider
   private anthropicProvider: AnthropicProvider
-  private ollamaProvider: OllamaAIOpenAIProvider;
+  private ollamaProvider: OllamaAIOpenAIProvider
 
-  constructor(apiKeys: { openai?: string; groq?: string; anthropic?: string}, ollamaBaseUrl?: string) {
+  constructor(
+    apiKeys: { openai?: string; groq?: string; anthropic?: string },
+    ollamaBaseUrl?: string,
+  ) {
     this.openaiProvider = new OpenAIProvider(apiKeys.openai ?? '')
     this.groqProvider = new GroqProvider(apiKeys.groq ?? '')
     this.anthropicProvider = new AnthropicProvider(apiKeys.anthropic ?? '')
-    this.ollamaProvider = new OllamaAIOpenAIProvider(apiKeys.openai ?? 'empty', ollamaBaseUrl ?? '');
+    this.ollamaProvider = new OllamaAIOpenAIProvider(
+      apiKeys.openai ?? 'empty',
+      ollamaBaseUrl ?? '',
+    )
   }
 
   async generateResponse(
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
-    if(this.ollamaProvider.getSupportedModels().includes(request.model)){
-      return await this.ollamaProvider.generateResponse(request, options);
+    if (this.ollamaProvider.getSupportedModels().includes(request.model)) {
+      return await this.ollamaProvider.generateResponse(request, options)
     }
     if (this.openaiProvider.getSupportedModels().includes(request.model)) {
       return await this.openaiProvider.generateResponse(request, options)
@@ -60,8 +66,8 @@ class LLMManager implements LLMManagerInterface {
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
-    if(this.ollamaProvider.getSupportedModels().includes(request.model)){
-      return await this.ollamaProvider.streamResponse(request, options);
+    if (this.ollamaProvider.getSupportedModels().includes(request.model)) {
+      return await this.ollamaProvider.streamResponse(request, options)
     }
     if (this.openaiProvider.getSupportedModels().includes(request.model)) {
       return await this.openaiProvider.streamResponse(request, options)
