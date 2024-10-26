@@ -10,8 +10,8 @@ import {
 
 import { AnthropicProvider } from './anthropic'
 import { GroqProvider } from './groq'
-import { OllamaAIOpenAIProvider } from './ollama'
-import { OpenAIProvider } from './openai'
+import { OllamaOpenAIProvider } from './ollama'
+import { OpenAIAuthenticatedProvider } from './openai'
 
 export type LLMManagerInterface = {
   generateResponse(
@@ -25,22 +25,19 @@ export type LLMManagerInterface = {
 }
 
 class LLMManager implements LLMManagerInterface {
-  private openaiProvider: OpenAIProvider
+  private openaiProvider: OpenAIAuthenticatedProvider
   private groqProvider: GroqProvider
   private anthropicProvider: AnthropicProvider
-  private ollamaProvider: OllamaAIOpenAIProvider
+  private ollamaProvider: OllamaOpenAIProvider
 
   constructor(
     apiKeys: { openai?: string; groq?: string; anthropic?: string },
     ollamaBaseUrl?: string,
   ) {
-    this.openaiProvider = new OpenAIProvider(apiKeys.openai ?? '')
+    this.openaiProvider = new OpenAIAuthenticatedProvider(apiKeys.openai ?? '')
     this.groqProvider = new GroqProvider(apiKeys.groq ?? '')
     this.anthropicProvider = new AnthropicProvider(apiKeys.anthropic ?? '')
-    this.ollamaProvider = new OllamaAIOpenAIProvider(
-      apiKeys.openai ?? 'empty',
-      ollamaBaseUrl ?? '',
-    )
+    this.ollamaProvider = new OllamaOpenAIProvider(ollamaBaseUrl ?? '')
   }
 
   async generateResponse(

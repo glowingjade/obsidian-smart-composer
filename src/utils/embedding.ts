@@ -47,12 +47,8 @@ export const getEmbeddingModel = (
       }
     }
     case 'nomic-embed-text': {
-      const overrideApiKeyForOllama =
-        apiKeys.openAIApiKey.trim().length === 0
-          ? 'empty'
-          : apiKeys.openAIApiKey
       const openai = new NoStainlessOpenAI({
-        apiKey: overrideApiKeyForOllama,
+        apiKey: '',
         dangerouslyAllowBrowser: true,
         baseURL: `${ollamaBaseUrl}/v1`,
       })
@@ -69,12 +65,8 @@ export const getEmbeddingModel = (
       }
     }
     case 'mxbai-embed-large': {
-      const overrideApiKeyForOllama =
-        apiKeys.openAIApiKey.trim().length === 0
-          ? 'empty'
-          : apiKeys.openAIApiKey
       const openai = new NoStainlessOpenAI({
-        apiKey: overrideApiKeyForOllama,
+        apiKey: '',
         dangerouslyAllowBrowser: true,
         baseURL: `${ollamaBaseUrl}/v1`,
       })

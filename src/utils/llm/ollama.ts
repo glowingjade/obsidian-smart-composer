@@ -12,14 +12,13 @@ import {
 
 import { BaseLLMProvider } from './base'
 import { LLMABaseUrlNotSetException } from './exception'
-import { OpenAIProvider } from './openai'
+import { OpenAICompatibleProvider } from './openaiCompatibleProvider'
 
 export class NoStainlessOpenAI extends OpenAI {
-  defaultHeaders(opts: FinalRequestOptions) {
+  defaultHeaders() {
     return {
       Accept: 'application/json',
       'Content-Type': 'application/json',
-      ...this.authHeaders(opts),
     }
   }
 
@@ -39,24 +38,19 @@ export class NoStainlessOpenAI extends OpenAI {
 }
 
 export type OllamaModel = 'llama3.1:8b'
-export const OLLAMA_MODELS: OllamaModel[] = [
-  'llama3.1:8b',
-]
+export const OLLAMA_MODELS: OllamaModel[] = ['llama3.1:8b']
 
-export class OllamaAIOpenAIProvider implements BaseLLMProvider {
-  private wrappedOpenAIProvider: OpenAIProvider
+export class OllamaOpenAIProvider implements BaseLLMProvider {
+  private provider: OpenAICompatibleProvider
   private ollamaBaseUrl: string
 
-  constructor(apiKey: string, ollamaBaseUrl: string) {
-    this.ollamaBaseUrl = ollamaBaseUrl
-    const overrideApiKeyForOllama =
-      apiKey.trim().length === 0 ? 'empty' : apiKey
-    this.wrappedOpenAIProvider = new OpenAIProvider(
-      '',
+  constructor(baseUrl: string) {
+    this.ollamaBaseUrl = baseUrl
+    this.provider = new OpenAICompatibleProvider(
       new NoStainlessOpenAI({
-        apiKey: overrideApiKeyForOllama,
+        apiKey: '',
         dangerouslyAllowBrowser: true,
-        baseURL: `${ollamaBaseUrl}/v1`,
+        baseURL: `${baseUrl}/v1`,
       }),
     )
   }
@@ -69,7 +63,7 @@ export class OllamaAIOpenAIProvider implements BaseLLMProvider {
         'Ollama Address is missing. Please set it in settings menu.',
       )
     }
-    return this.wrappedOpenAIProvider.generateResponse(request, options)
+    return this.provider.generateResponse(request, options)
   }
   streamResponse(
     request: LLMRequestStreaming,
@@ -80,7 +74,7 @@ export class OllamaAIOpenAIProvider implements BaseLLMProvider {
         'Ollama Address is missing. Please set it in settings menu.',
       )
     }
-    return this.wrappedOpenAIProvider.streamResponse(request, options)
+    return this.provider.streamResponse(request, options)
   }
   getSupportedModels(): string[] {
     return OLLAMA_MODELS

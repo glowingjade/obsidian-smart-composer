@@ -21,7 +21,7 @@ export const CHAT_MODEL_OPTIONS = [
   {
     name: 'llama3.1:8b (Ollama)',
     value: 'llama3.1:8b',
-  }
+  },
 ]
 
 export const APPLY_MODEL_OPTIONS = [
@@ -44,7 +44,7 @@ export const APPLY_MODEL_OPTIONS = [
   {
     name: 'llama3.1:8b (Ollama)',
     value: 'llama3.1:8b',
-  }
+  },
 ]
 
 // Update table exports in src/db/schema.ts when updating this
