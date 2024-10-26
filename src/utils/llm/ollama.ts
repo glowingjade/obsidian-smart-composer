@@ -38,10 +38,9 @@ export class NoStainlessOpenAI extends OpenAI {
   }
 }
 
-export type OllamaModel = 'llama3.1' | 'incept5/llama3.1-claude'
+export type OllamaModel = 'llama3.1:8b'
 export const OLLAMA_MODELS: OllamaModel[] = [
-  'llama3.1',
-  'incept5/llama3.1-claude',
+  'llama3.1:8b',
 ]
 
 export class OllamaAIOpenAIProvider implements BaseLLMProvider {

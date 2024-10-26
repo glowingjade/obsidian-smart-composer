@@ -19,13 +19,9 @@ export const CHAT_MODEL_OPTIONS = [
     value: 'llama-3.1-70b-versatile',
   },
   {
-    name: 'llama-3.1 (Ollama)',
-    value: 'llama3.1',
-  },
-  {
-    name: 'incept5/llama3.1-claude (Ollama)',
-    value: 'incept5/llama3.1-claude',
-  },
+    name: 'llama3.1:8b (Ollama)',
+    value: 'llama3.1:8b',
+  }
 ]
 
 export const APPLY_MODEL_OPTIONS = [
@@ -46,9 +42,9 @@ export const APPLY_MODEL_OPTIONS = [
     value: 'llama-3.1-70b-versatile',
   },
   {
-    name: 'llama-3.1 (Ollama)',
-    value: 'llama3.1',
-  },
+    name: 'llama3.1:8b (Ollama)',
+    value: 'llama3.1:8b',
+  }
 ]
 
 // Update table exports in src/db/schema.ts when updating this
