@@ -20,14 +20,14 @@
       "idx": 2,
       "version": "7",
       "when": 1729890971064,
-      "tag": "0002_perfect_talon",
+      "tag": "0002_create_vector_data_nomic_embed_text",
       "breakpoints": true
     },
     {
       "idx": 3,
       "version": "7",
       "when": 1729928816942,
-      "tag": "0003_narrow_meteorite",
+      "tag": "0003_create_vector_data_mxbai_embed_large",
       "breakpoints": true
     }
   ]
