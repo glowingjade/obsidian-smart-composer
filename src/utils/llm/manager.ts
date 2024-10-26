@@ -34,7 +34,7 @@ class LLMManager implements LLMManagerInterface {
     this.openaiProvider = new OpenAIProvider(apiKeys.openai ?? '')
     this.groqProvider = new GroqProvider(apiKeys.groq ?? '')
     this.anthropicProvider = new AnthropicProvider(apiKeys.anthropic ?? '')
-    this.ollamaProvider = new OllamaAIOpenAIProvider(ollamaBaseUrl ?? '');
+    this.ollamaProvider = new OllamaAIOpenAIProvider(apiKeys.openai ?? 'empty', ollamaBaseUrl ?? '');
   }
 
   async generateResponse(

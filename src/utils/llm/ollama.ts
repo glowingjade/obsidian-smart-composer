@@ -4,14 +4,15 @@ import { LLMOptions, LLMRequestNonStreaming, LLMRequestStreaming } from "src/typ
 import { LLMResponseNonStreaming, LLMResponseStreaming } from "src/types/llm/response";
 
 import { BaseLLMProvider } from './base'
-import { OpenAIProvider } from "./openai";
 import { LLMABaseUrlNotSetException } from "./exception";
+import { OpenAIProvider } from "./openai";
 
 export class NoStainlessOpenAI extends OpenAI {
-    defaultHeaders() {
+    defaultHeaders(opts: FinalRequestOptions) {
       return {
         Accept: 'application/json',
         'Content-Type': 'application/json',
+        ...this.authHeaders(opts)
       };
     }
   
@@ -20,7 +21,12 @@ export class NoStainlessOpenAI extends OpenAI {
       { retryCount = 0 }: { retryCount?: number } = {},
     ): { req: RequestInit; url: string; timeout: number } {
       const req = super.buildRequest(options, { retryCount });
-      req.req.headers = undefined;
+      const headers = req.req.headers as Record<string, string>;
+      Object.keys(headers).forEach(k => {
+        if (k.startsWith('x-stainless')) {
+          delete headers[k];
+        }
+      });
       return req;
     }
   }
@@ -37,9 +43,10 @@ export class NoStainlessOpenAI extends OpenAI {
     private wrappedOpenAIProvider: OpenAIProvider;
     private ollamaBaseUrl: string;
     
-    constructor(ollamaBaseUrl: string) {
+    constructor(apiKey: string, ollamaBaseUrl: string) {
       this.ollamaBaseUrl = ollamaBaseUrl;
-        this.wrappedOpenAIProvider = new OpenAIProvider('', new NoStainlessOpenAI({apiKey:'null', dangerouslyAllowBrowser: true, baseURL: `${ollamaBaseUrl}/v1`}));
+      const overrideApiKeyForOllama = (apiKey.trim().length === 0 ? 'empty' : apiKey);
+      this.wrappedOpenAIProvider = new OpenAIProvider('', new NoStainlessOpenAI({apiKey: overrideApiKeyForOllama, dangerouslyAllowBrowser: true, baseURL: `${ollamaBaseUrl}/v1`}));
     }
       generateResponse(request: LLMRequestNonStreaming, options?: LLMOptions): Promise<LLMResponseNonStreaming> {
         if (!this.ollamaBaseUrl) {
