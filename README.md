@@ -95,25 +95,14 @@ Smart Composer adds a few commands to work with AI. You can set custom hotkeys f
 
 ## Roadmap
 
-#### Expanded Context Support
+To see our up-to-date project roadmap and progress, please check out our [GitHub Projects kanban board](https://github.com/glowingjade/obsidian-smart-composer/projects?query=is%3Aopen).
 
-- [x] Folder context mentioning, and auto context selection (RAG)
-- [x] Web content browsing
-- [ ] PDF, DOCX, and image understanding
-- [ ] Mention Obsidian tag
+Some of our planned features include:
 
-#### Advanced Search
-
-- [x] Chat with AI to find specific notes or content
-
-#### Prompt Presets
-
-- [ ] Save and reuse custom prompts for common tasks
-
-#### Tab Completion
-
-- [ ] Copilot-like autocomplete
-- [ ] Context-aware suggestions based on your writing style and vault content
+- Support for other models, including local models
+- Support for image inputs or external files (PDF, DOCX, etc.)
+- Custom prompt templates and system prompts
+- Mentioning with tags or other metadata
 
 ## Feedback and Support
 
