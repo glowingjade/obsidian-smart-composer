@@ -2,6 +2,10 @@ import { OpenAI } from 'openai'
 
 import { EmbeddingModel } from '../types/embedding'
 
+import {
+  LLMAPIKeyNotSetException,
+  LLMBaseUrlNotSetException,
+} from './llm/exception'
 import { NoStainlessOpenAI } from './llm/ollama'
 
 export const getEmbeddingModel = (
@@ -21,6 +25,11 @@ export const getEmbeddingModel = (
         name: 'text-embedding-3-small',
         dimension: 1536,
         getEmbedding: async (text: string) => {
+          if (!openai.apiKey) {
+            throw new LLMAPIKeyNotSetException(
+              'OpenAI API key is missing. Please set it in settings menu.',
+            )
+          }
           const embedding = await openai.embeddings.create({
             model: 'text-embedding-3-small',
             input: text,
@@ -38,6 +47,11 @@ export const getEmbeddingModel = (
         name: 'text-embedding-3-large',
         dimension: 3072,
         getEmbedding: async (text: string) => {
+          if (!openai.apiKey) {
+            throw new LLMAPIKeyNotSetException(
+              'OpenAI API key is missing. Please set it in settings menu.',
+            )
+          }
           const embedding = await openai.embeddings.create({
             model: 'text-embedding-3-large',
             input: text,
@@ -56,6 +70,11 @@ export const getEmbeddingModel = (
         name: 'nomic-embed-text',
         dimension: 768,
         getEmbedding: async (text: string) => {
+          if (!ollamaBaseUrl) {
+            throw new LLMBaseUrlNotSetException(
+              'Ollama Address is missing. Please set it in settings menu.',
+            )
+          }
           const embedding = await openai.embeddings.create({
             model: 'nomic-embed-text',
             input: text,
@@ -74,6 +93,11 @@ export const getEmbeddingModel = (
         name: 'mxbai-embed-large',
         dimension: 1024,
         getEmbedding: async (text: string) => {
+          if (!ollamaBaseUrl) {
+            throw new LLMBaseUrlNotSetException(
+              'Ollama Address is missing. Please set it in settings menu.',
+            )
+          }
           const embedding = await openai.embeddings.create({
             model: 'mxbai-embed-large',
             input: text,

@@ -11,7 +11,7 @@ import {
 } from 'src/types/llm/response'
 
 import { BaseLLMProvider } from './base'
-import { LLMABaseUrlNotSetException } from './exception'
+import { LLMBaseUrlNotSetException } from './exception'
 import { OpenAICompatibleProvider } from './openaiCompatibleProvider'
 
 export class NoStainlessOpenAI extends OpenAI {
@@ -59,7 +59,7 @@ export class OllamaOpenAIProvider implements BaseLLMProvider {
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
     if (!this.ollamaBaseUrl) {
-      throw new LLMABaseUrlNotSetException(
+      throw new LLMBaseUrlNotSetException(
         'Ollama Address is missing. Please set it in settings menu.',
       )
     }
@@ -70,7 +70,7 @@ export class OllamaOpenAIProvider implements BaseLLMProvider {
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
     if (!this.ollamaBaseUrl) {
-      throw new LLMABaseUrlNotSetException(
+      throw new LLMBaseUrlNotSetException(
         'Ollama Address is missing. Please set it in settings menu.',
       )
     }

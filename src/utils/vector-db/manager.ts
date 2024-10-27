@@ -7,6 +7,12 @@ import { IndexProgress } from '../../components/chat-view/QueryProgress'
 import { PGLITE_DB_PATH } from '../../constants'
 import { InsertVector, SelectVector } from '../../db/schema'
 import { EmbeddingModel } from '../../types/embedding'
+import {
+  LLMAPIKeyInvalidException,
+  LLMAPIKeyNotSetException,
+  LLMBaseUrlNotSetException,
+} from '../llm/exception'
+import { openSettingsModalWithError } from '../openSettingsModal'
 
 import { VectorDbRepository } from './repository'
 
@@ -121,64 +127,81 @@ export class VectorDbManager {
     const embeddingChunks: InsertVector[] = []
     const batchSize = 100
     const limit = pLimit(50)
+    const abortController = new AbortController()
     const tasks = contentChunks.map((chunk) =>
       limit(async () => {
-        await backOff(
-          async () => {
-            const embedding = await embeddingModel.getEmbedding(chunk.content)
-            const embeddedChunk = {
-              path: chunk.path,
-              mtime: chunk.mtime,
-              content: chunk.content,
-              embedding,
-              metadata: chunk.metadata,
-            }
-            embeddingChunks.push(embeddedChunk)
-            embeddingProgress.completed++
-            updateProgress?.({
-              completedChunks: embeddingProgress.completed,
-              totalChunks: contentChunks.length,
-              totalFiles: filesToIndex.length,
-            })
+        if (abortController.signal.aborted) {
+          throw new Error('Operation was aborted')
+        }
+        try {
+          await backOff(
+            async () => {
+              const embedding = await embeddingModel.getEmbedding(chunk.content)
+              const embeddedChunk = {
+                path: chunk.path,
+                mtime: chunk.mtime,
+                content: chunk.content,
+                embedding,
+                metadata: chunk.metadata,
+              }
+              embeddingChunks.push(embeddedChunk)
+              embeddingProgress.completed++
+              updateProgress?.({
+                completedChunks: embeddingProgress.completed,
+                totalChunks: contentChunks.length,
+                totalFiles: filesToIndex.length,
+              })
 
-            // Insert vectors in batches
-            if (
-              embeddingChunks.length >=
-                embeddingProgress.inserted + batchSize ||
-              embeddingChunks.length === contentChunks.length
-            ) {
-              await this.repository.insertVectors(
-                embeddingChunks.slice(
-                  embeddingProgress.inserted,
-                  embeddingProgress.inserted + batchSize,
-                ),
-                embeddingModel,
-              )
-              embeddingProgress.inserted += batchSize
-            }
-          },
-          {
-            numOfAttempts: 5,
-            startingDelay: 1000,
-            timeMultiple: 1.5,
-            jitter: 'full',
-            retry: (error) => {
-              console.error(error)
-              const isRateLimitError =
-                error.status === 429 &&
-                error.message.toLowerCase().includes('rate limit')
-              return !!isRateLimitError // retry only for rate limit errors
+              // Insert vectors in batches
+              if (
+                embeddingChunks.length >=
+                  embeddingProgress.inserted + batchSize ||
+                embeddingChunks.length === contentChunks.length
+              ) {
+                await this.repository.insertVectors(
+                  embeddingChunks.slice(
+                    embeddingProgress.inserted,
+                    embeddingProgress.inserted + batchSize,
+                  ),
+                  embeddingModel,
+                )
+                embeddingProgress.inserted += batchSize
+              }
             },
-          },
-        )
+            {
+              numOfAttempts: 5,
+              startingDelay: 1000,
+              timeMultiple: 1.5,
+              jitter: 'full',
+              retry: (error) => {
+                console.error(error)
+                const isRateLimitError =
+                  error.status === 429 &&
+                  error.message.toLowerCase().includes('rate limit')
+                return !!isRateLimitError // retry only for rate limit errors
+              },
+            },
+          )
+        } catch (error) {
+          abortController.abort()
+          throw error
+        }
       }),
     )
 
     try {
       await Promise.all(tasks)
     } catch (error) {
-      console.error('Error embedding chunks:', error)
-      throw error
+      if (
+        error instanceof LLMAPIKeyNotSetException ||
+        error instanceof LLMAPIKeyInvalidException ||
+        error instanceof LLMBaseUrlNotSetException
+      ) {
+        openSettingsModalWithError(this.app, (error as Error).message)
+      } else {
+        console.error('Error embedding chunks:', error)
+        throw error
+      }
     } finally {
       await this.repository.save()
     }
