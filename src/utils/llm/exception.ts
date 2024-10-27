@@ -12,9 +12,9 @@ export class LLMAPIKeyInvalidException extends Error {
   }
 }
 
-export class LLMABaseUrlNotSetException extends Error {
+export class LLMBaseUrlNotSetException extends Error {
   constructor(message: string) {
     super(message)
-    this.name = 'LLMABaseUrlNotSetException'
+    this.name = 'LLMBaseUrlNotSetException'
   }
 }
