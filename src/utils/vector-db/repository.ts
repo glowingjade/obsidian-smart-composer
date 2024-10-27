@@ -13,7 +13,7 @@ import {
   sql,
 } from 'drizzle-orm'
 import { PgliteDatabase, drizzle } from 'drizzle-orm/pglite'
-import { App } from 'obsidian'
+import { App, requestUrl } from 'obsidian'
 
 import migrations from '../../db/migrations.json'
 import { InsertVector, SelectVector, vectorTables } from '../../db/schema'
@@ -213,6 +213,12 @@ export class VectorDbRepository {
 
   private async loadExistingDatabase(): Promise<PgliteDatabase | null> {
     try {
+      const databaseFileExists = await this.app.vault.adapter.exists(
+        this.dbPath,
+      )
+      if (!databaseFileExists) {
+        return null
+      }
       const fileBuffer = await this.app.vault.adapter.readBinary(this.dbPath)
       const fileBlob = new Blob([fileBuffer], { type: 'application/x-gzip' })
       const { fsBundle, wasmModule, vectorExtensionBundlePath } =
@@ -233,14 +239,19 @@ export class VectorDbRepository {
   }
 
   private async migrateDatabase(): Promise<void> {
-    // Workaround for running Drizzle migrations in a browser environment
-    // This method uses an undocumented API to perform migrations
-    // See: https://github.com/drizzle-team/drizzle-orm/discussions/2532#discussioncomment-10780523
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    await this.db.dialect.migrate(migrations, this.db.session, {
-      migrationsTable: 'drizzle_migrations',
-    })
+    try {
+      // Workaround for running Drizzle migrations in a browser environment
+      // This method uses an undocumented API to perform migrations
+      // See: https://github.com/drizzle-team/drizzle-orm/discussions/2532#discussioncomment-10780523
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      await this.db.dialect.migrate(migrations, this.db.session, {
+        migrationsTable: 'drizzle_migrations',
+      })
+    } catch (error) {
+      console.error('Error migrating database:', error)
+      throw error
+    }
   }
 
   // TODO: This function is a temporary workaround chosen due to the difficulty of bundling postgres.wasm and postgres.data from node_modules into a single JS file. The ultimate goal is to bundle everything into one JS file in the future.
@@ -249,28 +260,24 @@ export class VectorDbRepository {
     wasmModule: WebAssembly.Module
     vectorExtensionBundlePath: URL
   }> {
-    const [fsBundleResponse, wasmResponse] = await Promise.all([
-      fetch('https://unpkg.com/@electric-sql/pglite/dist/postgres.data'),
-      fetch('https://unpkg.com/@electric-sql/pglite/dist/postgres.wasm'),
-    ])
+    try {
+      const [fsBundleResponse, wasmResponse] = await Promise.all([
+        requestUrl('https://unpkg.com/@electric-sql/pglite/dist/postgres.data'),
+        requestUrl('https://unpkg.com/@electric-sql/pglite/dist/postgres.wasm'),
+      ])
 
-    if (!fsBundleResponse.ok || !wasmResponse.ok) {
-      throw new Error('Failed to fetch PGlite resources')
+      const fsBundle = new Blob([fsBundleResponse.arrayBuffer], {
+        type: 'application/octet-stream',
+      })
+      const wasmModule = await WebAssembly.compile(wasmResponse.arrayBuffer)
+      const vectorExtensionBundlePath = new URL(
+        'https://unpkg.com/@electric-sql/pglite/dist/vector.tar.gz',
+      )
+
+      return { fsBundle, wasmModule, vectorExtensionBundlePath }
+    } catch (error) {
+      console.error('Error loading PGlite resources:', error)
+      throw error
     }
-
-    const [fsBundleArrayBuffer, wasmArrayBuffer] = await Promise.all([
-      fsBundleResponse.arrayBuffer(),
-      wasmResponse.arrayBuffer(),
-    ])
-
-    const fsBundle = new Blob([fsBundleArrayBuffer], {
-      type: 'application/octet-stream',
-    })
-    const wasmModule = await WebAssembly.compile(wasmArrayBuffer)
-    const vectorExtensionBundlePath = new URL(
-      'https://unpkg.com/@electric-sql/pglite/dist/vector.tar.gz',
-    )
-
-    return { fsBundle, wasmModule, vectorExtensionBundlePath }
   }
 }
