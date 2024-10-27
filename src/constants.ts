@@ -18,6 +18,10 @@ export const CHAT_MODEL_OPTIONS = [
     name: 'llama-3.1-70b (Groq)',
     value: 'llama-3.1-70b-versatile',
   },
+  {
+    name: 'llama3.1:8b (Ollama)',
+    value: 'llama3.1:8b',
+  },
 ]
 
 export const APPLY_MODEL_OPTIONS = [
@@ -37,6 +41,10 @@ export const APPLY_MODEL_OPTIONS = [
     name: 'llama-3.1-70b (Groq)',
     value: 'llama-3.1-70b-versatile',
   },
+  {
+    name: 'llama3.1:8b (Ollama)',
+    value: 'llama3.1:8b',
+  },
 ]
 
 // Update table exports in src/db/schema.ts when updating this
@@ -50,6 +58,16 @@ export const EMBEDDING_MODEL_OPTIONS = [
     name: 'text-embedding-3-large',
     value: 'text-embedding-3-large',
     dimension: 3072,
+  },
+  {
+    name: 'nomic-embed-text (Ollama)',
+    value: 'nomic-embed-text',
+    dimension: 768,
+  },
+  {
+    name: 'mxbai-embed-large (Ollama)',
+    value: 'mxbai-embed-large',
+    dimension: 1024,
   },
 ]
 

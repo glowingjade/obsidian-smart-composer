@@ -16,5 +16,23 @@
     "bps": true,
     "folderMillis": 1729509994653,
     "hash": "30520313039892c9c07b13185b6e4aa0b0f9a09b851db96e0f6e400303560aec"
+  },
+  {
+    "sql": [
+      "CREATE TABLE IF NOT EXISTS \"vector_data_nomic_embed_text\" (\n\t\"id\" serial PRIMARY KEY NOT NULL,\n\t\"path\" text NOT NULL,\n\t\"mtime\" bigint NOT NULL,\n\t\"content\" text NOT NULL,\n\t\"embedding\" vector(768),\n\t\"metadata\" jsonb NOT NULL\n);\n",
+      "\nCREATE INDEX IF NOT EXISTS \"embeddingIndex_nomic_embed_text\" ON \"vector_data_nomic_embed_text\" USING hnsw (\"embedding\" vector_cosine_ops);"
+    ],
+    "bps": true,
+    "folderMillis": 1729890971064,
+    "hash": "2041cd1e2808ad7ceea75ab34088b1dae1d563286b35d36586129ab6467fb627"
+  },
+  {
+    "sql": [
+      "CREATE TABLE IF NOT EXISTS \"vector_data_mxbai_embed_large\" (\n\t\"id\" serial PRIMARY KEY NOT NULL,\n\t\"path\" text NOT NULL,\n\t\"mtime\" bigint NOT NULL,\n\t\"content\" text NOT NULL,\n\t\"embedding\" vector(1024),\n\t\"metadata\" jsonb NOT NULL\n);\n",
+      "\nCREATE INDEX IF NOT EXISTS \"embeddingIndex_mxbai_embed_large\" ON \"vector_data_mxbai_embed_large\" USING hnsw (\"embedding\" vector_cosine_ops);"
+    ],
+    "bps": true,
+    "folderMillis": 1729928816942,
+    "hash": "4dd533fe5e978bc0ad79708c073fc3ce973702b7c6eed71f0e4818b1063212fb"
   }
 ]

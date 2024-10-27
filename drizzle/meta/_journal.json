@@ -15,6 +15,20 @@
       "when": 1729509994653,
       "tag": "0001_create_vector_data_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1729890971064,
+      "tag": "0002_create_vector_data_nomic_embed_text",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1729928816942,
+      "tag": "0003_create_vector_data_mxbai_embed_large",
+      "breakpoints": true
     }
   ]
 }
