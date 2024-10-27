@@ -120,6 +120,8 @@ Your feedback and experiences are crucial in making Smart Composer better for ev
 
 We welcome all kinds of contributions to Obsidian Smart Composer, including bug reports, bug fixes, documentation improvements, and feature enhancements.
 
+**For major feature ideas, please create an issue first to discuss feasibility and implementation approach.**
+
 If you're interested in contributing, please refer to our [CONTRIBUTING.md](CONTRIBUTING.md) file for detailed information on:
 
 - Setting up the development environment
@@ -128,7 +130,6 @@ If you're interested in contributing, please refer to our [CONTRIBUTING.md](CONT
 - The process for submitting pull requests
 - Known issues and solutions for developers
 
-For major feature ideas, please create an issue first to discuss feasibility and implementation approach.
 
 ## License
 
