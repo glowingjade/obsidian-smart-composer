@@ -93,6 +93,10 @@ Smart Composer adds a few commands to work with AI. You can set custom hotkeys f
 3. Place the downloaded files into this new folder.
 4. Open Obsidian settings `Settings > Community plugins`, and enable Smart Composer.
 
+### Troubleshooting
+
+Smart Composer requires a recent version of the Obsidian installer. If you experience installation issues, please ensure your Obsidian is updated to the latest version.
+
 ## Roadmap
 
 To see our up-to-date project roadmap and progress, please check out our [GitHub Projects kanban board](https://github.com/glowingjade/obsidian-smart-composer/projects?query=is%3Aopen).
