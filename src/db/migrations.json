@@ -34,5 +34,14 @@
     "bps": true,
     "folderMillis": 1729928816942,
     "hash": "4dd533fe5e978bc0ad79708c073fc3ce973702b7c6eed71f0e4818b1063212fb"
+  },
+  {
+    "sql": [
+      "CREATE TABLE IF NOT EXISTS \"vector_data_bge_m3\" (\n\t\"id\" serial PRIMARY KEY NOT NULL,\n\t\"path\" text NOT NULL,\n\t\"mtime\" bigint NOT NULL,\n\t\"content\" text NOT NULL,\n\t\"embedding\" vector(1024),\n\t\"metadata\" jsonb NOT NULL\n);\n",
+      "\nCREATE INDEX IF NOT EXISTS \"embeddingIndex_bge_m3\" ON \"vector_data_bge_m3\" USING hnsw (\"embedding\" vector_cosine_ops);"
+    ],
+    "bps": true,
+    "folderMillis": 1730085029605,
+    "hash": "e41dde00d7d98da74596c60e796aa78d5cbfec57208347c72f16a6fa11c24ef1"
   }
 ]

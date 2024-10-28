@@ -4,7 +4,7 @@ export const APPLY_VIEW_TYPE = 'smtcmp-apply-view'
 export const CHAT_MODEL_OPTIONS = [
   {
     name: 'claude-3.5-sonnet (Recommended)',
-    value: 'claude-3-5-sonnet-20240620',
+    value: 'claude-3-5-sonnet-latest',
   },
   {
     name: 'gpt-4o',
@@ -67,6 +67,11 @@ export const EMBEDDING_MODEL_OPTIONS = [
   {
     name: 'mxbai-embed-large (Ollama)',
     value: 'mxbai-embed-large',
+    dimension: 1024,
+  },
+  {
+    name: 'bge-m3 (Ollama)',
+    value: 'bge-m3',
     dimension: 1024,
   },
 ]

@@ -10,7 +10,10 @@ export function ModelSelect() {
   return (
     <DropdownMenu.Root open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenu.Trigger className="smtcmp-chat-input-model-select">
-        {settings.chatModel}
+        {
+          CHAT_MODEL_OPTIONS.find((model) => model.value === settings.chatModel)
+            ?.name
+        }
         {isOpen ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
       </DropdownMenu.Trigger>
 

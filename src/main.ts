@@ -118,6 +118,7 @@ export default class SmartCopilotPlugin extends Plugin {
 
   async loadSettings() {
     this.settings = parseSmartCopilotSettings(await this.loadData())
+    await this.saveData(this.settings) // Save updated settings
   }
 
   async setSettings(newSettings: SmartCopilotSettings) {

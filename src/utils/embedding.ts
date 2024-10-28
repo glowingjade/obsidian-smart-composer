@@ -106,6 +106,29 @@ export const getEmbeddingModel = (
         },
       }
     }
+    case 'bge-m3': {
+      const openai = new NoStainlessOpenAI({
+        apiKey: '',
+        dangerouslyAllowBrowser: true,
+        baseURL: `${ollamaBaseUrl}/v1`,
+      })
+      return {
+        name: 'bge-m3',
+        dimension: 1024,
+        getEmbedding: async (text: string) => {
+          if (!ollamaBaseUrl) {
+            throw new LLMBaseUrlNotSetException(
+              'Ollama Address is missing. Please set it in settings menu.',
+            )
+          }
+          const embedding = await openai.embeddings.create({
+            model: 'bge-m3',
+            input: text,
+          })
+          return embedding.data[0].embedding
+        },
+      }
+    }
     default:
       throw new Error('Invalid embedding model')
   }
