@@ -93,27 +93,20 @@ Smart Composer adds a few commands to work with AI. You can set custom hotkeys f
 3. Place the downloaded files into this new folder.
 4. Open Obsidian settings `Settings > Community plugins`, and enable Smart Composer.
 
+### Troubleshooting
+
+Smart Composer requires a recent version of the Obsidian installer. If you experience installation issues, please ensure your Obsidian is updated to the latest version. To check your Obsidian version, navigate to `Settings > General > Check for updates`.
+
 ## Roadmap
 
-#### Expanded Context Support
+To see our up-to-date project roadmap and progress, please check out our [GitHub Projects kanban board](https://github.com/glowingjade/obsidian-smart-composer/projects?query=is%3Aopen).
 
-- [x] Folder context mentioning, and auto context selection (RAG)
-- [x] Web content browsing
-- [ ] PDF, DOCX, and image understanding
-- [ ] Mention Obsidian tag
+Some of our planned features include:
 
-#### Advanced Search
-
-- [x] Chat with AI to find specific notes or content
-
-#### Prompt Presets
-
-- [ ] Save and reuse custom prompts for common tasks
-
-#### Tab Completion
-
-- [ ] Copilot-like autocomplete
-- [ ] Context-aware suggestions based on your writing style and vault content
+- Support for other models, including local models
+- Support for image inputs or external files (PDF, DOCX, etc.)
+- Custom prompt templates and system prompts
+- Mentioning with tags or other metadata
 
 ## Feedback and Support
 
@@ -131,6 +124,8 @@ Your feedback and experiences are crucial in making Smart Composer better for ev
 
 We welcome all kinds of contributions to Obsidian Smart Composer, including bug reports, bug fixes, documentation improvements, and feature enhancements.
 
+**For major feature ideas, please create an issue first to discuss feasibility and implementation approach.**
+
 If you're interested in contributing, please refer to our [CONTRIBUTING.md](CONTRIBUTING.md) file for detailed information on:
 
 - Setting up the development environment
@@ -139,7 +134,6 @@ If you're interested in contributing, please refer to our [CONTRIBUTING.md](CONT
 - The process for submitting pull requests
 - Known issues and solutions for developers
 
-For major feature ideas, please create an issue first to discuss feasibility and implementation approach.
 
 ## License
 
