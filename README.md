@@ -95,7 +95,7 @@ Smart Composer adds a few commands to work with AI. You can set custom hotkeys f
 
 ### Troubleshooting
 
-Smart Composer requires a recent version of the Obsidian installer. If you experience installation issues, please ensure your Obsidian is updated to the latest version.
+Smart Composer requires a recent version of the Obsidian installer. If you experience installation issues, please ensure your Obsidian is updated to the latest version. To check your Obsidian version, navigate to `Settings > General > Check for updates`.
 
 ## Roadmap
 
