@@ -48,7 +48,7 @@ To update the database schema:
 2. After making changes, run the following command to generate migration files:
 
    ```
-   npm run migrate:generate
+   npx drizzle-kit generate --name <migration-name>
    ```
 
 3. Review the generated migration files in the `drizzle` directory.
@@ -70,7 +70,7 @@ We recommend creating a single migration file for each change. To squash multipl
 4. Run the migration generation command again to create a final, consolidated migration file:
 
    ```
-   npm run migrate:generate
+   npx drizzle-kit generate --name <migration-name>
    ```
 
 This process ensures a clean and organized migration history.
