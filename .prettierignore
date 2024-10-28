@@ -48,3 +48,6 @@ manifest.json
 
 # Obsidian
 .obsidian
+
+# Markdown
+*.md
