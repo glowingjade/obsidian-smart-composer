@@ -4,7 +4,7 @@ export const APPLY_VIEW_TYPE = 'smtcmp-apply-view'
 export const CHAT_MODEL_OPTIONS = [
   {
     name: 'claude-3.5-sonnet (Recommended)',
-    value: 'claude-3-5-sonnet-20241022',
+    value: 'claude-3-5-sonnet-latest',
   },
   {
     name: 'gpt-4o',

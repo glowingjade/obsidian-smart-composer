@@ -21,8 +21,8 @@ import {
   LLMAPIKeyNotSetException,
 } from './exception'
 
-export type AnthropicModel = 'claude-3-5-sonnet-20241022'
-export const ANTHROPIC_MODELS: AnthropicModel[] = ['claude-3-5-sonnet-20241022']
+export type AnthropicModel = 'claude-3-5-sonnet-latest'
+export const ANTHROPIC_MODELS: AnthropicModel[] = ['claude-3-5-sonnet-latest']
 
 export class AnthropicProvider implements BaseLLMProvider {
   private client: Anthropic
