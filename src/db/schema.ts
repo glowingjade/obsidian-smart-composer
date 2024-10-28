@@ -55,3 +55,5 @@ export type VectorMetaData = {
 // 'npx drizzle-kit generate' requires individual table exports to generate correct migration files
 export const vectorTable0 = vectorTables[EMBEDDING_MODEL_OPTIONS[0].value]
 export const vectorTable1 = vectorTables[EMBEDDING_MODEL_OPTIONS[1].value]
+export const vectorTable2 = vectorTables[EMBEDDING_MODEL_OPTIONS[2].value]
+export const vectorTable3 = vectorTables[EMBEDDING_MODEL_OPTIONS[3].value]

@@ -25,9 +25,13 @@ export class RAGEngine {
   ): Promise<RAGEngine> {
     const ragEngine = new RAGEngine(app, settings)
     ragEngine.vectorDbManager = await VectorDbManager.create(app)
-    ragEngine.embeddingModel = getEmbeddingModel(settings.embeddingModel, {
-      openAIApiKey: settings.openAIApiKey,
-    })
+    ragEngine.embeddingModel = getEmbeddingModel(
+      settings.embeddingModel,
+      {
+        openAIApiKey: settings.openAIApiKey,
+      },
+      settings.ollamaBaseUrl,
+    )
     return ragEngine
   }
 
@@ -37,9 +41,13 @@ export class RAGEngine {
 
   setSettings(settings: SmartCopilotSettings) {
     this.settings = settings
-    this.embeddingModel = getEmbeddingModel(settings.embeddingModel, {
-      openAIApiKey: settings.openAIApiKey,
-    })
+    this.embeddingModel = getEmbeddingModel(
+      settings.embeddingModel,
+      {
+        openAIApiKey: settings.openAIApiKey,
+      },
+      settings.ollamaBaseUrl,
+    )
   }
 
   // TODO: Implement automatic vault re-indexing when settings are changed.

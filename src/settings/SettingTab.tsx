@@ -71,6 +71,22 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
         }),
     )
 
+    new Setting(containerEl)
+      .setName('Ollama Address')
+      .setDesc(
+        'Set the Ollama URL and port address - normally http://127.0.0.1:11434',
+      )
+      .addText((text) =>
+        text
+          .setValue(String(this.plugin.settings.ollamaBaseUrl))
+          .onChange(async (value) => {
+            await this.plugin.setSettings({
+              ...this.plugin.settings,
+              ollamaBaseUrl: value,
+            })
+          }),
+      )
+
     new Setting(containerEl).setHeading().setName('Model Settings')
 
     new Setting(containerEl)

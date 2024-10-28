@@ -38,13 +38,21 @@ export function LLMProvider({ children }: PropsWithChildren) {
   const { settings } = useSettings()
 
   useEffect(() => {
-    const manager = new LLMManager({
-      openai: settings.openAIApiKey,
-      groq: settings.groqApiKey,
-      anthropic: settings.anthropicApiKey,
-    })
+    const manager = new LLMManager(
+      {
+        openai: settings.openAIApiKey,
+        groq: settings.groqApiKey,
+        anthropic: settings.anthropicApiKey,
+      },
+      settings.ollamaBaseUrl,
+    )
     setLLMManager(manager)
-  }, [settings.openAIApiKey, settings.groqApiKey, settings.anthropicApiKey])
+  }, [
+    settings.openAIApiKey,
+    settings.groqApiKey,
+    settings.anthropicApiKey,
+    settings.ollamaBaseUrl,
+  ])
 
   const generateResponse = useCallback(
     async (request: LLMRequestNonStreaming, options?: LLMOptions) => {

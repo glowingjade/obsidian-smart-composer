@@ -19,7 +19,6 @@ import { useLLM } from '../../contexts/llm-context'
 import { useRAG } from '../../contexts/rag-context'
 import { useSettings } from '../../contexts/settings-context'
 import { useChatHistory } from '../../hooks/useChatHistory'
-import { OpenSettingsModal } from '../../OpenSettingsModal'
 import { ChatMessage, ChatUserMessage } from '../../types/chat'
 import {
   MentionableBlock,
@@ -30,12 +29,14 @@ import { applyChangesToFile } from '../../utils/apply'
 import {
   LLMAPIKeyInvalidException,
   LLMAPIKeyNotSetException,
+  LLMBaseUrlNotSetException,
 } from '../../utils/llm/exception'
 import {
   getMentionableKey,
   serializeMentionable,
 } from '../../utils/mentionable'
 import { readTFileContent } from '../../utils/obsidian'
+import { openSettingsModalWithError } from '../../utils/openSettingsModal'
 import { PromptGenerator } from '../../utils/promptGenerator'
 
 import ChatUserInput, { ChatUserInputRef } from './chat-input/ChatUserInput'
@@ -259,14 +260,10 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       })
       if (
         error instanceof LLMAPIKeyNotSetException ||
-        error instanceof LLMAPIKeyInvalidException
+        error instanceof LLMAPIKeyInvalidException ||
+        error instanceof LLMBaseUrlNotSetException
       ) {
-        new OpenSettingsModal(app, error.message, () => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const setting = (app as any).setting
-          setting.open()
-          setting.openTabById('smart-composer')
-        }).open()
+        openSettingsModalWithError(app, error.message)
       } else {
         new Notice(error.message)
         console.error('Failed to generate response', error)
@@ -322,14 +319,10 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     onError: (error) => {
       if (
         error instanceof LLMAPIKeyNotSetException ||
-        error instanceof LLMAPIKeyInvalidException
+        error instanceof LLMAPIKeyInvalidException ||
+        error instanceof LLMBaseUrlNotSetException
       ) {
-        new OpenSettingsModal(app, error.message, () => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const setting = (app as any).setting
-          setting.open()
-          setting.openTabById('smart-composer')
-        }).open()
+        openSettingsModalWithError(app, error.message)
       } else {
         new Notice(error.message)
         console.error('Failed to apply changes', error)
