@@ -16,6 +16,7 @@ const embeddingModelSchema = z.enum(
   EMBEDDING_MODEL_OPTIONS.map((opt) => opt.value) as [string, ...string[]],
 )
 
+// Update settings.test.ts after changing this schema
 const smartCopilotSettingsSchema = z.object({
   openAIApiKey: z.string().catch(''),
   groqApiKey: z.string().catch(''),
