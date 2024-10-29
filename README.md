@@ -48,6 +48,7 @@ Note: The Apply Edit feature is currently slower than desired. We are working on
 #### Additional Features
 
 - **Custom Model Selection** : Use your own model by setting your API Key (stored locally).
+- **Local Model Support** : Run open-source LLMs locally with [Ollama](https://ollama.ai) for complete privacy.
 
 ## Getting Started
 
