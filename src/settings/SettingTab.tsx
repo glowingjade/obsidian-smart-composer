@@ -155,6 +155,24 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
           }),
       )
 
+    new Setting(containerEl)
+      .setHeading()
+      .setName('System Prompt')
+      .setDesc('This prompt will be added to the beginning of every chat.')
+
+    new Setting(containerEl)
+      .setClass('smtcmp-setting-textarea')
+      .addTextArea((text) =>
+        text
+          .setValue(this.plugin.settings.systemPrompt)
+          .onChange(async (value) => {
+            await this.plugin.setSettings({
+              ...this.plugin.settings,
+              systemPrompt: value,
+            })
+          }),
+      )
+
     new Setting(containerEl).setHeading().setName('RAG Options')
 
     new Setting(containerEl)
