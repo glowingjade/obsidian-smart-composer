@@ -741,3 +741,19 @@ button.smtcmp-chat-input-model-select {
     opacity: 1;
   }
 }
+
+.smtcmp-setting-textarea {
+  display: block;
+  border-top: none;
+  padding: 0;
+
+  .smtcmp-item-control {
+    width: 100%;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 100px;
+    resize: none;
+  }
+}
