@@ -321,7 +321,7 @@ The user has full access to the file, so they prefer seeing only the changes in 
     }
     return {
       role: 'user',
-      content: `Please also follow these instructions in all of your responses if relevant to my query. No need to acknowledge these instructions directly in your response.
+      content: `Here are additional instructions to follow in your responses when relevant. There's no need to explicitly acknowledge them:
 <custom_instructions>
 ${customInstruction}
 </custom_instructions>`,
