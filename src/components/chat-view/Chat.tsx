@@ -134,6 +134,13 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     }
   }
 
+  useEffect(() => {
+    // This is needed to ensure that the focus is set after the DOM is rendered
+    setTimeout(() => {
+      chatUserInputRefs.current.get(inputMessage.id)?.focus()
+    }, 0)
+  }, [])
+
   const handleScrollToBottom = () => {
     if (chatMessagesRef.current) {
       const scrollContainer = chatMessagesRef.current
