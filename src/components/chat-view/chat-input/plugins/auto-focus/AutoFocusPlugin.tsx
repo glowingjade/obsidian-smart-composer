@@ -15,7 +15,7 @@ export default function AutoFocusPlugin({
       () => {
         const rootElement = editor.getRootElement()
         if (rootElement) {
-          // requestAnimationFrame ensures DOM is rendered
+          // requestAnimationFrame is required here for unknown reasons, possibly related to the Obsidian plugin environment.
           requestAnimationFrame(() => {
             rootElement.focus()
           })
