@@ -1,4 +1,3 @@
-import { AutoFocusPlugin } from '@lexical/react/LexicalAutoFocusPlugin'
 import {
   InitialConfigType,
   LexicalComposer,
@@ -34,6 +33,7 @@ import { MemoizedSyntaxHighlighterWrapper } from '../SyntaxHighlighterWrapper'
 
 import MentionableBadge from './MentionableBadge'
 import { ModelSelect } from './ModelSelect'
+import AutoFocusPlugin from './plugins/auto-focus/AutoFocusPlugin'
 import AutoLinkMentionPlugin from './plugins/mention/AutoLinkMentionPlugin'
 import { MentionNode } from './plugins/mention/MentionNode'
 import MentionPlugin from './plugins/mention/MentionPlugin'
@@ -318,7 +318,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
             ErrorBoundary={LexicalErrorBoundary}
           />
           <HistoryPlugin />
-          {autoFocus && <AutoFocusPlugin />}
+          {autoFocus && <AutoFocusPlugin defaultSelection="rootEnd" />}
           <MentionPlugin searchResultByQuery={searchResultByQuery} />
           <OnChangePlugin
             onChange={(editorState) => {
