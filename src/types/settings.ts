@@ -25,6 +25,7 @@ const smartCopilotSettingsSchema = z.object({
   chatModel: chatModelSchema.catch('claude-3-5-sonnet-latest'),
   applyModel: applyModelSchema.catch('gpt-4o-mini'),
   embeddingModel: embeddingModelSchema.catch('text-embedding-3-small'),
+  systemPrompt: z.string().catch(''),
   ragOptions: z
     .object({
       chunkSize: z.number().catch(1000),

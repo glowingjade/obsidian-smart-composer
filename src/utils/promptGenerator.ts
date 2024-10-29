@@ -86,6 +86,8 @@ export class PromptGenerator {
 
     const systemMessage = this.getSystemMessage(shouldUseRAG)
 
+    const customInstructionMessage = this.getCustomInstructionMessage()
+
     const currentFile = lastUserMessage.mentionables.find(
       (m) => m.type === 'current-file',
     )?.file
@@ -95,6 +97,7 @@ export class PromptGenerator {
 
     const requestMessages: RequestMessage[] = [
       systemMessage,
+      ...(customInstructionMessage ? [customInstructionMessage] : []),
       ...(currentFileMessage ? [currentFileMessage] : []),
       ...compiledMessages.slice(-20).map((message): RequestMessage => {
         if (message.role === 'user') {
@@ -308,6 +311,20 @@ The user has full access to the file, so they prefer seeing only the changes in 
     return {
       role: 'system',
       content: shouldUseRAG ? systemPromptRAG : systemPrompt,
+    }
+  }
+
+  private getCustomInstructionMessage(): RequestMessage | null {
+    const customInstruction = this.settings.systemPrompt.trim()
+    if (!customInstruction) {
+      return null
+    }
+    return {
+      role: 'user',
+      content: `Here are additional instructions to follow in your responses when relevant. There's no need to explicitly acknowledge them:
+<custom_instructions>
+${customInstruction}
+</custom_instructions>`,
     }
   }
 
