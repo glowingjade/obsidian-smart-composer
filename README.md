@@ -51,6 +51,18 @@ Note: The Apply Edit feature is currently slower than desired. We are working on
 
 ## Getting Started
 
+> **⚠️ Important: Installer Version Requirement**  
+> Smart Composer requires a recent version of the Obsidian installer. If you experience issues with the plugin not loading properly:
+> 
+> 1. First, try updating Obsidian normally at `Settings > General > Check for updates`.
+> 
+> 2. If issues persist, manually update your Obsidian installer:
+>    - Download the latest installer from [Obsidian's download page](https://obsidian.md/download)
+>    - Close Obsidian completely
+>    - Run the new installer
+> 
+> For more details, see [Obsidian's guide on installer updates](https://help.obsidian.md/Getting+started/Update+Obsidian#Installer+updates).
+
 Currently, Smart Composer is available through [Beta Quickstart](#beta-quickstart-recommended) or [Manual Installation](#manual-installation). Community plugin support is coming soon.
 
 ### Beta Quickstart (Recommended)
@@ -92,10 +104,6 @@ Smart Composer adds a few commands to work with AI. You can set custom hotkeys f
 2. Create a folder named `obsidian-smart-composer` in your vault's `<Vault>/.obsidian/plugins/` directory.
 3. Place the downloaded files into this new folder.
 4. Open Obsidian settings `Settings > Community plugins`, and enable Smart Composer.
-
-### Troubleshooting
-
-Smart Composer requires a recent version of the Obsidian installer. If you experience installation issues, please ensure your Obsidian is updated to the latest version. To check your Obsidian version, navigate to `Settings > General > Check for updates`.
 
 ## Roadmap
 
