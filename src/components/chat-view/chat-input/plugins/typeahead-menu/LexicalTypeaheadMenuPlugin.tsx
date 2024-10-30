@@ -1,13 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the MIT license.
+ * Original source: https://github.com/facebook/lexical
  *
+ * Modified from the original code
  */
-
-// original: https://github.com/facebook/lexical/blob/main/packages/lexical-react/src/LexicalTypeaheadMenuPlugin.tsx
 
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import {
