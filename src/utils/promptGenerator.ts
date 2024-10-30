@@ -405,8 +405,6 @@ ${transcript.map((t) => `${t.offset}: ${t.text}`).join('\n')}
 
     const markdown: string = turndown.turndown(response.text)
 
-    console.log('markdown', markdown)
-
     return markdown
   }
 }
