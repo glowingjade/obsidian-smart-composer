@@ -120,6 +120,9 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const [queryProgress, setQueryProgress] = useState<QueryProgressState>({
     type: 'idle',
   })
+  const preventAutoScrollRef = useRef(false)
+  const lastProgrammaticScrollRef = useRef<number>(0)
+
   const activeStreamAbortControllersRef = useRef<AbortController[]>([])
   const chatUserInputRefs = useRef<Map<string, ChatUserInputRef>>(new Map())
   const chatMessagesRef = useRef<HTMLDivElement>(null)
@@ -134,10 +137,32 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     }
   }
 
+  useEffect(() => {
+    const scrollContainer = chatMessagesRef.current
+    if (!scrollContainer) return
+
+    const handleScroll = () => {
+      // If the scroll event happened very close to our programmatic scroll, ignore it
+      if (Date.now() - lastProgrammaticScrollRef.current < 50) {
+        return
+      }
+
+      preventAutoScrollRef.current =
+        scrollContainer.scrollHeight -
+          scrollContainer.scrollTop -
+          scrollContainer.clientHeight >
+        20
+    }
+
+    scrollContainer.addEventListener('scroll', handleScroll)
+    return () => scrollContainer.removeEventListener('scroll', handleScroll)
+  }, [chatMessages])
+
   const handleScrollToBottom = () => {
     if (chatMessagesRef.current) {
       const scrollContainer = chatMessagesRef.current
       if (scrollContainer.scrollTop !== scrollContainer.scrollHeight) {
+        lastProgrammaticScrollRef.current = Date.now()
         scrollContainer.scrollTop = scrollContainer.scrollHeight
       }
     }
@@ -244,7 +269,9 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
                 : message,
             ),
           )
-          handleScrollToBottom()
+          if (!preventAutoScrollRef.current) {
+            handleScrollToBottom()
+          }
         }
       } catch (error) {
         if (error.name === 'AbortError') {
@@ -548,6 +575,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
             useVaultSearch,
           )
           setInputMessage(getNewInputMessage(app))
+          preventAutoScrollRef.current = false
           handleScrollToBottom()
         }}
         onFocus={() => {
