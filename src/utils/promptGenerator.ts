@@ -21,6 +21,7 @@ import {
 } from './obsidian'
 import { RAGEngine } from './ragEngine'
 import { tokenCount } from './token'
+import { YoutubeTranscript, isYoutubeUrl } from './youtube-transcript'
 
 export class PromptGenerator {
   private ragEngine: RAGEngine
@@ -373,6 +374,17 @@ When writing out new markdown blocks, remember not to include "line_number|" at 
    * ...
    */
   private async getWebsiteContent(url: string): Promise<string> {
+    if (isYoutubeUrl(url)) {
+      // TODO: pass language based on user preferences
+      const { title, transcript } =
+        await YoutubeTranscript.fetchTranscriptAndMetadata(url)
+
+      return `Title: ${title}
+Transcript:
+${transcript.map((t) => `${t.offset}: ${t.text}`).join('\n')}
+`
+    }
+
     const response = await requestUrl({ url })
 
     const turndown = new TurndownService()
@@ -392,6 +404,8 @@ When writing out new markdown blocks, remember not to include "line_number|" at 
     turndown.remove('style')
 
     const markdown: string = turndown.turndown(response.text)
+
+    console.log('markdown', markdown)
 
     return markdown
   }
