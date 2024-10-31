@@ -17,7 +17,7 @@ export class ChatConversationManager {
     const newChatConversation: ChatConversation = {
       schemaVersion: CURRENT_SCHEMA_VERSION,
       id,
-      title: 'New Chat',
+      title: 'New chat',
       createdAt: Date.now(),
       updatedAt: Date.now(),
       messages: [],

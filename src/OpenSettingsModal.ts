@@ -7,7 +7,7 @@ export class OpenSettingsModal extends Modal {
     this.setTitle(title)
 
     new Setting(this.contentEl).addButton((button) => {
-      button.setButtonText('Open Settings')
+      button.setButtonText('Open settings')
       button.onClick(() => {
         this.close()
         onSubmit()

@@ -100,8 +100,8 @@ export function useChatHistory() {
               ? editorStateToPlainText(firstUserMessage.content).substring(
                   0,
                   20,
-                ) || 'New Chat'
-              : 'New Chat',
+                ) || 'New chat'
+              : 'New chat',
             messages: serializedMessages,
             updatedAt: Date.now(),
           })

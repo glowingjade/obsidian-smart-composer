@@ -1,16 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the MIT license.
+ * Original source: https://github.com/facebook/lexical
  *
- */
-
-/**
- * original: https://github.com/facebook/lexical/blob/main/packages/lexical-react/src/shared/LexicalMenu.ts
- *
- * modified:
+ * Modified from the original code
  * - Added custom positioning logic for menu placement
  */
 

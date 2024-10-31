@@ -1,5 +1,4 @@
-import { App, TFile, requestUrl } from 'obsidian'
-import TurndownService from 'turndown'
+import { App, TFile, htmlToMarkdown, requestUrl } from 'obsidian'
 
 import { editorStateToPlainText } from '../components/chat-view/chat-input/utils/editor-state-to-plain-text'
 import { QueryProgressState } from '../components/chat-view/QueryProgress'
@@ -21,6 +20,7 @@ import {
 } from './obsidian'
 import { RAGEngine } from './ragEngine'
 import { tokenCount } from './token'
+import { YoutubeTranscript, isYoutubeUrl } from './youtube-transcript'
 
 export class PromptGenerator {
   private ragEngine: RAGEngine
@@ -373,26 +373,22 @@ When writing out new markdown blocks, remember not to include "line_number|" at 
    * ...
    */
   private async getWebsiteContent(url: string): Promise<string> {
+    if (isYoutubeUrl(url)) {
+      try {
+        // TODO: pass language based on user preferences
+        const { title, transcript } =
+          await YoutubeTranscript.fetchTranscriptAndMetadata(url)
+
+        return `Title: ${title}
+Video Transcript:
+${transcript.map((t) => `${t.offset}: ${t.text}`).join('\n')}`
+      } catch (error) {
+        console.error('Error fetching YouTube transcript', error)
+      }
+    }
+
     const response = await requestUrl({ url })
 
-    const turndown = new TurndownService()
-
-    turndown.addRule('ignoreEmptyLinks', {
-      filter: (node) => {
-        return (
-          node.nodeName === 'A' &&
-          node.textContent?.trim() === '' &&
-          !node.querySelector('img')
-        )
-      },
-      replacement: () => '',
-    })
-
-    turndown.remove('script')
-    turndown.remove('style')
-
-    const markdown: string = turndown.turndown(response.text)
-
-    return markdown
+    return htmlToMarkdown(response.text)
   }
 }

@@ -137,7 +137,7 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   display: flex;
   flex-direction: column;
   gap: var(--size-4-1);
-  padding: 0 var(--size-4-3);
+  padding: 0 var(--size-4-3) var(--size-4-5) var(--size-4-3);
   margin: var(--size-4-2) calc(var(--size-4-3) * -1) 0;
 }
 
