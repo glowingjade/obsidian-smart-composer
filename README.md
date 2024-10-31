@@ -1,4 +1,4 @@
-# Obsidian Smart Composer
+# Smart Composer
 
 ![SC1_Title.gif](https://github.com/user-attachments/assets/a50a1f80-39ff-4eba-8090-e3d75e7be98c)
 
@@ -131,7 +131,7 @@ Your feedback and experiences are crucial in making Smart Composer better for ev
 
 ## Contributing
 
-We welcome all kinds of contributions to Obsidian Smart Composer, including bug reports, bug fixes, documentation improvements, and feature enhancements.
+We welcome all kinds of contributions to Smart Composer, including bug reports, bug fixes, documentation improvements, and feature enhancements.
 
 **For major feature ideas, please create an issue first to discuss feasibility and implementation approach.**
 

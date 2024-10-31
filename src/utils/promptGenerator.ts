@@ -1,5 +1,4 @@
-import { App, TFile, requestUrl } from 'obsidian'
-import TurndownService from 'turndown'
+import { App, TFile, htmlToMarkdown, requestUrl } from 'obsidian'
 
 import { editorStateToPlainText } from '../components/chat-view/chat-input/utils/editor-state-to-plain-text'
 import { QueryProgressState } from '../components/chat-view/QueryProgress'
@@ -390,24 +389,6 @@ ${transcript.map((t) => `${t.offset}: ${t.text}`).join('\n')}`
 
     const response = await requestUrl({ url })
 
-    const turndown = new TurndownService()
-
-    turndown.addRule('ignoreEmptyLinks', {
-      filter: (node) => {
-        return (
-          node.nodeName === 'A' &&
-          node.textContent?.trim() === '' &&
-          !node.querySelector('img')
-        )
-      },
-      replacement: () => '',
-    })
-
-    turndown.remove('script')
-    turndown.remove('style')
-
-    const markdown: string = turndown.turndown(response.text)
-
-    return markdown
+    return htmlToMarkdown(response.text)
   }
 }

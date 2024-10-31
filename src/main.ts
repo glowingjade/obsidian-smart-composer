@@ -26,7 +26,7 @@ export default class SmartCopilotPlugin extends Plugin {
     this.registerView(APPLY_VIEW_TYPE, (leaf) => new ApplyView(leaf))
 
     // This creates an icon in the left ribbon.
-    this.addRibbonIcon('message-square', 'Open Smart Composer', () =>
+    this.addRibbonIcon('message-square', 'Open smart composer', () =>
       this.openChatView(),
     )
 
@@ -160,9 +160,9 @@ export default class SmartCopilotPlugin extends Plugin {
     // chatProps is consumed in ChatView.tsx
     this.initialChatProps = chatProps
 
-    this.app.workspace.detachLeavesOfType(CHAT_VIEW_TYPE)
+    const leaf = this.app.workspace.getLeavesOfType(CHAT_VIEW_TYPE)[0]
 
-    await this.app.workspace.getRightLeaf(false)?.setViewState({
+    await (leaf ?? this.app.workspace.getRightLeaf(false))?.setViewState({
       type: CHAT_VIEW_TYPE,
       active: true,
     })
