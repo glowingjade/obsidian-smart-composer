@@ -4,13 +4,13 @@ import { App, TFile } from 'obsidian'
 import pLimit from 'p-limit'
 
 import { IndexProgress } from '../../../components/chat-view/QueryProgress'
-import { InsertVector, SelectVector } from '../../../database/schema'
-import { EmbeddingModel } from '../../../types/embedding'
 import {
   LLMAPIKeyInvalidException,
   LLMAPIKeyNotSetException,
   LLMBaseUrlNotSetException,
-} from '../../../utils/llm/exception'
+} from '../../../core/llm/exception'
+import { InsertVector, SelectVector } from '../../../database/schema'
+import { EmbeddingModel } from '../../../types/embedding'
 import { openSettingsModalWithError } from '../../../utils/openSettingsModal'
 import { DatabaseManager } from '../../DatabaseManager'
 

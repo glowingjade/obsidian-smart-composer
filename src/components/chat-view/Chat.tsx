@@ -19,6 +19,11 @@ import { useApp } from '../../contexts/app-context'
 import { useLLM } from '../../contexts/llm-context'
 import { useRAG } from '../../contexts/rag-context'
 import { useSettings } from '../../contexts/settings-context'
+import {
+  LLMAPIKeyInvalidException,
+  LLMAPIKeyNotSetException,
+  LLMBaseUrlNotSetException,
+} from '../../core/llm/exception'
 import { useChatHistory } from '../../hooks/useChatHistory'
 import { ChatMessage, ChatUserMessage } from '../../types/chat'
 import {
@@ -27,11 +32,6 @@ import {
   MentionableCurrentFile,
 } from '../../types/mentionable'
 import { applyChangesToFile } from '../../utils/apply'
-import {
-  LLMAPIKeyInvalidException,
-  LLMAPIKeyNotSetException,
-  LLMBaseUrlNotSetException,
-} from '../../utils/llm/exception'
 import {
   getMentionableKey,
   serializeMentionable,

@@ -2,6 +2,7 @@ import { App, TFile, htmlToMarkdown, requestUrl } from 'obsidian'
 
 import { editorStateToPlainText } from '../components/chat-view/chat-input/utils/editor-state-to-plain-text'
 import { QueryProgressState } from '../components/chat-view/QueryProgress'
+import { RAGEngine } from '../core/rag/ragEngine'
 import { ChatMessage, ChatUserMessage } from '../types/chat'
 import { RequestMessage } from '../types/llm/request'
 import {
@@ -18,7 +19,6 @@ import {
   readMultipleTFiles,
   readTFileContent,
 } from './obsidian'
-import { RAGEngine } from './ragEngine'
 import { tokenCount } from './token'
 import { YoutubeTranscript, isYoutubeUrl } from './youtube-transcript'
 

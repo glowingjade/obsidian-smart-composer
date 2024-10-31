@@ -1,12 +1,11 @@
 import { OpenAI } from 'openai'
 
-import { EmbeddingModel } from '../types/embedding'
-
+import { EmbeddingModel } from '../../types/embedding'
 import {
   LLMAPIKeyNotSetException,
   LLMBaseUrlNotSetException,
-} from './llm/exception'
-import { NoStainlessOpenAI } from './llm/ollama'
+} from '../llm/exception'
+import { NoStainlessOpenAI } from '../llm/ollama'
 
 export const getEmbeddingModel = (
   name: string,

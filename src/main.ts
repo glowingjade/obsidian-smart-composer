@@ -4,6 +4,7 @@ import { ApplyView } from './ApplyView'
 import { ChatView } from './ChatView'
 import { ChatProps } from './components/chat-view/Chat'
 import { APPLY_VIEW_TYPE, CHAT_VIEW_TYPE } from './constants'
+import { RAGEngine } from './core/rag/ragEngine'
 import { DatabaseManager } from './database/DatabaseManager'
 import { SmartCopilotSettingTab } from './settings/SettingTab'
 import {
@@ -11,7 +12,6 @@ import {
   parseSmartCopilotSettings,
 } from './types/settings'
 import { getMentionableBlockData } from './utils/obsidian'
-import { RAGEngine } from './utils/ragEngine'
 
 // Remember to rename these classes and interfaces!
 export default class SmartCopilotPlugin extends Plugin {

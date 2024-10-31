@@ -1,11 +1,11 @@
 import { App } from 'obsidian'
 
-import { QueryProgressState } from '../components/chat-view/QueryProgress'
-import { DatabaseManager } from '../database/DatabaseManager'
-import { VectorManager } from '../database/modules/vector/VectorManager'
-import { SelectVector } from '../database/schema'
-import { EmbeddingModel } from '../types/embedding'
-import { SmartCopilotSettings } from '../types/settings'
+import { QueryProgressState } from '../../components/chat-view/QueryProgress'
+import { DatabaseManager } from '../../database/DatabaseManager'
+import { VectorManager } from '../../database/modules/vector/VectorManager'
+import { SelectVector } from '../../database/schema'
+import { EmbeddingModel } from '../../types/embedding'
+import { SmartCopilotSettings } from '../../types/settings'
 
 import { getEmbeddingModel } from './embedding'
 
