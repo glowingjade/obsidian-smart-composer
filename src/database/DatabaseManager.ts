@@ -5,6 +5,7 @@ import { App, normalizePath, requestUrl } from 'obsidian'
 import { PGLITE_DB_PATH } from '../constants'
 
 import migrations from './migrations.json'
+import { TemplateManager } from './modules/template/TemplateManager'
 import { VectorManager } from './modules/vector/VectorManager'
 
 export class DatabaseManager {
@@ -13,6 +14,7 @@ export class DatabaseManager {
   private pgClient: PGlite | null = null
   private db: PgliteDatabase | null = null
   private vectorManager: VectorManager
+  private templateManager: TemplateManager
 
   constructor(app: App, dbPath: string) {
     this.app = app
@@ -29,6 +31,7 @@ export class DatabaseManager {
     await dbManager.save()
 
     dbManager.vectorManager = new VectorManager(app, dbManager)
+    dbManager.templateManager = new TemplateManager(app, dbManager)
 
     console.log('Smart composer database initialized.')
     return dbManager
@@ -40,6 +43,10 @@ export class DatabaseManager {
 
   getVectorManager() {
     return this.vectorManager
+  }
+
+  getTemplateManager() {
+    return this.templateManager
   }
 
   private async createNewDatabase() {

@@ -14,6 +14,7 @@ import {
 import { PgliteDatabase } from 'drizzle-orm/pglite'
 import { App } from 'obsidian'
 
+import { DatabaseNotInitializedException } from '../../exception'
 import { InsertVector, SelectVector, vectorTables } from '../../schema'
 
 export class VectorRepository {
@@ -29,7 +30,7 @@ export class VectorRepository {
     name: string
   }): Promise<string[]> {
     if (!this.db) {
-      throw new Error('Database not initialized')
+      throw new DatabaseNotInitializedException()
     }
     const vectors = vectorTables[embeddingModel.name]
     const indexedFiles = await this.db
@@ -45,7 +46,7 @@ export class VectorRepository {
     embeddingModel: { name: string },
   ): Promise<SelectVector[]> {
     if (!this.db) {
-      throw new Error('Database not initialized')
+      throw new DatabaseNotInitializedException()
     }
     const vectors = vectorTables[embeddingModel.name]
     const fileVectors = await this.db
@@ -60,7 +61,7 @@ export class VectorRepository {
     embeddingModel: { name: string },
   ): Promise<void> {
     if (!this.db) {
-      throw new Error('Database not initialized')
+      throw new DatabaseNotInitializedException()
     }
     const vectors = vectorTables[embeddingModel.name]
     await this.db.delete(vectors).where(eq(vectors.path, filePath))
@@ -71,7 +72,7 @@ export class VectorRepository {
     embeddingModel: { name: string },
   ): Promise<void> {
     if (!this.db) {
-      throw new Error('Database not initialized')
+      throw new DatabaseNotInitializedException()
     }
     const vectors = vectorTables[embeddingModel.name]
     await this.db.delete(vectors).where(inArray(vectors.path, filePaths))
@@ -79,7 +80,7 @@ export class VectorRepository {
 
   async clearAllVectors(embeddingModel: { name: string }): Promise<void> {
     if (!this.db) {
-      throw new Error('Database not initialized')
+      throw new DatabaseNotInitializedException()
     }
     const vectors = vectorTables[embeddingModel.name]
     await this.db.delete(vectors)
@@ -90,7 +91,7 @@ export class VectorRepository {
     embeddingModel: { name: string },
   ): Promise<void> {
     if (!this.db) {
-      throw new Error('Database not initialized')
+      throw new DatabaseNotInitializedException()
     }
     const vectors = vectorTables[embeddingModel.name]
     await this.db.insert(vectors).values(data)
@@ -113,7 +114,7 @@ export class VectorRepository {
     })[]
   > {
     if (!this.db) {
-      throw new Error('Database not initialized')
+      throw new DatabaseNotInitializedException()
     }
     const vectors = vectorTables[embeddingModel.name]
 
