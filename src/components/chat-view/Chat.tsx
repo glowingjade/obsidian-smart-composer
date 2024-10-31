@@ -1,3 +1,4 @@
+import * as Dialog from '@radix-ui/react-dialog'
 import { useMutation } from '@tanstack/react-query'
 import { History, Plus } from 'lucide-react'
 import { App, Notice } from 'obsidian'
@@ -42,6 +43,7 @@ import { PromptGenerator } from '../../utils/promptGenerator'
 import ChatUserInput, { ChatUserInputRef } from './chat-input/ChatUserInput'
 import { editorStateToPlainText } from './chat-input/utils/editor-state-to-plain-text'
 import { ChatListDropdown } from './ChatListDropdown'
+import CreateTemplateDialogContent from './CreateTemplateDialog'
 import QueryProgress, { QueryProgressState } from './QueryProgress'
 import ReactMarkdown from './ReactMarkdown'
 
@@ -74,6 +76,8 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const app = useApp()
   const { settings } = useSettings()
   const { ragEngine } = useRAG()
+
+  const chatContainerRef = useRef<HTMLDivElement>(null)
 
   const {
     createOrUpdateConversation,
@@ -438,7 +442,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   }))
 
   return (
-    <div className="smtcmp-chat-container">
+    <div className="smtcmp-chat-container" ref={chatContainerRef}>
       <div className="smtcmp-chat-header">
         <h1 className="smtcmp-chat-header-title">Chat</h1>
         <div className="smtcmp-chat-header-buttons">
@@ -448,6 +452,12 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           >
             <Plus size={18} />
           </button>
+          <Dialog.Root modal={false}>
+            <Dialog.Trigger asChild>
+              <button>Create Template</button>
+            </Dialog.Trigger>
+            <CreateTemplateDialogContent />
+          </Dialog.Root>
           <ChatListDropdown
             chatList={chatList}
             onSelectConversation={(conversationId) =>
@@ -478,7 +488,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
             <ChatUserInput
               key={message.id}
               ref={(ref) => registerChatUserInputRef(message.id, ref)}
-              message={message.content}
+              initialSerializedEditorState={message.content}
               onChange={(content) => {
                 setChatMessages((prevChatHistory) =>
                   prevChatHistory.map((msg) =>
@@ -534,7 +544,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       <ChatUserInput
         key={inputMessage.id} // this is needed to clear the editor when the user submits a new message
         ref={(ref) => registerChatUserInputRef(inputMessage.id, ref)}
-        message={inputMessage.content}
+        initialSerializedEditorState={inputMessage.content}
         onChange={(content) => {
           setInputMessage((prevInputMessage) => ({
             ...prevInputMessage,

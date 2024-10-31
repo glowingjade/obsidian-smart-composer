@@ -7,6 +7,7 @@ import Chat, { ChatProps, ChatRef } from './components/chat-view/Chat'
 import { CHAT_VIEW_TYPE } from './constants'
 import { AppProvider } from './contexts/app-context'
 import { DarkModeProvider } from './contexts/dark-mode-context'
+import { DialogContainerProvider } from './contexts/dialog-container-context'
 import { LLMProvider } from './contexts/llm-context'
 import { RAGProvider } from './contexts/rag-context'
 import { SettingsProvider } from './contexts/settings-context'
@@ -83,7 +84,11 @@ export class ChatView extends ItemView {
               <RAGProvider ragEngine={ragEngine}>
                 <QueryClientProvider client={queryClient}>
                   <React.StrictMode>
-                    <Chat ref={this.chatRef} {...this.initialChatProps} />
+                    <DialogContainerProvider
+                      container={this.containerEl.children[1] as HTMLElement}
+                    >
+                      <Chat ref={this.chatRef} {...this.initialChatProps} />
+                    </DialogContainerProvider>
                   </React.StrictMode>
                 </QueryClientProvider>
               </RAGProvider>

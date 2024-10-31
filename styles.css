@@ -179,6 +179,7 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
 }
 
 .smtcmp-chat-user-input-container {
+  position: relative;
   display: flex;
   flex-direction: column;
   -webkit-app-region: no-drag;

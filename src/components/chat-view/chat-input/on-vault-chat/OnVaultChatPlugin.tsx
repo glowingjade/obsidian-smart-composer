@@ -1,11 +1,12 @@
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import { COMMAND_PRIORITY_LOW, KEY_ENTER_COMMAND } from 'lexical'
+import { Platform } from 'obsidian'
 import { useEffect } from 'react'
 
-export default function OnEnterPlugin({
-  onEnter,
+export default function OnVaultChatCommandPlugin({
+  onVaultChat,
 }: {
-  onEnter: (evt: KeyboardEvent) => void
+  onVaultChat: () => void
 }) {
   const [editor] = useLexicalComposerContext()
 
@@ -13,11 +14,13 @@ export default function OnEnterPlugin({
     const removeListener = editor.registerCommand(
       KEY_ENTER_COMMAND,
       (evt: KeyboardEvent) => {
-        if (evt.shiftKey) {
-          return false
+        if (evt.shiftKey && (Platform.isMacOS ? evt.metaKey : evt.ctrlKey)) {
+          evt.preventDefault()
+          evt.stopPropagation()
+          onVaultChat()
+          return true
         }
-        onEnter(evt)
-        return true
+        return false
       },
       COMMAND_PRIORITY_LOW,
     )
@@ -25,7 +28,7 @@ export default function OnEnterPlugin({
     return () => {
       removeListener()
     }
-  }, [editor, onEnter])
+  }, [editor, onVaultChat])
 
   return null
 }

@@ -1,18 +1,7 @@
-import {
-  InitialConfigType,
-  LexicalComposer,
-} from '@lexical/react/LexicalComposer'
-import { ContentEditable } from '@lexical/react/LexicalContentEditable'
-import { EditorRefPlugin } from '@lexical/react/LexicalEditorRefPlugin'
-import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary'
-import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin'
-import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin'
-import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
 import { useQuery } from '@tanstack/react-query'
 import { $nodesOfType, LexicalEditor, SerializedEditorState } from 'lexical'
 import {
   forwardRef,
-  useCallback,
   useEffect,
   useImperativeHandle,
   useRef,
@@ -26,25 +15,15 @@ import {
 import { useApp } from '../../../contexts/app-context'
 import { useDarkModeContext } from '../../../contexts/dark-mode-context'
 import { Mentionable, SerializedMentionable } from '../../../types/mentionable'
-import { fuzzySearch } from '../../../utils/fuzzy-search'
 import { getMentionableKey } from '../../../utils/mentionable'
 import { openMarkdownFile, readTFileContent } from '../../../utils/obsidian'
 import { MemoizedSyntaxHighlighterWrapper } from '../SyntaxHighlighterWrapper'
 
+import LexicalContentEditable from './LexicalContentEditable'
 import MentionableBadge from './MentionableBadge'
 import { ModelSelect } from './ModelSelect'
-import AutoFocusPlugin from './plugins/auto-focus/AutoFocusPlugin'
-import AutoLinkMentionPlugin from './plugins/mention/AutoLinkMentionPlugin'
 import { MentionNode } from './plugins/mention/MentionNode'
-import MentionPlugin from './plugins/mention/MentionPlugin'
-import NoFormatPlugin from './plugins/no-format/NoFormatPlugin'
-import OnEnterPlugin from './plugins/on-enter/OnEnterPlugin'
-import OnMutationPlugin, {
-  NodeMutations,
-} from './plugins/on-mutation/OnMutationPlugin'
-import UpdaterPlugin, {
-  UpdaterPluginRef,
-} from './plugins/updater/UpdaterPlugin'
+import { NodeMutations } from './plugins/on-mutation/OnMutationPlugin'
 import { SubmitButton } from './SubmitButton'
 import { VaultChatButton } from './VaultChatButton'
 
@@ -53,7 +32,7 @@ export type ChatUserInputRef = {
 }
 
 export type ChatUserInputProps = {
-  message: SerializedEditorState | null // TODO: fix name to initialContent
+  initialSerializedEditorState: SerializedEditorState | null
   onChange: (content: SerializedEditorState) => void
   onSubmit: (content: SerializedEditorState, useVaultSearch?: boolean) => void
   onFocus: () => void
@@ -66,7 +45,7 @@ export type ChatUserInputProps = {
 const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
   (
     {
-      message,
+      initialSerializedEditorState,
       onChange,
       onSubmit,
       onFocus,
@@ -82,7 +61,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
 
     const editorRef = useRef<LexicalEditor | null>(null)
     const contentEditableRef = useRef<HTMLDivElement>(null)
-    const updaterRef = useRef<UpdaterPluginRef | null>(null)
+    const containerRef = useRef<HTMLDivElement>(null)
 
     const [displayedMentionableKey, setDisplayedMentionableKey] = useState<
       string | null
@@ -99,31 +78,6 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
         contentEditableRef.current?.focus()
       },
     }))
-
-    const initialConfig: InitialConfigType = {
-      namespace: 'ChatUserInput',
-      theme: {
-        root: 'smtcmp-chat-input-root',
-        paragraph: 'smtcmp-chat-input-paragraph',
-      },
-      nodes: [MentionNode],
-      onError: (error) => {
-        console.error(error)
-      },
-    }
-
-    // initialize editor state
-    useEffect(() => {
-      if (message) {
-        updaterRef.current?.update(message)
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
-
-    const searchResultByQuery = useCallback(
-      (query: string) => fuzzySearch(app, query),
-      [app],
-    )
 
     const handleMentionNodeMutation = (
       mutations: NodeMutations<MentionNode>,
@@ -246,13 +200,13 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
       },
     })
 
-    const handleSubmit = (useVaultSearch?: boolean) => {
+    const handleSubmit = (options: { useVaultSearch?: boolean } = {}) => {
       const content = editorRef.current?.getEditorState()?.toJSON()
-      content && onSubmit(content, useVaultSearch)
+      content && onSubmit(content, options.useVaultSearch)
     }
 
     return (
-      <div className="smtcmp-chat-user-input-container">
+      <div className="smtcmp-chat-user-input-container" ref={containerRef}>
         {mentionables.length > 0 && (
           <div className="smtcmp-chat-user-input-files">
             {mentionables.map((m) => (
@@ -295,59 +249,40 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
           </div>
         )}
 
-        <LexicalComposer initialConfig={initialConfig}>
-          {/* 
-            There was two approach to make mentionable node copy and pasteable.
-            1. use RichTextPlugin and reset text format when paste
-              - so I implemented NoFormatPlugin to reset text format when paste
-            2. use PlainTextPlugin and override paste command
-              - PlainTextPlugin only pastes text, so we need to implement custom paste handler.
-              - https://github.com/facebook/lexical/discussions/5112
-           */}
-          <RichTextPlugin
-            contentEditable={
-              <ContentEditable
-                className="obsidian-default-textarea"
-                style={{
-                  background: 'transparent',
-                }}
-                onFocus={onFocus}
-                ref={contentEditableRef}
-              />
+        <LexicalContentEditable
+          initialEditorState={(editor) => {
+            if (initialSerializedEditorState) {
+              editor.setEditorState(
+                editor.parseEditorState(initialSerializedEditorState),
+              )
             }
-            ErrorBoundary={LexicalErrorBoundary}
-          />
-          <HistoryPlugin />
-          {autoFocus && <AutoFocusPlugin defaultSelection="rootEnd" />}
-          <MentionPlugin searchResultByQuery={searchResultByQuery} />
-          <OnChangePlugin
-            onChange={(editorState) => {
-              onChange(editorState.toJSON())
-            }}
-          />
-          <UpdaterPlugin updaterRef={updaterRef} />
-          <OnEnterPlugin
-            onEnter={(evt, useVaultSearch?: boolean) => {
-              evt.preventDefault()
-              evt.stopPropagation()
-              handleSubmit(useVaultSearch)
-            }}
-          />
-          <OnMutationPlugin
-            nodeClass={MentionNode}
-            onMutation={handleMentionNodeMutation}
-          />
-          <EditorRefPlugin editorRef={editorRef} />
-          <NoFormatPlugin />
-          <AutoLinkMentionPlugin />
-        </LexicalComposer>
+          }}
+          editorRef={editorRef}
+          contentEditableRef={contentEditableRef}
+          onChange={onChange}
+          onSubmit={() => handleSubmit({ useVaultSearch: false })}
+          onFocus={onFocus}
+          onMentionNodeMutation={handleMentionNodeMutation}
+          autoFocus={autoFocus}
+          plugins={{
+            vaultChat: {
+              onVaultChat: () => {
+                handleSubmit({ useVaultSearch: true })
+              },
+            },
+            templatePopover: {
+              anchorElement: containerRef.current,
+            },
+          }}
+        />
+
         <div className="smtcmp-chat-user-input-controls">
           <ModelSelect />
           <div className="smtcmp-chat-user-input-controls-buttons">
             <SubmitButton onClick={() => handleSubmit()} />
             <VaultChatButton
               onClick={() => {
-                handleSubmit(true)
+                handleSubmit({ useVaultSearch: true })
               }}
             />
           </div>

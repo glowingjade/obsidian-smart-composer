@@ -47,10 +47,13 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.27.3",
     "@electric-sql/pglite": "^0.2.12",
+    "@lexical/clipboard": "^0.17.1",
     "@lexical/react": "^0.17.1",
+    "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-dropdown-menu": "^2.1.2",
     "@radix-ui/react-tooltip": "^1.1.3",
     "@tanstack/react-query": "^5.56.2",
+    "clsx": "^2.1.1",
     "diff": "^7.0.0",
     "drizzle-orm": "^0.35.2",
     "exponential-backoff": "^3.1.1",
