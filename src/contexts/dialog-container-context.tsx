@@ -17,5 +17,11 @@ export function DialogContainerProvider({
 }
 
 export function useDialogContainer() {
-  return useContext(DialogContainerContext)
+  const context = useContext(DialogContainerContext)
+  if (!context) {
+    throw new Error(
+      'useDialogContainer must be used within a DialogContainerProvider',
+    )
+  }
+  return context
 }
