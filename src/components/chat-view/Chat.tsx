@@ -1,4 +1,3 @@
-import * as Dialog from '@radix-ui/react-dialog'
 import { useMutation } from '@tanstack/react-query'
 import { History, Plus } from 'lucide-react'
 import { App, Notice } from 'obsidian'
@@ -43,7 +42,6 @@ import { PromptGenerator } from '../../utils/promptGenerator'
 import ChatUserInput, { ChatUserInputRef } from './chat-input/ChatUserInput'
 import { editorStateToPlainText } from './chat-input/utils/editor-state-to-plain-text'
 import { ChatListDropdown } from './ChatListDropdown'
-import CreateTemplateDialogContent from './CreateTemplateDialog'
 import QueryProgress, { QueryProgressState } from './QueryProgress'
 import ReactMarkdown from './ReactMarkdown'
 
