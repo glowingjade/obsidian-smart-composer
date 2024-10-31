@@ -44,7 +44,7 @@ We use PGlite and Drizzle ORM for database management in this project. This sect
 
 To update the database schema:
 
-1. Modify the existing schema as needed in the `src/db/schema.ts` file.
+1. Modify the existing schema as needed in the `src/database/schema.ts` file.
 2. After making changes, run the following command to generate migration files:
 
    ```
@@ -58,7 +58,7 @@ To update the database schema:
    npm run migrate:compile
    ```
 
-   This will create or update the `src/db/migrations.json` file. Note that migration files in the 'drizzle' directory won't affect the project until they are compiled into this JSON file, which is used in the actual migration process.
+   This will create or update the `src/database/migrations.json` file. Note that migration files in the 'drizzle' directory won't affect the project until they are compiled into this JSON file, which is used in the actual migration process.
 
 ### Handling Migration Files
 

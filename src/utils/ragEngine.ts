@@ -1,42 +1,35 @@
 import { App } from 'obsidian'
 
 import { QueryProgressState } from '../components/chat-view/QueryProgress'
-import { SelectVector } from '../db/schema'
+import { DatabaseManager } from '../database/DatabaseManager'
+import { VectorManager } from '../database/modules/vector/VectorManager'
+import { SelectVector } from '../database/schema'
 import { EmbeddingModel } from '../types/embedding'
 import { SmartCopilotSettings } from '../types/settings'
 
 import { getEmbeddingModel } from './embedding'
-import { VectorDbManager } from './vector-db/manager'
 
 export class RAGEngine {
   private app: App
   private settings: SmartCopilotSettings
-  private vectorDbManager: VectorDbManager
+  private vectorManager: VectorManager
   private embeddingModel: EmbeddingModel | null = null
 
-  constructor(app: App, settings: SmartCopilotSettings) {
-    this.app = app
-    this.settings = settings
-  }
-
-  static async create(
+  constructor(
     app: App,
     settings: SmartCopilotSettings,
-  ): Promise<RAGEngine> {
-    const ragEngine = new RAGEngine(app, settings)
-    ragEngine.vectorDbManager = await VectorDbManager.create(app)
-    ragEngine.embeddingModel = getEmbeddingModel(
+    dbManager: DatabaseManager,
+  ) {
+    this.app = app
+    this.settings = settings
+    this.vectorManager = dbManager.getVectorManager()
+    this.embeddingModel = getEmbeddingModel(
       settings.embeddingModel,
       {
         openAIApiKey: settings.openAIApiKey,
       },
       settings.ollamaBaseUrl,
     )
-    return ragEngine
-  }
-
-  async cleanup() {
-    await this.vectorDbManager.cleanup()
   }
 
   setSettings(settings: SmartCopilotSettings) {
@@ -61,7 +54,7 @@ export class RAGEngine {
     if (!this.embeddingModel) {
       throw new Error('Embedding model is not set')
     }
-    await this.vectorDbManager.updateVaultIndex(
+    await this.vectorManager.updateVaultIndex(
       this.embeddingModel,
       {
         chunkSize: this.settings.ragOptions.chunkSize,
@@ -102,7 +95,7 @@ export class RAGEngine {
     onQueryProgressChange?.({
       type: 'querying',
     })
-    const queryResult = await this.vectorDbManager.performSimilaritySearch(
+    const queryResult = await this.vectorManager.performSimilaritySearch(
       queryEmbedding,
       this.embeddingModel,
       {

@@ -4,6 +4,7 @@ import { ApplyView } from './ApplyView'
 import { ChatView } from './ChatView'
 import { ChatProps } from './components/chat-view/Chat'
 import { APPLY_VIEW_TYPE, CHAT_VIEW_TYPE } from './constants'
+import { DatabaseManager } from './database/DatabaseManager'
 import { SmartCopilotSettingTab } from './settings/SettingTab'
 import {
   SmartCopilotSettings,
@@ -17,6 +18,7 @@ export default class SmartCopilotPlugin extends Plugin {
   settings: SmartCopilotSettings
   initialChatProps?: ChatProps // TODO: change this to use view state like ApplyView
   settingsChangeListeners: ((newSettings: SmartCopilotSettings) => void)[] = []
+  dbManager: DatabaseManager | null = null
   ragEngine: RAGEngine | null = null
 
   async onload() {
@@ -112,8 +114,8 @@ export default class SmartCopilotPlugin extends Plugin {
   }
 
   onunload() {
-    this.ragEngine?.cleanup()
-    this.ragEngine = null
+    this.dbManager?.cleanup()
+    this.dbManager = null
   }
 
   async loadSettings() {
@@ -189,9 +191,17 @@ export default class SmartCopilotPlugin extends Plugin {
     chatView.focusMessage()
   }
 
+  async getDbManager(): Promise<DatabaseManager> {
+    if (!this.dbManager) {
+      this.dbManager = await DatabaseManager.create(this.app)
+    }
+    return this.dbManager
+  }
+
   async getRAGEngine(): Promise<RAGEngine> {
+    const dbManager = await this.getDbManager()
     if (!this.ragEngine) {
-      this.ragEngine = await RAGEngine.create(this.app, this.settings)
+      this.ragEngine = new RAGEngine(this.app, this.settings, dbManager)
     }
     return this.ragEngine
   }

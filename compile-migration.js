@@ -4,7 +4,10 @@ const fs = require('node:fs/promises')
 async function compileMigrations() {
   const migrations = readMigrationFiles({ migrationsFolder: './drizzle/' })
 
-  await fs.writeFile('./src/db/migrations.json', JSON.stringify(migrations))
+  await fs.writeFile(
+    './src/database/migrations.json',
+    JSON.stringify(migrations),
+  )
 
   console.log('Migrations compiled!')
 }

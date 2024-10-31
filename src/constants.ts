@@ -47,7 +47,7 @@ export const APPLY_MODEL_OPTIONS = [
   },
 ]
 
-// Update table exports in src/db/schema.ts when updating this
+// Update table exports in src/database/schema.ts when updating this
 export const EMBEDDING_MODEL_OPTIONS = [
   {
     name: 'text-embedding-3-small (Recommended)',
