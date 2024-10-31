@@ -87,7 +87,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
           }),
       )
 
-    new Setting(containerEl).setHeading().setName('Model settings')
+    new Setting(containerEl).setHeading().setName('Model')
 
     new Setting(containerEl)
       .setName('Chat model')
@@ -173,7 +173,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
           }),
       )
 
-    new Setting(containerEl).setHeading().setName('RAG options')
+    new Setting(containerEl).setHeading().setName('RAG')
 
     new Setting(containerEl)
       .setName('Chunk size')
