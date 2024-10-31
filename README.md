@@ -23,7 +23,9 @@ Everytime we ask ChatGPT, we need to put so much context information for each qu
 
 Now, you can **add website links** as additional context for your queries.
 
-- Coming soon: Support for image, and external files (PDF, DOCX, ...)
+- Website content is automatically extracted
+- **Youtube link support**: YouTube transcripts are fetched and included as context
+- **Coming soon**: Support for image, and external files (PDF, DOCX, ...)
 
 ### Apply Edit
 
@@ -47,8 +49,9 @@ Note: The Apply Edit feature is currently slower than desired. We are working on
 
 #### Additional Features
 
-- **Custom Model Selection** : Use your own model by setting your API Key (stored locally).
-- **Local Model Support** : Run open-source LLMs locally with [Ollama](https://ollama.ai) for complete privacy.
+- **Custom Model Selection**: Use your own model by setting your API Key (stored locally).
+- **Local Model Support**: Run open-source LLMs and embedding models locally with [Ollama](https://ollama.ai) for complete privacy and offline usage.
+- **Custom System Prompts**: Define your own system prompts that will be applied to every chat conversation.
 
 ## Getting Started
 
