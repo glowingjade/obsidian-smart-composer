@@ -22,7 +22,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
 
     const apiKeysHeading = new Setting(containerEl)
       .setHeading()
-      .setName('API Keys')
+      .setName('API keys')
       .setDesc('Enter your API keys for the services you want to use')
 
     apiKeysHeading.descEl.createEl('br')
@@ -35,7 +35,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
       },
     })
 
-    new Setting(containerEl).setName('OpenAI API Key').addText((text) =>
+    new Setting(containerEl).setName('OpenAI API key').addText((text) =>
       text
         .setPlaceholder('Enter your API key')
         .setValue(this.plugin.settings.openAIApiKey)
@@ -47,7 +47,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
         }),
     )
 
-    new Setting(containerEl).setName('Groq API Key').addText((text) =>
+    new Setting(containerEl).setName('Groq API key').addText((text) =>
       text
         .setPlaceholder('Enter your API key')
         .setValue(this.plugin.settings.groqApiKey)
@@ -59,7 +59,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
         }),
     )
 
-    new Setting(containerEl).setName('Anthropic API Key').addText((text) =>
+    new Setting(containerEl).setName('Anthropic API key').addText((text) =>
       text
         .setPlaceholder('Enter your API key')
         .setValue(this.plugin.settings.anthropicApiKey)
@@ -72,7 +72,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
     )
 
     new Setting(containerEl)
-      .setName('Ollama Address')
+      .setName('Ollama address')
       .setDesc(
         'Set the Ollama URL and port address - normally http://127.0.0.1:11434',
       )
@@ -87,10 +87,10 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
           }),
       )
 
-    new Setting(containerEl).setHeading().setName('Model Settings')
+    new Setting(containerEl).setHeading().setName('Model settings')
 
     new Setting(containerEl)
-      .setName('Chat Model')
+      .setName('Chat model')
       .setDesc('Choose the model you want to use for chat')
       .addDropdown((dropdown) =>
         dropdown
@@ -110,7 +110,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
       )
 
     new Setting(containerEl)
-      .setName('Apply Model')
+      .setName('Apply model')
       .setDesc('Choose the model you want to use for apply')
       .addDropdown((dropdown) =>
         dropdown
@@ -133,7 +133,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
       )
 
     new Setting(containerEl)
-      .setName('Embedding Model')
+      .setName('Embedding model')
       .setDesc('Choose the model you want to use for embeddings')
       .addDropdown((dropdown) =>
         dropdown
@@ -157,7 +157,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setHeading()
-      .setName('System Prompt')
+      .setName('System prompt')
       .setDesc('This prompt will be added to the beginning of every chat.')
 
     new Setting(containerEl)
@@ -173,10 +173,10 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
           }),
       )
 
-    new Setting(containerEl).setHeading().setName('RAG Options')
+    new Setting(containerEl).setHeading().setName('RAG options')
 
     new Setting(containerEl)
-      .setName('Chunk Size')
+      .setName('Chunk size')
       .setDesc(
         'Set the chunk size for text splitting. After changing this, please re-index the vault using the "Rebuild entire vault index" command.',
       )
@@ -199,7 +199,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
       )
 
     new Setting(containerEl)
-      .setName('Threshold Tokens')
+      .setName('Threshold tokens')
       .setDesc(
         'Maximum number of tokens before switching to RAG. If the total tokens from mentioned files exceed this, RAG will be used instead of including all file contents.',
       )
@@ -222,7 +222,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
       )
 
     new Setting(containerEl)
-      .setName('Minimum Similarity')
+      .setName('Minimum similarity')
       .setDesc(
         'Minimum similarity score for RAG results. Higher values return more relevant but potentially fewer results.',
       )

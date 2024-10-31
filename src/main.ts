@@ -26,7 +26,7 @@ export default class SmartCopilotPlugin extends Plugin {
     this.registerView(APPLY_VIEW_TYPE, (leaf) => new ApplyView(leaf))
 
     // This creates an icon in the left ribbon.
-    this.addRibbonIcon('message-square', 'Open Smart Composer', () =>
+    this.addRibbonIcon('message-square', 'Open smart composer', () =>
       this.openChatView(),
     )
 
