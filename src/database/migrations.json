@@ -43,5 +43,13 @@
     "bps": true,
     "folderMillis": 1730085029605,
     "hash": "e41dde00d7d98da74596c60e796aa78d5cbfec57208347c72f16a6fa11c24ef1"
+  },
+  {
+    "sql": [
+      "CREATE TABLE IF NOT EXISTS \"template\" (\n\t\"id\" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,\n\t\"name\" text NOT NULL,\n\t\"data\" jsonb NOT NULL,\n\t\"created_at\" timestamp DEFAULT now() NOT NULL,\n\t\"updated_at\" timestamp DEFAULT now() NOT NULL,\n\tCONSTRAINT \"template_name_unique\" UNIQUE(\"name\")\n);\n"
+    ],
+    "bps": true,
+    "folderMillis": 1730363062246,
+    "hash": "38448092dc2399d05f6be6c26472434a02d3fa548fcad6cf45a4a377ca8a0fb6"
   }
 ]

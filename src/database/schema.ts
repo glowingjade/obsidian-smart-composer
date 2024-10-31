@@ -5,12 +5,16 @@ import {
   pgTable,
   serial,
   text,
+  timestamp,
+  uuid,
   vector,
 } from 'drizzle-orm/pg-core'
+import { SerializedLexicalNode } from 'lexical'
 
 import { EMBEDDING_MODEL_OPTIONS } from '../constants'
 import { EmbeddingModelName } from '../types/embedding'
 
+/* Vector Table */
 const createVectorTable = (name: string, dimension: number) => {
   const sanitizedName = name.replace(/[^a-zA-Z0-9]/g, '_')
   return pgTable(
@@ -58,3 +62,19 @@ export const vectorTable1 = vectorTables[EMBEDDING_MODEL_OPTIONS[1].value]
 export const vectorTable2 = vectorTables[EMBEDDING_MODEL_OPTIONS[2].value]
 export const vectorTable3 = vectorTables[EMBEDDING_MODEL_OPTIONS[3].value]
 export const vectorTable4 = vectorTables[EMBEDDING_MODEL_OPTIONS[4].value]
+
+/* Template Table */
+export type TemplateData = {
+  nodes: SerializedLexicalNode[]
+}
+
+export const templateTable = pgTable('template', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: text('name').notNull().unique(),
+  data: jsonb('data').notNull().$type<TemplateData>(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
+export type SelectTemplate = typeof templateTable.$inferSelect
+export type InsertTemplate = typeof templateTable.$inferInsert
