@@ -7,6 +7,7 @@ import Chat, { ChatProps, ChatRef } from './components/chat-view/Chat'
 import { CHAT_VIEW_TYPE } from './constants'
 import { AppProvider } from './contexts/app-context'
 import { DarkModeProvider } from './contexts/dark-mode-context'
+import { DatabaseProvider } from './contexts/database-context'
 import { DialogContainerProvider } from './contexts/dialog-container-context'
 import { LLMProvider } from './contexts/llm-context'
 import { RAGProvider } from './contexts/rag-context'
@@ -68,6 +69,7 @@ export class ChatView extends ItemView {
         },
       },
     })
+    const dbManager = await this.plugin.getDbManager()
     const ragEngine = await this.plugin.getRAGEngine()
 
     this.root.render(
@@ -81,17 +83,19 @@ export class ChatView extends ItemView {
         >
           <DarkModeProvider>
             <LLMProvider>
-              <RAGProvider ragEngine={ragEngine}>
-                <QueryClientProvider client={queryClient}>
-                  <React.StrictMode>
-                    <DialogContainerProvider
-                      container={this.containerEl.children[1] as HTMLElement}
-                    >
-                      <Chat ref={this.chatRef} {...this.initialChatProps} />
-                    </DialogContainerProvider>
-                  </React.StrictMode>
-                </QueryClientProvider>
-              </RAGProvider>
+              <DatabaseProvider databaseManager={dbManager}>
+                <RAGProvider ragEngine={ragEngine}>
+                  <QueryClientProvider client={queryClient}>
+                    <React.StrictMode>
+                      <DialogContainerProvider
+                        container={this.containerEl.children[1] as HTMLElement}
+                      >
+                        <Chat ref={this.chatRef} {...this.initialChatProps} />
+                      </DialogContainerProvider>
+                    </React.StrictMode>
+                  </QueryClientProvider>
+                </RAGProvider>
+              </DatabaseProvider>
             </LLMProvider>
           </DarkModeProvider>
         </SettingsProvider>

@@ -2,11 +2,14 @@ import { $generateNodesFromSerializedNodes } from '@lexical/clipboard'
 import { BaseSerializedNode } from '@lexical/clipboard/clipboard'
 import { InitialEditorStateType } from '@lexical/react/LexicalComposer'
 import * as Dialog from '@radix-ui/react-dialog'
-import { $insertNodes, $parseSerializedNode, LexicalEditor } from 'lexical'
+import { $insertNodes, LexicalEditor } from 'lexical'
 import { X } from 'lucide-react'
+import { Notice } from 'obsidian'
 import { useRef, useState } from 'react'
 
+import { useDatabase } from '../../contexts/database-context'
 import { useDialogContainer } from '../../contexts/dialog-container-context'
+import { DuplicateTemplateException } from '../../database/exception'
 
 import LexicalContentEditable from './chat-input/LexicalContentEditable'
 
@@ -17,10 +20,13 @@ import LexicalContentEditable from './chat-input/LexicalContentEditable'
  */
 export default function CreateTemplateDialogContent({
   selectedSerializedNodes,
+  onClose,
 }: {
   selectedSerializedNodes?: BaseSerializedNode[] | null
+  onClose: () => void
 }) {
   const container = useDialogContainer()
+  const { templateManager } = useDatabase()
 
   const [templateName, setTemplateName] = useState('')
   const editorRef = useRef<LexicalEditor | null>(null)
@@ -38,72 +44,57 @@ export default function CreateTemplateDialogContent({
     })
   }
 
-  const onSubmit = () => {
-    if (!editorRef.current) return
-    const serializedEditorState = editorRef.current.toJSON()
-    const nodes = serializedEditorState.editorState.root.children
-    // Testing inserting nodes
-    editorRef.current.update(() => {
-      const parsedNodes = nodes.map((node) => $parseSerializedNode(node))
-      $insertNodes(parsedNodes)
-    })
+  const onSubmit = async () => {
+    try {
+      if (!editorRef.current) return
+      const serializedEditorState = editorRef.current.toJSON()
+      const nodes = serializedEditorState.editorState.root.children
+      if (nodes.length === 0) return
+      if (templateName.trim().length === 0) {
+        new Notice('Please enter a name for your template')
+        return
+      }
+
+      await templateManager.createTemplate({
+        name: templateName,
+        data: { nodes },
+      })
+      new Notice(`Template created: ${templateName}`)
+      onClose()
+    } catch (error) {
+      if (error instanceof DuplicateTemplateException) {
+        new Notice('A template with this name already exists')
+      } else {
+        console.error(error)
+        new Notice('Failed to create template')
+      }
+    }
   }
 
   return (
     <Dialog.Portal container={container}>
-      <Dialog.Content
-        style={{
-          position: 'fixed',
-          left: '50%',
-          top: '50%',
-          zIndex: 50,
-          display: 'grid',
-          width: '100%',
-          maxWidth: '32rem',
-          transform: 'translate(-50%, -50%)',
-          gap: 'var(--size-4-4)',
-          border: 'var(--border-width) solid var(--background-modifier-border)',
-          backgroundColor: 'var(--background-secondary)',
-          padding: 'var(--size-4-6)',
-          transitionDuration: '200ms',
-          borderRadius: 'var(--radius-m)',
-        }}
-      >
-        <Dialog.Title
-          style={{
-            fontSize: 'var(--font-ui-larger)',
-            fontWeight: 'var(--font-semibold)',
-            lineHeight: 'var(--line-height-tight)',
-            margin: 0,
-          }}
-        >
+      <Dialog.Content className="smtcmp-dialog-content">
+        <Dialog.Title className="smtcmp-dialog-title">
           Create Template
         </Dialog.Title>
-        <Dialog.Description
-          style={{
-            fontSize: 'var(--font-ui-small)',
-            color: 'var(--text-muted)',
-            margin: 0,
-          }}
-        >
+        <Dialog.Description className="smtcmp-dialog-description">
           Create a new template from the selected nodes
         </Dialog.Description>
 
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--size-4-4)',
-          }}
-        >
+        <div className="smtcmp-tailwind flex items-center gap-4">
           <div>Name</div>
           <input
             type="text"
             value={templateName}
             onChange={(e) => setTemplateName(e.target.value)}
-            style={{
-              flex: 1,
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.stopPropagation()
+                e.preventDefault()
+                onSubmit()
+              }
             }}
+            className="smtcmp-tailwind flex-1"
           />
         </div>
 
@@ -116,26 +107,11 @@ export default function CreateTemplateDialogContent({
           />
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <div className="smtcmp-tailwind flex justify-end">
           <button onClick={onSubmit}>Create Template</button>
         </div>
 
-        <Dialog.Close
-          style={{
-            position: 'absolute',
-            right: 'var(--size-4-4)',
-            top: 'var(--size-4-4)',
-            cursor: 'var(--cursor)',
-            opacity: 0.7,
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.opacity = '1'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.opacity = '0.7'
-          }}
-          asChild
-        >
+        <Dialog.Close className="smtcmp-dialog-close" asChild>
           <X size={16} />
         </Dialog.Close>
       </Dialog.Content>

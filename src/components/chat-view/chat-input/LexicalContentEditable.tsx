@@ -25,7 +25,8 @@ import OnEnterPlugin from './plugins/on-enter/OnEnterPlugin'
 import OnMutationPlugin, {
   NodeMutations,
 } from './plugins/on-mutation/OnMutationPlugin'
-import TemplatePopoverPlugin from './plugins/template-popover/TemplatePopoverPlugin'
+import CreateTemplatePopoverPlugin from './plugins/template/CreateTemplatePopoverPlugin'
+import TemplatePlugin from './plugins/template/TemplatePlugin'
 
 export type LexicalContentEditableProps = {
   editorRef: RefObject<LexicalEditor>
@@ -136,8 +137,9 @@ export default function LexicalContentEditable({
       <EditorRefPlugin editorRef={editorRef} />
       <NoFormatPlugin />
       <AutoLinkMentionPlugin />
+      <TemplatePlugin />
       {plugins?.templatePopover && (
-        <TemplatePopoverPlugin
+        <CreateTemplatePopoverPlugin
           anchorElement={plugins.templatePopover.anchorElement}
           contentEditableElement={contentEditableRef.current}
         />

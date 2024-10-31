@@ -3,11 +3,11 @@ import { BaseSerializedNode } from '@lexical/clipboard/clipboard'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import * as Dialog from '@radix-ui/react-dialog'
 import { $getSelection } from 'lexical'
-import { useCallback, useEffect, useState } from 'react'
+import { CSSProperties, useCallback, useEffect, useRef, useState } from 'react'
 
 import CreateTemplateDialogContent from '../../../CreateTemplateDialog'
 
-export default function TemplatePopoverPlugin({
+export default function CreateTemplatePopoverPlugin({
   anchorElement,
   contentEditableElement,
 }: {
@@ -15,11 +15,13 @@ export default function TemplatePopoverPlugin({
   contentEditableElement: HTMLElement | null
 }): JSX.Element | null {
   const [editor] = useLexicalComposerContext()
-  const [position, setPosition] = useState<{
-    top: number
-    left: number
-  } | null>(null)
-  const [isOpen, setIsOpen] = useState(false)
+
+  const [popoverStyle, setPopoverStyle] = useState<CSSProperties | null>(null)
+  const [popoverWidth, setPopoverWidth] = useState(0)
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+
+  const popoverRef = useRef<HTMLButtonElement>(null)
 
   const getSelectedSerializedNodes = useCallback(():
     | BaseSerializedNode[]
@@ -36,33 +38,50 @@ export default function TemplatePopoverPlugin({
   }, [editor])
 
   const updatePopoverPosition = useCallback(() => {
+    if (popoverRef.current) {
+      setPopoverWidth(popoverRef.current.offsetWidth)
+    }
+
     if (!anchorElement || !contentEditableElement) return
     const nativeSelection = document.getSelection()
     const range = nativeSelection?.getRangeAt(0)
     if (!range || range.collapsed) {
-      setIsOpen(false)
+      setIsPopoverOpen(false)
       return
     }
     if (!contentEditableElement.contains(range.commonAncestorContainer)) {
-      setIsOpen(false)
+      setIsPopoverOpen(false)
       return
     }
     const rects = Array.from(range.getClientRects())
-    // FIXME: Implement better positioning logic
-    // set position relative to anchorElement
+    if (rects.length === 0) {
+      setIsPopoverOpen(false)
+      return
+    }
     const anchorRect = anchorElement.getBoundingClientRect()
-    setPosition({
-      top: rects[rects.length - 1].bottom - anchorRect.top,
-      left: rects[rects.length - 1].right - anchorRect.left,
+    const idealLeft = rects[rects.length - 1].right - anchorRect.left
+    const paddingX = 8
+    const paddingY = 4
+    const minLeft = popoverWidth + paddingX
+    const finalLeft = Math.max(minLeft, idealLeft)
+    setPopoverStyle({
+      top: rects[rects.length - 1].bottom - anchorRect.top + paddingY,
+      left: finalLeft,
+      transform: 'translate(-100%, 0)',
     })
 
     const selectedNodes = getSelectedSerializedNodes()
     if (!selectedNodes) {
-      setIsOpen(false)
+      setIsPopoverOpen(false)
       return
     }
-    setIsOpen(true)
-  }, [anchorElement, contentEditableElement, getSelectedSerializedNodes])
+    setIsPopoverOpen(true)
+  }, [
+    anchorElement,
+    contentEditableElement,
+    getSelectedSerializedNodes,
+    popoverWidth,
+  ])
 
   useEffect(() => {
     const handleSelectionChange = () => {
@@ -95,14 +114,18 @@ export default function TemplatePopoverPlugin({
   }, [editor, updatePopoverPosition])
 
   return (
-    <Dialog.Root modal={false}>
+    <Dialog.Root
+      modal={false}
+      open={isDialogOpen}
+      onOpenChange={setIsDialogOpen}
+    >
       <Dialog.Trigger asChild>
-        {isOpen ? (
+        {isPopoverOpen ? (
           <button
+            ref={popoverRef}
             style={{
-              position: 'absolute', // relative to anchorElement
-              top: position?.top,
-              left: position?.left,
+              position: 'absolute',
+              ...popoverStyle,
             }}
           >
             Create template
@@ -111,6 +134,7 @@ export default function TemplatePopoverPlugin({
       </Dialog.Trigger>
       <CreateTemplateDialogContent
         selectedSerializedNodes={getSelectedSerializedNodes()}
+        onClose={() => setIsDialogOpen(false)}
       />
     </Dialog.Root>
   )

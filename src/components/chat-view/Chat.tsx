@@ -479,12 +479,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           >
             <Plus size={18} />
           </button>
-          <Dialog.Root modal={false}>
-            <Dialog.Trigger asChild>
-              <button>Create Template</button>
-            </Dialog.Trigger>
-            <CreateTemplateDialogContent />
-          </Dialog.Root>
           <ChatListDropdown
             chatList={chatList}
             onSelectConversation={(conversationId) =>
