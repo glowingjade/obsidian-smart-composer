@@ -83,7 +83,7 @@ export default function CreateTemplateDialogContent({
           </Dialog.Description>
         </div>
 
-        <div className="smtcmp-dialog-input smtcmp-tailwind flex items-center gap-4">
+        <div className="smtcmp-dialog-input">
           <label>Name</label>
           <input
             type="text"
@@ -96,7 +96,6 @@ export default function CreateTemplateDialogContent({
                 onSubmit()
               }
             }}
-            className="smtcmp-tailwind flex-1"
           />
         </div>
 
@@ -109,7 +108,7 @@ export default function CreateTemplateDialogContent({
           />
         </div>
 
-        <div className="smtcmp-dialog-bottom smtcmp-tailwind flex justify-end">
+        <div className="smtcmp-dialog-footer">
           <button onClick={onSubmit}>Create template</button>
         </div>
 
