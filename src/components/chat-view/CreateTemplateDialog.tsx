@@ -74,15 +74,17 @@ export default function CreateTemplateDialogContent({
   return (
     <Dialog.Portal container={container}>
       <Dialog.Content className="smtcmp-dialog-content">
-        <Dialog.Title className="smtcmp-dialog-title">
-          Create Template
-        </Dialog.Title>
-        <Dialog.Description className="smtcmp-dialog-description">
-          Create a new template from the selected nodes
-        </Dialog.Description>
+        <div className="smtcmp-dialog-header">
+          <Dialog.Title className="smtcmp-dialog-title">
+            Create Template
+          </Dialog.Title>
+          <Dialog.Description className="smtcmp-dialog-description">
+            Create a new template from the selected nodes
+          </Dialog.Description>
+        </div>
 
-        <div className="smtcmp-tailwind flex items-center gap-4">
-          <div>Name</div>
+        <div className="smtcmp-dialog-input smtcmp-tailwind flex items-center gap-4">
+          <label>Name</label>
           <input
             type="text"
             value={templateName}
@@ -107,7 +109,7 @@ export default function CreateTemplateDialogContent({
           />
         </div>
 
-        <div className="smtcmp-tailwind flex justify-end">
+        <div className="smtcmp-dialog-bottom smtcmp-tailwind flex justify-end">
           <button onClick={onSubmit}>Create Template</button>
         </div>
 
