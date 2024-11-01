@@ -76,7 +76,7 @@ export default function CreateTemplateDialogContent({
       <Dialog.Content className="smtcmp-dialog-content">
         <div className="smtcmp-dialog-header">
           <Dialog.Title className="smtcmp-dialog-title">
-            Create Template
+            Create template
           </Dialog.Title>
           <Dialog.Description className="smtcmp-dialog-description">
             Create a new template from the selected nodes
@@ -110,7 +110,7 @@ export default function CreateTemplateDialogContent({
         </div>
 
         <div className="smtcmp-dialog-bottom smtcmp-tailwind flex justify-end">
-          <button onClick={onSubmit}>Create Template</button>
+          <button onClick={onSubmit}>Create template</button>
         </div>
 
         <Dialog.Close className="smtcmp-dialog-close" asChild>
