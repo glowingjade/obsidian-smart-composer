@@ -1,38 +1,30 @@
 import { backOff } from 'exponential-backoff'
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter'
-import { App, TFile, normalizePath } from 'obsidian'
+import { App, TFile } from 'obsidian'
 import pLimit from 'p-limit'
 
-import { IndexProgress } from '../../components/chat-view/QueryProgress'
-import { PGLITE_DB_PATH } from '../../constants'
-import { InsertVector, SelectVector } from '../../db/schema'
-import { EmbeddingModel } from '../../types/embedding'
+import { IndexProgress } from '../../../components/chat-view/QueryProgress'
 import {
   LLMAPIKeyInvalidException,
   LLMAPIKeyNotSetException,
   LLMBaseUrlNotSetException,
-} from '../llm/exception'
-import { openSettingsModalWithError } from '../openSettingsModal'
+} from '../../../core/llm/exception'
+import { InsertVector, SelectVector } from '../../../database/schema'
+import { EmbeddingModel } from '../../../types/embedding'
+import { openSettingsModalWithError } from '../../../utils/openSettingsModal'
+import { DatabaseManager } from '../../DatabaseManager'
 
-import { VectorDbRepository } from './repository'
+import { VectorRepository } from './VectorRepository'
 
-export class VectorDbManager {
+export class VectorManager {
   private app: App
-  private repository: VectorDbRepository
+  private repository: VectorRepository
+  private dbManager: DatabaseManager
 
-  constructor(app: App) {
+  constructor(app: App, dbManager: DatabaseManager) {
     this.app = app
-  }
-
-  static async create(app: App): Promise<VectorDbManager> {
-    const manager = new VectorDbManager(app)
-    const dbPath = normalizePath(PGLITE_DB_PATH)
-    manager.repository = await VectorDbRepository.create(app, dbPath)
-    return manager
-  }
-
-  async cleanup() {
-    await this.repository.cleanup()
+    this.dbManager = dbManager
+    this.repository = new VectorRepository(app, dbManager.getDb())
   }
 
   async performSimilaritySearch(
@@ -203,7 +195,7 @@ export class VectorDbManager {
         throw error
       }
     } finally {
-      await this.repository.save()
+      await this.dbManager.save()
     }
   }
 

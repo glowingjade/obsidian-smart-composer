@@ -36,6 +36,13 @@
       "when": 1730085029605,
       "tag": "0004_create_vector_data_bge_m3",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1730443763982,
+      "tag": "0005_create_template_table",
+      "breakpoints": true
     }
   ]
 }

@@ -7,6 +7,7 @@ import {
   useState,
 } from 'react'
 
+import LLMManager from '../core/llm/manager'
 import {
   LLMOptions,
   LLMRequestNonStreaming,
@@ -16,7 +17,6 @@ import {
   LLMResponseNonStreaming,
   LLMResponseStreaming,
 } from '../types/llm/response'
-import LLMManager from '../utils/llm/manager'
 
 import { useSettings } from './settings-context'
 

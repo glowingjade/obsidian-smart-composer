@@ -1,6 +1,6 @@
 import { PropsWithChildren, createContext, useContext } from 'react'
 
-import { RAGEngine } from '../utils/ragEngine'
+import { RAGEngine } from '../core/rag/ragEngine'
 
 export type RAGContextType = {
   ragEngine: RAGEngine | null

@@ -18,6 +18,11 @@ import { useApp } from '../../contexts/app-context'
 import { useLLM } from '../../contexts/llm-context'
 import { useRAG } from '../../contexts/rag-context'
 import { useSettings } from '../../contexts/settings-context'
+import {
+  LLMAPIKeyInvalidException,
+  LLMAPIKeyNotSetException,
+  LLMBaseUrlNotSetException,
+} from '../../core/llm/exception'
 import { useChatHistory } from '../../hooks/useChatHistory'
 import { ChatMessage, ChatUserMessage } from '../../types/chat'
 import {
@@ -26,11 +31,6 @@ import {
   MentionableCurrentFile,
 } from '../../types/mentionable'
 import { applyChangesToFile } from '../../utils/apply'
-import {
-  LLMAPIKeyInvalidException,
-  LLMAPIKeyNotSetException,
-  LLMBaseUrlNotSetException,
-} from '../../utils/llm/exception'
 import {
   getMentionableKey,
   serializeMentionable,
@@ -505,7 +505,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
             <ChatUserInput
               key={message.id}
               ref={(ref) => registerChatUserInputRef(message.id, ref)}
-              message={message.content}
+              initialSerializedEditorState={message.content}
               onChange={(content) => {
                 setChatMessages((prevChatHistory) =>
                   prevChatHistory.map((msg) =>
@@ -561,7 +561,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       <ChatUserInput
         key={inputMessage.id} // this is needed to clear the editor when the user submits a new message
         ref={(ref) => registerChatUserInputRef(inputMessage.id, ref)}
-        message={inputMessage.content}
+        initialSerializedEditorState={inputMessage.content}
         onChange={(content) => {
           setInputMessage((prevInputMessage) => ({
             ...prevInputMessage,

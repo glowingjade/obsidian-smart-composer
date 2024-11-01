@@ -1,4 +1,4 @@
-import { SelectVector } from '../../db/schema'
+import { SelectVector } from '../../database/schema'
 
 export type QueryProgressState =
   | {
