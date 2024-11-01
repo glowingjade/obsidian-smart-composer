@@ -89,6 +89,20 @@ export default function CreateTemplatePopoverPlugin({
   }, [editor, updatePopoverPosition])
 
   useEffect(() => {
+    // Update popover position when the content is cleared
+    // (Selection change event doesn't fire in this case)
+    if (!isPopoverOpen) return
+    const removeTextContentChangeListener = editor.registerTextContentListener(
+      () => {
+        updatePopoverPosition()
+      },
+    )
+    return () => {
+      removeTextContentChangeListener()
+    }
+  }, [editor, isPopoverOpen, updatePopoverPosition])
+
+  useEffect(() => {
     if (!contentEditableElement) return
     const handleScroll = () => {
       updatePopoverPosition()
