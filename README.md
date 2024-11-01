@@ -47,6 +47,16 @@ Note: The Apply Edit feature is currently slower than desired. We are working on
 - Hit `Cmd+Shift+Enter` to run Vault Search answer
 - Semantic search across your vault to find the most relevant context
 
+### Prompt Templates
+
+![SC5_PromptTemplate.gif](https://github.com/user-attachments/assets/b3dd0666-d232-491b-8c2d-0032732b51cd)
+
+> Save time by creating templates for your frequently used prompts. Access them instantly with a quick `/` command.
+
+- Create templates from any selected text with one click
+- Access templates by typing `/` and searching
+- Perfect for repetitive tasks and standardized queries
+
 #### Additional Features
 
 - **Custom Model Selection**: Use your own model by setting your API Key (stored locally).
