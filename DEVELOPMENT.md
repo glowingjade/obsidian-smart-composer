@@ -4,7 +4,7 @@
 
 PGlite typically uses the `node:fs` module to load bundle files. However, Obsidian plugins run in a browser-like environment where `node:fs` is not available. This presents a challenge in implementing PGlite in Obsidian's environment.
 
-To address this, we developed a workaround in `src/utils/vector-db/repository.ts`:
+To address this, we developed a workaround in `src/database/DatabaseManager.ts`:
 
 1. Manually fetch required PGlite resources (Postgres data, WebAssembly module, and Vector extension).
 2. Use PGlite's option to directly set bundle files or URLs when initializing the database.
