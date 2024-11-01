@@ -47,21 +47,13 @@ Note: The Apply Edit feature is currently slower than desired. We are working on
 - Hit `Cmd+Shift+Enter` to run Vault Search answer
 - Semantic search across your vault to find the most relevant context
 
-### Prompt Template
-
-![SC5_PromptTemplate.gif](https://github.com/user-attachments/assets/b3dd0666-d232-491b-8c2d-0032732b51cd)
-
-> Save time by creating templates for your frequently used prompts. Access them instantly with a quick `/` command.
-
-- Create templates from any selected text with one click
-- Access templates by typing `/` and searching
-- Perfect for repetitive tasks and standardized queries
-
 #### Additional Features
 
 - **Custom Model Selection**: Use your own model by setting your API Key (stored locally).
 - **Local Model Support**: Run open-source LLMs and embedding models locally with [Ollama](https://ollama.ai) for complete privacy and offline usage.
 - **Custom System Prompts**: Define your own system prompts that will be applied to every chat conversation.
+- **Prompt Templates**: Create and reuse templates for common queries by typing `/` in the chat view. Perfect for standardizing repetitive tasks.
+  - Create templates from any selected text with one click
 
 ## Getting Started
 
