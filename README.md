@@ -47,6 +47,16 @@ Note: The Apply Edit feature is currently slower than desired. We are working on
 - Hit `Cmd+Shift+Enter` to run Vault Search answer
 - Semantic search across your vault to find the most relevant context
 
+### Prompt Template
+
+![SC5_PromptTemplate.gif](https://github.com/user-attachments/assets/b3dd0666-d232-491b-8c2d-0032732b51cd)
+
+> Save time by creating templates for your frequently used prompts. Access them instantly with a quick `/` command.
+
+- Create templates from any selected text with one click
+- Access templates by typing `/` and searching
+- Perfect for repetitive tasks and standardized queries
+
 #### Additional Features
 
 - **Custom Model Selection**: Use your own model by setting your API Key (stored locally).
@@ -158,5 +168,7 @@ If you find Smart Composer valuable, consider supporting its development:
 <a href="https://www.buymeacoffee.com/glowingjade" target="_blank">
   <img src="https://github.com/user-attachments/assets/e794767d-b7dd-40eb-9132-e48ae7088000" alt="Buy Me A Coffee" width="180">
 </a>
+
+Follow me on X (Twitter) [@andy_suh_](https://x.com/andy_suh_) for updates and announcements!
 
 Your support helps maintain and improve this plugin. Every contribution is appreciated and makes a difference. Thank you for your support!
