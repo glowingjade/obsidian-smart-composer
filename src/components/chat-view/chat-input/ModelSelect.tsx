@@ -1,8 +1,9 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useState } from 'react'
-import { CHAT_MODEL_OPTIONS } from 'src/constants'
-import { useSettings } from 'src/contexts/settings-context'
+
+import { CHAT_MODEL_OPTIONS } from '../../../constants'
+import { useSettings } from '../../../contexts/settings-context'
 
 export function ModelSelect() {
   const { settings, setSettings } = useSettings()

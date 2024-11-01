@@ -7,15 +7,15 @@ import {
   useRef,
   useState,
 } from 'react'
-import {
-  deserializeMentionable,
-  serializeMentionable,
-} from 'src/utils/mentionable'
 
 import { useApp } from '../../../contexts/app-context'
 import { useDarkModeContext } from '../../../contexts/dark-mode-context'
 import { Mentionable, SerializedMentionable } from '../../../types/mentionable'
-import { getMentionableKey } from '../../../utils/mentionable'
+import {
+  deserializeMentionable,
+  getMentionableKey,
+  serializeMentionable,
+} from '../../../utils/mentionable'
 import { openMarkdownFile, readTFileContent } from '../../../utils/obsidian'
 import { MemoizedSyntaxHighlighterWrapper } from '../SyntaxHighlighterWrapper'
 

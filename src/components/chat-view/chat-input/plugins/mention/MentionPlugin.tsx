@@ -11,11 +11,13 @@ import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext
 import { $createTextNode, COMMAND_PRIORITY_NORMAL, TextNode } from 'lexical'
 import { useCallback, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { serializeMentionable } from 'src/utils/mentionable'
 
 import { Mentionable } from '../../../../../types/mentionable'
 import { SearchableMentionable } from '../../../../../utils/fuzzy-search'
-import { getMentionableName } from '../../../../../utils/mentionable'
+import {
+  getMentionableName,
+  serializeMentionable,
+} from '../../../../../utils/mentionable'
 import { getMentionableIcon } from '../../utils/get-metionable-icon'
 import { MenuOption, MenuTextMatch } from '../shared/LexicalMenu'
 import {

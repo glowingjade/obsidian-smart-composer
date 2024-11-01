@@ -1,14 +1,15 @@
 import OpenAI from 'openai'
 import { FinalRequestOptions } from 'openai/core'
+
 import {
   LLMOptions,
   LLMRequestNonStreaming,
   LLMRequestStreaming,
-} from 'src/types/llm/request'
+} from '../../types/llm/request'
 import {
   LLMResponseNonStreaming,
   LLMResponseStreaming,
-} from 'src/types/llm/response'
+} from '../../types/llm/response'
 
 import { BaseLLMProvider } from './base'
 import { LLMBaseUrlNotSetException } from './exception'
