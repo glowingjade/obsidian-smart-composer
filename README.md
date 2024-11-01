@@ -169,4 +169,6 @@ If you find Smart Composer valuable, consider supporting its development:
   <img src="https://github.com/user-attachments/assets/e794767d-b7dd-40eb-9132-e48ae7088000" alt="Buy Me A Coffee" width="180">
 </a>
 
+Follow me on X (Twitter) [@andy_suh_](https://x.com/andy_suh_) for updates and announcements!
+
 Your support helps maintain and improve this plugin. Every contribution is appreciated and makes a difference. Thank you for your support!
