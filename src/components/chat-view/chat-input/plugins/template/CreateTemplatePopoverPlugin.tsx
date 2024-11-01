@@ -17,7 +17,6 @@ export default function CreateTemplatePopoverPlugin({
   const [editor] = useLexicalComposerContext()
 
   const [popoverStyle, setPopoverStyle] = useState<CSSProperties | null>(null)
-  const [popoverWidth, setPopoverWidth] = useState(0)
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
@@ -38,10 +37,6 @@ export default function CreateTemplatePopoverPlugin({
   }, [editor])
 
   const updatePopoverPosition = useCallback(() => {
-    if (popoverRef.current) {
-      setPopoverWidth(popoverRef.current.offsetWidth)
-    }
-
     if (!anchorElement || !contentEditableElement) return
     const nativeSelection = document.getSelection()
     const range = nativeSelection?.getRangeAt(0)
@@ -62,7 +57,7 @@ export default function CreateTemplatePopoverPlugin({
     const idealLeft = rects[rects.length - 1].right - anchorRect.left
     const paddingX = 8
     const paddingY = 4
-    const minLeft = popoverWidth + paddingX
+    const minLeft = (popoverRef.current?.offsetWidth ?? 0) + paddingX
     const finalLeft = Math.max(minLeft, idealLeft)
     setPopoverStyle({
       top: rects[rects.length - 1].bottom - anchorRect.top + paddingY,
@@ -76,12 +71,7 @@ export default function CreateTemplatePopoverPlugin({
       return
     }
     setIsPopoverOpen(true)
-  }, [
-    anchorElement,
-    contentEditableElement,
-    getSelectedSerializedNodes,
-    popoverWidth,
-  ])
+  }, [anchorElement, contentEditableElement, getSelectedSerializedNodes])
 
   useEffect(() => {
     const handleSelectionChange = () => {
@@ -120,17 +110,16 @@ export default function CreateTemplatePopoverPlugin({
       onOpenChange={setIsDialogOpen}
     >
       <Dialog.Trigger asChild>
-        {isPopoverOpen ? (
-          <button
-            ref={popoverRef}
-            style={{
-              position: 'absolute',
-              ...popoverStyle,
-            }}
-          >
-            Create template
-          </button>
-        ) : null}
+        <button
+          ref={popoverRef}
+          style={{
+            position: 'absolute',
+            visibility: isPopoverOpen ? 'visible' : 'hidden',
+            ...popoverStyle,
+          }}
+        >
+          Create template
+        </button>
       </Dialog.Trigger>
       <CreateTemplateDialogContent
         selectedSerializedNodes={getSelectedSerializedNodes()}
