@@ -10,12 +10,11 @@ import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin'
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin'
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
 import { LexicalEditor, SerializedEditorState } from 'lexical'
-import { RefObject, useCallback } from 'react'
+import { RefObject, useCallback, useEffect } from 'react'
 
 import { useApp } from '../../../contexts/app-context'
 import { fuzzySearch } from '../../../utils/fuzzy-search'
 
-import AutoFocusPlugin from './plugins/auto-focus/AutoFocusPlugin'
 import AutoLinkMentionPlugin from './plugins/mention/AutoLinkMentionPlugin'
 import { MentionNode } from './plugins/mention/MentionNode'
 import MentionPlugin from './plugins/mention/MentionPlugin'
@@ -60,7 +59,7 @@ export default function LexicalContentEditable({
   const app = useApp()
 
   const initialConfig: InitialConfigType = {
-    namespace: 'ChatUserInput',
+    namespace: 'LexicalContentEditable',
     theme: {
       root: 'smtcmp-lexical-content-editable-root',
       paragraph: 'smtcmp-lexical-content-editable-paragraph',
@@ -76,6 +75,19 @@ export default function LexicalContentEditable({
     (query: string) => fuzzySearch(app, query),
     [app],
   )
+
+  /*
+   * Using requestAnimationFrame for autoFocus instead of using editor.focus()
+   * due to known issues with editor.focus() when initialConfig.editorState is set
+   * See: https://github.com/facebook/lexical/issues/4460
+   */
+  useEffect(() => {
+    if (autoFocus) {
+      requestAnimationFrame(() => {
+        contentEditableRef.current?.focus()
+      })
+    }
+  }, [autoFocus, contentEditableRef])
 
   return (
     <LexicalComposer initialConfig={initialConfig}>
@@ -101,7 +113,6 @@ export default function LexicalContentEditable({
         ErrorBoundary={LexicalErrorBoundary}
       />
       <HistoryPlugin />
-      {autoFocus && <AutoFocusPlugin defaultSelection="rootEnd" />}
       <MentionPlugin searchResultByQuery={searchResultByQuery} />
       <OnChangePlugin
         onChange={(editorState) => {
