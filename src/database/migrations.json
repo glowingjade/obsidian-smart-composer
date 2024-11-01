@@ -46,10 +46,10 @@
   },
   {
     "sql": [
-      "CREATE TABLE IF NOT EXISTS \"template\" (\n\t\"id\" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,\n\t\"name\" text NOT NULL,\n\t\"data\" jsonb NOT NULL,\n\t\"created_at\" timestamp DEFAULT now() NOT NULL,\n\t\"updated_at\" timestamp DEFAULT now() NOT NULL,\n\tCONSTRAINT \"template_name_unique\" UNIQUE(\"name\")\n);\n"
+      "CREATE TABLE IF NOT EXISTS \"template\" (\n\t\"id\" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,\n\t\"name\" text NOT NULL,\n\t\"content\" jsonb NOT NULL,\n\t\"created_at\" timestamp DEFAULT now() NOT NULL,\n\t\"updated_at\" timestamp DEFAULT now() NOT NULL,\n\tCONSTRAINT \"template_name_unique\" UNIQUE(\"name\")\n);\n"
     ],
     "bps": true,
-    "folderMillis": 1730363062246,
-    "hash": "38448092dc2399d05f6be6c26472434a02d3fa548fcad6cf45a4a377ca8a0fb6"
+    "folderMillis": 1730443763982,
+    "hash": "eddf72b8d40619c170b3c12f3d3ce280385b1fc05717f211ab6077c6bea691bf"
   }
 ]

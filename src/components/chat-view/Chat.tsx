@@ -75,8 +75,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const { settings } = useSettings()
   const { ragEngine } = useRAG()
 
-  const chatContainerRef = useRef<HTMLDivElement>(null)
-
   const {
     createOrUpdateConversation,
     deleteConversation,
@@ -467,7 +465,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   }))
 
   return (
-    <div className="smtcmp-chat-container" ref={chatContainerRef}>
+    <div className="smtcmp-chat-container">
       <div className="smtcmp-chat-header">
         <h1 className="smtcmp-chat-header-title">Chat</h1>
         <div className="smtcmp-chat-header-buttons">

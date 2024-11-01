@@ -103,7 +103,7 @@ export default function TemplatePlugin() {
       closeMenu: () => void,
     ) => {
       editor.update(() => {
-        const parsedNodes = selectedOption.template.data.nodes.map((node) =>
+        const parsedNodes = selectedOption.template.content.nodes.map((node) =>
           $parseSerializedNode(node),
         )
         if (nodeToRemove) {

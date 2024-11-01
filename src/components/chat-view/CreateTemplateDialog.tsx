@@ -49,7 +49,10 @@ export default function CreateTemplateDialogContent({
       if (!editorRef.current) return
       const serializedEditorState = editorRef.current.toJSON()
       const nodes = serializedEditorState.editorState.root.children
-      if (nodes.length === 0) return
+      if (nodes.length === 0) {
+        new Notice('Please enter a content for your template')
+        return
+      }
       if (templateName.trim().length === 0) {
         new Notice('Please enter a name for your template')
         return
@@ -57,9 +60,10 @@ export default function CreateTemplateDialogContent({
 
       await templateManager.createTemplate({
         name: templateName,
-        data: { nodes },
+        content: { nodes },
       })
       new Notice(`Template created: ${templateName}`)
+      setTemplateName('')
       onClose()
     } catch (error) {
       if (error instanceof DuplicateTemplateException) {
@@ -104,7 +108,7 @@ export default function CreateTemplateDialogContent({
             initialEditorState={initialEditorState}
             editorRef={editorRef}
             contentEditableRef={contentEditableRef}
-            onSubmit={onSubmit}
+            onEnter={onSubmit}
           />
         </div>
 

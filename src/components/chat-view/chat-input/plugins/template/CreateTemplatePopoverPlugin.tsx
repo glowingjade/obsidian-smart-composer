@@ -2,7 +2,11 @@ import { $generateJSONFromSelectedNodes } from '@lexical/clipboard'
 import { BaseSerializedNode } from '@lexical/clipboard/clipboard'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import * as Dialog from '@radix-ui/react-dialog'
-import { $getSelection } from 'lexical'
+import {
+  $getSelection,
+  COMMAND_PRIORITY_LOW,
+  SELECTION_CHANGE_COMMAND,
+} from 'lexical'
 import { CSSProperties, useCallback, useEffect, useRef, useState } from 'react'
 
 import CreateTemplateDialogContent from '../../../CreateTemplateDialog'
@@ -19,6 +23,9 @@ export default function CreateTemplatePopoverPlugin({
   const [popoverStyle, setPopoverStyle] = useState<CSSProperties | null>(null)
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [selectedSerializedNodes, setSelectedSerializedNodes] = useState<
+    BaseSerializedNode[] | null
+  >(null)
 
   const popoverRef = useRef<HTMLButtonElement>(null)
 
@@ -64,24 +71,22 @@ export default function CreateTemplatePopoverPlugin({
       left: finalLeft,
       transform: 'translate(-100%, 0)',
     })
-
-    const selectedNodes = getSelectedSerializedNodes()
-    if (!selectedNodes) {
-      setIsPopoverOpen(false)
-      return
-    }
     setIsPopoverOpen(true)
-  }, [anchorElement, contentEditableElement, getSelectedSerializedNodes])
+  }, [anchorElement, contentEditableElement])
 
   useEffect(() => {
-    const handleSelectionChange = () => {
-      updatePopoverPosition()
-    }
-    document.addEventListener('selectionchange', handleSelectionChange)
+    const removeSelectionChangeListener = editor.registerCommand(
+      SELECTION_CHANGE_COMMAND,
+      () => {
+        updatePopoverPosition()
+        return false
+      },
+      COMMAND_PRIORITY_LOW,
+    )
     return () => {
-      document.removeEventListener('selectionchange', handleSelectionChange)
+      removeSelectionChangeListener()
     }
-  }, [updatePopoverPosition])
+  }, [editor, updatePopoverPosition])
 
   useEffect(() => {
     if (!contentEditableElement) return
@@ -94,20 +99,17 @@ export default function CreateTemplatePopoverPlugin({
     }
   }, [contentEditableElement, updatePopoverPosition])
 
-  useEffect(() => {
-    const removeUpdateListener = editor.registerUpdateListener(() => {
-      updatePopoverPosition()
-    })
-    return () => {
-      removeUpdateListener()
-    }
-  }, [editor, updatePopoverPosition])
-
   return (
     <Dialog.Root
       modal={false}
       open={isDialogOpen}
-      onOpenChange={setIsDialogOpen}
+      onOpenChange={(open) => {
+        if (open) {
+          setSelectedSerializedNodes(getSelectedSerializedNodes())
+        }
+        setIsDialogOpen(open)
+        setIsPopoverOpen(false)
+      }}
     >
       <Dialog.Trigger asChild>
         <button
@@ -122,7 +124,7 @@ export default function CreateTemplatePopoverPlugin({
         </button>
       </Dialog.Trigger>
       <CreateTemplateDialogContent
-        selectedSerializedNodes={getSelectedSerializedNodes()}
+        selectedSerializedNodes={selectedSerializedNodes}
         onClose={() => setIsDialogOpen(false)}
       />
     </Dialog.Root>

@@ -64,14 +64,14 @@ export const vectorTable3 = vectorTables[EMBEDDING_MODEL_OPTIONS[3].value]
 export const vectorTable4 = vectorTables[EMBEDDING_MODEL_OPTIONS[4].value]
 
 /* Template Table */
-export type TemplateData = {
+export type TemplateContent = {
   nodes: SerializedLexicalNode[]
 }
 
 export const templateTable = pgTable('template', {
   id: uuid('id').defaultRandom().primaryKey(),
   name: text('name').notNull().unique(),
-  data: jsonb('data').notNull().$type<TemplateData>(),
+  content: jsonb('content').notNull().$type<TemplateContent>(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })

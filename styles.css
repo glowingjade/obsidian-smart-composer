@@ -315,7 +315,7 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
  * ChatUserInput
  */
 
-.smtcmp-chat-input-root .mention {
+.smtcmp-lexical-content-editable-root .mention {
   background-color: var(--tag-background);
   color: var(--tag-color);
   padding: var(--size-2-1) calc(var(--size-2-1));
@@ -327,7 +327,7 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   word-break: break-all;
 }
 
-.smtcmp-chat-input-paragraph {
+.smtcmp-lexical-content-editable-paragraph {
   margin: 0;
   line-height: 1.6;
 }

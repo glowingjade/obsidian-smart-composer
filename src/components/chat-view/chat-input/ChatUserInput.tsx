@@ -260,12 +260,12 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
           editorRef={editorRef}
           contentEditableRef={contentEditableRef}
           onChange={onChange}
-          onSubmit={() => handleSubmit({ useVaultSearch: false })}
+          onEnter={() => handleSubmit({ useVaultSearch: false })}
           onFocus={onFocus}
           onMentionNodeMutation={handleMentionNodeMutation}
           autoFocus={autoFocus}
           plugins={{
-            vaultChat: {
+            onEnter: {
               onVaultChat: () => {
                 handleSubmit({ useVaultSearch: true })
               },

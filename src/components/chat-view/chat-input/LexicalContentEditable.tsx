@@ -15,7 +15,6 @@ import { RefObject, useCallback } from 'react'
 import { useApp } from '../../../contexts/app-context'
 import { fuzzySearch } from '../../../utils/fuzzy-search'
 
-import OnVaultChatCommandPlugin from './on-vault-chat/OnVaultChatPlugin'
 import AutoFocusPlugin from './plugins/auto-focus/AutoFocusPlugin'
 import AutoLinkMentionPlugin from './plugins/mention/AutoLinkMentionPlugin'
 import { MentionNode } from './plugins/mention/MentionNode'
@@ -32,13 +31,13 @@ export type LexicalContentEditableProps = {
   editorRef: RefObject<LexicalEditor>
   contentEditableRef: RefObject<HTMLDivElement>
   onChange?: (content: SerializedEditorState) => void
-  onSubmit?: () => void
+  onEnter?: (evt: KeyboardEvent) => void
   onFocus?: () => void
   onMentionNodeMutation?: (mutations: NodeMutations<MentionNode>) => void
   initialEditorState?: InitialEditorStateType
   autoFocus?: boolean
   plugins?: {
-    vaultChat?: {
+    onEnter?: {
       onVaultChat: () => void
     }
     templatePopover?: {
@@ -51,7 +50,7 @@ export default function LexicalContentEditable({
   editorRef,
   contentEditableRef,
   onChange,
-  onSubmit,
+  onEnter,
   onFocus,
   onMentionNodeMutation,
   initialEditorState,
@@ -60,19 +59,11 @@ export default function LexicalContentEditable({
 }: LexicalContentEditableProps) {
   const app = useApp()
 
-  // // initialize editor state
-  // useEffect(() => {
-  //   if (initialContent) {
-  //     updaterRef.current?.update(initialContent)
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [])
-
   const initialConfig: InitialConfigType = {
     namespace: 'ChatUserInput',
     theme: {
-      root: 'smtcmp-chat-input-root', // FIXME: change class name
-      paragraph: 'smtcmp-chat-input-paragraph',
+      root: 'smtcmp-lexical-content-editable-root',
+      paragraph: 'smtcmp-lexical-content-editable-paragraph',
     },
     nodes: [MentionNode],
     editorState: initialEditorState,
@@ -117,17 +108,12 @@ export default function LexicalContentEditable({
           onChange?.(editorState.toJSON())
         }}
       />
-      {plugins?.vaultChat && (
-        // This plugin should be registered before OnEnterPlugin
-        <OnVaultChatCommandPlugin onVaultChat={plugins.vaultChat.onVaultChat} />
+      {onEnter && (
+        <OnEnterPlugin
+          onEnter={onEnter}
+          onVaultChat={plugins?.onEnter?.onVaultChat}
+        />
       )}
-      <OnEnterPlugin
-        onEnter={(evt) => {
-          evt.preventDefault()
-          evt.stopPropagation()
-          onSubmit?.()
-        }}
-      />
       <OnMutationPlugin
         nodeClass={MentionNode}
         onMutation={(mutations) => {
