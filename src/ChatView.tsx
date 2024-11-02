@@ -103,12 +103,8 @@ export class ChatView extends ItemView {
     )
   }
 
-  openNewChat(selectedBlock?: MentionableBlockData) {
-    this.chatRef.current?.openNewChat(selectedBlock)
-  }
-
-  addSelectionToChat(selectedBlock: MentionableBlockData) {
-    this.chatRef.current?.addSelectionToChat(selectedBlock)
+  addSelectionToChat(data: MentionableBlockData) {
+    this.chatRef.current?.addSelectionToChat(data)
   }
 
   focusMessage() {

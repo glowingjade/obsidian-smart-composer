@@ -62,8 +62,7 @@ const getNewInputMessage = (app: App): ChatUserMessage => {
 }
 
 export type ChatRef = {
-  openNewChat: (selectedBlock?: MentionableBlockData) => void
-  addSelectionToChat: (selectedBlock: MentionableBlockData) => void
+  addSelectionToChat: (data: MentionableBlockData) => void
   focusMessage: () => void
 }
 
@@ -197,23 +196,10 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     }
   }
 
-  const handleNewChat = (selectedBlock?: MentionableBlockData) => {
+  const handleNewChat = async () => {
     setCurrentConversationId(uuidv4())
     setChatMessages([])
     const newInputMessage = getNewInputMessage(app)
-    if (selectedBlock) {
-      const mentionableBlock: MentionableBlock = {
-        type: 'block',
-        ...selectedBlock,
-      }
-      newInputMessage.mentionables = [
-        ...newInputMessage.mentionables,
-        mentionableBlock,
-      ]
-      setAddedBlockKey(
-        getMentionableKey(serializeMentionable(mentionableBlock)),
-      )
-    }
     setInputMessage(newInputMessage)
     setFocusedMessageId(newInputMessage.id)
     setQueryProgress({
@@ -446,12 +432,10 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   }, [app.workspace, handleActiveLeafChange])
 
   useImperativeHandle(ref, () => ({
-    openNewChat: (selectedBlock?: MentionableBlockData) =>
-      handleNewChat(selectedBlock),
-    addSelectionToChat: (selectedBlock: MentionableBlockData) => {
+    addSelectionToChat(data: MentionableBlockData) {
       const mentionable: Omit<MentionableBlock, 'id'> = {
         type: 'block',
-        ...selectedBlock,
+        ...data,
       }
 
       setAddedBlockKey(getMentionableKey(serializeMentionable(mentionable)))
@@ -486,7 +470,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         <h1 className="smtcmp-chat-header-title">Chat</h1>
         <div className="smtcmp-chat-header-buttons">
           <button
-            onClick={() => handleNewChat()}
+            onClick={() => void handleNewChat()}
             className="smtcmp-chat-list-dropdown"
           >
             <Plus size={18} />
@@ -505,7 +489,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
                 if (nextConversation) {
                   void handleLoadConversation(nextConversation.id)
                 } else {
-                  handleNewChat()
+                  void handleNewChat()
                 }
               }
             }}

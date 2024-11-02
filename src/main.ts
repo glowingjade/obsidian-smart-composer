@@ -34,9 +34,9 @@ export default class SmartCopilotPlugin extends Plugin {
 
     // This adds a simple command that can be triggered anywhere
     this.addCommand({
-      id: 'open-new-chat',
+      id: 'open-chat-view',
       name: 'Open chat',
-      callback: () => this.openNewChat(),
+      callback: () => this.openChatView(),
     })
 
     this.addCommand({
@@ -156,27 +156,6 @@ export default class SmartCopilotPlugin extends Plugin {
     this.activateChatView({
       selectedBlock: selectedBlockData,
     })
-  }
-
-  async openNewChat() {
-    const view = this.app.workspace.getActiveViewOfType(MarkdownView)
-    const editor = view?.editor
-    if (!view || !editor) {
-      this.activateChatView()
-      return
-    }
-
-    const selectedBlock = await getMentionableBlockData(editor, view)
-    const leaves = this.app.workspace.getLeavesOfType(CHAT_VIEW_TYPE)
-    if (leaves.length === 0) {
-      await this.activateChatView({
-        selectedBlock: selectedBlock ?? undefined,
-      })
-    } else {
-      const chatView = this.app.workspace.getLeavesOfType(CHAT_VIEW_TYPE)[0]
-        .view as ChatView
-      chatView.openNewChat(selectedBlock ?? undefined)
-    }
   }
 
   async activateChatView(chatProps?: ChatProps) {
