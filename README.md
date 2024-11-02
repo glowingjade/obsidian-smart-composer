@@ -6,6 +6,8 @@ Everytime we ask ChatGPT, we need to put so much context information for each qu
 
 **Smart Composer is an Obsidian plugin that helps you write efficiently with AI by easily referencing your vault content.** Inspired by Cursor AI and ChatGPT Canvas, this plugin unifies your note-taking and content creation process within Obsidian.
 
+**📚 Check out our [Wiki](https://github.com/glowingjade/obsidian-smart-composer/wiki) for detailed guides and documentation.**
+
 ## Features
 
 ### Contextual Chat
@@ -66,50 +68,21 @@ Note: The Apply Edit feature is currently slower than desired. We are working on
 >    - Download the latest installer from [Obsidian's download page](https://obsidian.md/download)
 >    - Close Obsidian completely
 >    - Run the new installer
-> 
-> For more details, see [Obsidian's guide on installer updates](https://help.obsidian.md/Getting+started/Update+Obsidian#Installer+updates).
 
-Currently, Smart Composer is available through [Beta Quickstart](#beta-quickstart-recommended) or [Manual Installation](#manual-installation). Community plugin support is coming soon.
-
-### Beta Quickstart (Recommended)
-
-To install Smart Composer as a beta plugin:
-
-1. Install the BRAT plugin if you haven't already. [Click here](obsidian://show-plugin?id=obsidian42-brat) to install BRAT in Obsidian.
-2. Open the command palette and run the command **"BRAT: Add a beta plugin for testing"**.
+1. Install the BRAT plugin if you haven't already. Click here to install BRAT in Obsidian.
+2. Open the command palette and run the command "BRAT: Add a beta plugin for testing".
 3. Copy and paste this link into the modal: https://github.com/glowingjade/obsidian-smart-composer and click "Add Plugin" and wait for the installation.
-4. Go to `Settings > Community plugins` and refresh the list of plugins. Enable "Smart Composer".
-
-### Initial Setup
-
-> You need to set up your API key to use the plugin.
-
-1. Obtain an API key from your preferred AI service provider. (You need to create an account to get API key.)
-
+4. Go to Settings > Community plugins and refresh the list of plugins. Enable "Smart Composer".
+5. Set up your API key in plugin settings
    - OpenAI : [ChatGPT API Keys](https://platform.openai.com/api-keys)
    - Anthropic : [Claude API Keys](https://console.anthropic.com/settings/keys)
    - Groq : [Groq API Keys](https://console.groq.com/keys)
 
-2. In Obsidian, go to `Settings > Smart Composer`.
-3. Enter your API key in the designated field.
+> **📢 Coming Soon: Community Plugin**  
+> Smart Composer is currently under review for the official Obsidian Community Plugin directory. Once approved, you'll be able to install it directly from `Settings > Community plugins > Browse`.
+> We expect this to be available soon!
 
-### Commands and Hotkeys
-
-Smart Composer adds a few commands to work with AI. You can set custom hotkeys for these commands by going to `Settings > Hotkeys` and searching for "Smart Composer". (Note: Hotkeys are unset by default)
-
-| Command                         | Description                                                 | Preferred Hotkey |
-| ------------------------------- | ----------------------------------------------------------- | ---------------- |
-| Open Chat View                  | Opens the AI chat interface                                 | `Cmd+Shift+L`    |
-| Add Selection to Chat           | Adds the selected text to the current chat                  | `Cmd+L`          |
-| Rebuild entire vault index      | Rebuilds the RAG embedding index for all files in the vault | -                |
-| Update index for modified files | Updates the RAG embedding index for recently modified files | -                |
-
-### Manual Installation
-
-1. Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/glowingjade/obsidian-smart-composer/releases/latest).
-2. Create a folder named `obsidian-smart-composer` in your vault's `<Vault>/.obsidian/plugins/` directory.
-3. Place the downloaded files into this new folder.
-4. Open Obsidian settings `Settings > Community plugins`, and enable Smart Composer.
+**📚 For detailed setup instructions and documentation, please visit our [Wiki](https://github.com/glowingjade/obsidian-smart-composer/wiki).**
 
 ## Roadmap
 
