@@ -36,7 +36,7 @@ export default class SmartCopilotPlugin extends Plugin {
     this.addCommand({
       id: 'open-new-chat',
       name: 'Open chat',
-      callback: () => this.openNewChat(),
+      callback: () => this.openChatView(),
     })
 
     this.addCommand({
@@ -158,6 +158,9 @@ export default class SmartCopilotPlugin extends Plugin {
     })
   }
 
+  /**
+   * TODO: this is buggy, should fix first before using it
+   */
   async openNewChat() {
     const view = this.app.workspace.getActiveViewOfType(MarkdownView)
     const editor = view?.editor
@@ -175,6 +178,7 @@ export default class SmartCopilotPlugin extends Plugin {
     } else {
       const chatView = this.app.workspace.getLeavesOfType(CHAT_VIEW_TYPE)[0]
         .view as ChatView
+      // sometimes, "openNewChat" not exists in chatView. don't know why
       chatView.openNewChat(selectedBlock ?? undefined)
     }
   }
