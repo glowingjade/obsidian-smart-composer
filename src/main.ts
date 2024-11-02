@@ -175,7 +175,14 @@ export default class SmartCopilotPlugin extends Plugin {
     } else {
       const chatView = this.app.workspace.getLeavesOfType(CHAT_VIEW_TYPE)[0]
         .view as ChatView
-      chatView.openNewChat(selectedBlock ?? undefined)
+      if ('openNewChat' in chatView) {
+        chatView.openNewChat(selectedBlock ?? undefined)
+      } else {
+        // Fallback to activating a new chat view if openNewChat isn't available (sometimes happens)
+        await this.activateChatView({
+          selectedBlock: selectedBlock ?? undefined,
+        })
+      }
     }
   }
 
