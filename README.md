@@ -1,12 +1,18 @@
-# Smart Composer
+<h1 align="center">Smart Composer</h1>
+
+<p align="center">
+  <a href="https://github.com/glowingjade/obsidian-smart-composer/wiki">Documentation</a>
+  ·
+  <a href="https://github.com/glowingjade/obsidian-smart-composer/issues">Report Bug</a>
+  ·
+  <a href="https://github.com/glowingjade/obsidian-smart-composer/discussions">Discussions</a>
+</p>
 
 ![SC1_Title.gif](https://github.com/user-attachments/assets/a50a1f80-39ff-4eba-8090-e3d75e7be98c)
 
 Everytime we ask ChatGPT, we need to put so much context information for each query. Why spend time putting background infos that are already in your vault?
 
 **Smart Composer is an Obsidian plugin that helps you write efficiently with AI by easily referencing your vault content.** Inspired by Cursor AI and ChatGPT Canvas, this plugin unifies your note-taking and content creation process within Obsidian.
-
-**📚 Check out our [Wiki](https://github.com/glowingjade/obsidian-smart-composer/wiki) for detailed guides and documentation.**
 
 ## Features
 
@@ -82,7 +88,7 @@ Note: The Apply Edit feature is currently slower than desired. We are working on
 > Smart Composer is currently under review for the official Obsidian Community Plugin directory. Once approved, you'll be able to install it directly from `Settings > Community plugins > Browse`.
 > We expect this to be available soon!
 
-**📚 For detailed setup instructions and documentation, please visit our [Wiki](https://github.com/glowingjade/obsidian-smart-composer/wiki).**
+**📚 For detailed setup instructions and documentation, please visit our [Documentation](https://github.com/glowingjade/obsidian-smart-composer/wiki).**
 
 ## Roadmap
 
