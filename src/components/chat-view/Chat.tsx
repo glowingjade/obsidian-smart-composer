@@ -74,7 +74,7 @@ export type ChatProps = {
 const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const app = useApp()
   const { settings } = useSettings()
-  const { ragEngine } = useRAG()
+  const { getRAGEngine } = useRAG()
 
   const {
     createOrUpdateConversation,
@@ -84,12 +84,9 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   } = useChatHistory()
   const { generateResponse, streamResponse } = useLLM()
 
-  const promptGenerator: PromptGenerator | null = useMemo(() => {
-    if (!ragEngine) {
-      return null
-    }
-    return new PromptGenerator(ragEngine, app, settings)
-  }, [ragEngine, app, settings])
+  const promptGenerator = useMemo(() => {
+    return new PromptGenerator(getRAGEngine, app, settings)
+  }, [getRAGEngine, app, settings])
 
   const [inputMessage, setInputMessage] = useState<ChatUserMessage>(() => {
     const newMessage = getNewInputMessage(app)
@@ -234,10 +231,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       setQueryProgress({
         type: 'idle',
       })
-
-      if (!promptGenerator) {
-        throw new Error('Prompt generator is not initialized')
-      }
 
       const responseMessageId = uuidv4()
       setChatMessages([

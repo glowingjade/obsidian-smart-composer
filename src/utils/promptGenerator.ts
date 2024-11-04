@@ -23,12 +23,16 @@ import { tokenCount } from './token'
 import { YoutubeTranscript, isYoutubeUrl } from './youtube-transcript'
 
 export class PromptGenerator {
-  private ragEngine: RAGEngine
+  private getRagEngine: () => Promise<RAGEngine>
   private app: App
   private settings: SmartCopilotSettings
 
-  constructor(ragEngine: RAGEngine, app: App, settings: SmartCopilotSettings) {
-    this.ragEngine = ragEngine
+  constructor(
+    getRagEngine: () => Promise<RAGEngine>,
+    app: App,
+    settings: SmartCopilotSettings,
+  ) {
+    this.getRagEngine = getRagEngine
     this.app = app
     this.settings = settings
   }
@@ -133,9 +137,6 @@ export class PromptGenerator {
     promptContent: string
     shouldUseRAG: boolean
   }> {
-    if (!this.ragEngine) {
-      throw new Error('RAG engine not initialized')
-    }
     if (!message.content) {
       return {
         promptContent: '',
@@ -183,11 +184,15 @@ export class PromptGenerator {
     let filePrompt: string
     if (shouldUseRAG) {
       const results = useVaultSearch
-        ? await this.ragEngine.processQuery({
+        ? await (
+            await this.getRagEngine()
+          ).processQuery({
             query,
             onQueryProgressChange: onQueryProgressChange,
           }) // TODO: Add similarity boosting for mentioned files or folders
-        : await this.ragEngine.processQuery({
+        : await (
+            await this.getRagEngine()
+          ).processQuery({
             query,
             scope: {
               files: files.map((f) => f.path),

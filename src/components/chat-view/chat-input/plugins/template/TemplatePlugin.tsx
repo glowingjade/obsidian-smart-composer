@@ -74,15 +74,17 @@ function TemplateMenuItem({
 
 export default function TemplatePlugin() {
   const [editor] = useLexicalComposerContext()
-  const { templateManager } = useDatabase()
+  const { getTemplateManager } = useDatabase()
 
   const [queryString, setQueryString] = useState<string | null>(null)
   const [searchResults, setSearchResults] = useState<SelectTemplate[]>([])
 
   useEffect(() => {
     if (queryString == null) return
-    templateManager.searchTemplates(queryString).then(setSearchResults)
-  }, [queryString, templateManager])
+    getTemplateManager().then((templateManager) =>
+      templateManager.searchTemplates(queryString).then(setSearchResults),
+    )
+  }, [queryString, getTemplateManager])
 
   const options = useMemo(
     () =>
@@ -120,14 +122,15 @@ export default function TemplatePlugin() {
 
   const handleDelete = useCallback(
     async (option: TemplateTypeaheadOption) => {
-      await templateManager.deleteTemplate(option.template.id)
+      await (await getTemplateManager()).deleteTemplate(option.template.id)
       if (queryString !== null) {
-        const updatedResults =
-          await templateManager.searchTemplates(queryString)
+        const updatedResults = await (
+          await getTemplateManager()
+        ).searchTemplates(queryString)
         setSearchResults(updatedResults)
       }
     },
-    [templateManager, queryString],
+    [getTemplateManager, queryString],
   )
 
   return (

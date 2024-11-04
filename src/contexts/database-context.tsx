@@ -1,36 +1,38 @@
-import { createContext, useContext, useMemo } from 'react'
+import { createContext, useCallback, useContext, useMemo } from 'react'
 
 import { DatabaseManager } from '../database/DatabaseManager'
 import { TemplateManager } from '../database/modules/template/TemplateManager'
 import { VectorManager } from '../database/modules/vector/VectorManager'
 
 type DatabaseContextType = {
-  databaseManager: DatabaseManager
-  vectorManager: VectorManager
-  templateManager: TemplateManager
+  getDatabaseManager: () => Promise<DatabaseManager>
+  getVectorManager: () => Promise<VectorManager>
+  getTemplateManager: () => Promise<TemplateManager>
 }
 
 const DatabaseContext = createContext<DatabaseContextType | null>(null)
 
 export function DatabaseProvider({
   children,
-  databaseManager,
+  getDatabaseManager,
 }: {
   children: React.ReactNode
-  databaseManager: DatabaseManager
+  getDatabaseManager: () => Promise<DatabaseManager>
 }) {
-  const vectorManager = useMemo(() => {
-    return databaseManager.getVectorManager()
-  }, [databaseManager])
+  const getVectorManager = useCallback(async () => {
+    return (await getDatabaseManager()).getVectorManager()
+  }, [getDatabaseManager])
 
-  const templateManager = useMemo(() => {
-    return databaseManager.getTemplateManager()
-  }, [databaseManager])
+  const getTemplateManager = useCallback(async () => {
+    return (await getDatabaseManager()).getTemplateManager()
+  }, [getDatabaseManager])
+
+  const value = useMemo(() => {
+    return { getDatabaseManager, getVectorManager, getTemplateManager }
+  }, [getDatabaseManager, getVectorManager, getTemplateManager])
 
   return (
-    <DatabaseContext.Provider
-      value={{ databaseManager, vectorManager, templateManager }}
-    >
+    <DatabaseContext.Provider value={value}>
       {children}
     </DatabaseContext.Provider>
   )
