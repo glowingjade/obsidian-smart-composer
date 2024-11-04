@@ -457,20 +457,48 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       setAddedBlockKey(getMentionableKey(serializeMentionable(mentionable)))
 
       if (focusedMessageId === inputMessage.id) {
-        setInputMessage((prevInputMessage) => ({
-          ...prevInputMessage,
-          mentionables: [...prevInputMessage.mentionables, mentionable],
-        }))
+        setInputMessage((prevInputMessage) => {
+          const mentionableKey = getMentionableKey(
+            serializeMentionable(mentionable),
+          )
+          // Check if mentionable already exists
+          if (
+            prevInputMessage.mentionables.some(
+              (m) =>
+                getMentionableKey(serializeMentionable(m)) === mentionableKey,
+            )
+          ) {
+            return prevInputMessage
+          }
+          return {
+            ...prevInputMessage,
+            mentionables: [...prevInputMessage.mentionables, mentionable],
+          }
+        })
       } else {
         setChatMessages((prevChatHistory) =>
-          prevChatHistory.map((message) =>
-            message.id === focusedMessageId && message.role === 'user'
-              ? {
-                  ...message,
-                  mentionables: [...message.mentionables, mentionable],
-                }
-              : message,
-          ),
+          prevChatHistory.map((message) => {
+            if (message.id === focusedMessageId && message.role === 'user') {
+              const mentionableKey = getMentionableKey(
+                serializeMentionable(mentionable),
+              )
+              // Check if mentionable already exists
+              if (
+                message.mentionables.some(
+                  (m) =>
+                    getMentionableKey(serializeMentionable(m)) ===
+                    mentionableKey,
+                )
+              ) {
+                return message
+              }
+              return {
+                ...message,
+                mentionables: [...message.mentionables, mentionable],
+              }
+            }
+            return message
+          }),
         )
       }
     },
