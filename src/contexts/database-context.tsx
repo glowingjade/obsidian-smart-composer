@@ -1,4 +1,10 @@
-import { createContext, useCallback, useContext, useMemo } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+} from 'react'
 
 import { DatabaseManager } from '../database/DatabaseManager'
 import { TemplateManager } from '../database/modules/template/TemplateManager'
@@ -25,6 +31,11 @@ export function DatabaseProvider({
 
   const getTemplateManager = useCallback(async () => {
     return (await getDatabaseManager()).getTemplateManager()
+  }, [getDatabaseManager])
+
+  useEffect(() => {
+    // start initialization of dbManager in the background
+    void getDatabaseManager()
   }, [getDatabaseManager])
 
   const value = useMemo(() => {
