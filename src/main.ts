@@ -208,10 +208,13 @@ export default class SmartCopilotPlugin extends Plugin {
       await this.activateChatView({
         selectedBlock: data,
       })
+      return
     }
 
-    const chatView = this.app.workspace.getLeavesOfType(CHAT_VIEW_TYPE)[0]
-      .view as ChatView
+    // bring leaf to foreground (uncollapse sidebar if it's collapsed)
+    await this.app.workspace.revealLeaf(leaves[0])
+
+    const chatView = leaves[0].view as ChatView
     chatView.addSelectionToChat(data)
     chatView.focusMessage()
   }
