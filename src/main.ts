@@ -36,7 +36,7 @@ export default class SmartCopilotPlugin extends Plugin {
     this.addCommand({
       id: 'open-new-chat',
       name: 'Open chat',
-      callback: () => this.openChatView(),
+      callback: () => this.openChatView(true),
     })
 
     this.addCommand({
@@ -141,49 +141,23 @@ export default class SmartCopilotPlugin extends Plugin {
     }
   }
 
-  async openChatView() {
+  async openChatView(openNewChat = false) {
     const view = this.app.workspace.getActiveViewOfType(MarkdownView)
     const editor = view?.editor
     if (!view || !editor) {
-      this.activateChatView()
+      this.activateChatView(undefined, openNewChat)
       return
     }
     const selectedBlockData = await getMentionableBlockData(editor, view)
-    if (!selectedBlockData) {
-      this.activateChatView()
-      return
-    }
-    this.activateChatView({
-      selectedBlock: selectedBlockData,
-    })
+    this.activateChatView(
+      {
+        selectedBlock: selectedBlockData ?? undefined,
+      },
+      openNewChat,
+    )
   }
 
-  /**
-   * TODO: this is buggy, should fix first before using it
-   */
-  async openNewChat() {
-    const view = this.app.workspace.getActiveViewOfType(MarkdownView)
-    const editor = view?.editor
-    if (!view || !editor) {
-      this.activateChatView()
-      return
-    }
-
-    const selectedBlock = await getMentionableBlockData(editor, view)
-    const leaves = this.app.workspace.getLeavesOfType(CHAT_VIEW_TYPE)
-    if (leaves.length === 0) {
-      await this.activateChatView({
-        selectedBlock: selectedBlock ?? undefined,
-      })
-    } else {
-      const chatView = this.app.workspace.getLeavesOfType(CHAT_VIEW_TYPE)[0]
-        .view as ChatView
-      // sometimes, "openNewChat" not exists in chatView. don't know why
-      chatView.openNewChat(selectedBlock ?? undefined)
-    }
-  }
-
-  async activateChatView(chatProps?: ChatProps) {
+  async activateChatView(chatProps?: ChatProps, openNewChat = false) {
     // chatProps is consumed in ChatView.tsx
     this.initialChatProps = chatProps
 
@@ -193,6 +167,10 @@ export default class SmartCopilotPlugin extends Plugin {
       type: CHAT_VIEW_TYPE,
       active: true,
     })
+
+    if (openNewChat && leaf && leaf.view instanceof ChatView) {
+      leaf.view.openNewChat(chatProps?.selectedBlock)
+    }
 
     this.app.workspace.revealLeaf(
       this.app.workspace.getLeavesOfType(CHAT_VIEW_TYPE)[0],
@@ -204,7 +182,7 @@ export default class SmartCopilotPlugin extends Plugin {
     if (!data) return
 
     const leaves = this.app.workspace.getLeavesOfType(CHAT_VIEW_TYPE)
-    if (leaves.length === 0) {
+    if (leaves.length === 0 || !(leaves[0].view instanceof ChatView)) {
       await this.activateChatView({
         selectedBlock: data,
       })
@@ -214,7 +192,7 @@ export default class SmartCopilotPlugin extends Plugin {
     // bring leaf to foreground (uncollapse sidebar if it's collapsed)
     await this.app.workspace.revealLeaf(leaves[0])
 
-    const chatView = leaves[0].view as ChatView
+    const chatView = leaves[0].view
     chatView.addSelectionToChat(data)
     chatView.focusMessage()
   }
