@@ -69,8 +69,6 @@ export class ChatView extends ItemView {
         },
       },
     })
-    const dbManager = await this.plugin.getDbManager()
-    const ragEngine = await this.plugin.getRAGEngine()
 
     this.root.render(
       <AppProvider app={this.app}>
@@ -83,8 +81,10 @@ export class ChatView extends ItemView {
         >
           <DarkModeProvider>
             <LLMProvider>
-              <DatabaseProvider databaseManager={dbManager}>
-                <RAGProvider ragEngine={ragEngine}>
+              <DatabaseProvider
+                getDatabaseManager={() => this.plugin.getDbManager()}
+              >
+                <RAGProvider getRAGEngine={() => this.plugin.getRAGEngine()}>
                   <QueryClientProvider client={queryClient}>
                     <React.StrictMode>
                       <DialogContainerProvider

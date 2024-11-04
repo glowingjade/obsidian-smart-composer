@@ -26,7 +26,7 @@ export default function CreateTemplateDialogContent({
   onClose: () => void
 }) {
   const container = useDialogContainer()
-  const { templateManager } = useDatabase()
+  const { getTemplateManager } = useDatabase()
 
   const [templateName, setTemplateName] = useState('')
   const editorRef = useRef<LexicalEditor | null>(null)
@@ -58,7 +58,9 @@ export default function CreateTemplateDialogContent({
         return
       }
 
-      await templateManager.createTemplate({
+      await (
+        await getTemplateManager()
+      ).createTemplate({
         name: templateName,
         content: { nodes },
       })

@@ -1,20 +1,33 @@
-import { PropsWithChildren, createContext, useContext } from 'react'
+import {
+  PropsWithChildren,
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+} from 'react'
 
 import { RAGEngine } from '../core/rag/ragEngine'
 
 export type RAGContextType = {
-  ragEngine: RAGEngine | null
+  getRAGEngine: () => Promise<RAGEngine>
 }
 
 const RAGContext = createContext<RAGContextType | null>(null)
 
 export function RAGProvider({
-  ragEngine,
+  getRAGEngine,
   children,
-}: PropsWithChildren<{ ragEngine: RAGEngine | null }>) {
-  return (
-    <RAGContext.Provider value={{ ragEngine }}>{children}</RAGContext.Provider>
-  )
+}: PropsWithChildren<{ getRAGEngine: () => Promise<RAGEngine> }>) {
+  useEffect(() => {
+    // start initialization of ragEngine in the background
+    void getRAGEngine()
+  }, [getRAGEngine])
+
+  const value = useMemo(() => {
+    return { getRAGEngine }
+  }, [getRAGEngine])
+
+  return <RAGContext.Provider value={value}>{children}</RAGContext.Provider>
 }
 
 export function useRAG() {

@@ -20,6 +20,8 @@ export default class SmartCopilotPlugin extends Plugin {
   settingsChangeListeners: ((newSettings: SmartCopilotSettings) => void)[] = []
   dbManager: DatabaseManager | null = null
   ragEngine: RAGEngine | null = null
+  private dbManagerInitPromise: Promise<DatabaseManager> | null = null
+  private ragEngineInitPromise: Promise<RAGEngine> | null = null
 
   async onload() {
     await this.loadSettings()
@@ -198,17 +200,35 @@ export default class SmartCopilotPlugin extends Plugin {
   }
 
   async getDbManager(): Promise<DatabaseManager> {
-    if (!this.dbManager) {
-      this.dbManager = await DatabaseManager.create(this.app)
+    if (this.dbManager) {
+      return this.dbManager
     }
-    return this.dbManager
+
+    if (!this.dbManagerInitPromise) {
+      this.dbManagerInitPromise = (async () => {
+        this.dbManager = await DatabaseManager.create(this.app)
+        return this.dbManager
+      })()
+    }
+
+    // if initialization is running, wait for it to complete instead of creating a new initialization promise
+    return this.dbManagerInitPromise
   }
 
   async getRAGEngine(): Promise<RAGEngine> {
-    const dbManager = await this.getDbManager()
-    if (!this.ragEngine) {
-      this.ragEngine = new RAGEngine(this.app, this.settings, dbManager)
+    if (this.ragEngine) {
+      return this.ragEngine
     }
-    return this.ragEngine
+
+    if (!this.ragEngineInitPromise) {
+      this.ragEngineInitPromise = (async () => {
+        const dbManager = await this.getDbManager()
+        this.ragEngine = new RAGEngine(this.app, this.settings, dbManager)
+        return this.ragEngine
+      })()
+    }
+
+    // if initialization is running, wait for it to complete instead of creating a new initialization promise
+    return this.ragEngineInitPromise
   }
 }
