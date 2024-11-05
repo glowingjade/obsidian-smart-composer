@@ -85,7 +85,7 @@ export default function CreateTemplateDialogContent({
             Create template
           </Dialog.Title>
           <Dialog.Description className="smtcmp-dialog-description">
-            Create a new template from the selected nodes
+            Create template from selected content
           </Dialog.Description>
         </div>
 
