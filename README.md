@@ -75,18 +75,14 @@ Note: The Apply Edit feature is currently slower than desired. We are working on
 >    - Close Obsidian completely
 >    - Run the new installer
 
-1. Install the BRAT plugin if you haven't already. Click here to install BRAT in Obsidian.
-2. Open the command palette and run the command "BRAT: Add a beta plugin for testing".
-3. Copy and paste this link into the modal: https://github.com/glowingjade/obsidian-smart-composer and click "Add Plugin" and wait for the installation.
-4. Go to Settings > Community plugins and refresh the list of plugins. Enable "Smart Composer".
+1. Open Obsidian Settings
+2. Navigate to "Community plugins" and click "Browse"
+3. Search for "Smart Composer" and click Install
+4. Enable the plugin in Community plugins
 5. Set up your API key in plugin settings
    - OpenAI : [ChatGPT API Keys](https://platform.openai.com/api-keys)
    - Anthropic : [Claude API Keys](https://console.anthropic.com/settings/keys)
    - Groq : [Groq API Keys](https://console.groq.com/keys)
-
-> **📢 Coming Soon: Community Plugin**  
-> Smart Composer is currently under review for the official Obsidian Community Plugin directory. Once approved, you'll be able to install it directly from `Settings > Community plugins > Browse`.
-> We expect this to be available soon!
 
 **📚 For detailed setup instructions and documentation, please visit our [Documentation](https://github.com/glowingjade/obsidian-smart-composer/wiki).**
 
