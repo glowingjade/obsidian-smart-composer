@@ -5,8 +5,9 @@ describe('parseSmartCopilotSettings', () => {
     const result = parseSmartCopilotSettings({})
     expect(result).toEqual({
       openAIApiKey: '',
-      groqApiKey: '',
       anthropicApiKey: '',
+      geminiApiKey: '',
+      groqApiKey: '',
       ollamaBaseUrl: '',
       chatModel: 'claude-3-5-sonnet-latest',
       applyModel: 'gpt-4o-mini',

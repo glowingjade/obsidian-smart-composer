@@ -41,16 +41,18 @@ export function LLMProvider({ children }: PropsWithChildren) {
     const manager = new LLMManager(
       {
         openai: settings.openAIApiKey,
-        groq: settings.groqApiKey,
         anthropic: settings.anthropicApiKey,
+        gemini: settings.geminiApiKey,
+        groq: settings.groqApiKey,
       },
       settings.ollamaBaseUrl,
     )
     setLLMManager(manager)
   }, [
     settings.openAIApiKey,
-    settings.groqApiKey,
     settings.anthropicApiKey,
+    settings.geminiApiKey,
+    settings.groqApiKey,
     settings.ollamaBaseUrl,
   ])
 

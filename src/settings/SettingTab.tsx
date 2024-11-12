@@ -47,18 +47,6 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
         }),
     )
 
-    new Setting(containerEl).setName('Groq API key').addText((text) =>
-      text
-        .setPlaceholder('Enter your API key')
-        .setValue(this.plugin.settings.groqApiKey)
-        .onChange(async (value) => {
-          await this.plugin.setSettings({
-            ...this.plugin.settings,
-            groqApiKey: value,
-          })
-        }),
-    )
-
     new Setting(containerEl).setName('Anthropic API key').addText((text) =>
       text
         .setPlaceholder('Enter your API key')
@@ -67,6 +55,30 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
           await this.plugin.setSettings({
             ...this.plugin.settings,
             anthropicApiKey: value,
+          })
+        }),
+    )
+
+    new Setting(containerEl).setName('Gemini API key').addText((text) =>
+      text
+        .setPlaceholder('Enter your API key')
+        .setValue(this.plugin.settings.geminiApiKey)
+        .onChange(async (value) => {
+          await this.plugin.setSettings({
+            ...this.plugin.settings,
+            geminiApiKey: value,
+          })
+        }),
+    )
+
+    new Setting(containerEl).setName('Groq API key').addText((text) =>
+      text
+        .setPlaceholder('Enter your API key')
+        .setValue(this.plugin.settings.groqApiKey)
+        .onChange(async (value) => {
+          await this.plugin.setSettings({
+            ...this.plugin.settings,
+            groqApiKey: value,
           })
         }),
     )

@@ -42,9 +42,10 @@ export class AnthropicProvider implements BaseLLMProvider {
     }
 
     const systemMessages = request.messages.filter((m) => m.role === 'system')
-    if (systemMessages.length > 1) {
-      throw new Error('Anthropic does not support more than one system message')
-    }
+    const systemInstruction: string | undefined =
+      systemMessages.length > 0
+        ? systemMessages.map((m) => m.content).join('\n')
+        : undefined
 
     try {
       const response = await this.client.messages.create(
@@ -53,8 +54,7 @@ export class AnthropicProvider implements BaseLLMProvider {
           messages: request.messages
             .filter((m) => m.role !== 'system')
             .map((m) => AnthropicProvider.parseRequestMessage(m)),
-          system:
-            systemMessages.length > 0 ? systemMessages[0].content : undefined,
+          system: systemInstruction,
           max_tokens: request.max_tokens ?? 4096,
           temperature: request.temperature,
           top_p: request.top_p,
@@ -87,9 +87,10 @@ export class AnthropicProvider implements BaseLLMProvider {
     }
 
     const systemMessages = request.messages.filter((m) => m.role === 'system')
-    if (systemMessages.length > 1) {
-      throw new Error('Anthropic does not support more than one system message')
-    }
+    const systemInstruction: string | undefined =
+      systemMessages.length > 0
+        ? systemMessages.map((m) => m.content).join('\n')
+        : undefined
 
     try {
       const stream = await this.client.messages.create(
@@ -98,8 +99,7 @@ export class AnthropicProvider implements BaseLLMProvider {
           messages: request.messages
             .filter((m) => m.role !== 'system')
             .map((m) => AnthropicProvider.parseRequestMessage(m)),
-          system:
-            systemMessages.length > 0 ? systemMessages[0].content : undefined,
+          system: systemInstruction,
           max_tokens: request.max_tokens ?? 4096,
           temperature: request.temperature,
           top_p: request.top_p,

@@ -19,8 +19,9 @@ const embeddingModelSchema = z.enum(
 // Update settings.test.ts after changing this schema
 const smartCopilotSettingsSchema = z.object({
   openAIApiKey: z.string().catch(''),
-  groqApiKey: z.string().catch(''),
   anthropicApiKey: z.string().catch(''),
+  geminiApiKey: z.string().catch(''),
+  groqApiKey: z.string().catch(''),
   ollamaBaseUrl: z.string().catch(''),
   chatModel: chatModelSchema.catch('claude-3-5-sonnet-latest'),
   applyModel: applyModelSchema.catch('gpt-4o-mini'),

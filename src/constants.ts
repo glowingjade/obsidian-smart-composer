@@ -15,6 +15,10 @@ export const CHAT_MODEL_OPTIONS = [
     value: 'gpt-4o-mini',
   },
   {
+    name: 'gemini-1.5-pro',
+    value: 'gemini-1.5-pro',
+  },
+  {
     name: 'llama-3.1-70b (Groq)',
     value: 'llama-3.1-70b-versatile',
   },
@@ -28,6 +32,14 @@ export const APPLY_MODEL_OPTIONS = [
   {
     name: 'gpt-4o-mini (Recommended)',
     value: 'gpt-4o-mini',
+  },
+  {
+    name: 'gemini-1.5-flash',
+    value: 'gemini-1.5-flash',
+  },
+  {
+    name: 'gemini-1.5-flash-8b',
+    value: 'gemini-1.5-flash-8b',
   },
   {
     name: 'llama-3.1-8b (Groq)',
