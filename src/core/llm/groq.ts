@@ -20,6 +20,7 @@ import { BaseLLMProvider } from './base'
 import {
   LLMAPIKeyInvalidException,
   LLMAPIKeyNotSetException,
+  LLMModelNotSupportedException,
 } from './exception'
 
 export type GroqModel =
@@ -39,6 +40,14 @@ export const GROQ_MODELS: GroqModel[] = [
 export class GroqProvider implements BaseLLMProvider {
   private client: Groq
 
+  private static readonly ERRORS = {
+    API_KEY_MISSING: 'Groq API key is missing. Please set it in settings menu.',
+    API_KEY_INVALID:
+      'Groq API key is invalid. Please update it in settings menu.',
+    MODEL_NOT_SUPPORTED: (model: string) =>
+      `Groq model ${model} is not supported.`,
+  } as const
+
   constructor(apiKey: string) {
     this.client = new Groq({
       apiKey,
@@ -51,8 +60,12 @@ export class GroqProvider implements BaseLLMProvider {
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
     if (!this.client.apiKey) {
-      throw new LLMAPIKeyNotSetException(
-        'Groq API key is missing. Please set it in settings menu.',
+      throw new LLMAPIKeyNotSetException(GroqProvider.ERRORS.API_KEY_MISSING)
+    }
+
+    if (!GROQ_MODELS.includes(request.model as GroqModel)) {
+      throw new LLMModelNotSupportedException(
+        GroqProvider.ERRORS.MODEL_NOT_SUPPORTED(request.model),
       )
     }
 
@@ -74,9 +87,7 @@ export class GroqProvider implements BaseLLMProvider {
       return GroqProvider.parseNonStreamingResponse(response)
     } catch (error) {
       if (error instanceof Groq.AuthenticationError) {
-        throw new LLMAPIKeyInvalidException(
-          'Groq API key is invalid. Please update it in settings menu.',
-        )
+        throw new LLMAPIKeyInvalidException(GroqProvider.ERRORS.API_KEY_INVALID)
       }
       throw error
     }
@@ -87,8 +98,12 @@ export class GroqProvider implements BaseLLMProvider {
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
     if (!this.client.apiKey) {
-      throw new LLMAPIKeyNotSetException(
-        'Groq API key is missing. Please set it in settings menu.',
+      throw new LLMAPIKeyNotSetException(GroqProvider.ERRORS.API_KEY_MISSING)
+    }
+
+    if (!GROQ_MODELS.includes(request.model as GroqModel)) {
+      throw new LLMModelNotSupportedException(
+        GroqProvider.ERRORS.MODEL_NOT_SUPPORTED(request.model),
       )
     }
 
@@ -119,9 +134,7 @@ export class GroqProvider implements BaseLLMProvider {
       return streamResponse()
     } catch (error) {
       if (error instanceof Groq.AuthenticationError) {
-        throw new LLMAPIKeyInvalidException(
-          'Groq API key is invalid. Please update it in settings menu.',
-        )
+        throw new LLMAPIKeyInvalidException(GroqProvider.ERRORS.API_KEY_INVALID)
       }
       throw error
     }

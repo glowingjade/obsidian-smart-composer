@@ -45,6 +45,11 @@ export class OllamaOpenAIProvider implements BaseLLMProvider {
   private provider: OpenAICompatibleProvider
   private ollamaBaseUrl: string
 
+  private static readonly ERRORS = {
+    BASE_URL_MISSING:
+      'Ollama Address is missing. Please set it in settings menu.',
+  } as const
+
   constructor(baseUrl: string) {
     this.ollamaBaseUrl = baseUrl
     this.provider = new OpenAICompatibleProvider(
@@ -61,7 +66,7 @@ export class OllamaOpenAIProvider implements BaseLLMProvider {
   ): Promise<LLMResponseNonStreaming> {
     if (!this.ollamaBaseUrl) {
       throw new LLMBaseUrlNotSetException(
-        'Ollama Address is missing. Please set it in settings menu.',
+        OllamaOpenAIProvider.ERRORS.BASE_URL_MISSING,
       )
     }
     return this.provider.generateResponse(request, options)
@@ -72,7 +77,7 @@ export class OllamaOpenAIProvider implements BaseLLMProvider {
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
     if (!this.ollamaBaseUrl) {
       throw new LLMBaseUrlNotSetException(
-        'Ollama Address is missing. Please set it in settings menu.',
+        OllamaOpenAIProvider.ERRORS.BASE_URL_MISSING,
       )
     }
     return this.provider.streamResponse(request, options)

@@ -19,6 +19,7 @@ import { BaseLLMProvider } from './base'
 import {
   LLMAPIKeyInvalidException,
   LLMAPIKeyNotSetException,
+  LLMModelNotSupportedException,
 } from './exception'
 
 export type AnthropicModel = 'claude-3-5-sonnet-latest'
@@ -26,6 +27,15 @@ export const ANTHROPIC_MODELS: AnthropicModel[] = ['claude-3-5-sonnet-latest']
 
 export class AnthropicProvider implements BaseLLMProvider {
   private client: Anthropic
+
+  private static readonly ERRORS = {
+    API_KEY_MISSING:
+      'Anthropic API key is missing. Please set it in settings menu.',
+    API_KEY_INVALID:
+      'Anthropic API key is invalid. Please update it in settings menu.',
+    MODEL_NOT_SUPPORTED: (model: string) =>
+      `Anthropic model ${model} is not supported.`,
+  } as const
 
   constructor(apiKey: string) {
     this.client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true })
@@ -37,7 +47,13 @@ export class AnthropicProvider implements BaseLLMProvider {
   ): Promise<LLMResponseNonStreaming> {
     if (!this.client.apiKey) {
       throw new LLMAPIKeyNotSetException(
-        'Anthropic API key is missing. Please set it in settings menu.',
+        AnthropicProvider.ERRORS.API_KEY_MISSING,
+      )
+    }
+
+    if (!ANTHROPIC_MODELS.includes(request.model as AnthropicModel)) {
+      throw new LLMModelNotSupportedException(
+        AnthropicProvider.ERRORS.MODEL_NOT_SUPPORTED(request.model),
       )
     }
 
@@ -82,7 +98,13 @@ export class AnthropicProvider implements BaseLLMProvider {
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
     if (!this.client.apiKey) {
       throw new LLMAPIKeyNotSetException(
-        'Anthropic API key is missing. Please set it in settings menu.',
+        AnthropicProvider.ERRORS.API_KEY_MISSING,
+      )
+    }
+
+    if (!ANTHROPIC_MODELS.includes(request.model as AnthropicModel)) {
+      throw new LLMModelNotSupportedException(
+        AnthropicProvider.ERRORS.MODEL_NOT_SUPPORTED(request.model),
       )
     }
 

@@ -38,6 +38,15 @@ export class GeminiProvider implements BaseLLMProvider {
   private client: GoogleGenerativeAI
   private apiKey: string
 
+  private static readonly ERRORS = {
+    API_KEY_MISSING:
+      'Gemini API key is missing. Please set it in settings menu.',
+    API_KEY_INVALID:
+      'Gemini API key is invalid. Please update it in settings menu.',
+    MODEL_NOT_SUPPORTED: (model: string) =>
+      `Gemini model ${model} is not supported.`,
+  } as const
+
   constructor(apiKey: string) {
     this.apiKey = apiKey
     this.client = new GoogleGenerativeAI(apiKey)
@@ -261,13 +270,4 @@ export class GeminiProvider implements BaseLLMProvider {
   getSupportedModels(): string[] {
     return GEMINI_MODELS
   }
-
-  private static readonly ERRORS = {
-    API_KEY_MISSING:
-      'Gemini API key is missing. Please set it in settings menu.',
-    API_KEY_INVALID:
-      'Gemini API key is invalid. Please update it in settings menu.',
-    MODEL_NOT_SUPPORTED: (model: string) =>
-      `Gemini model ${model} is not supported.`,
-  } as const
 }
