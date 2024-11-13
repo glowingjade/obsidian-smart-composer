@@ -7,21 +7,27 @@ import {
 } from '../llm/exception'
 import { NoStainlessOpenAI } from '../llm/openaiCompatibleProvider'
 
+/**
+ * TODO: Refactor to use existing LLM providers from src/core/llm/* instead of
+ * creating new clients.
+ */
+
 export const getEmbeddingModel = (
   name: string,
   apiKeys: {
     openAIApiKey: string
+    geminiApiKey: string
   },
   ollamaBaseUrl: string,
 ): EmbeddingModel => {
   switch (name) {
-    case 'text-embedding-3-small': {
+    case 'openai/text-embedding-3-small': {
       const openai = new OpenAI({
         apiKey: apiKeys.openAIApiKey,
         dangerouslyAllowBrowser: true,
       })
       return {
-        name: 'text-embedding-3-small',
+        name: 'openai/text-embedding-3-small',
         dimension: 1536,
         getEmbedding: async (text: string) => {
           if (!openai.apiKey) {
@@ -37,13 +43,13 @@ export const getEmbeddingModel = (
         },
       }
     }
-    case 'text-embedding-3-large': {
+    case 'openai/text-embedding-3-large': {
       const openai = new OpenAI({
         apiKey: apiKeys.openAIApiKey,
         dangerouslyAllowBrowser: true,
       })
       return {
-        name: 'text-embedding-3-large',
+        name: 'openai/text-embedding-3-large',
         dimension: 3072,
         getEmbedding: async (text: string) => {
           if (!openai.apiKey) {
@@ -59,14 +65,37 @@ export const getEmbeddingModel = (
         },
       }
     }
-    case 'nomic-embed-text': {
+    case 'gemini/text-embedding-004': {
+      const openai = new NoStainlessOpenAI({
+        apiKey: apiKeys.geminiApiKey,
+        dangerouslyAllowBrowser: true,
+        baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+      })
+      return {
+        name: 'gemini/text-embedding-004',
+        dimension: 768,
+        getEmbedding: async (text: string) => {
+          if (!openai.apiKey) {
+            throw new LLMAPIKeyNotSetException(
+              'Gemini API key is missing. Please set it in settings menu.',
+            )
+          }
+          const embedding = await openai.embeddings.create({
+            model: 'text-embedding-004',
+            input: text,
+          })
+          return embedding.data[0].embedding
+        },
+      }
+    }
+    case 'ollama/nomic-embed-text': {
       const openai = new NoStainlessOpenAI({
         apiKey: '',
         dangerouslyAllowBrowser: true,
         baseURL: `${ollamaBaseUrl}/v1`,
       })
       return {
-        name: 'nomic-embed-text',
+        name: 'ollama/nomic-embed-text',
         dimension: 768,
         getEmbedding: async (text: string) => {
           if (!ollamaBaseUrl) {
@@ -82,14 +111,14 @@ export const getEmbeddingModel = (
         },
       }
     }
-    case 'mxbai-embed-large': {
+    case 'ollama/mxbai-embed-large': {
       const openai = new NoStainlessOpenAI({
         apiKey: '',
         dangerouslyAllowBrowser: true,
         baseURL: `${ollamaBaseUrl}/v1`,
       })
       return {
-        name: 'mxbai-embed-large',
+        name: 'ollama/mxbai-embed-large',
         dimension: 1024,
         getEmbedding: async (text: string) => {
           if (!ollamaBaseUrl) {
@@ -105,14 +134,14 @@ export const getEmbeddingModel = (
         },
       }
     }
-    case 'bge-m3': {
+    case 'ollama/bge-m3': {
       const openai = new NoStainlessOpenAI({
         apiKey: '',
         dangerouslyAllowBrowser: true,
         baseURL: `${ollamaBaseUrl}/v1`,
       })
       return {
-        name: 'bge-m3',
+        name: 'ollama/bge-m3',
         dimension: 1024,
         getEmbedding: async (text: string) => {
           if (!ollamaBaseUrl) {

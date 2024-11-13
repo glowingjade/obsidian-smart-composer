@@ -27,6 +27,7 @@ export class RAGEngine {
       settings.embeddingModel,
       {
         openAIApiKey: settings.openAIApiKey,
+        geminiApiKey: settings.geminiApiKey,
       },
       settings.ollamaBaseUrl,
     )
@@ -38,6 +39,7 @@ export class RAGEngine {
       settings.embeddingModel,
       {
         openAIApiKey: settings.openAIApiKey,
+        geminiApiKey: settings.geminiApiKey,
       },
       settings.ollamaBaseUrl,
     )

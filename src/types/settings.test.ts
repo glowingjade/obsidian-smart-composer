@@ -11,7 +11,7 @@ describe('parseSmartCopilotSettings', () => {
       ollamaBaseUrl: '',
       chatModel: 'claude-3-5-sonnet-latest',
       applyModel: 'gpt-4o-mini',
-      embeddingModel: 'text-embedding-3-small',
+      embeddingModel: 'openai/text-embedding-3-small',
       systemPrompt: '',
       ragOptions: {
         chunkSize: 1000,

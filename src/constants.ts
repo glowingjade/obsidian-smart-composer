@@ -62,28 +62,33 @@ export const APPLY_MODEL_OPTIONS = [
 // Update table exports in src/database/schema.ts when updating this
 export const EMBEDDING_MODEL_OPTIONS = [
   {
-    name: 'text-embedding-3-small (Recommended)',
-    value: 'text-embedding-3-small',
+    name: 'OpenAI: text-embedding-3-small (Recommended)',
+    value: 'openai/text-embedding-3-small',
     dimension: 1536,
   },
   {
-    name: 'text-embedding-3-large',
-    value: 'text-embedding-3-large',
+    name: 'OpenAI: text-embedding-3-large',
+    value: 'openai/text-embedding-3-large',
     dimension: 3072,
   },
   {
-    name: 'nomic-embed-text (Ollama)',
-    value: 'nomic-embed-text',
+    name: 'Gemini: text-embedding-004',
+    value: 'gemini/text-embedding-004',
     dimension: 768,
   },
   {
-    name: 'mxbai-embed-large (Ollama)',
-    value: 'mxbai-embed-large',
+    name: 'Ollama: nomic-embed-text',
+    value: 'ollama/nomic-embed-text',
+    dimension: 768,
+  },
+  {
+    name: 'Ollama: mxbai-embed-large',
+    value: 'ollama/mxbai-embed-large',
     dimension: 1024,
   },
   {
-    name: 'bge-m3 (Ollama)',
-    value: 'bge-m3',
+    name: 'Ollama: bge-m3',
+    value: 'ollama/bge-m3',
     dimension: 1024,
   },
 ]
