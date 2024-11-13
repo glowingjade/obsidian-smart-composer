@@ -5,7 +5,7 @@ import {
   LLMAPIKeyNotSetException,
   LLMBaseUrlNotSetException,
 } from '../llm/exception'
-import { NoStainlessOpenAI } from '../llm/ollama'
+import { NoStainlessOpenAI } from '../llm/openaiCompatibleProvider'
 
 export const getEmbeddingModel = (
   name: string,
