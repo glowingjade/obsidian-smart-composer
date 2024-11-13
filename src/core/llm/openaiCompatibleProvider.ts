@@ -1,4 +1,5 @@
 import OpenAI from 'openai'
+import { FinalRequestOptions } from 'openai/core'
 import {
   ChatCompletion,
   ChatCompletionChunk,
@@ -133,5 +134,36 @@ export class OpenAICompatibleProvider implements BaseLLMProvider {
 
   getSupportedModels(): string[] {
     throw new Error('Not implemented')
+  }
+
+  getApiKey(): string | undefined {
+    return this.client.apiKey
+  }
+}
+
+/**
+ * A modified OpenAI client that removes Stainless-specific headers to prevent CORS issues.
+ * The default OpenAI client adds x-stainless-* headers which trigger CORS preflight requests.
+ */
+export class NoStainlessOpenAI extends OpenAI {
+  defaultHeaders() {
+    return {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    }
+  }
+
+  buildRequest<Req>(
+    options: FinalRequestOptions<Req>,
+    { retryCount = 0 }: { retryCount?: number } = {},
+  ): { req: RequestInit; url: string; timeout: number } {
+    const req = super.buildRequest(options, { retryCount })
+    const headers = req.req.headers as Record<string, string>
+    Object.keys(headers).forEach((k) => {
+      if (k.startsWith('x-stainless')) {
+        delete headers[k]
+      }
+    })
+    return req
   }
 }

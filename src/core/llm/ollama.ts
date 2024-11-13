@@ -1,6 +1,3 @@
-import OpenAI from 'openai'
-import { FinalRequestOptions } from 'openai/core'
-
 import {
   LLMOptions,
   LLMRequestNonStreaming,
@@ -13,30 +10,10 @@ import {
 
 import { BaseLLMProvider } from './base'
 import { LLMBaseUrlNotSetException } from './exception'
-import { OpenAICompatibleProvider } from './openaiCompatibleProvider'
-
-export class NoStainlessOpenAI extends OpenAI {
-  defaultHeaders() {
-    return {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    }
-  }
-
-  buildRequest<Req>(
-    options: FinalRequestOptions<Req>,
-    { retryCount = 0 }: { retryCount?: number } = {},
-  ): { req: RequestInit; url: string; timeout: number } {
-    const req = super.buildRequest(options, { retryCount })
-    const headers = req.req.headers as Record<string, string>
-    Object.keys(headers).forEach((k) => {
-      if (k.startsWith('x-stainless')) {
-        delete headers[k]
-      }
-    })
-    return req
-  }
-}
+import {
+  NoStainlessOpenAI,
+  OpenAICompatibleProvider,
+} from './openaiCompatibleProvider'
 
 export type OllamaModel = 'llama3.1:8b'
 export const OLLAMA_MODELS: OllamaModel[] = ['llama3.1:8b']
