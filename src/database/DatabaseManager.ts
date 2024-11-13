@@ -134,9 +134,14 @@ export class DatabaseManager {
     vectorExtensionBundlePath: URL
   }> {
     try {
+      const PGLITE_VERSION = '0.2.12'
       const [fsBundleResponse, wasmResponse] = await Promise.all([
-        requestUrl('https://unpkg.com/@electric-sql/pglite/dist/postgres.data'),
-        requestUrl('https://unpkg.com/@electric-sql/pglite/dist/postgres.wasm'),
+        requestUrl(
+          `https://unpkg.com/@electric-sql/pglite@${PGLITE_VERSION}/dist/postgres.data`,
+        ),
+        requestUrl(
+          `https://unpkg.com/@electric-sql/pglite@${PGLITE_VERSION}/dist/postgres.wasm`,
+        ),
       ])
 
       const fsBundle = new Blob([fsBundleResponse.arrayBuffer], {
@@ -144,7 +149,7 @@ export class DatabaseManager {
       })
       const wasmModule = await WebAssembly.compile(wasmResponse.arrayBuffer)
       const vectorExtensionBundlePath = new URL(
-        'https://unpkg.com/@electric-sql/pglite/dist/vector.tar.gz',
+        `https://unpkg.com/@electric-sql/pglite@${PGLITE_VERSION}/dist/vector.tar.gz`,
       )
 
       return { fsBundle, wasmModule, vectorExtensionBundlePath }
