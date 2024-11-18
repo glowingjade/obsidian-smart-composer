@@ -126,8 +126,20 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
 
 .smtcmp-chat-container {
   display: flex;
+  position: relative;
   flex-direction: column;
   height: 100%;
+
+  .smtcmp-stop-gen-btn {
+    z-index: 1000;
+    position: absolute;
+    bottom: 160px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-1);
+  }
 }
 
 .smtcmp-chat-messages {
