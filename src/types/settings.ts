@@ -32,12 +32,14 @@ const smartCopilotSettingsSchema = z.object({
       thresholdTokens: z.number().catch(8192),
       minSimilarity: z.number().catch(0.0),
       limit: z.number().catch(10),
+      excludePatterns: z.array(z.string()).catch([]),
     })
     .catch({
       chunkSize: 1000,
       thresholdTokens: 8192,
       minSimilarity: 0.0,
       limit: 10,
+      excludePatterns: [],
     }),
 })
 

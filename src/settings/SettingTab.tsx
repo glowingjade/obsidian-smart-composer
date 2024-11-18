@@ -176,6 +176,32 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
     new Setting(containerEl).setHeading().setName('RAG')
 
     new Setting(containerEl)
+      .setName('Exclude patterns')
+      .setDesc(
+        'Files matching these patterns will be excluded from indexing. One pattern per line. Supports glob patterns (e.g., "private/*", "*.tmp").',
+      )
+
+    new Setting(containerEl)
+      .setClass('smtcmp-setting-textarea')
+      .addTextArea((text) =>
+        text
+          .setValue(this.plugin.settings.ragOptions.excludePatterns.join('\n'))
+          .onChange(async (value) => {
+            const patterns = value
+              .split('\n')
+              .map((p) => p.trim())
+              .filter((p) => p.length > 0)
+            await this.plugin.setSettings({
+              ...this.plugin.settings,
+              ragOptions: {
+                ...this.plugin.settings.ragOptions,
+                excludePatterns: patterns,
+              },
+            })
+          }),
+      )
+
+    new Setting(containerEl)
       .setName('Chunk size')
       .setDesc(
         'Set the chunk size for text splitting. After changing this, please re-index the vault using the "Rebuild entire vault index" command.',
