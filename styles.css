@@ -463,6 +463,12 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   border-radius: var(--radius-s);
 }
 
+.smtcmp-chat-list-dropdown-content li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .smtcmp-code-block {
   position: relative;
   border: 1px solid var(--background-modifier-border);
