@@ -1,5 +1,7 @@
 import { SerializedEditorState } from 'lexical'
 
+import { SelectVector } from '../database/schema'
+
 import { Mentionable, SerializedMentionable } from './mentionable'
 
 export type ChatUserMessage = {
@@ -8,6 +10,9 @@ export type ChatUserMessage = {
   promptContent: string | null
   id: string
   mentionables: Mentionable[]
+  similaritySearchResults?: (Omit<SelectVector, 'embedding'> & {
+    similarity: number
+  })[]
 }
 export type ChatAssistantMessage = {
   role: 'assistant'
@@ -22,6 +27,9 @@ export type SerializedChatUserMessage = {
   promptContent: string | null
   id: string
   mentionables: SerializedMentionable[]
+  similaritySearchResults?: (Omit<SelectVector, 'embedding'> & {
+    similarity: number
+  })[]
 }
 export type SerializedChatAssistantMessage = {
   role: 'assistant'

@@ -44,6 +44,7 @@ import { editorStateToPlainText } from './chat-input/utils/editor-state-to-plain
 import { ChatListDropdown } from './ChatListDropdown'
 import QueryProgress, { QueryProgressState } from './QueryProgress'
 import ReactMarkdown from './ReactMarkdown'
+import SimilaritySearchResults from './SimilaritySearchResults'
 
 // Add an empty line here
 const getNewInputMessage = (app: App): ChatUserMessage => {
@@ -539,48 +540,57 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       <div className="smtcmp-chat-messages" ref={chatMessagesRef}>
         {chatMessages.map((message, index) =>
           message.role === 'user' ? (
-            <ChatUserInput
-              key={message.id}
-              ref={(ref) => registerChatUserInputRef(message.id, ref)}
-              initialSerializedEditorState={message.content}
-              onChange={(content) => {
-                setChatMessages((prevChatHistory) =>
-                  prevChatHistory.map((msg) =>
-                    msg.role === 'user' && msg.id === message.id
-                      ? {
-                          ...msg,
-                          content,
-                        }
-                      : msg,
-                  ),
-                )
-              }}
-              onSubmit={(content, useVaultSearch) => {
-                if (editorStateToPlainText(content).trim() === '') return
-                handleSubmit(
-                  [
-                    ...chatMessages.slice(0, index),
-                    {
-                      ...message,
-                      content,
-                    },
-                  ],
-                  useVaultSearch,
-                )
-                chatUserInputRefs.current.get(inputMessage.id)?.focus()
-              }}
-              onFocus={() => {
-                setFocusedMessageId(message.id)
-              }}
-              mentionables={message.mentionables}
-              setMentionables={(mentionables) => {
-                setChatMessages((prevChatHistory) =>
-                  prevChatHistory.map((msg) =>
-                    msg.id === message.id ? { ...msg, mentionables } : msg,
-                  ),
-                )
-              }}
-            />
+            <div key={message.id} className="smtcmp-chat-messages-user">
+              <ChatUserInput
+                ref={(ref) => registerChatUserInputRef(message.id, ref)}
+                initialSerializedEditorState={message.content}
+                onChange={(content) => {
+                  setChatMessages((prevChatHistory) =>
+                    prevChatHistory.map((msg) =>
+                      msg.role === 'user' && msg.id === message.id
+                        ? {
+                            ...msg,
+                            content,
+                          }
+                        : msg,
+                    ),
+                  )
+                }}
+                onSubmit={(content, useVaultSearch) => {
+                  if (editorStateToPlainText(content).trim() === '') return
+                  handleSubmit(
+                    [
+                      ...chatMessages.slice(0, index),
+                      {
+                        role: 'user',
+                        content: content,
+                        promptContent: null,
+                        id: message.id,
+                        mentionables: message.mentionables,
+                      },
+                    ],
+                    useVaultSearch,
+                  )
+                  chatUserInputRefs.current.get(inputMessage.id)?.focus()
+                }}
+                onFocus={() => {
+                  setFocusedMessageId(message.id)
+                }}
+                mentionables={message.mentionables}
+                setMentionables={(mentionables) => {
+                  setChatMessages((prevChatHistory) =>
+                    prevChatHistory.map((msg) =>
+                      msg.id === message.id ? { ...msg, mentionables } : msg,
+                    ),
+                  )
+                }}
+              />
+              {message.similaritySearchResults && (
+                <SimilaritySearchResults
+                  similaritySearchResults={message.similaritySearchResults}
+                />
+              )}
+            </div>
           ) : (
             <ReactMarkdownItem
               key={message.id}

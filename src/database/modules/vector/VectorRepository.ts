@@ -145,7 +145,7 @@ export class VectorRepository {
     }
     const scopeCondition = getScopeCondition()
 
-    const similaritySearchResult = await this.db
+    const similaritySearchResults = await this.db
       .select({
         ...(() => {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -159,6 +159,6 @@ export class VectorRepository {
       .orderBy((t) => desc(t.similarity))
       .limit(options.limit)
 
-    return similaritySearchResult
+    return similaritySearchResults
   }
 }
