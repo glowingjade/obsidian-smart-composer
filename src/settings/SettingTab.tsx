@@ -178,7 +178,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName('Exclude patterns')
       .setDesc(
-        'Files matching these patterns will be excluded from indexing. One pattern per line. Supports glob patterns (e.g., "private/*", "*.tmp").',
+        'Files matching these patterns will be excluded from indexing. One pattern per line. Uses glob patterns (e.g., "private/*", "*.tmp").',
       )
 
     new Setting(containerEl)
