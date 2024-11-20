@@ -1,9 +1,11 @@
-import { parseSmartCopilotSettings } from './settings'
+import { SETTINGS_SCHEMA_VERSION, parseSmartCopilotSettings } from './settings'
 
 describe('parseSmartCopilotSettings', () => {
   it('should return default values for empty input', () => {
     const result = parseSmartCopilotSettings({})
     expect(result).toEqual({
+      version: SETTINGS_SCHEMA_VERSION,
+
       openAIApiKey: '',
       anthropicApiKey: '',
       groqApiKey: '',
