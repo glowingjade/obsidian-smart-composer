@@ -51,7 +51,7 @@ describe('parseSmartCopilotSettings', () => {
 })
 
 describe('settings migration', () => {
-  it('should migrate from v0.0.0 to v1.0.0', () => {
+  it('should migrate from v0 to v1', () => {
     const oldSettings = {
       openAIApiKey: 'openai-api-key',
       groqApiKey: 'groq-api-key',
@@ -71,7 +71,7 @@ describe('settings migration', () => {
 
     const result = parseSmartCopilotSettings(oldSettings)
     expect(result).toEqual({
-      version: '1.0.0',
+      version: 1,
 
       openAIApiKey: 'openai-api-key',
       groqApiKey: 'groq-api-key',

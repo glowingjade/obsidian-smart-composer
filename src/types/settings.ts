@@ -1,4 +1,3 @@
-import * as semver from 'semver'
 import { z } from 'zod'
 
 import {
@@ -7,7 +6,7 @@ import {
   EMBEDDING_MODEL_OPTIONS,
 } from '../constants'
 
-export const SETTINGS_SCHEMA_VERSION = '1.0.0'
+export const SETTINGS_SCHEMA_VERSION = 1
 
 const ollamaModelSchema = z.object({
   baseUrl: z.string().catch(''),
@@ -96,15 +95,15 @@ const smartCopilotSettingsSchema = z.object({
 export type SmartCopilotSettings = z.infer<typeof smartCopilotSettingsSchema>
 
 type Migration = {
-  fromVersion: string
-  toVersion: string
+  fromVersion: number
+  toVersion: number
   migrate: (data: Record<string, unknown>) => Record<string, unknown>
 }
 
 const MIGRATIONS: Migration[] = [
   {
-    fromVersion: '0.0.0',
-    toVersion: '1.0.0',
+    fromVersion: 0,
+    toVersion: 1,
     migrate: (data) => {
       const newData = { ...data }
 
@@ -116,7 +115,9 @@ const MIGRATIONS: Migration[] = [
           'llama-3.1-70b-versatile': 'groq/llama-3.1-70b-versatile',
           'llama3.1:8b': 'ollama',
         }
-        newData.chatModelId = CHAT_MODEL_MAP[newData.chatModel] ?? ''
+        newData.chatModelId =
+          CHAT_MODEL_MAP[newData.chatModel] ??
+          'anthropic/claude-3.5-sonnet-latest'
         delete newData.chatModel
       }
       if ('applyModel' in newData && typeof newData.applyModel === 'string') {
@@ -126,7 +127,8 @@ const MIGRATIONS: Migration[] = [
           'llama-3.1-70b-versatile': 'groq/llama-3.1-70b-versatile',
           'llama3.1:8b': 'ollama',
         }
-        newData.applyModelId = APPLY_MODEL_MAP[newData.applyModel] ?? ''
+        newData.applyModelId =
+          APPLY_MODEL_MAP[newData.applyModel] ?? 'openai/gpt-4o-mini'
         delete newData.applyModel
       }
       if (
@@ -141,7 +143,8 @@ const MIGRATIONS: Migration[] = [
           'bge-m3': 'ollama/bge-m3',
         }
         newData.embeddingModelId =
-          EMBEDDING_MODEL_MAP[newData.embeddingModel] ?? ''
+          EMBEDDING_MODEL_MAP[newData.embeddingModel] ??
+          'openai/text-embedding-3-small'
         delete newData.embeddingModel
       }
       if (
@@ -172,13 +175,13 @@ function migrateSettings(
   data: Record<string, unknown>,
 ): Record<string, unknown> {
   let currentData = { ...data }
-  const currentVersion = (currentData.version as string) ?? '0.0.0'
+  const currentVersion = (currentData.version as number) ?? 0
 
   for (const migration of MIGRATIONS) {
     if (
-      semver.gte(currentVersion, migration.fromVersion) &&
-      semver.lt(currentVersion, migration.toVersion) &&
-      semver.lte(migration.toVersion, SETTINGS_SCHEMA_VERSION)
+      currentVersion >= migration.fromVersion &&
+      currentVersion < migration.toVersion &&
+      migration.toVersion <= SETTINGS_SCHEMA_VERSION
     ) {
       console.log(
         `Migrating settings from ${migration.fromVersion} to ${migration.toVersion}`,
