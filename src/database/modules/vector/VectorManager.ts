@@ -1,5 +1,6 @@
 import { backOff } from 'exponential-backoff'
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter'
+import { minimatch } from 'minimatch'
 import { App, TFile } from 'obsidian'
 import pLimit from 'p-limit'
 
@@ -54,17 +55,25 @@ export class VectorManager {
     embeddingModel: EmbeddingModel,
     options: {
       chunkSize: number
+      excludePatterns: string[]
       reindexAll?: boolean
     },
     updateProgress?: (indexProgress: IndexProgress) => void,
   ): Promise<void> {
     let filesToIndex: TFile[]
     if (options.reindexAll) {
-      filesToIndex = this.app.vault.getMarkdownFiles()
+      filesToIndex = await this.getFilesToIndex({
+        embeddingModel: embeddingModel,
+        excludePatterns: options.excludePatterns,
+        reindexAll: true,
+      })
       await this.repository.clearAllVectors(embeddingModel)
     } else {
       await this.deleteVectorsForDeletedFiles(embeddingModel)
-      filesToIndex = await this.getFilesToIndex(embeddingModel)
+      filesToIndex = await this.getFilesToIndex({
+        embeddingModel: embeddingModel,
+        excludePatterns: options.excludePatterns,
+      })
       await this.repository.deleteVectorsForMultipleFiles(
         filesToIndex.map((file) => file.path),
         embeddingModel,
@@ -212,12 +221,28 @@ export class VectorManager {
     }
   }
 
-  private async getFilesToIndex(
-    embeddingModel: EmbeddingModel,
-  ): Promise<TFile[]> {
-    const markdownFiles = this.app.vault.getMarkdownFiles()
-    const filesToIndex = await Promise.all(
-      markdownFiles.map(async (file) => {
+  private async getFilesToIndex({
+    embeddingModel,
+    excludePatterns,
+    reindexAll,
+  }: {
+    embeddingModel: EmbeddingModel
+    excludePatterns: string[]
+    reindexAll?: boolean
+  }): Promise<TFile[]> {
+    let filesToIndex = this.app.vault.getMarkdownFiles()
+
+    filesToIndex = filesToIndex.filter((file) => {
+      return !excludePatterns.some((pattern) => minimatch(file.path, pattern))
+    })
+
+    if (reindexAll) {
+      return filesToIndex
+    }
+
+    // Check for updated or new files
+    filesToIndex = await Promise.all(
+      filesToIndex.map(async (file) => {
         const fileChunks = await this.repository.getVectorsByFilePath(
           file.path,
           embeddingModel,
@@ -239,6 +264,7 @@ export class VectorManager {
         return null
       }),
     ).then((files) => files.filter(Boolean) as TFile[])
+
     return filesToIndex
   }
 }

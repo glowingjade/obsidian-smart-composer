@@ -17,6 +17,7 @@ describe('parseSmartCopilotSettings', () => {
         thresholdTokens: 8192,
         minSimilarity: 0.0,
         limit: 10,
+        excludePatterns: [],
       },
     })
   })
