@@ -58,11 +58,13 @@ function LLMResponesInfoButton({ message }: { message: ChatAssistantMessage }) {
     <Tooltip.Provider delayDuration={0}>
       <Tooltip.Root>
         <Tooltip.Trigger asChild>
-          <LLMResponseInfoPopover
-            usage={message.metadata?.usage}
-            estimatedPrice={cost}
-            model={message.metadata?.model?.model}
-          />
+          <div>
+            <LLMResponseInfoPopover
+              usage={message.metadata?.usage}
+              estimatedPrice={cost}
+              model={message.metadata?.model?.model}
+            />
+          </div>
         </Tooltip.Trigger>
         <Tooltip.Portal>
           <Tooltip.Content className="smtcmp-tooltip-content">
