@@ -45,10 +45,10 @@ export class NoStainlessOpenAI extends OpenAI {
 }
 
 export class OllamaProvider implements BaseLLMProvider {
-  private provider: OpenAIMessageAdapter
+  private adapter: OpenAIMessageAdapter
 
   constructor() {
-    this.provider = new OpenAIMessageAdapter()
+    this.adapter = new OpenAIMessageAdapter()
   }
 
   async generateResponse(
@@ -61,7 +61,7 @@ export class OllamaProvider implements BaseLLMProvider {
       apiKey: '',
       dangerouslyAllowBrowser: true,
     })
-    return this.provider.generateResponse(client, request, options)
+    return this.adapter.generateResponse(client, request, options)
   }
 
   async streamResponse(
@@ -74,6 +74,6 @@ export class OllamaProvider implements BaseLLMProvider {
       apiKey: '',
       dangerouslyAllowBrowser: true,
     })
-    return this.provider.streamResponse(client, request, options)
+    return this.adapter.streamResponse(client, request, options)
   }
 }

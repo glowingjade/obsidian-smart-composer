@@ -15,10 +15,10 @@ import { BaseLLMProvider } from './base'
 import { OpenAIMessageAdapter } from './openaiMessageAdapter'
 
 export class OpenAICompatibleProvider implements BaseLLMProvider {
-  private provider: OpenAIMessageAdapter
+  private adapter: OpenAIMessageAdapter
 
   constructor() {
-    this.provider = new OpenAIMessageAdapter()
+    this.adapter = new OpenAIMessageAdapter()
   }
 
   async generateResponse(
@@ -31,7 +31,7 @@ export class OpenAICompatibleProvider implements BaseLLMProvider {
       baseURL: model.baseURL,
       dangerouslyAllowBrowser: true,
     })
-    return this.provider.generateResponse(client, request, options)
+    return this.adapter.generateResponse(client, request, options)
   }
 
   async streamResponse(
@@ -44,6 +44,6 @@ export class OpenAICompatibleProvider implements BaseLLMProvider {
       baseURL: model.baseURL,
       dangerouslyAllowBrowser: true,
     })
-    return this.provider.streamResponse(client, request, options)
+    return this.adapter.streamResponse(client, request, options)
   }
 }

@@ -19,12 +19,12 @@ import {
 import { OpenAIMessageAdapter } from './openaiMessageAdapter'
 
 export class OpenAIAuthenticatedProvider implements BaseLLMProvider {
-  private provider: OpenAIMessageAdapter
+  private adapter: OpenAIMessageAdapter
   private client: OpenAI
 
   constructor(apiKey: string) {
     this.client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true })
-    this.provider = new OpenAIMessageAdapter()
+    this.adapter = new OpenAIMessageAdapter()
   }
 
   async generateResponse(
@@ -38,7 +38,7 @@ export class OpenAIAuthenticatedProvider implements BaseLLMProvider {
       )
     }
     try {
-      return this.provider.generateResponse(this.client, request, options)
+      return this.adapter.generateResponse(this.client, request, options)
     } catch (error) {
       if (error instanceof OpenAI.AuthenticationError) {
         throw new LLMAPIKeyInvalidException(
@@ -61,7 +61,7 @@ export class OpenAIAuthenticatedProvider implements BaseLLMProvider {
     }
 
     try {
-      return this.provider.streamResponse(this.client, request, options)
+      return this.adapter.streamResponse(this.client, request, options)
     } catch (error) {
       if (error instanceof OpenAI.AuthenticationError) {
         throw new LLMAPIKeyInvalidException(
