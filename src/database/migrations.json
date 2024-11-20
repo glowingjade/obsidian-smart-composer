@@ -59,17 +59,14 @@
       "\nALTER TABLE \"vector_data_nomic_embed_text\" RENAME TO \"vector_data_ollama_nomic_embed_text\";",
       "\nALTER TABLE \"vector_data_mxbai_embed_large\" RENAME TO \"vector_data_ollama_mxbai_embed_large\";",
       "\nALTER TABLE \"vector_data_bge_m3\" RENAME TO \"vector_data_ollama_bge_m3\";",
-      "\nDROP INDEX IF EXISTS \"embeddingIndex_text_embedding_3_small\";",
-      "\nDROP INDEX IF EXISTS \"embeddingIndex_nomic_embed_text\";",
-      "\nDROP INDEX IF EXISTS \"embeddingIndex_mxbai_embed_large\";",
-      "\nDROP INDEX IF EXISTS \"embeddingIndex_bge_m3\";",
-      "\nCREATE INDEX IF NOT EXISTS \"embeddingIndex_openai_text_embedding_3_small\" ON \"vector_data_openai_text_embedding_3_small\" USING hnsw (\"embedding\" vector_cosine_ops);",
-      "\nCREATE INDEX IF NOT EXISTS \"embeddingIndex_ollama_nomic_embed_text\" ON \"vector_data_ollama_nomic_embed_text\" USING hnsw (\"embedding\" vector_cosine_ops);",
-      "\nCREATE INDEX IF NOT EXISTS \"embeddingIndex_ollama_mxbai_embed_large\" ON \"vector_data_ollama_mxbai_embed_large\" USING hnsw (\"embedding\" vector_cosine_ops);",
-      "\nCREATE INDEX IF NOT EXISTS \"embeddingIndex_ollama_bge_m3\" ON \"vector_data_ollama_bge_m3\" USING hnsw (\"embedding\" vector_cosine_ops);"
+      "\nALTER INDEX IF EXISTS \"embeddingIndex_text_embedding_3_small\" RENAME TO \"embeddingIndex_openai_text_embedding_3_small\";",
+      "\nALTER INDEX IF EXISTS \"embeddingIndex_nomic_embed_text\" RENAME TO \"embeddingIndex_ollama_nomic_embed_text\";",
+      "\nALTER INDEX IF EXISTS \"embeddingIndex_mxbai_embed_large\" RENAME TO \"embeddingIndex_ollama_mxbai_embed_large\";",
+      "\nALTER INDEX IF EXISTS \"embeddingIndex_bge_m3\" RENAME TO \"embeddingIndex_ollama_bge_m3\";",
+      ""
     ],
     "bps": true,
     "folderMillis": 1732064682864,
-    "hash": "66ac2fc6f68375dcdbf7c33884bd8a8e5478bb22dd060eecd4efceaed16958b5"
+    "hash": "3dad96e7f1c939c5da3cae4792782e7a35488d39da418e6a9e6f60eafd637f55"
   }
 ]
