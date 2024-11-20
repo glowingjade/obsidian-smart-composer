@@ -113,12 +113,12 @@ export function openMarkdownFile(
 
     if (startLine) {
       const view = existingLeaf.view as MarkdownView
-      view.setEphemeralState({ line: startLine })
+      view.setEphemeralState({ line: startLine - 1 }) // -1 because line is 0-indexed
     }
   } else {
     const leaf = app.workspace.getLeaf('tab')
     leaf.openFile(file, {
-      eState: startLine ? { line: startLine } : undefined,
+      eState: startLine ? { line: startLine - 1 } : undefined, // -1 because line is 0-indexed
     })
   }
 }

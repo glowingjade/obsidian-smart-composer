@@ -3,6 +3,7 @@ import { App, TFile, htmlToMarkdown, requestUrl } from 'obsidian'
 import { editorStateToPlainText } from '../components/chat-view/chat-input/utils/editor-state-to-plain-text'
 import { QueryProgressState } from '../components/chat-view/QueryProgress'
 import { RAGEngine } from '../core/rag/ragEngine'
+import { SelectVector } from '../database/schema'
 import { ChatMessage, ChatUserMessage } from '../types/chat'
 import { RequestMessage } from '../types/llm/request'
 import {
@@ -57,18 +58,18 @@ export class PromptGenerator {
       throw new Error('Last message is not a user message')
     }
 
-    const { promptContent, shouldUseRAG } = await this.compileUserMessagePrompt(
-      {
+    const { promptContent, shouldUseRAG, similaritySearchResults } =
+      await this.compileUserMessagePrompt({
         message: lastUserMessage,
         useVaultSearch,
-        onQueryProgressChange: onQueryProgressChange,
-      },
-    )
+        onQueryProgressChange,
+      })
     let compiledMessages = [
       ...messages.slice(0, -1),
       {
         ...lastUserMessage,
-        promptContent: promptContent,
+        promptContent,
+        similaritySearchResults,
       },
     ]
 
@@ -76,12 +77,14 @@ export class PromptGenerator {
     compiledMessages = await Promise.all(
       compiledMessages.map(async (message) => {
         if (message.role === 'user' && !message.promptContent) {
-          const { promptContent } = await this.compileUserMessagePrompt({
-            message,
-          })
+          const { promptContent, similaritySearchResults } =
+            await this.compileUserMessagePrompt({
+              message,
+            })
           return {
             ...message,
-            promptContent: promptContent,
+            promptContent,
+            similaritySearchResults,
           }
         }
         return message
@@ -136,6 +139,9 @@ export class PromptGenerator {
   }): Promise<{
     promptContent: string
     shouldUseRAG: boolean
+    similaritySearchResults?: (Omit<SelectVector, 'embedding'> & {
+      similarity: number
+    })[]
   }> {
     if (!message.content) {
       return {
@@ -144,6 +150,7 @@ export class PromptGenerator {
       }
     }
     const query = editorStateToPlainText(message.content)
+    let similaritySearchResults = undefined
 
     useVaultSearch =
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
@@ -183,7 +190,7 @@ export class PromptGenerator {
 
     let filePrompt: string
     if (shouldUseRAG) {
-      const results = useVaultSearch
+      similaritySearchResults = useVaultSearch
         ? await (
             await this.getRagEngine()
           ).processQuery({
@@ -201,7 +208,7 @@ export class PromptGenerator {
             onQueryProgressChange: onQueryProgressChange,
           })
       filePrompt = `## Potentially Relevant Snippets from the current vault
-${results
+${similaritySearchResults
   .map(({ path, content, metadata }) => {
     const contentWithLineNumbers = this.addLineNumbersToContent({
       content,
@@ -251,6 +258,7 @@ ${await this.getWebsiteContent(url)}
     return {
       promptContent: `${filePrompt}${blockPrompt}${urlPrompt}\n\n${query}\n\n`,
       shouldUseRAG,
+      similaritySearchResults: similaritySearchResults,
     }
   }
 
