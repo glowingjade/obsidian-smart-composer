@@ -459,7 +459,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
       )
 
     new Setting(containerEl)
-      .setClass('smtcmp-setting-textarea')
+      .setClass('smtcmp-settings-textarea')
       .addTextArea((text) =>
         text
           .setValue(this.plugin.settings.ragOptions.excludePatterns.join('\n'))
