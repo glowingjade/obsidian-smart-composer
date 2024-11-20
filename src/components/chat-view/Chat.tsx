@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
-import { History, Plus } from 'lucide-react'
+import { CircleStop, History, Plus } from 'lucide-react'
 import { App, Notice } from 'obsidian'
 import {
   forwardRef,
@@ -118,9 +118,9 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const [queryProgress, setQueryProgress] = useState<QueryProgressState>({
     type: 'idle',
   })
+
   const preventAutoScrollRef = useRef(false)
   const lastProgrammaticScrollRef = useRef<number>(0)
-
   const activeStreamAbortControllersRef = useRef<AbortController[]>([])
   const chatUserInputRefs = useRef<Map<string, ChatUserInputRef>>(new Map())
   const chatMessagesRef = useRef<HTMLDivElement>(null)
@@ -594,6 +594,12 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           ),
         )}
         <QueryProgress state={queryProgress} />
+        {submitMutation.isPending && (
+          <button onClick={abortActiveStreams} className="smtcmp-stop-gen-btn">
+            <CircleStop size={16} />
+            <div>Stop Generation</div>
+          </button>
+        )}
       </div>
       <ChatUserInput
         key={inputMessage.id} // this is needed to clear the editor when the user submits a new message
