@@ -58,6 +58,7 @@ export class RAGEngine {
       this.embeddingModel,
       {
         chunkSize: this.settings.ragOptions.chunkSize,
+        excludePatterns: this.settings.ragOptions.excludePatterns,
         reindexAll: options.reindexAll,
       },
       (indexProgress) => {
