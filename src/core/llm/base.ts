@@ -1,3 +1,4 @@
+import { LLMModel } from '../../types/llm/model'
 import {
   LLMOptions,
   LLMRequestNonStreaming,
@@ -10,12 +11,13 @@ import {
 
 export type BaseLLMProvider = {
   generateResponse(
+    model: LLMModel,
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming>
   streamResponse(
+    model: LLMModel,
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>>
-  getSupportedModels(): string[]
 }

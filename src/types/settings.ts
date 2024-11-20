@@ -6,25 +6,61 @@ import {
   EMBEDDING_MODEL_OPTIONS,
 } from '../constants'
 
-const chatModelSchema = z.enum(
-  CHAT_MODEL_OPTIONS.map((opt) => opt.value) as [string, ...string[]],
+const chatModelIdSchema = z.enum(
+  CHAT_MODEL_OPTIONS.map((opt) => opt.id) as [string, ...string[]],
 )
-const applyModelSchema = z.enum(
-  APPLY_MODEL_OPTIONS.map((opt) => opt.value) as [string, ...string[]],
+const applyModelIdSchema = z.enum(
+  APPLY_MODEL_OPTIONS.map((opt) => opt.id) as [string, ...string[]],
 )
-const embeddingModelSchema = z.enum(
-  EMBEDDING_MODEL_OPTIONS.map((opt) => opt.value) as [string, ...string[]],
+const embeddingModelIdSchema = z.enum(
+  EMBEDDING_MODEL_OPTIONS.map((opt) => opt.id) as [string, ...string[]],
 )
+const ollamaModelSchema = z.object({
+  baseUrl: z.string().catch(''),
+  model: z.string().catch(''),
+})
+const openAICompatibleModelSchema = z.object({
+  baseUrl: z.string().catch(''),
+  apiKey: z.string().catch(''),
+  model: z.string().catch(''),
+})
 
 // Update settings.test.ts after changing this schema
 const smartCopilotSettingsSchema = z.object({
   openAIApiKey: z.string().catch(''),
-  groqApiKey: z.string().catch(''),
   anthropicApiKey: z.string().catch(''),
-  ollamaBaseUrl: z.string().catch(''),
-  chatModel: chatModelSchema.catch('claude-3-5-sonnet-latest'),
-  applyModel: applyModelSchema.catch('gpt-4o-mini'),
-  embeddingModel: embeddingModelSchema.catch('text-embedding-3-small'),
+  groqApiKey: z.string().catch(''),
+
+  chatModelId: chatModelIdSchema.catch('anthropic/claude-3.5-sonnet-latest'),
+  ollamaChatModel: ollamaModelSchema.catch({
+    baseUrl: '',
+    model: '',
+  }),
+  openAICompatibleChatModel: openAICompatibleModelSchema.catch({
+    baseUrl: '',
+    apiKey: '',
+    model: '',
+  }),
+
+  applyModelId: applyModelIdSchema.catch('openai/gpt-4o-mini'),
+  ollamaApplyModel: ollamaModelSchema.catch({
+    baseUrl: '',
+    model: '',
+  }),
+  openAICompatibleApplyModel: openAICompatibleModelSchema.catch({
+    baseUrl: '',
+    apiKey: '',
+    model: '',
+  }),
+
+  embeddingModelId: embeddingModelIdSchema.catch(
+    'openai/text-embedding-3-small',
+  ),
+  ollamaEmbeddingModel: ollamaModelSchema.catch({
+    baseUrl: '',
+    model: '',
+  }),
+
   systemPrompt: z.string().catch(''),
   ragOptions: z
     .object({

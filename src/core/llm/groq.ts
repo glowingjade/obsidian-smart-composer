@@ -5,6 +5,7 @@ import {
   ChatCompletionMessageParam,
 } from 'groq-sdk/resources/chat/completions'
 
+import { LLMModel } from '../../types/llm/model'
 import {
   LLMOptions,
   LLMRequestNonStreaming,
@@ -22,20 +23,6 @@ import {
   LLMAPIKeyNotSetException,
 } from './exception'
 
-export type GroqModel =
-  | 'llama-3.1-8b-instant'
-  | 'llama-3.1-70b-versatile'
-  | 'llama3-8b-8192'
-  | 'llama3-70b-8192'
-  | 'mixtral-8x7b-32768'
-export const GROQ_MODELS: GroqModel[] = [
-  'llama-3.1-8b-instant',
-  'llama-3.1-70b-versatile',
-  'llama3-8b-8192',
-  'llama3-70b-8192',
-  'mixtral-8x7b-32768',
-]
-
 export class GroqProvider implements BaseLLMProvider {
   private client: Groq
 
@@ -47,6 +34,7 @@ export class GroqProvider implements BaseLLMProvider {
   }
 
   async generateResponse(
+    model: LLMModel,
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
@@ -83,6 +71,7 @@ export class GroqProvider implements BaseLLMProvider {
   }
 
   async streamResponse(
+    model: LLMModel,
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
@@ -171,9 +160,5 @@ export class GroqProvider implements BaseLLMProvider {
       model: chunk.model,
       object: 'chat.completion.chunk',
     }
-  }
-
-  getSupportedModels(): string[] {
-    return GROQ_MODELS
   }
 }

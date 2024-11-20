@@ -14,6 +14,7 @@ import {
 import { PgliteDatabase } from 'drizzle-orm/pglite'
 import { App } from 'obsidian'
 
+import { EmbeddingModel } from '../../../types/embedding'
 import { DatabaseNotInitializedException } from '../../exception'
 import { InsertVector, SelectVector, vectorTables } from '../../schema'
 
@@ -26,13 +27,11 @@ export class VectorRepository {
     this.db = db
   }
 
-  async getIndexedFilePaths(embeddingModel: {
-    name: string
-  }): Promise<string[]> {
+  async getIndexedFilePaths(embeddingModel: EmbeddingModel): Promise<string[]> {
     if (!this.db) {
       throw new DatabaseNotInitializedException()
     }
-    const vectors = vectorTables[embeddingModel.name]
+    const vectors = vectorTables[embeddingModel.id]
     const indexedFiles = await this.db
       .select({
         path: vectors.path,
@@ -43,12 +42,12 @@ export class VectorRepository {
 
   async getVectorsByFilePath(
     filePath: string,
-    embeddingModel: { name: string },
+    embeddingModel: EmbeddingModel,
   ): Promise<SelectVector[]> {
     if (!this.db) {
       throw new DatabaseNotInitializedException()
     }
-    const vectors = vectorTables[embeddingModel.name]
+    const vectors = vectorTables[embeddingModel.id]
     const fileVectors = await this.db
       .select()
       .from(vectors)
@@ -58,48 +57,48 @@ export class VectorRepository {
 
   async deleteVectorsForSingleFile(
     filePath: string,
-    embeddingModel: { name: string },
+    embeddingModel: EmbeddingModel,
   ): Promise<void> {
     if (!this.db) {
       throw new DatabaseNotInitializedException()
     }
-    const vectors = vectorTables[embeddingModel.name]
+    const vectors = vectorTables[embeddingModel.id]
     await this.db.delete(vectors).where(eq(vectors.path, filePath))
   }
 
   async deleteVectorsForMultipleFiles(
     filePaths: string[],
-    embeddingModel: { name: string },
+    embeddingModel: EmbeddingModel,
   ): Promise<void> {
     if (!this.db) {
       throw new DatabaseNotInitializedException()
     }
-    const vectors = vectorTables[embeddingModel.name]
+    const vectors = vectorTables[embeddingModel.id]
     await this.db.delete(vectors).where(inArray(vectors.path, filePaths))
   }
 
-  async clearAllVectors(embeddingModel: { name: string }): Promise<void> {
+  async clearAllVectors(embeddingModel: EmbeddingModel): Promise<void> {
     if (!this.db) {
       throw new DatabaseNotInitializedException()
     }
-    const vectors = vectorTables[embeddingModel.name]
+    const vectors = vectorTables[embeddingModel.id]
     await this.db.delete(vectors)
   }
 
   async insertVectors(
     data: InsertVector[],
-    embeddingModel: { name: string },
+    embeddingModel: EmbeddingModel,
   ): Promise<void> {
     if (!this.db) {
       throw new DatabaseNotInitializedException()
     }
-    const vectors = vectorTables[embeddingModel.name]
+    const vectors = vectorTables[embeddingModel.id]
     await this.db.insert(vectors).values(data)
   }
 
   async performSimilaritySearch(
     queryVector: number[],
-    embeddingModel: { name: string },
+    embeddingModel: EmbeddingModel,
     options: {
       minSimilarity: number
       limit: number
@@ -116,7 +115,7 @@ export class VectorRepository {
     if (!this.db) {
       throw new DatabaseNotInitializedException()
     }
-    const vectors = vectorTables[embeddingModel.name]
+    const vectors = vectorTables[embeddingModel.id]
 
     const similarity = sql<number>`1 - (${cosineDistance(vectors.embedding, queryVector)})`
     const similarityCondition = gt(similarity, options.minSimilarity)

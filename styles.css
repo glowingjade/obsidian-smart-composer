@@ -742,7 +742,7 @@ button.smtcmp-chat-input-model-select {
   }
 }
 
-.smtcmp-setting-textarea {
+.smtcmp-settings-textarea {
   display: block;
   border-top: none;
   padding: 0;
@@ -755,6 +755,22 @@ button.smtcmp-chat-input-model-select {
     width: 100%;
     min-height: 100px;
     resize: none;
+  }
+}
+
+.smtcmp-settings-model-container {
+  margin: var(--size-4-2) 0;
+  padding: var(--size-4-2) var(--size-4-4);
+  border-left: 2px solid var(--interactive-accent);
+  background-color: var(--background-secondary);
+  border-radius: var(--radius-s);
+
+  .setting-item {
+    border-top: none;
+
+    &:first-child {
+      margin-top: var(--size-4-2);
+    }
   }
 }
 

@@ -8,20 +8,20 @@ import {
 import { NoStainlessOpenAI } from '../llm/ollama'
 
 export const getEmbeddingModel = (
-  name: string,
+  embeddingModelId: string,
   apiKeys: {
     openAIApiKey: string
   },
   ollamaBaseUrl: string,
 ): EmbeddingModel => {
-  switch (name) {
-    case 'text-embedding-3-small': {
+  switch (embeddingModelId) {
+    case 'openai/text-embedding-3-small': {
       const openai = new OpenAI({
         apiKey: apiKeys.openAIApiKey,
         dangerouslyAllowBrowser: true,
       })
       return {
-        name: 'text-embedding-3-small',
+        id: 'openai/text-embedding-3-small',
         dimension: 1536,
         getEmbedding: async (text: string) => {
           if (!openai.apiKey) {
@@ -37,13 +37,13 @@ export const getEmbeddingModel = (
         },
       }
     }
-    case 'text-embedding-3-large': {
+    case 'openai/text-embedding-3-large': {
       const openai = new OpenAI({
         apiKey: apiKeys.openAIApiKey,
         dangerouslyAllowBrowser: true,
       })
       return {
-        name: 'text-embedding-3-large',
+        id: 'openai/text-embedding-3-large',
         dimension: 3072,
         getEmbedding: async (text: string) => {
           if (!openai.apiKey) {
@@ -59,14 +59,14 @@ export const getEmbeddingModel = (
         },
       }
     }
-    case 'nomic-embed-text': {
+    case 'ollama/nomic-embed-text': {
       const openai = new NoStainlessOpenAI({
         apiKey: '',
         dangerouslyAllowBrowser: true,
         baseURL: `${ollamaBaseUrl}/v1`,
       })
       return {
-        name: 'nomic-embed-text',
+        id: 'ollama/nomic-embed-text',
         dimension: 768,
         getEmbedding: async (text: string) => {
           if (!ollamaBaseUrl) {
@@ -82,14 +82,14 @@ export const getEmbeddingModel = (
         },
       }
     }
-    case 'mxbai-embed-large': {
+    case 'ollama/mxbai-embed-large': {
       const openai = new NoStainlessOpenAI({
         apiKey: '',
         dangerouslyAllowBrowser: true,
         baseURL: `${ollamaBaseUrl}/v1`,
       })
       return {
-        name: 'mxbai-embed-large',
+        id: 'ollama/mxbai-embed-large',
         dimension: 1024,
         getEmbedding: async (text: string) => {
           if (!ollamaBaseUrl) {
@@ -105,14 +105,14 @@ export const getEmbeddingModel = (
         },
       }
     }
-    case 'bge-m3': {
+    case 'ollama/bge-m3': {
       const openai = new NoStainlessOpenAI({
         apiKey: '',
         dangerouslyAllowBrowser: true,
         baseURL: `${ollamaBaseUrl}/v1`,
       })
       return {
-        name: 'bge-m3',
+        id: 'ollama/bge-m3',
         dimension: 1024,
         getEmbedding: async (text: string) => {
           if (!ollamaBaseUrl) {

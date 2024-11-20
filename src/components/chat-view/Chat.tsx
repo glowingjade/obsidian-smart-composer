@@ -82,7 +82,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     getChatMessagesById,
     chatList,
   } = useChatHistory()
-  const { generateResponse, streamResponse } = useLLM()
+  const { generateResponse, streamResponse, chatModel, applyModel } = useLLM()
 
   const promptGenerator = useMemo(() => {
     return new PromptGenerator(getRAGEngine, app, settings)
@@ -257,8 +257,9 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           { role: 'assistant', content: '', id: responseMessageId },
         ])
         const stream = await streamResponse(
+          chatModel,
           {
-            model: settings.chatModel,
+            model: chatModel.model,
             messages: requestMessages,
             stream: true,
           },
@@ -333,7 +334,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         activeFile,
         activeFileContent,
         chatMessages,
-        settings.applyModel,
+        applyModel,
         generateResponse,
       )
       if (!updatedFileContent) {

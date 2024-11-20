@@ -4,6 +4,7 @@ import {
   MessageStreamEvent,
 } from '@anthropic-ai/sdk/resources/messages'
 
+import { LLMModel } from '../../types/llm/model'
 import {
   LLMOptions,
   LLMRequestNonStreaming,
@@ -21,9 +22,6 @@ import {
   LLMAPIKeyNotSetException,
 } from './exception'
 
-export type AnthropicModel = 'claude-3-5-sonnet-latest'
-export const ANTHROPIC_MODELS: AnthropicModel[] = ['claude-3-5-sonnet-latest']
-
 export class AnthropicProvider implements BaseLLMProvider {
   private client: Anthropic
 
@@ -32,6 +30,7 @@ export class AnthropicProvider implements BaseLLMProvider {
   }
 
   async generateResponse(
+    model: LLMModel,
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
@@ -77,6 +76,7 @@ export class AnthropicProvider implements BaseLLMProvider {
   }
 
   async streamResponse(
+    model: LLMModel,
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
@@ -204,9 +204,5 @@ export class AnthropicProvider implements BaseLLMProvider {
       object: 'chat.completion.chunk',
       model: model,
     }
-  }
-
-  getSupportedModels(): string[] {
-    return ANTHROPIC_MODELS
   }
 }

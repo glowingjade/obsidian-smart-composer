@@ -5,12 +5,37 @@ describe('parseSmartCopilotSettings', () => {
     const result = parseSmartCopilotSettings({})
     expect(result).toEqual({
       openAIApiKey: '',
-      groqApiKey: '',
       anthropicApiKey: '',
-      ollamaBaseUrl: '',
-      chatModel: 'claude-3-5-sonnet-latest',
-      applyModel: 'gpt-4o-mini',
-      embeddingModel: 'text-embedding-3-small',
+      groqApiKey: '',
+
+      chatModelId: 'anthropic/claude-3.5-sonnet-latest',
+      ollamaChatModel: {
+        baseUrl: '',
+        model: '',
+      },
+      openAICompatibleChatModel: {
+        baseUrl: '',
+        apiKey: '',
+        model: '',
+      },
+
+      applyModelId: 'openai/gpt-4o-mini',
+      ollamaApplyModel: {
+        baseUrl: '',
+        model: '',
+      },
+      openAICompatibleApplyModel: {
+        baseUrl: '',
+        apiKey: '',
+        model: '',
+      },
+
+      embeddingModelId: 'openai/text-embedding-3-small',
+      ollamaEmbeddingModel: {
+        baseUrl: '',
+        model: '',
+      },
+
       systemPrompt: '',
       ragOptions: {
         chunkSize: 1000,

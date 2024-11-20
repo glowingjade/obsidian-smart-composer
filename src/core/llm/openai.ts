@@ -1,5 +1,6 @@
 import OpenAI from 'openai'
 
+import { LLMModel } from '../../types/llm/model'
 import {
   LLMOptions,
   LLMRequestNonStreaming,
@@ -15,21 +16,19 @@ import {
   LLMAPIKeyInvalidException,
   LLMAPIKeyNotSetException,
 } from './exception'
-import { OpenAICompatibleProvider } from './openaiCompatibleProvider'
-
-export type OpenAIModel = 'gpt-4o' | 'gpt-4o-mini'
-export const OPENAI_MODELS: OpenAIModel[] = ['gpt-4o', 'gpt-4o-mini']
+import { OpenAIMessageAdapter } from './openaiMessageAdapter'
 
 export class OpenAIAuthenticatedProvider implements BaseLLMProvider {
-  private provider: OpenAICompatibleProvider
+  private provider: OpenAIMessageAdapter
   private client: OpenAI
 
   constructor(apiKey: string) {
     this.client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true })
-    this.provider = new OpenAICompatibleProvider(this.client)
+    this.provider = new OpenAIMessageAdapter()
   }
 
   async generateResponse(
+    model: LLMModel,
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
@@ -39,7 +38,7 @@ export class OpenAIAuthenticatedProvider implements BaseLLMProvider {
       )
     }
     try {
-      return this.provider.generateResponse(request, options)
+      return this.provider.generateResponse(this.client, request, options)
     } catch (error) {
       if (error instanceof OpenAI.AuthenticationError) {
         throw new LLMAPIKeyInvalidException(
@@ -51,6 +50,7 @@ export class OpenAIAuthenticatedProvider implements BaseLLMProvider {
   }
 
   async streamResponse(
+    model: LLMModel,
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
@@ -61,7 +61,7 @@ export class OpenAIAuthenticatedProvider implements BaseLLMProvider {
     }
 
     try {
-      return this.provider.streamResponse(request, options)
+      return this.provider.streamResponse(this.client, request, options)
     } catch (error) {
       if (error instanceof OpenAI.AuthenticationError) {
         throw new LLMAPIKeyInvalidException(
@@ -70,9 +70,5 @@ export class OpenAIAuthenticatedProvider implements BaseLLMProvider {
       }
       throw error
     }
-  }
-
-  getSupportedModels(): string[] {
-    return OPENAI_MODELS
   }
 }

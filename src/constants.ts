@@ -1,77 +1,165 @@
+import { EmbeddingModelOption } from './types/embedding'
+import { ModelOption } from './types/llm/model'
+
 export const CHAT_VIEW_TYPE = 'smtcmp-chat-view'
 export const APPLY_VIEW_TYPE = 'smtcmp-apply-view'
 
-export const CHAT_MODEL_OPTIONS = [
+export const CHAT_MODEL_OPTIONS: ModelOption[] = [
   {
+    id: 'anthropic/claude-3.5-sonnet-latest',
     name: 'claude-3.5-sonnet (Recommended)',
-    value: 'claude-3-5-sonnet-latest',
+    model: {
+      provider: 'anthropic',
+      model: 'claude-3-5-sonnet-latest',
+    },
   },
   {
+    id: 'openai/gpt-4o',
     name: 'gpt-4o',
-    value: 'gpt-4o',
+    model: {
+      provider: 'openai',
+      model: 'gpt-4o',
+    },
   },
   {
+    id: 'openai/gpt-4o-mini',
     name: 'gpt-4o-mini',
-    value: 'gpt-4o-mini',
+    model: {
+      provider: 'openai',
+      model: 'gpt-4o-mini',
+    },
   },
   {
+    id: 'groq/llama-3.1-70b-versatile',
     name: 'llama-3.1-70b (Groq)',
-    value: 'llama-3.1-70b-versatile',
+    model: {
+      provider: 'groq',
+      model: 'llama-3.1-70b-versatile',
+    },
   },
   {
-    name: 'llama3.1:8b (Ollama)',
-    value: 'llama3.1:8b',
+    id: 'ollama',
+    name: 'Ollama',
+    model: {
+      provider: 'ollama',
+      model: '',
+      baseURL: '',
+    },
+  },
+  {
+    id: 'openai-compatible',
+    name: 'Custom (OpenAI Compatible)',
+    model: {
+      provider: 'openai-compatible',
+      model: '',
+      apiKey: '',
+      baseURL: '',
+    },
   },
 ]
 
-export const APPLY_MODEL_OPTIONS = [
+export const APPLY_MODEL_OPTIONS: ModelOption[] = [
   {
+    id: 'openai/gpt-4o-mini',
     name: 'gpt-4o-mini (Recommended)',
-    value: 'gpt-4o-mini',
+    model: {
+      provider: 'openai',
+      model: 'gpt-4o-mini',
+    },
   },
   {
+    id: 'anthropic/claude-3.5-haiku',
+    name: 'claude-3.5-haiku',
+    model: {
+      provider: 'anthropic',
+      model: 'claude-3-5-haiku-latest',
+    },
+  },
+  {
+    id: 'groq/llama-3.1-8b-instant',
     name: 'llama-3.1-8b (Groq)',
-    value: 'llama-3.1-8b-instant',
+    model: {
+      provider: 'groq',
+      model: 'llama-3.1-8b-instant',
+    },
   },
   {
-    name: 'llama3-8b (Groq)',
-    value: 'llama3-8b-8192',
-  },
-  {
+    id: 'groq/llama-3.1-70b-versatile',
     name: 'llama-3.1-70b (Groq)',
-    value: 'llama-3.1-70b-versatile',
+    model: {
+      provider: 'groq',
+      model: 'llama-3.1-70b-versatile',
+    },
   },
   {
-    name: 'llama3.1:8b (Ollama)',
-    value: 'llama3.1:8b',
+    id: 'ollama',
+    name: 'Ollama',
+    model: {
+      provider: 'ollama',
+      model: '',
+      baseURL: '',
+    },
+  },
+  {
+    id: 'openai-compatible',
+    name: 'Custom (OpenAI Compatible)',
+    model: {
+      provider: 'openai-compatible',
+      model: '',
+      apiKey: '',
+      baseURL: '',
+    },
   },
 ]
 
 // Update table exports in src/database/schema.ts when updating this
-export const EMBEDDING_MODEL_OPTIONS = [
+export const EMBEDDING_MODEL_OPTIONS: EmbeddingModelOption[] = [
   {
+    id: 'openai/text-embedding-3-small',
     name: 'text-embedding-3-small (Recommended)',
-    value: 'text-embedding-3-small',
+    model: {
+      provider: 'openai',
+      model: 'text-embedding-3-small',
+    },
     dimension: 1536,
   },
   {
+    id: 'openai/text-embedding-3-large',
     name: 'text-embedding-3-large',
-    value: 'text-embedding-3-large',
+    model: {
+      provider: 'openai',
+      model: 'text-embedding-3-large',
+    },
     dimension: 3072,
   },
   {
     name: 'nomic-embed-text (Ollama)',
-    value: 'nomic-embed-text',
+    id: 'ollama/nomic-embed-text',
+    model: {
+      provider: 'ollama',
+      model: 'nomic-embed-text',
+      baseURL: '',
+    },
     dimension: 768,
   },
   {
     name: 'mxbai-embed-large (Ollama)',
-    value: 'mxbai-embed-large',
+    id: 'ollama/mxbai-embed-large',
+    model: {
+      provider: 'ollama',
+      model: 'mxbai-embed-large',
+      baseURL: '',
+    },
     dimension: 1024,
   },
   {
     name: 'bge-m3 (Ollama)',
-    value: 'bge-m3',
+    id: 'ollama/bge-m3',
+    model: {
+      provider: 'ollama',
+      model: 'bge-m3',
+      baseURL: '',
+    },
     dimension: 1024,
   },
 ]

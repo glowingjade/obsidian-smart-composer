@@ -12,8 +12,9 @@ export function ModelSelect() {
     <DropdownMenu.Root open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenu.Trigger className="smtcmp-chat-input-model-select">
         {
-          CHAT_MODEL_OPTIONS.find((model) => model.value === settings.chatModel)
-            ?.name
+          CHAT_MODEL_OPTIONS.find(
+            (option) => option.id === settings.chatModelId,
+          )?.name
         }
         {isOpen ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
       </DropdownMenu.Trigger>
@@ -21,18 +22,18 @@ export function ModelSelect() {
       <DropdownMenu.Portal>
         <DropdownMenu.Content className="smtcmp-popover">
           <ul>
-            {CHAT_MODEL_OPTIONS.map((model) => (
+            {CHAT_MODEL_OPTIONS.map((option) => (
               <DropdownMenu.Item
-                key={model.value}
+                key={option.id}
                 onSelect={() => {
                   setSettings({
                     ...settings,
-                    chatModel: model.value,
+                    chatModelId: option.id,
                   })
                 }}
                 asChild
               >
-                <li>{model.name}</li>
+                <li>{option.name}</li>
               </DropdownMenu.Item>
             ))}
           </ul>
