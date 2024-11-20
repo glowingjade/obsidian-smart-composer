@@ -118,14 +118,38 @@ export class AnthropicProvider implements BaseLLMProvider {
           if (chunk.type === 'message_start') {
             messageId = chunk.message.id
             model = chunk.message.model
-            continue
-          }
-          if (chunk.type === 'content_block_delta') {
+
+            yield {
+              id: messageId,
+              choices: [],
+              object: 'chat.completion.chunk',
+              model: model,
+              usage: {
+                prompt_tokens: chunk.message.usage.input_tokens,
+                completion_tokens: chunk.message.usage.output_tokens,
+                total_tokens:
+                  chunk.message.usage.input_tokens +
+                  chunk.message.usage.output_tokens,
+              },
+            }
+          } else if (chunk.type === 'content_block_delta') {
             yield AnthropicProvider.parseStreamingResponseChunk(
               chunk,
               messageId,
               model,
             )
+          } else if (chunk.type === 'message_delta') {
+            yield {
+              id: messageId,
+              choices: [],
+              object: 'chat.completion.chunk',
+              model: model,
+              usage: {
+                prompt_tokens: 0,
+                completion_tokens: chunk.usage.output_tokens,
+                total_tokens: chunk.usage.output_tokens,
+              },
+            }
           }
         }
       }

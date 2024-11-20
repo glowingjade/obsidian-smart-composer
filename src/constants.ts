@@ -164,4 +164,25 @@ export const EMBEDDING_MODEL_OPTIONS: EmbeddingModelOption[] = [
   },
 ]
 
+// Pricing in dollars per million tokens
+type ModelPricing = {
+  input: number
+  output: number
+}
+
+export const OPENAI_PRICES: Record<string, ModelPricing> = {
+  'gpt-4o': { input: 2.5, output: 10 },
+  'gpt-4o-mini': { input: 0.15, output: 0.6 },
+}
+
+export const ANTHROPIC_PRICES: Record<string, ModelPricing> = {
+  'claude-3-5-sonnet-latest': { input: 3, output: 15 },
+  'claude-3-5-haiku-latest': { input: 1, output: 5 },
+}
+
+export const GROQ_PRICES: Record<string, ModelPricing> = {
+  'llama-3.1-70b-versatile': { input: 0.59, output: 0.79 },
+  'llama-3.1-8b-instant': { input: 0.05, output: 0.08 },
+}
+
 export const PGLITE_DB_PATH = '.smtcmp_vector_db.tar.gz'

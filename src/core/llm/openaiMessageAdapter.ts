@@ -60,6 +60,9 @@ export class OpenAIMessageAdapter {
         presence_penalty: request.presence_penalty,
         logit_bias: request.logit_bias,
         stream: true,
+        stream_options: {
+          include_usage: true,
+        },
       },
       {
         signal: options?.signal,

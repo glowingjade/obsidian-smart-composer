@@ -39,7 +39,9 @@ import {
 import { readTFileContent } from '../../utils/obsidian'
 import { openSettingsModalWithError } from '../../utils/openSettingsModal'
 import { PromptGenerator } from '../../utils/promptGenerator'
+import { sumTokenUsages } from '../../utils/token'
 
+import AssistantMessageActions from './AssistantMessageActions'
 import ChatUserInput, { ChatUserInputRef } from './chat-input/ChatUserInput'
 import { editorStateToPlainText } from './chat-input/utils/editor-state-to-plain-text'
 import { ChatListDropdown } from './ChatListDropdown'
@@ -237,7 +239,15 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       const responseMessageId = uuidv4()
       setChatMessages([
         ...newChatHistory,
-        { role: 'assistant', content: '', id: responseMessageId },
+        {
+          role: 'assistant',
+          content: '',
+          id: responseMessageId,
+          metadata: {
+            usage: undefined,
+            model: undefined,
+          },
+        },
       ])
 
       try {
@@ -256,7 +266,15 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
 
         setChatMessages([
           ...compiledMessages,
-          { role: 'assistant', content: '', id: responseMessageId },
+          {
+            role: 'assistant',
+            content: '',
+            id: responseMessageId,
+            metadata: {
+              usage: undefined,
+              model: undefined,
+            },
+          },
         ])
         const stream = await streamResponse(
           chatModel,
@@ -275,7 +293,18 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           setChatMessages((prevChatHistory) =>
             prevChatHistory.map((message) =>
               message.role === 'assistant' && message.id === responseMessageId
-                ? { ...message, content: message.content + content }
+                ? {
+                    ...message,
+                    content: message.content + content,
+                    metadata: {
+                      ...message.metadata,
+                      usage: sumTokenUsages([
+                        message.metadata?.usage,
+                        chunk.usage,
+                      ]),
+                      model: chatModel,
+                    },
+                  }
                 : message,
             ),
           )
@@ -596,15 +625,17 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
               )}
             </div>
           ) : (
-            <ReactMarkdownItem
-              key={message.id}
-              index={index}
-              chatMessages={chatMessages}
-              handleApply={handleApply}
-              isApplying={applyMutation.isPending}
-            >
-              {message.content}
-            </ReactMarkdownItem>
+            <div key={message.id} className="smtcmp-chat-messages-assistant">
+              <ReactMarkdownItem
+                index={index}
+                chatMessages={chatMessages}
+                handleApply={handleApply}
+                isApplying={applyMutation.isPending}
+              >
+                {message.content}
+              </ReactMarkdownItem>
+              {message.content && <AssistantMessageActions message={message} />}
+            </div>
           ),
         )}
         <QueryProgress state={queryProgress} />
