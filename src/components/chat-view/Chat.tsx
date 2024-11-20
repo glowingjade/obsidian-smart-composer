@@ -22,6 +22,7 @@ import {
   LLMAPIKeyInvalidException,
   LLMAPIKeyNotSetException,
   LLMBaseUrlNotSetException,
+  LLMModelNotSetException,
 } from '../../core/llm/exception'
 import { useChatHistory } from '../../hooks/useChatHistory'
 import { ChatMessage, ChatUserMessage } from '../../types/chat'
@@ -83,7 +84,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     getChatMessagesById,
     chatList,
   } = useChatHistory()
-  const { generateResponse, streamResponse } = useLLM()
+  const { generateResponse, streamResponse, chatModel, applyModel } = useLLM()
 
   const promptGenerator = useMemo(() => {
     return new PromptGenerator(getRAGEngine, app, settings)
@@ -258,8 +259,9 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           { role: 'assistant', content: '', id: responseMessageId },
         ])
         const stream = await streamResponse(
+          chatModel,
           {
-            model: settings.chatModel,
+            model: chatModel.model,
             messages: requestMessages,
             stream: true,
           },
@@ -296,7 +298,8 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       if (
         error instanceof LLMAPIKeyNotSetException ||
         error instanceof LLMAPIKeyInvalidException ||
-        error instanceof LLMBaseUrlNotSetException
+        error instanceof LLMBaseUrlNotSetException ||
+        error instanceof LLMModelNotSetException
       ) {
         openSettingsModalWithError(app, error.message)
       } else {
@@ -334,7 +337,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         activeFile,
         activeFileContent,
         chatMessages,
-        settings.applyModel,
+        applyModel,
         generateResponse,
       )
       if (!updatedFileContent) {
@@ -355,7 +358,8 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       if (
         error instanceof LLMAPIKeyNotSetException ||
         error instanceof LLMAPIKeyInvalidException ||
-        error instanceof LLMBaseUrlNotSetException
+        error instanceof LLMBaseUrlNotSetException ||
+        error instanceof LLMModelNotSetException
       ) {
         openSettingsModalWithError(app, error.message)
       } else {

@@ -1,6 +1,12 @@
+/**
+ * This provider is nearly identical to OpenAICompatibleProvider, but uses a custom OpenAI client
+ * (NoStainlessOpenAI) to work around CORS issues specific to Ollama.
+ */
+
 import OpenAI from 'openai'
 import { FinalRequestOptions } from 'openai/core'
 
+import { OllamaModel } from '../../types/llm/model'
 import {
   LLMOptions,
   LLMRequestNonStreaming,
@@ -12,8 +18,8 @@ import {
 } from '../../types/llm/response'
 
 import { BaseLLMProvider } from './base'
-import { LLMBaseUrlNotSetException } from './exception'
-import { OpenAICompatibleProvider } from './openaiCompatibleProvider'
+import { LLMBaseUrlNotSetException, LLMModelNotSetException } from './exception'
+import { OpenAIMessageAdapter } from './openaiMessageAdapter'
 
 export class NoStainlessOpenAI extends OpenAI {
   defaultHeaders() {
@@ -31,6 +37,7 @@ export class NoStainlessOpenAI extends OpenAI {
     const headers = req.req.headers as Record<string, string>
     Object.keys(headers).forEach((k) => {
       if (k.startsWith('x-stainless')) {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete headers[k]
       }
     })
@@ -38,46 +45,60 @@ export class NoStainlessOpenAI extends OpenAI {
   }
 }
 
-export type OllamaModel = 'llama3.1:8b'
-export const OLLAMA_MODELS: OllamaModel[] = ['llama3.1:8b']
+export class OllamaProvider implements BaseLLMProvider {
+  private adapter: OpenAIMessageAdapter
 
-export class OllamaOpenAIProvider implements BaseLLMProvider {
-  private provider: OpenAICompatibleProvider
-  private ollamaBaseUrl: string
-
-  constructor(baseUrl: string) {
-    this.ollamaBaseUrl = baseUrl
-    this.provider = new OpenAICompatibleProvider(
-      new NoStainlessOpenAI({
-        apiKey: '',
-        dangerouslyAllowBrowser: true,
-        baseURL: `${baseUrl}/v1`,
-      }),
-    )
+  constructor() {
+    this.adapter = new OpenAIMessageAdapter()
   }
-  generateResponse(
+
+  async generateResponse(
+    model: OllamaModel,
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
-    if (!this.ollamaBaseUrl) {
+    if (!model.baseURL) {
       throw new LLMBaseUrlNotSetException(
-        'Ollama Address is missing. Please set it in settings menu.',
+        'Ollama base URL is missing. Please set it in settings menu.',
       )
     }
-    return this.provider.generateResponse(request, options)
+
+    if (!model.model) {
+      throw new LLMModelNotSetException(
+        'Ollama model is missing. Please set it in settings menu.',
+      )
+    }
+
+    const client = new NoStainlessOpenAI({
+      baseURL: `${model.baseURL}/v1`,
+      apiKey: '',
+      dangerouslyAllowBrowser: true,
+    })
+    return this.adapter.generateResponse(client, request, options)
   }
-  streamResponse(
+
+  async streamResponse(
+    model: OllamaModel,
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
-    if (!this.ollamaBaseUrl) {
+    if (!model.baseURL) {
       throw new LLMBaseUrlNotSetException(
-        'Ollama Address is missing. Please set it in settings menu.',
+        'Ollama base URL is missing. Please set it in settings menu.',
       )
     }
-    return this.provider.streamResponse(request, options)
-  }
-  getSupportedModels(): string[] {
-    return OLLAMA_MODELS
+
+    if (!model.model) {
+      throw new LLMModelNotSetException(
+        'Ollama model is missing. Please set it in settings menu.',
+      )
+    }
+
+    const client = new NoStainlessOpenAI({
+      baseURL: `${model.baseURL}/v1`,
+      apiKey: '',
+      dangerouslyAllowBrowser: true,
+    })
+    return this.adapter.streamResponse(client, request, options)
   }
 }

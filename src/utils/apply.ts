@@ -3,6 +3,7 @@ import { TFile } from 'obsidian'
 import { editorStateToPlainText } from '../components/chat-view/chat-input/utils/editor-state-to-plain-text'
 import { LLMContextType } from '../contexts/llm-context'
 import { ChatMessage, ChatUserMessage } from '../types/chat'
+import { LLMModel } from '../types/llm/model'
 import { RequestMessage } from '../types/llm/request'
 import { MentionableBlock, MentionableFile } from '../types/mentionable'
 
@@ -84,7 +85,7 @@ export const applyChangesToFile = async (
   currentFile: TFile,
   currentFileContent: string,
   chatMessages: ChatMessage[],
-  model: string,
+  applyModel: LLMModel,
   generateResponse: LLMContextType['generateResponse'],
 ): Promise<string | null> => {
   const requestMessages: RequestMessage[] = [
@@ -103,8 +104,8 @@ export const applyChangesToFile = async (
     },
   ]
 
-  const response = await generateResponse({
-    model,
+  const response = await generateResponse(applyModel, {
+    model: applyModel.model,
     messages: requestMessages,
     stream: false,
   })

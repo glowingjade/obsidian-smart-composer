@@ -1,15 +1,10 @@
 import OpenAI from 'openai'
-import {
-  ChatCompletion,
-  ChatCompletionChunk,
-  ChatCompletionMessageParam,
-} from 'openai/resources/chat/completions'
 
+import { OpenAICompatibleModel } from '../../types/llm/model'
 import {
   LLMOptions,
   LLMRequestNonStreaming,
   LLMRequestStreaming,
-  RequestMessage,
 } from '../../types/llm/request'
 import {
   LLMResponseNonStreaming,
@@ -17,121 +12,63 @@ import {
 } from '../../types/llm/response'
 
 import { BaseLLMProvider } from './base'
+import { LLMBaseUrlNotSetException, LLMModelNotSetException } from './exception'
+import { OpenAIMessageAdapter } from './openaiMessageAdapter'
 
 export class OpenAICompatibleProvider implements BaseLLMProvider {
-  private client: OpenAI
+  private adapter: OpenAIMessageAdapter
 
-  constructor(client: OpenAI) {
-    this.client = client
+  constructor() {
+    this.adapter = new OpenAIMessageAdapter()
   }
 
   async generateResponse(
+    model: OpenAICompatibleModel,
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
-    const response = await this.client.chat.completions.create(
-      {
-        model: request.model,
-        messages: request.messages.map((m) =>
-          OpenAICompatibleProvider.parseRequestMessage(m),
-        ),
-        max_tokens: request.max_tokens,
-        temperature: request.temperature,
-        top_p: request.top_p,
-        frequency_penalty: request.frequency_penalty,
-        presence_penalty: request.presence_penalty,
-        logit_bias: request.logit_bias,
-      },
-      {
-        signal: options?.signal,
-      },
-    )
-    return OpenAICompatibleProvider.parseNonStreamingResponse(response)
+    if (!model.baseURL) {
+      throw new LLMBaseUrlNotSetException(
+        'OpenAI Compatible base URL is missing. Please set it in settings menu.',
+      )
+    }
+
+    if (!model.model) {
+      throw new LLMModelNotSetException(
+        'OpenAI Compatible model is missing. Please set it in settings menu.',
+      )
+    }
+
+    const client = new OpenAI({
+      apiKey: model.apiKey,
+      baseURL: model.baseURL,
+      dangerouslyAllowBrowser: true,
+    })
+    return this.adapter.generateResponse(client, request, options)
   }
 
   async streamResponse(
+    model: OpenAICompatibleModel,
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
-    const stream = await this.client.chat.completions.create(
-      {
-        model: request.model,
-        messages: request.messages.map((m) =>
-          OpenAICompatibleProvider.parseRequestMessage(m),
-        ),
-        max_completion_tokens: request.max_tokens,
-        temperature: request.temperature,
-        top_p: request.top_p,
-        frequency_penalty: request.frequency_penalty,
-        presence_penalty: request.presence_penalty,
-        logit_bias: request.logit_bias,
-        stream: true,
-      },
-      {
-        signal: options?.signal,
-      },
-    )
-
-    // eslint-disable-next-line no-inner-declarations
-    async function* streamResponse(): AsyncIterable<LLMResponseStreaming> {
-      for await (const chunk of stream) {
-        yield OpenAICompatibleProvider.parseStreamingResponseChunk(chunk)
-      }
+    if (!model.baseURL) {
+      throw new LLMBaseUrlNotSetException(
+        'OpenAI Compatible base URL is missing. Please set it in settings menu.',
+      )
     }
 
-    return streamResponse()
-  }
-
-  static parseRequestMessage(
-    message: RequestMessage,
-  ): ChatCompletionMessageParam {
-    return {
-      role: message.role,
-      content: message.content,
+    if (!model.model) {
+      throw new LLMModelNotSetException(
+        'OpenAI Compatible model is missing. Please set it in settings menu.',
+      )
     }
-  }
 
-  static parseNonStreamingResponse(
-    response: ChatCompletion,
-  ): LLMResponseNonStreaming {
-    return {
-      id: response.id,
-      choices: response.choices.map((choice) => ({
-        finish_reason: choice.finish_reason,
-        message: {
-          content: choice.message.content,
-          role: choice.message.role,
-        },
-      })),
-      created: response.created,
-      model: response.model,
-      object: 'chat.completion',
-      system_fingerprint: response.system_fingerprint,
-      usage: response.usage,
-    }
-  }
-
-  static parseStreamingResponseChunk(
-    chunk: ChatCompletionChunk,
-  ): LLMResponseStreaming {
-    return {
-      id: chunk.id,
-      choices: chunk.choices.map((choice) => ({
-        finish_reason: choice.finish_reason ?? null,
-        delta: {
-          content: choice.delta.content ?? null,
-          role: choice.delta.role,
-        },
-      })),
-      created: chunk.created,
-      model: chunk.model,
-      object: 'chat.completion.chunk',
-      system_fingerprint: chunk.system_fingerprint,
-      usage: chunk.usage,
-    }
-  }
-
-  getSupportedModels(): string[] {
-    throw new Error('Not implemented')
+    const client = new OpenAI({
+      apiKey: model.apiKey,
+      baseURL: model.baseURL,
+      dangerouslyAllowBrowser: true,
+    })
+    return this.adapter.streamResponse(client, request, options)
   }
 }

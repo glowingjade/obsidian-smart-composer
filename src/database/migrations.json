@@ -51,5 +51,22 @@
     "bps": true,
     "folderMillis": 1730443763982,
     "hash": "eddf72b8d40619c170b3c12f3d3ce280385b1fc05717f211ab6077c6bea691bf"
+  },
+  {
+    "sql": [
+      "ALTER TABLE \"vector_data_text_embedding_3_small\" RENAME TO \"vector_data_openai_text_embedding_3_small\";",
+      "\nALTER TABLE \"vector_data_text_embedding_3_large\" RENAME TO \"vector_data_openai_text_embedding_3_large\";",
+      "\nALTER TABLE \"vector_data_nomic_embed_text\" RENAME TO \"vector_data_ollama_nomic_embed_text\";",
+      "\nALTER TABLE \"vector_data_mxbai_embed_large\" RENAME TO \"vector_data_ollama_mxbai_embed_large\";",
+      "\nALTER TABLE \"vector_data_bge_m3\" RENAME TO \"vector_data_ollama_bge_m3\";",
+      "\nALTER INDEX IF EXISTS \"embeddingIndex_text_embedding_3_small\" RENAME TO \"embeddingIndex_openai_text_embedding_3_small\";",
+      "\nALTER INDEX IF EXISTS \"embeddingIndex_nomic_embed_text\" RENAME TO \"embeddingIndex_ollama_nomic_embed_text\";",
+      "\nALTER INDEX IF EXISTS \"embeddingIndex_mxbai_embed_large\" RENAME TO \"embeddingIndex_ollama_mxbai_embed_large\";",
+      "\nALTER INDEX IF EXISTS \"embeddingIndex_bge_m3\" RENAME TO \"embeddingIndex_ollama_bge_m3\";",
+      ""
+    ],
+    "bps": true,
+    "folderMillis": 1732064682864,
+    "hash": "3dad96e7f1c939c5da3cae4792782e7a35488d39da418e6a9e6f60eafd637f55"
   }
 ]

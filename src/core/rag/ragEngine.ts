@@ -24,22 +24,22 @@ export class RAGEngine {
     this.settings = settings
     this.vectorManager = dbManager.getVectorManager()
     this.embeddingModel = getEmbeddingModel(
-      settings.embeddingModel,
+      settings.embeddingModelId,
       {
         openAIApiKey: settings.openAIApiKey,
       },
-      settings.ollamaBaseUrl,
+      settings.ollamaEmbeddingModel.baseUrl,
     )
   }
 
   setSettings(settings: SmartCopilotSettings) {
     this.settings = settings
     this.embeddingModel = getEmbeddingModel(
-      settings.embeddingModel,
+      settings.embeddingModelId,
       {
         openAIApiKey: settings.openAIApiKey,
       },
-      settings.ollamaBaseUrl,
+      settings.ollamaEmbeddingModel.baseUrl,
     )
   }
 
