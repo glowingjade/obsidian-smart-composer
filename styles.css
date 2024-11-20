@@ -126,8 +126,20 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
 
 .smtcmp-chat-container {
   display: flex;
+  position: relative;
   flex-direction: column;
   height: 100%;
+
+  .smtcmp-stop-gen-btn {
+    z-index: 1000;
+    position: absolute;
+    bottom: 160px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-1);
+  }
 }
 
 .smtcmp-chat-messages {
@@ -139,6 +151,18 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   gap: var(--size-4-1);
   padding: 0 var(--size-4-3) var(--size-4-5) var(--size-4-3);
   margin: var(--size-4-2) calc(var(--size-4-3) * -1) 0;
+
+  .smtcmp-chat-messages-user {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-1);
+  }
+
+  .smtcmp-chat-messages-assistant {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-1);
+  }
 }
 
 .obsidian-default-textarea {
@@ -449,6 +473,12 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
 .smtcmp-popover li .smtcmp-chat-list-dropdown-item-delete:hover {
   background-color: var(--background-modifier-hover);
   border-radius: var(--radius-s);
+}
+
+.smtcmp-chat-list-dropdown-content li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .smtcmp-code-block {
@@ -841,6 +871,87 @@ button.smtcmp-chat-input-model-select {
 
     &:hover {
       opacity: 1;
+    }
+  }
+}
+
+.smtcmp-assistant-message-footer {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+
+  button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    color: var(--text-muted);
+
+    &:hover {
+      background-color: var(--background-modifier-hover);
+    }
+  }
+}
+
+.smtcmp-popover-content {
+  background-color: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  padding: var(--size-4-1) var(--size-4-2);
+  font-size: var(--font-smallest);
+  animation: fadeIn 0.1s ease-in-out;
+}
+
+.smtcmp-similarity-search-results {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--font-smaller);
+  padding-top: var(--size-4-1);
+  padding-bottom: var(--size-4-1);
+  user-select: none;
+
+  .smtcmp-similarity-search-results__trigger {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-1);
+    padding: var(--size-4-1);
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    &:hover {
+      background-color: var(--background-modifier-hover);
+    }
+  }
+
+  .smtcmp-similarity-search-item {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    gap: var(--size-4-2);
+    padding: var(--size-4-1);
+    border-radius: var(--radius-s);
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--background-modifier-hover);
+    }
+
+    .smtcmp-similarity-search-item__path {
+      flex-shrink: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: var(--font-smallest);
+    }
+
+    .smtcmp-similarity-search-item__line-numbers {
+      flex-shrink: 0;
+      margin-left: auto;
+      font-size: var(--font-smallest);
     }
   }
 }

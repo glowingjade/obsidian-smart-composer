@@ -26,6 +26,7 @@ const serializeChatMessage = (message: ChatMessage): SerializedChatMessage => {
         promptContent: message.promptContent,
         id: message.id,
         mentionables: message.mentionables.map(serializeMentionable),
+        similaritySearchResults: message.similaritySearchResults,
       }
     case 'assistant':
       return {
@@ -50,6 +51,7 @@ const deserializeChatMessage = (
         mentionables: message.mentionables
           .map((m) => deserializeMentionable(m, app))
           .filter((m): m is Mentionable => m !== null),
+        similaritySearchResults: message.similaritySearchResults,
       }
     }
     case 'assistant':

@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
-import { History, Plus } from 'lucide-react'
+import { CircleStop, History, Plus } from 'lucide-react'
 import { App, Notice } from 'obsidian'
 import {
   forwardRef,
@@ -44,6 +44,7 @@ import { editorStateToPlainText } from './chat-input/utils/editor-state-to-plain
 import { ChatListDropdown } from './ChatListDropdown'
 import QueryProgress, { QueryProgressState } from './QueryProgress'
 import ReactMarkdown from './ReactMarkdown'
+import SimilaritySearchResults from './SimilaritySearchResults'
 
 // Add an empty line here
 const getNewInputMessage = (app: App): ChatUserMessage => {
@@ -118,9 +119,9 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const [queryProgress, setQueryProgress] = useState<QueryProgressState>({
     type: 'idle',
   })
+
   const preventAutoScrollRef = useRef(false)
   const lastProgrammaticScrollRef = useRef<number>(0)
-
   const activeStreamAbortControllersRef = useRef<AbortController[]>([])
   const chatUserInputRefs = useRef<Map<string, ChatUserInputRef>>(new Map())
   const chatMessagesRef = useRef<HTMLDivElement>(null)
@@ -539,48 +540,57 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       <div className="smtcmp-chat-messages" ref={chatMessagesRef}>
         {chatMessages.map((message, index) =>
           message.role === 'user' ? (
-            <ChatUserInput
-              key={message.id}
-              ref={(ref) => registerChatUserInputRef(message.id, ref)}
-              initialSerializedEditorState={message.content}
-              onChange={(content) => {
-                setChatMessages((prevChatHistory) =>
-                  prevChatHistory.map((msg) =>
-                    msg.role === 'user' && msg.id === message.id
-                      ? {
-                          ...msg,
-                          content,
-                        }
-                      : msg,
-                  ),
-                )
-              }}
-              onSubmit={(content, useVaultSearch) => {
-                if (editorStateToPlainText(content).trim() === '') return
-                handleSubmit(
-                  [
-                    ...chatMessages.slice(0, index),
-                    {
-                      ...message,
-                      content,
-                    },
-                  ],
-                  useVaultSearch,
-                )
-                chatUserInputRefs.current.get(inputMessage.id)?.focus()
-              }}
-              onFocus={() => {
-                setFocusedMessageId(message.id)
-              }}
-              mentionables={message.mentionables}
-              setMentionables={(mentionables) => {
-                setChatMessages((prevChatHistory) =>
-                  prevChatHistory.map((msg) =>
-                    msg.id === message.id ? { ...msg, mentionables } : msg,
-                  ),
-                )
-              }}
-            />
+            <div key={message.id} className="smtcmp-chat-messages-user">
+              <ChatUserInput
+                ref={(ref) => registerChatUserInputRef(message.id, ref)}
+                initialSerializedEditorState={message.content}
+                onChange={(content) => {
+                  setChatMessages((prevChatHistory) =>
+                    prevChatHistory.map((msg) =>
+                      msg.role === 'user' && msg.id === message.id
+                        ? {
+                            ...msg,
+                            content,
+                          }
+                        : msg,
+                    ),
+                  )
+                }}
+                onSubmit={(content, useVaultSearch) => {
+                  if (editorStateToPlainText(content).trim() === '') return
+                  handleSubmit(
+                    [
+                      ...chatMessages.slice(0, index),
+                      {
+                        role: 'user',
+                        content: content,
+                        promptContent: null,
+                        id: message.id,
+                        mentionables: message.mentionables,
+                      },
+                    ],
+                    useVaultSearch,
+                  )
+                  chatUserInputRefs.current.get(inputMessage.id)?.focus()
+                }}
+                onFocus={() => {
+                  setFocusedMessageId(message.id)
+                }}
+                mentionables={message.mentionables}
+                setMentionables={(mentionables) => {
+                  setChatMessages((prevChatHistory) =>
+                    prevChatHistory.map((msg) =>
+                      msg.id === message.id ? { ...msg, mentionables } : msg,
+                    ),
+                  )
+                }}
+              />
+              {message.similaritySearchResults && (
+                <SimilaritySearchResults
+                  similaritySearchResults={message.similaritySearchResults}
+                />
+              )}
+            </div>
           ) : (
             <ReactMarkdownItem
               key={message.id}
@@ -594,6 +604,12 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           ),
         )}
         <QueryProgress state={queryProgress} />
+        {submitMutation.isPending && (
+          <button onClick={abortActiveStreams} className="smtcmp-stop-gen-btn">
+            <CircleStop size={16} />
+            <div>Stop Generation</div>
+          </button>
+        )}
       </div>
       <ChatUserInput
         key={inputMessage.id} // this is needed to clear the editor when the user submits a new message
