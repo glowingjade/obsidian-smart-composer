@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting } from 'obsidian'
+import { App, Modal, PluginSettingTab, Setting, TFile } from 'obsidian'
 
 import {
   APPLY_MODEL_OPTIONS,
@@ -6,6 +6,7 @@ import {
   EMBEDDING_MODEL_OPTIONS,
 } from '../constants'
 import SmartCopilotPlugin from '../main'
+import { findFilesMatchingPatterns } from '../utils/globUtils'
 
 export class SmartCopilotSettingTab extends PluginSettingTab {
   plugin: SmartCopilotPlugin
@@ -178,7 +179,17 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName('Exclude patterns')
       .setDesc(
-        'Files matching these patterns will be excluded from indexing. One pattern per line. Uses glob patterns (e.g., "private/*", "*.tmp").',
+        'Files matching these patterns will be excluded from indexing. One pattern per line. Uses glob patterns (e.g., "private/*", "*.tmp"). After changing this, use the command "Rebuild entire vault index" to apply changes.',
+      )
+      .addButton((button) =>
+        button.setButtonText('Test patterns').onClick(async () => {
+          const patterns = this.plugin.settings.ragOptions.excludePatterns
+          const excludedFiles = await findFilesMatchingPatterns(
+            patterns,
+            this.plugin.app.vault,
+          )
+          new ExcludedFilesModal(this.app, excludedFiles).open()
+        }),
       )
 
     new Setting(containerEl)
@@ -292,5 +303,36 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
             }
           }),
       )
+  }
+}
+
+class ExcludedFilesModal extends Modal {
+  private files: TFile[]
+
+  constructor(app: App, files: TFile[]) {
+    super(app)
+    this.files = files
+  }
+
+  onOpen() {
+    const { contentEl } = this
+    contentEl.empty()
+
+    this.titleEl.setText(`Excluded Files (${this.files.length})`)
+
+    if (this.files.length === 0) {
+      contentEl.createEl('p', { text: 'No files match the exclusion patterns' })
+      return
+    }
+
+    const list = contentEl.createEl('ul')
+    this.files.forEach((file) => {
+      list.createEl('li', { text: file.path })
+    })
+  }
+
+  onClose() {
+    const { contentEl } = this
+    contentEl.empty()
   }
 }
