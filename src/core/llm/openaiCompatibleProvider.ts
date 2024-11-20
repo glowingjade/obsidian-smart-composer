@@ -12,6 +12,7 @@ import {
 } from '../../types/llm/response'
 
 import { BaseLLMProvider } from './base'
+import { LLMBaseUrlNotSetException } from './exception'
 import { OpenAIMessageAdapter } from './openaiMessageAdapter'
 
 export class OpenAICompatibleProvider implements BaseLLMProvider {
@@ -26,6 +27,12 @@ export class OpenAICompatibleProvider implements BaseLLMProvider {
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
+    if (!model.baseURL) {
+      throw new LLMBaseUrlNotSetException(
+        'OpenAI Compatible base URL is missing. Please set it in settings menu.',
+      )
+    }
+
     const client = new OpenAI({
       apiKey: model.apiKey,
       baseURL: model.baseURL,
@@ -39,6 +46,12 @@ export class OpenAICompatibleProvider implements BaseLLMProvider {
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
+    if (!model.baseURL) {
+      throw new LLMBaseUrlNotSetException(
+        'OpenAI Compatible base URL is missing. Please set it in settings menu.',
+      )
+    }
+
     const client = new OpenAI({
       apiKey: model.apiKey,
       baseURL: model.baseURL,
