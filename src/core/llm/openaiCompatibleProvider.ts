@@ -12,7 +12,7 @@ import {
 } from '../../types/llm/response'
 
 import { BaseLLMProvider } from './base'
-import { LLMBaseUrlNotSetException } from './exception'
+import { LLMBaseUrlNotSetException, LLMModelNotSetException } from './exception'
 import { OpenAIMessageAdapter } from './openaiMessageAdapter'
 
 export class OpenAICompatibleProvider implements BaseLLMProvider {
@@ -33,6 +33,12 @@ export class OpenAICompatibleProvider implements BaseLLMProvider {
       )
     }
 
+    if (!model.model) {
+      throw new LLMModelNotSetException(
+        'OpenAI Compatible model is missing. Please set it in settings menu.',
+      )
+    }
+
     const client = new OpenAI({
       apiKey: model.apiKey,
       baseURL: model.baseURL,
@@ -49,6 +55,12 @@ export class OpenAICompatibleProvider implements BaseLLMProvider {
     if (!model.baseURL) {
       throw new LLMBaseUrlNotSetException(
         'OpenAI Compatible base URL is missing. Please set it in settings menu.',
+      )
+    }
+
+    if (!model.model) {
+      throw new LLMModelNotSetException(
+        'OpenAI Compatible model is missing. Please set it in settings menu.',
       )
     }
 

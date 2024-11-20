@@ -18,3 +18,10 @@ export class LLMBaseUrlNotSetException extends Error {
     this.name = 'LLMBaseUrlNotSetException'
   }
 }
+
+export class LLMModelNotSetException extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'LLMModelNotSetException'
+  }
+}
