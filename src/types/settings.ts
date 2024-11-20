@@ -1,4 +1,4 @@
-import semver from 'semver'
+import * as semver from 'semver'
 import { z } from 'zod'
 
 import {
@@ -170,7 +170,7 @@ function migrateSettings(
   data: Record<string, unknown>,
 ): Record<string, unknown> {
   let currentData = { ...data }
-  const currentVersion = (currentData.version as string) || '0.0.0'
+  const currentVersion = (currentData.version as string) ?? '0.0.0'
 
   for (const migration of MIGRATIONS) {
     if (
