@@ -118,7 +118,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const [queryProgress, setQueryProgress] = useState<QueryProgressState>({
     type: 'idle',
   })
-  const [isStreaming, setIsStreaming] = useState(false)
 
   const preventAutoScrollRef = useRef(false)
   const lastProgrammaticScrollRef = useRef<number>(0)
@@ -172,7 +171,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       abortController.abort()
     }
     activeStreamAbortControllersRef.current = []
-    setIsStreaming(false)
   }
 
   const handleLoadConversation = async (conversationId: string) => {
@@ -243,7 +241,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       try {
         const abortController = new AbortController()
         activeStreamAbortControllersRef.current.push(abortController)
-        setIsStreaming(true)
 
         const { requestMessages, compiledMessages } =
           await promptGenerator.generateRequestMessages({
@@ -283,7 +280,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
             handleScrollToBottom()
           }
         }
-        setIsStreaming(false)
       } catch (error) {
         if (error.name === 'AbortError') {
           return
@@ -598,7 +594,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           ),
         )}
         <QueryProgress state={queryProgress} />
-        {isStreaming && (
+        {submitMutation.isPending && (
           <button onClick={abortActiveStreams} className="smtcmp-stop-gen-btn">
             <CircleStop size={16} />
             <div>Stop Generation</div>
