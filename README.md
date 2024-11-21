@@ -140,3 +140,7 @@ If you find Smart Composer valuable, consider supporting its development:
 Follow me on X (Twitter) [@andy_suh_](https://x.com/andy_suh_) for updates and announcements!
 
 Your support helps maintain and improve this plugin. Every contribution is appreciated and makes a difference. Thank you for your support!
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=glowingjade/obsidian-smart-composer&type=Date)](https://star-history.com/#glowingjade/obsidian-smart-composer&Date)
