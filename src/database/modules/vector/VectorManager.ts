@@ -1,7 +1,7 @@
 import { backOff } from 'exponential-backoff'
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter'
 import { minimatch } from 'minimatch'
-import { App, TFile } from 'obsidian'
+import { App, Notice, TFile } from 'obsidian'
 import pLimit from 'p-limit'
 
 import { IndexProgress } from '../../../components/chat-view/QueryProgress'
@@ -9,6 +9,7 @@ import {
   LLMAPIKeyInvalidException,
   LLMAPIKeyNotSetException,
   LLMBaseUrlNotSetException,
+  LLMRateLimitExceededException,
 } from '../../../core/llm/exception'
 import { InsertVector, SelectVector } from '../../../database/schema'
 import { EmbeddingModel } from '../../../types/embedding'
@@ -174,13 +175,6 @@ export class VectorManager {
               startingDelay: 1000,
               timeMultiple: 1.5,
               jitter: 'full',
-              retry: (error) => {
-                console.error(error)
-                const isRateLimitError =
-                  error.status === 429 &&
-                  error.message.toLowerCase().includes('rate limit')
-                return !!isRateLimitError // retry only for rate limit errors
-              },
             },
           )
         } catch (error) {
@@ -199,6 +193,8 @@ export class VectorManager {
         error instanceof LLMBaseUrlNotSetException
       ) {
         openSettingsModalWithError(this.app, (error as Error).message)
+      } else if (error instanceof LLMRateLimitExceededException) {
+        new Notice(error.message)
       } else {
         console.error('Error embedding chunks:', error)
         throw error
