@@ -1,6 +1,8 @@
 // These types are based on the OpenRouter API specification
 // https://openrouter.ai/docs/requests
 
+import { ChatCompletionCreateParams } from 'openai/resources'
+
 export type LLMRequestBase = {
   messages: RequestMessage[]
   model: string
@@ -14,6 +16,9 @@ export type LLMRequestBase = {
 
   // Additional optional parameters
   logit_bias?: Record<number, number>
+
+  // Only available for OpenAI
+  prediction?: ChatCompletionCreateParams['prediction']
 }
 
 export type LLMRequestNonStreaming = LLMRequestBase & {

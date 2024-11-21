@@ -34,6 +34,7 @@ export class OpenAIMessageAdapter {
         frequency_penalty: request.frequency_penalty,
         presence_penalty: request.presence_penalty,
         logit_bias: request.logit_bias,
+        prediction: request.prediction,
       },
       {
         signal: options?.signal,
@@ -124,7 +125,7 @@ export class OpenAIMessageAdapter {
       model: chunk.model,
       object: 'chat.completion.chunk',
       system_fingerprint: chunk.system_fingerprint,
-      usage: chunk.usage,
+      usage: chunk.usage ?? undefined,
     }
   }
 }
