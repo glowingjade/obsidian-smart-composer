@@ -21,7 +21,7 @@ export type LLMResponseStreaming = LLMResponseBase & {
 
 export type LLMResponse = LLMResponseNonStreaming | LLMResponseStreaming
 
-type ResponseUsage = {
+export type ResponseUsage = {
   prompt_tokens: number
   completion_tokens: number
   total_tokens: number

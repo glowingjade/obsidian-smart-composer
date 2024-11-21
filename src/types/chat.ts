@@ -2,6 +2,8 @@ import { SerializedEditorState } from 'lexical'
 
 import { SelectVector } from '../database/schema'
 
+import { LLMModel } from './llm/model'
+import { ResponseUsage } from './llm/response'
 import { Mentionable, SerializedMentionable } from './mentionable'
 
 export type ChatUserMessage = {
@@ -18,6 +20,10 @@ export type ChatAssistantMessage = {
   role: 'assistant'
   content: string
   id: string
+  metadata?: {
+    usage?: ResponseUsage
+    model?: LLMModel
+  }
 }
 export type ChatMessage = ChatUserMessage | ChatAssistantMessage
 
@@ -35,6 +41,10 @@ export type SerializedChatAssistantMessage = {
   role: 'assistant'
   content: string
   id: string
+  metadata?: {
+    usage?: ResponseUsage
+    model?: LLMModel
+  }
 }
 export type SerializedChatMessage =
   | SerializedChatUserMessage

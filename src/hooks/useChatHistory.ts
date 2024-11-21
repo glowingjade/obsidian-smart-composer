@@ -33,6 +33,7 @@ const serializeChatMessage = (message: ChatMessage): SerializedChatMessage => {
         role: 'assistant',
         content: message.content,
         id: message.id,
+        metadata: message.metadata,
       }
   }
 }
@@ -59,6 +60,7 @@ const deserializeChatMessage = (
         role: 'assistant',
         content: message.content,
         id: message.id,
+        metadata: message.metadata,
       }
   }
 }
