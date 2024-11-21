@@ -39,7 +39,6 @@ import {
 import { readTFileContent } from '../../utils/obsidian'
 import { openSettingsModalWithError } from '../../utils/openSettingsModal'
 import { PromptGenerator } from '../../utils/promptGenerator'
-import { sumTokenUsages } from '../../utils/token'
 
 import AssistantMessageActions from './AssistantMessageActions'
 import ChatUserInput, { ChatUserInputRef } from './chat-input/ChatUserInput'
@@ -298,10 +297,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
                     content: message.content + content,
                     metadata: {
                       ...message.metadata,
-                      usage: sumTokenUsages([
-                        message.metadata?.usage,
-                        chunk.usage,
-                      ]),
+                      usage: chunk.usage ?? message.metadata?.usage, // Keep existing usage if chunk has no usage data
                       model: chatModel,
                     },
                   }

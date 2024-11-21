@@ -14,6 +14,7 @@ import {
 import {
   LLMResponseNonStreaming,
   LLMResponseStreaming,
+  ResponseUsage,
 } from '../../types/llm/response'
 
 import { BaseLLMProvider } from './base'
@@ -114,23 +115,22 @@ export class AnthropicProvider implements BaseLLMProvider {
       async function* streamResponse(): AsyncIterable<LLMResponseStreaming> {
         let messageId = ''
         let model = ''
+        let usage: ResponseUsage = {
+          prompt_tokens: 0,
+          completion_tokens: 0,
+          total_tokens: 0,
+        }
+
         for await (const chunk of stream) {
           if (chunk.type === 'message_start') {
             messageId = chunk.message.id
             model = chunk.message.model
-
-            yield {
-              id: messageId,
-              choices: [],
-              object: 'chat.completion.chunk',
-              model: model,
-              usage: {
-                prompt_tokens: chunk.message.usage.input_tokens,
-                completion_tokens: chunk.message.usage.output_tokens,
-                total_tokens:
-                  chunk.message.usage.input_tokens +
-                  chunk.message.usage.output_tokens,
-              },
+            usage = {
+              prompt_tokens: chunk.message.usage.input_tokens,
+              completion_tokens: chunk.message.usage.output_tokens,
+              total_tokens:
+                chunk.message.usage.input_tokens +
+                chunk.message.usage.output_tokens,
             }
           } else if (chunk.type === 'content_block_delta') {
             yield AnthropicProvider.parseStreamingResponseChunk(
@@ -139,18 +139,22 @@ export class AnthropicProvider implements BaseLLMProvider {
               model,
             )
           } else if (chunk.type === 'message_delta') {
-            yield {
-              id: messageId,
-              choices: [],
-              object: 'chat.completion.chunk',
-              model: model,
-              usage: {
-                prompt_tokens: 0,
-                completion_tokens: chunk.usage.output_tokens,
-                total_tokens: chunk.usage.output_tokens,
-              },
+            usage = {
+              prompt_tokens: usage.prompt_tokens,
+              completion_tokens:
+                usage.completion_tokens + chunk.usage.output_tokens,
+              total_tokens: usage.total_tokens + chunk.usage.output_tokens,
             }
           }
+        }
+
+        // After the stream is complete, yield the final usage
+        yield {
+          id: messageId,
+          choices: [],
+          object: 'chat.completion.chunk',
+          model: model,
+          usage: usage,
         }
       }
 

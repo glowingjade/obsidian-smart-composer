@@ -83,6 +83,11 @@ class LLMManager implements LLMManagerInterface {
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
+    /*
+     * OpenAI, OpenAI-compatible, and Anthropic providers include token usage statistics
+     * in the final chunk of the stream (following OpenAI's behavior).
+     * Groq and Ollama currently do not support usage statistics for streaming responses.
+     */
     switch (model.provider) {
       case 'openai':
         return await this.openaiProvider.streamResponse(model, request, options)
