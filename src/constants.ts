@@ -196,6 +196,12 @@ export const ANTHROPIC_PRICES: Record<string, ModelPricing> = {
   'claude-3-5-haiku-latest': { input: 1, output: 5 },
 }
 
+// Gemini is currently free for low rate limits
+export const GEMINI_PRICES: Record<string, ModelPricing> = {
+  'gemini-1.5-pro': { input: 0, output: 0 },
+  'gemini-1.5-flash': { input: 0, output: 0 },
+}
+
 export const GROQ_PRICES: Record<string, ModelPricing> = {
   'llama-3.1-70b-versatile': { input: 0.59, output: 0.79 },
   'llama-3.1-8b-instant': { input: 0.05, output: 0.08 },
