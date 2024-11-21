@@ -963,6 +963,12 @@ button.smtcmp-chat-input-model-select {
       background-color: var(--background-modifier-hover);
     }
 
+    .smtcmp-similarity-search-item__similarity {
+      flex-shrink: 0;
+      font-size: var(--font-smallest);
+      color: var(--text-muted);
+    }
+
     .smtcmp-similarity-search-item__path {
       flex-shrink: 1;
       white-space: nowrap;
