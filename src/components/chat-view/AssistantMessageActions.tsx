@@ -35,7 +35,7 @@ function CopyButton({ message }: { message: ChatAssistantMessage }) {
         </Tooltip.Trigger>
         <Tooltip.Portal>
           <Tooltip.Content className="smtcmp-tooltip-content">
-            Copy assistant message
+            Copy message
           </Tooltip.Content>
         </Tooltip.Portal>
       </Tooltip.Root>
@@ -68,7 +68,7 @@ function LLMResponesInfoButton({ message }: { message: ChatAssistantMessage }) {
         </Tooltip.Trigger>
         <Tooltip.Portal>
           <Tooltip.Content className="smtcmp-tooltip-content">
-            LLM response information
+            View details
           </Tooltip.Content>
         </Tooltip.Portal>
       </Tooltip.Root>
