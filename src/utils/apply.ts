@@ -108,6 +108,21 @@ export const applyChangesToFile = async (
     model: applyModel.model,
     messages: requestMessages,
     stream: false,
+
+    // prediction is only available for OpenAI
+    prediction: {
+      type: 'content',
+      content: [
+        {
+          type: 'text',
+          text: currentFileContent,
+        },
+        {
+          type: 'text',
+          text: blockToApply,
+        },
+      ],
+    },
   })
 
   const responseContent = response.choices[0].message.content
