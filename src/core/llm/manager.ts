@@ -10,6 +10,7 @@ import {
 } from '../../types/llm/response'
 
 import { AnthropicProvider } from './anthropic'
+import { GeminiProvider } from './gemini'
 import { GroqProvider } from './groq'
 import { OllamaProvider } from './ollama'
 import { OpenAIAuthenticatedProvider } from './openai'
@@ -30,14 +31,21 @@ export type LLMManagerInterface = {
 
 class LLMManager implements LLMManagerInterface {
   private openaiProvider: OpenAIAuthenticatedProvider
-  private groqProvider: GroqProvider
   private anthropicProvider: AnthropicProvider
+  private geminiProvider: GeminiProvider
+  private groqProvider: GroqProvider
   private ollamaProvider: OllamaProvider
   private openaiCompatibleProvider: OpenAICompatibleProvider
 
-  constructor(apiKeys: { openai?: string; groq?: string; anthropic?: string }) {
+  constructor(apiKeys: {
+    openai?: string
+    anthropic?: string
+    gemini?: string
+    groq?: string
+  }) {
     this.openaiProvider = new OpenAIAuthenticatedProvider(apiKeys.openai ?? '')
     this.anthropicProvider = new AnthropicProvider(apiKeys.anthropic ?? '')
+    this.geminiProvider = new GeminiProvider(apiKeys.gemini ?? '')
     this.groqProvider = new GroqProvider(apiKeys.groq ?? '')
     this.ollamaProvider = new OllamaProvider()
     this.openaiCompatibleProvider = new OpenAICompatibleProvider()
@@ -57,6 +65,12 @@ class LLMManager implements LLMManagerInterface {
         )
       case 'anthropic':
         return await this.anthropicProvider.generateResponse(
+          model,
+          request,
+          options,
+        )
+      case 'gemini':
+        return await this.geminiProvider.generateResponse(
           model,
           request,
           options,
@@ -97,6 +111,8 @@ class LLMManager implements LLMManagerInterface {
           request,
           options,
         )
+      case 'gemini':
+        return await this.geminiProvider.streamResponse(model, request, options)
       case 'groq':
         return await this.groqProvider.streamResponse(model, request, options)
       case 'ollama':

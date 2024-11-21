@@ -97,11 +97,17 @@ export function LLMProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     const manager = new LLMManager({
       openai: settings.openAIApiKey,
-      groq: settings.groqApiKey,
       anthropic: settings.anthropicApiKey,
+      gemini: settings.geminiApiKey,
+      groq: settings.groqApiKey,
     })
     setLLMManager(manager)
-  }, [settings.openAIApiKey, settings.groqApiKey, settings.anthropicApiKey])
+  }, [
+    settings.openAIApiKey,
+    settings.anthropicApiKey,
+    settings.geminiApiKey,
+    settings.groqApiKey,
+  ])
 
   const generateResponse = useCallback(
     async (

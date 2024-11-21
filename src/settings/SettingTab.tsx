@@ -65,6 +65,18 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
         }),
     )
 
+    new Setting(containerEl).setName('Gemini API key').addText((text) =>
+      text
+        .setPlaceholder('Enter your API key')
+        .setValue(this.plugin.settings.geminiApiKey)
+        .onChange(async (value) => {
+          await this.plugin.setSettings({
+            ...this.plugin.settings,
+            geminiApiKey: value,
+          })
+        }),
+    )
+
     new Setting(containerEl).setName('Groq API key').addText((text) =>
       text
         .setPlaceholder('Enter your API key')

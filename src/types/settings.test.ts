@@ -8,6 +8,7 @@ describe('parseSmartCopilotSettings', () => {
 
       openAIApiKey: '',
       anthropicApiKey: '',
+      geminiApiKey: '',
       groqApiKey: '',
 
       chatModelId: 'anthropic/claude-3.5-sonnet-latest',
@@ -74,8 +75,9 @@ describe('settings migration', () => {
       version: 1,
 
       openAIApiKey: 'openai-api-key',
-      groqApiKey: 'groq-api-key',
       anthropicApiKey: 'anthropic-api-key',
+      geminiApiKey: '',
+      groqApiKey: 'groq-api-key',
 
       chatModelId: 'anthropic/claude-3.5-sonnet-latest',
       ollamaChatModel: {

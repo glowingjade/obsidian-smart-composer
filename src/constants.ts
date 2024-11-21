@@ -30,6 +30,14 @@ export const CHAT_MODEL_OPTIONS: ModelOption[] = [
     },
   },
   {
+    id: 'gemini/gemini-1.5-pro',
+    name: 'gemini-1.5-pro',
+    model: {
+      provider: 'gemini',
+      model: 'gemini-1.5-pro',
+    },
+  },
+  {
     id: 'groq/llama-3.1-70b-versatile',
     name: 'llama-3.1-70b (Groq)',
     model: {
@@ -73,6 +81,14 @@ export const APPLY_MODEL_OPTIONS: ModelOption[] = [
     model: {
       provider: 'anthropic',
       model: 'claude-3-5-haiku-latest',
+    },
+  },
+  {
+    id: 'gemini/gemini-1.5-flash',
+    name: 'gemini-1.5-flash',
+    model: {
+      provider: 'gemini',
+      model: 'gemini-1.5-flash',
     },
   },
   {
@@ -178,6 +194,12 @@ export const OPENAI_PRICES: Record<string, ModelPricing> = {
 export const ANTHROPIC_PRICES: Record<string, ModelPricing> = {
   'claude-3-5-sonnet-latest': { input: 3, output: 15 },
   'claude-3-5-haiku-latest': { input: 1, output: 5 },
+}
+
+// Gemini is currently free for low rate limits
+export const GEMINI_PRICES: Record<string, ModelPricing> = {
+  'gemini-1.5-pro': { input: 0, output: 0 },
+  'gemini-1.5-flash': { input: 0, output: 0 },
 }
 
 export const GROQ_PRICES: Record<string, ModelPricing> = {
