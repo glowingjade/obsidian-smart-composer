@@ -30,6 +30,14 @@ export const CHAT_MODEL_OPTIONS: ModelOption[] = [
     },
   },
   {
+    id: 'gemini/gemini-1.5-pro',
+    name: 'gemini-1.5-pro',
+    model: {
+      provider: 'gemini',
+      model: 'gemini-1.5-pro',
+    },
+  },
+  {
     id: 'groq/llama-3.1-70b-versatile',
     name: 'llama-3.1-70b (Groq)',
     model: {
@@ -73,6 +81,14 @@ export const APPLY_MODEL_OPTIONS: ModelOption[] = [
     model: {
       provider: 'anthropic',
       model: 'claude-3-5-haiku-latest',
+    },
+  },
+  {
+    id: 'gemini/gemini-1.5-flash',
+    name: 'gemini-1.5-flash',
+    model: {
+      provider: 'gemini',
+      model: 'gemini-1.5-flash',
     },
   },
   {

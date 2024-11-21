@@ -44,6 +44,7 @@ const smartCopilotSettingsSchema = z.object({
   // API Keys
   openAIApiKey: z.string().catch(''),
   anthropicApiKey: z.string().catch(''),
+  geminiApiKey: z.string().catch(''),
   groqApiKey: z.string().catch(''),
 
   // Chat Models
