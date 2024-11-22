@@ -92,9 +92,7 @@ To see our up-to-date project roadmap and progress, please check out our [GitHub
 
 Some of our planned features include:
 
-- Support for other models, including local models
 - Support for image inputs or external files (PDF, DOCX, etc.)
-- Custom prompt templates and system prompts
 - Mentioning with tags or other metadata
 
 ## Feedback and Support
