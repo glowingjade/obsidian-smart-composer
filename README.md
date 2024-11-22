@@ -85,7 +85,7 @@ Note: The Apply Edit feature is currently slower than desired. We are working on
    - Gemini : [Gemini API Keys](https://aistudio.google.com/apikey)
    - Groq : [Groq API Keys](https://console.groq.com/keys)
 
-> **💡 Free Option Available**: You can use Smart Composer with Google's Gemini API completely free! Simply sign up for a Gemini API key to get started.
+> **💡 Free Option Available**: While rate-limited, Gemini API provides the best performance among free models for Smart Composer. Recommended for users looking for a free option.
 
 **📚 For detailed setup instructions and documentation, please visit our [Documentation](https://github.com/glowingjade/obsidian-smart-composer/wiki).**
 
