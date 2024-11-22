@@ -59,6 +59,7 @@ export const vectorTable1 = vectorTables[EMBEDDING_MODEL_OPTIONS[1].id]
 export const vectorTable2 = vectorTables[EMBEDDING_MODEL_OPTIONS[2].id]
 export const vectorTable3 = vectorTables[EMBEDDING_MODEL_OPTIONS[3].id]
 export const vectorTable4 = vectorTables[EMBEDDING_MODEL_OPTIONS[4].id]
+export const vectorTable5 = vectorTables[EMBEDDING_MODEL_OPTIONS[5].id]
 
 /* Template Table */
 export type TemplateContent = {

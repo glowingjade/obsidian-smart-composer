@@ -1,9 +1,11 @@
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import { OpenAI } from 'openai'
 
 import { EmbeddingModel } from '../../types/embedding'
 import {
   LLMAPIKeyNotSetException,
   LLMBaseUrlNotSetException,
+  LLMRateLimitExceededException,
 } from '../llm/exception'
 import { NoStainlessOpenAI } from '../llm/ollama'
 
@@ -11,6 +13,7 @@ export const getEmbeddingModel = (
   embeddingModelId: string,
   apiKeys: {
     openAIApiKey: string
+    geminiApiKey: string
   },
   ollamaBaseUrl: string,
 ): EmbeddingModel => {
@@ -24,16 +27,28 @@ export const getEmbeddingModel = (
         id: 'openai/text-embedding-3-small',
         dimension: 1536,
         getEmbedding: async (text: string) => {
-          if (!openai.apiKey) {
-            throw new LLMAPIKeyNotSetException(
-              'OpenAI API key is missing. Please set it in settings menu.',
-            )
+          try {
+            if (!openai.apiKey) {
+              throw new LLMAPIKeyNotSetException(
+                'OpenAI API key is missing. Please set it in settings menu.',
+              )
+            }
+            const embedding = await openai.embeddings.create({
+              model: 'text-embedding-3-small',
+              input: text,
+            })
+            return embedding.data[0].embedding
+          } catch (error) {
+            if (
+              error.status === 429 &&
+              error.message.toLowerCase().includes('rate limit')
+            ) {
+              throw new LLMRateLimitExceededException(
+                'OpenAI API rate limit exceeded. Please try again later.',
+              )
+            }
+            throw error
           }
-          const embedding = await openai.embeddings.create({
-            model: 'text-embedding-3-small',
-            input: text,
-          })
-          return embedding.data[0].embedding
         },
       }
     }
@@ -46,16 +61,52 @@ export const getEmbeddingModel = (
         id: 'openai/text-embedding-3-large',
         dimension: 3072,
         getEmbedding: async (text: string) => {
-          if (!openai.apiKey) {
-            throw new LLMAPIKeyNotSetException(
-              'OpenAI API key is missing. Please set it in settings menu.',
-            )
+          try {
+            if (!openai.apiKey) {
+              throw new LLMAPIKeyNotSetException(
+                'OpenAI API key is missing. Please set it in settings menu.',
+              )
+            }
+            const embedding = await openai.embeddings.create({
+              model: 'text-embedding-3-large',
+              input: text,
+            })
+            return embedding.data[0].embedding
+          } catch (error) {
+            if (
+              error.status === 429 &&
+              error.message.toLowerCase().includes('rate limit')
+            ) {
+              throw new LLMRateLimitExceededException(
+                'OpenAI API rate limit exceeded. Please try again later.',
+              )
+            }
+            throw error
           }
-          const embedding = await openai.embeddings.create({
-            model: 'text-embedding-3-large',
-            input: text,
-          })
-          return embedding.data[0].embedding
+        },
+      }
+    }
+    case 'gemini/text-embedding-004': {
+      const client = new GoogleGenerativeAI(apiKeys.geminiApiKey)
+      const model = client.getGenerativeModel({ model: 'text-embedding-004' })
+      return {
+        id: 'gemini/text-embedding-004',
+        dimension: 768,
+        getEmbedding: async (text: string) => {
+          try {
+            const response = await model.embedContent(text)
+            return response.embedding.values
+          } catch (error) {
+            if (
+              error.status === 429 &&
+              error.message.includes('RATE_LIMIT_EXCEEDED')
+            ) {
+              throw new LLMRateLimitExceededException(
+                'Gemini API rate limit exceeded. Please try again later.',
+              )
+            }
+            throw error
+          }
         },
       }
     }
