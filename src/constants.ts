@@ -132,7 +132,7 @@ export const APPLY_MODEL_OPTIONS: ModelOption[] = [
 export const EMBEDDING_MODEL_OPTIONS: EmbeddingModelOption[] = [
   {
     id: 'openai/text-embedding-3-small',
-    name: 'text-embedding-3-small (Recommended)',
+    name: 'openai/text-embedding-3-small (Recommended)',
     model: {
       provider: 'openai',
       model: 'text-embedding-3-small',
@@ -141,7 +141,7 @@ export const EMBEDDING_MODEL_OPTIONS: EmbeddingModelOption[] = [
   },
   {
     id: 'openai/text-embedding-3-large',
-    name: 'text-embedding-3-large',
+    name: 'openai/text-embedding-3-large',
     model: {
       provider: 'openai',
       model: 'text-embedding-3-large',
@@ -149,7 +149,16 @@ export const EMBEDDING_MODEL_OPTIONS: EmbeddingModelOption[] = [
     dimension: 3072,
   },
   {
-    name: 'nomic-embed-text (Ollama)',
+    id: 'gemini/text-embedding-004',
+    name: 'gemini/text-embedding-004',
+    model: {
+      provider: 'gemini',
+      model: 'text-embedding-004',
+    },
+    dimension: 768,
+  },
+  {
+    name: 'ollama/nomic-embed-text',
     id: 'ollama/nomic-embed-text',
     model: {
       provider: 'ollama',
@@ -159,7 +168,7 @@ export const EMBEDDING_MODEL_OPTIONS: EmbeddingModelOption[] = [
     dimension: 768,
   },
   {
-    name: 'mxbai-embed-large (Ollama)',
+    name: 'ollama/mxbai-embed-large',
     id: 'ollama/mxbai-embed-large',
     model: {
       provider: 'ollama',
@@ -169,7 +178,7 @@ export const EMBEDDING_MODEL_OPTIONS: EmbeddingModelOption[] = [
     dimension: 1024,
   },
   {
-    name: 'bge-m3 (Ollama)',
+    name: 'ollama/bge-m3',
     id: 'ollama/bge-m3',
     model: {
       provider: 'ollama',

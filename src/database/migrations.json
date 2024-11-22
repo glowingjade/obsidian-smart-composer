@@ -68,5 +68,14 @@
     "bps": true,
     "folderMillis": 1732064682864,
     "hash": "3dad96e7f1c939c5da3cae4792782e7a35488d39da418e6a9e6f60eafd637f55"
+  },
+  {
+    "sql": [
+      "CREATE TABLE IF NOT EXISTS \"vector_data_gemini_text_embedding_004\" (\n\t\"id\" serial PRIMARY KEY NOT NULL,\n\t\"path\" text NOT NULL,\n\t\"mtime\" bigint NOT NULL,\n\t\"content\" text NOT NULL,\n\t\"embedding\" vector(768),\n\t\"metadata\" jsonb NOT NULL\n);\n",
+      "\nCREATE INDEX IF NOT EXISTS \"embeddingIndex_gemini_text_embedding_004\" ON \"vector_data_gemini_text_embedding_004\" USING hnsw (\"embedding\" vector_cosine_ops);"
+    ],
+    "bps": true,
+    "folderMillis": 1732189839252,
+    "hash": "9eef3295787aab3582954d7b8fbdeda90de062f43e09a0a53d839c601c00fe0f"
   }
 ]

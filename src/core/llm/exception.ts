@@ -25,3 +25,10 @@ export class LLMModelNotSetException extends Error {
     this.name = 'LLMModelNotSetException'
   }
 }
+
+export class LLMRateLimitExceededException extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'LLMRateLimitExceededException'
+  }
+}

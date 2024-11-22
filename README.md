@@ -82,6 +82,7 @@ Note: The Apply Edit feature is currently slower than desired. We are working on
 5. Set up your API key in plugin settings
    - OpenAI : [ChatGPT API Keys](https://platform.openai.com/api-keys)
    - Anthropic : [Claude API Keys](https://console.anthropic.com/settings/keys)
+   - Gemini : [Gemini API Keys](https://aistudio.google.com/apikey)
    - Groq : [Groq API Keys](https://console.groq.com/keys)
 
 **📚 For detailed setup instructions and documentation, please visit our [Documentation](https://github.com/glowingjade/obsidian-smart-composer/wiki).**
