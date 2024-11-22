@@ -85,6 +85,8 @@ Note: The Apply Edit feature is currently slower than desired. We are working on
    - Gemini : [Gemini API Keys](https://aistudio.google.com/apikey)
    - Groq : [Groq API Keys](https://console.groq.com/keys)
 
+> **💡 Free Option Available**: While rate-limited, Gemini API provides the best performance among free models for Smart Composer. Recommended for users looking for a free option.
+
 **📚 For detailed setup instructions and documentation, please visit our [Documentation](https://github.com/glowingjade/obsidian-smart-composer/wiki).**
 
 ## Roadmap
@@ -93,9 +95,7 @@ To see our up-to-date project roadmap and progress, please check out our [GitHub
 
 Some of our planned features include:
 
-- Support for other models, including local models
 - Support for image inputs or external files (PDF, DOCX, etc.)
-- Custom prompt templates and system prompts
 - Mentioning with tags or other metadata
 
 ## Feedback and Support
