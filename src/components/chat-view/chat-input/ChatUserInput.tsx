@@ -2,15 +2,21 @@ import { useQuery } from '@tanstack/react-query'
 import { $nodesOfType, LexicalEditor, SerializedEditorState } from 'lexical'
 import {
   forwardRef,
+  useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from 'react'
 
 import { useApp } from '../../../contexts/app-context'
 import { useDarkModeContext } from '../../../contexts/dark-mode-context'
-import { Mentionable, SerializedMentionable } from '../../../types/mentionable'
+import {
+  Mentionable,
+  MentionableImage,
+  SerializedMentionable,
+} from '../../../types/mentionable'
 import {
   deserializeMentionable,
   getMentionableKey,
@@ -57,7 +63,6 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
     ref,
   ) => {
     const app = useApp()
-    const { isDarkMode } = useDarkModeContext()
 
     const editorRef = useRef<LexicalEditor | null>(null)
     const contentEditableRef = useRef<HTMLDivElement>(null)
@@ -139,6 +144,25 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
       }
     }
 
+    const handleCreateImageMentionable = useCallback(
+      (mentionable: MentionableImage) => {
+        if (
+          mentionables.some(
+            (m) =>
+              getMentionableKey(serializeMentionable(m)) ===
+              getMentionableKey(serializeMentionable(mentionable)),
+          )
+        ) {
+          return
+        }
+        setMentionables([...mentionables, mentionable])
+        setDisplayedMentionableKey(
+          getMentionableKey(serializeMentionable(mentionable)),
+        )
+      },
+      [mentionables, setMentionables],
+    )
+
     const handleMentionableDelete = (mentionable: Mentionable) => {
       const mentionableKey = getMentionableKey(
         serializeMentionable(mentionable),
@@ -157,48 +181,6 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
         })
       })
     }
-
-    const { data: fileContent } = useQuery({
-      queryKey: [
-        'file',
-        displayedMentionableKey,
-        mentionables.map((m) => getMentionableKey(serializeMentionable(m))), // should be updated when mentionables change (especially on delete)
-      ],
-      queryFn: async () => {
-        if (!displayedMentionableKey) return null
-
-        const displayedMentionable = mentionables.find(
-          (m) =>
-            getMentionableKey(serializeMentionable(m)) ===
-            displayedMentionableKey,
-        )
-
-        if (!displayedMentionable) return null
-
-        if (
-          displayedMentionable.type === 'file' ||
-          displayedMentionable.type === 'current-file'
-        ) {
-          if (!displayedMentionable.file) return null
-          return await readTFileContent(displayedMentionable.file, app.vault)
-        } else if (displayedMentionable.type === 'block') {
-          const fileContent = await readTFileContent(
-            displayedMentionable.file,
-            app.vault,
-          )
-
-          return fileContent
-            .split('\n')
-            .slice(
-              displayedMentionable.startLine - 1,
-              displayedMentionable.endLine,
-            )
-            .join('\n')
-        }
-
-        return null
-      },
-    })
 
     const handleSubmit = (options: { useVaultSearch?: boolean } = {}) => {
       const content = editorRef.current?.getEditorState()?.toJSON()
@@ -235,23 +217,19 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
                     setDisplayedMentionableKey(mentionableKey)
                   }
                 }}
+                isFocused={
+                  getMentionableKey(serializeMentionable(m)) ===
+                  displayedMentionableKey
+                }
               />
             ))}
           </div>
         )}
 
-        {fileContent && (
-          <div className="smtcmp-chat-user-input-file-content-preview">
-            <MemoizedSyntaxHighlighterWrapper
-              isDarkMode={isDarkMode}
-              language="markdown"
-              hasFilename={false}
-              wrapLines={false}
-            >
-              {fileContent}
-            </MemoizedSyntaxHighlighterWrapper>
-          </div>
-        )}
+        <MentionableContentPreview
+          displayedMentionableKey={displayedMentionableKey}
+          mentionables={mentionables}
+        />
 
         <LexicalContentEditable
           initialEditorState={(editor) => {
@@ -267,6 +245,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
           onEnter={() => handleSubmit({ useVaultSearch: false })}
           onFocus={onFocus}
           onMentionNodeMutation={handleMentionNodeMutation}
+          onCreateImageMentionable={handleCreateImageMentionable}
           autoFocus={autoFocus}
           plugins={{
             onEnter: {
@@ -295,6 +274,84 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
     )
   },
 )
+
+function MentionableContentPreview({
+  displayedMentionableKey,
+  mentionables,
+}: {
+  displayedMentionableKey: string | null
+  mentionables: Mentionable[]
+}) {
+  const app = useApp()
+  const { isDarkMode } = useDarkModeContext()
+
+  const displayedMentionable: Mentionable | null = useMemo(() => {
+    return (
+      mentionables.find(
+        (m) =>
+          getMentionableKey(serializeMentionable(m)) ===
+          displayedMentionableKey,
+      ) ?? null
+    )
+  }, [displayedMentionableKey, mentionables])
+
+  const { data: displayFileContent } = useQuery({
+    enabled:
+      !!displayedMentionable &&
+      ['file', 'current-file', 'block'].includes(displayedMentionable.type),
+    queryKey: [
+      'file',
+      displayedMentionableKey,
+      mentionables.map((m) => getMentionableKey(serializeMentionable(m))), // should be updated when mentionables change (especially on delete)
+    ],
+    queryFn: async () => {
+      if (!displayedMentionable) return null
+      if (
+        displayedMentionable.type === 'file' ||
+        displayedMentionable.type === 'current-file'
+      ) {
+        if (!displayedMentionable.file) return null
+        return await readTFileContent(displayedMentionable.file, app.vault)
+      } else if (displayedMentionable.type === 'block') {
+        const fileContent = await readTFileContent(
+          displayedMentionable.file,
+          app.vault,
+        )
+
+        return fileContent
+          .split('\n')
+          .slice(
+            displayedMentionable.startLine - 1,
+            displayedMentionable.endLine,
+          )
+          .join('\n')
+      }
+
+      return null
+    },
+  })
+
+  const displayImage: MentionableImage | null = useMemo(() => {
+    return displayedMentionable?.type === 'image' ? displayedMentionable : null
+  }, [displayedMentionable])
+
+  return displayFileContent ? (
+    <div className="smtcmp-chat-user-input-file-content-preview">
+      <MemoizedSyntaxHighlighterWrapper
+        isDarkMode={isDarkMode}
+        language="markdown"
+        hasFilename={false}
+        wrapLines={false}
+      >
+        {displayFileContent}
+      </MemoizedSyntaxHighlighterWrapper>
+    </div>
+  ) : displayImage ? (
+    <div className="smtcmp-chat-user-input-file-content-preview">
+      <img src={displayImage.data} alt={displayImage.name} />
+    </div>
+  ) : null
+}
 
 ChatUserInput.displayName = 'ChatUserInput'
 

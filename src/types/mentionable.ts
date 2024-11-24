@@ -28,6 +28,12 @@ export type MentionableUrl = {
   type: 'url'
   url: string
 }
+export type MentionableImage = {
+  type: 'image'
+  name: string
+  mimeType: string
+  data: string // base64
+}
 export type Mentionable =
   | MentionableFile
   | MentionableFolder
@@ -35,7 +41,7 @@ export type Mentionable =
   | MentionableCurrentFile
   | MentionableBlock
   | MentionableUrl
-
+  | MentionableImage
 export type SerializedMentionableFile = {
   type: 'file'
   file: string
@@ -44,9 +50,7 @@ export type SerializedMentionableFolder = {
   type: 'folder'
   folder: string
 }
-export type SerializedMentionableVault = {
-  type: 'vault'
-}
+export type SerializedMentionableVault = MentionableVault
 export type SerializedMentionableCurrentFile = {
   type: 'current-file'
   file: string | null
@@ -58,10 +62,8 @@ export type SerializedMentionableBlock = {
   startLine: number
   endLine: number
 }
-export type SerializedMentionableUrl = {
-  type: 'url'
-  url: string
-}
+export type SerializedMentionableUrl = MentionableUrl
+export type SerializedMentionableImage = MentionableImage
 export type SerializedMentionable =
   | SerializedMentionableFile
   | SerializedMentionableFolder
@@ -69,3 +71,4 @@ export type SerializedMentionable =
   | SerializedMentionableCurrentFile
   | SerializedMentionableBlock
   | SerializedMentionableUrl
+  | SerializedMentionableImage

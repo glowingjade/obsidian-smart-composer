@@ -7,6 +7,7 @@ import {
   MentionableCurrentFile,
   MentionableFile,
   MentionableFolder,
+  MentionableImage,
   MentionableUrl,
   MentionableVault,
 } from '../../../types/mentionable'
@@ -17,12 +18,17 @@ function BadgeBase({
   children,
   onDelete,
   onClick,
+  isFocused,
 }: PropsWithChildren<{
   onDelete: () => void
   onClick: () => void
+  isFocused: boolean
 }>) {
   return (
-    <div className="smtcmp-chat-user-input-file-badge" onClick={onClick}>
+    <div
+      className={`smtcmp-chat-user-input-file-badge ${isFocused ? 'smtcmp-chat-user-input-file-badge-focused' : ''}`}
+      onClick={onClick}
+    >
       {children}
       <div
         className="smtcmp-chat-user-input-file-badge-delete"
@@ -41,14 +47,16 @@ function FileBadge({
   mentionable,
   onDelete,
   onClick,
+  isFocused,
 }: {
   mentionable: MentionableFile
   onDelete: () => void
   onClick: () => void
+  isFocused: boolean
 }) {
   const Icon = getMentionableIcon(mentionable)
   return (
-    <BadgeBase onDelete={onDelete} onClick={onClick}>
+    <BadgeBase onDelete={onDelete} onClick={onClick} isFocused={isFocused}>
       <div className="smtcmp-chat-user-input-file-badge-name">
         {Icon && (
           <Icon
@@ -66,15 +74,16 @@ function FolderBadge({
   mentionable,
   onDelete,
   onClick,
+  isFocused,
 }: {
   mentionable: MentionableFolder
   onDelete: () => void
   onClick: () => void
+  isFocused: boolean
 }) {
   const Icon = getMentionableIcon(mentionable)
   return (
-    <BadgeBase onDelete={onDelete} onClick={onClick}>
-      {/* TODO: Update style */}
+    <BadgeBase onDelete={onDelete} onClick={onClick} isFocused={isFocused}>
       <div className="smtcmp-chat-user-input-file-badge-name">
         {Icon && (
           <Icon
@@ -93,14 +102,16 @@ function VaultBadge({
   mentionable,
   onDelete,
   onClick,
+  isFocused,
 }: {
   mentionable: MentionableVault
   onDelete: () => void
   onClick: () => void
+  isFocused: boolean
 }) {
   const Icon = getMentionableIcon(mentionable)
   return (
-    <BadgeBase onDelete={onDelete} onClick={onClick}>
+    <BadgeBase onDelete={onDelete} onClick={onClick} isFocused={isFocused}>
       {/* TODO: Update style */}
       <div className="smtcmp-chat-user-input-file-badge-name">
         {Icon && (
@@ -119,14 +130,16 @@ function CurrentFileBadge({
   mentionable,
   onDelete,
   onClick,
+  isFocused,
 }: {
   mentionable: MentionableCurrentFile
   onDelete: () => void
   onClick: () => void
+  isFocused: boolean
 }) {
   const Icon = getMentionableIcon(mentionable)
   return mentionable.file ? (
-    <BadgeBase onDelete={onDelete} onClick={onClick}>
+    <BadgeBase onDelete={onDelete} onClick={onClick} isFocused={isFocused}>
       <div className="smtcmp-chat-user-input-file-badge-name">
         {Icon && (
           <Icon
@@ -147,14 +160,16 @@ function BlockBadge({
   mentionable,
   onDelete,
   onClick,
+  isFocused,
 }: {
   mentionable: MentionableBlock
   onDelete: () => void
   onClick: () => void
+  isFocused: boolean
 }) {
   const Icon = getMentionableIcon(mentionable)
   return (
-    <BadgeBase onDelete={onDelete} onClick={onClick}>
+    <BadgeBase onDelete={onDelete} onClick={onClick} isFocused={isFocused}>
       <div className="smtcmp-chat-user-input-file-badge-name-block-name">
         {Icon && (
           <Icon
@@ -175,14 +190,16 @@ function UrlBadge({
   mentionable,
   onDelete,
   onClick,
+  isFocused,
 }: {
   mentionable: MentionableUrl
   onDelete: () => void
   onClick: () => void
+  isFocused: boolean
 }) {
   const Icon = getMentionableIcon(mentionable)
   return (
-    <BadgeBase onDelete={onDelete} onClick={onClick}>
+    <BadgeBase onDelete={onDelete} onClick={onClick} isFocused={isFocused}>
       <div className="smtcmp-chat-user-input-file-badge-name">
         {Icon && (
           <Icon
@@ -196,14 +213,43 @@ function UrlBadge({
   )
 }
 
+function ImageBadge({
+  mentionable,
+  onDelete,
+  onClick,
+  isFocused,
+}: {
+  mentionable: MentionableImage
+  onDelete: () => void
+  onClick: () => void
+  isFocused: boolean
+}) {
+  const Icon = getMentionableIcon(mentionable)
+  return (
+    <BadgeBase onDelete={onDelete} onClick={onClick} isFocused={isFocused}>
+      <div className="smtcmp-chat-user-input-file-badge-name">
+        {Icon && (
+          <Icon
+            size={10}
+            className="smtcmp-chat-user-input-file-badge-name-icon"
+          />
+        )}
+        <span>{mentionable.name}</span>
+      </div>
+    </BadgeBase>
+  )
+}
+
 export default function MentionableBadge({
   mentionable,
   onDelete,
   onClick,
+  isFocused = false,
 }: {
   mentionable: Mentionable
   onDelete: () => void
   onClick: () => void
+  isFocused?: boolean
 }) {
   switch (mentionable.type) {
     case 'file':
@@ -212,6 +258,7 @@ export default function MentionableBadge({
           mentionable={mentionable}
           onDelete={onDelete}
           onClick={onClick}
+          isFocused={isFocused}
         />
       )
     case 'folder':
@@ -220,6 +267,7 @@ export default function MentionableBadge({
           mentionable={mentionable}
           onDelete={onDelete}
           onClick={onClick}
+          isFocused={isFocused}
         />
       )
     case 'vault':
@@ -228,6 +276,7 @@ export default function MentionableBadge({
           mentionable={mentionable}
           onDelete={onDelete}
           onClick={onClick}
+          isFocused={isFocused}
         />
       )
     case 'current-file':
@@ -236,6 +285,7 @@ export default function MentionableBadge({
           mentionable={mentionable}
           onDelete={onDelete}
           onClick={onClick}
+          isFocused={isFocused}
         />
       )
     case 'block':
@@ -244,6 +294,7 @@ export default function MentionableBadge({
           mentionable={mentionable}
           onDelete={onDelete}
           onClick={onClick}
+          isFocused={isFocused}
         />
       )
     case 'url':
@@ -252,6 +303,16 @@ export default function MentionableBadge({
           mentionable={mentionable}
           onDelete={onDelete}
           onClick={onClick}
+          isFocused={isFocused}
+        />
+      )
+    case 'image':
+      return (
+        <ImageBadge
+          mentionable={mentionable}
+          onDelete={onDelete}
+          onClick={onClick}
+          isFocused={isFocused}
         />
       )
   }
