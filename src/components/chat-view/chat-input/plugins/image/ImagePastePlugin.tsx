@@ -3,11 +3,12 @@ import { COMMAND_PRIORITY_LOW, PASTE_COMMAND, PasteCommandType } from 'lexical'
 import { useEffect } from 'react'
 
 import { MentionableImage } from '../../../../../types/mentionable'
+import { fileToMentionableImage } from '../../../../../utils/image'
 
 export default function ImagePastePlugin({
-  onCreateImageMentionable,
+  onCreateImageMentionables,
 }: {
-  onCreateImageMentionable?: (mentionable: MentionableImage) => void
+  onCreateImageMentionables?: (mentionables: MentionableImage[]) => void
 }) {
   const [editor] = useLexicalComposerContext()
 
@@ -22,21 +23,11 @@ export default function ImagePastePlugin({
       )
       if (images.length === 0) return false
 
-      images.forEach((image) => {
-        const reader = new FileReader()
-        reader.onload = () => {
-          const base64Data = reader.result as string
-          const mentionable: MentionableImage = {
-            type: 'image',
-            name: image.name,
-            mimeType: image.type,
-            data: base64Data,
-          }
-          onCreateImageMentionable?.(mentionable)
-        }
-        reader.readAsDataURL(image)
-      })
-
+      Promise.all(images.map((image) => fileToMentionableImage(image))).then(
+        (mentionableImages) => {
+          onCreateImageMentionables?.(mentionableImages)
+        },
+      )
       return true
     }
 
@@ -45,7 +36,7 @@ export default function ImagePastePlugin({
       handlePaste,
       COMMAND_PRIORITY_LOW,
     )
-  }, [editor, onCreateImageMentionable])
+  }, [editor, onCreateImageMentionables])
 
   return null
 }

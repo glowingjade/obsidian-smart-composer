@@ -17,6 +17,7 @@ import {
   MentionableImage,
   SerializedMentionable,
 } from '../../../types/mentionable'
+import { fileToMentionableImage } from '../../../utils/image'
 import {
   deserializeMentionable,
   getMentionableKey,
@@ -25,6 +26,7 @@ import {
 import { openMarkdownFile, readTFileContent } from '../../../utils/obsidian'
 import { MemoizedSyntaxHighlighterWrapper } from '../SyntaxHighlighterWrapper'
 
+import { ImageUploadButton } from './ImageUploadButton'
 import LexicalContentEditable from './LexicalContentEditable'
 import MentionableBadge from './MentionableBadge'
 import { ModelSelect } from './ModelSelect'
@@ -144,20 +146,24 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
       }
     }
 
-    const handleCreateImageMentionable = useCallback(
-      (mentionable: MentionableImage) => {
-        if (
-          mentionables.some(
-            (m) =>
-              getMentionableKey(serializeMentionable(m)) ===
-              getMentionableKey(serializeMentionable(mentionable)),
-          )
-        ) {
-          return
-        }
-        setMentionables([...mentionables, mentionable])
+    const handleCreateImageMentionables = useCallback(
+      (mentionableImages: MentionableImage[]) => {
+        const newMentionableImages = mentionableImages.filter(
+          (m) =>
+            !mentionables.some(
+              (mentionable) =>
+                getMentionableKey(serializeMentionable(mentionable)) ===
+                getMentionableKey(serializeMentionable(m)),
+            ),
+        )
+        if (newMentionableImages.length === 0) return
+        setMentionables([...mentionables, ...newMentionableImages])
         setDisplayedMentionableKey(
-          getMentionableKey(serializeMentionable(mentionable)),
+          getMentionableKey(
+            serializeMentionable(
+              newMentionableImages[newMentionableImages.length - 1],
+            ),
+          ),
         )
       },
       [mentionables, setMentionables],
@@ -180,6 +186,13 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
           }
         })
       })
+    }
+
+    const handleUploadImages = async (images: File[]) => {
+      const mentionableImages = await Promise.all(
+        images.map((image) => fileToMentionableImage(image)),
+      )
+      handleCreateImageMentionables(mentionableImages)
     }
 
     const handleSubmit = (options: { useVaultSearch?: boolean } = {}) => {
@@ -245,7 +258,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
           onEnter={() => handleSubmit({ useVaultSearch: false })}
           onFocus={onFocus}
           onMentionNodeMutation={handleMentionNodeMutation}
-          onCreateImageMentionable={handleCreateImageMentionable}
+          onCreateImageMentionables={handleCreateImageMentionables}
           autoFocus={autoFocus}
           plugins={{
             onEnter: {
@@ -262,6 +275,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
         <div className="smtcmp-chat-user-input-controls">
           <ModelSelect />
           <div className="smtcmp-chat-user-input-controls-buttons">
+            <ImageUploadButton onUpload={handleUploadImages} />
             <SubmitButton onClick={() => handleSubmit()} />
             <VaultChatButton
               onClick={() => {

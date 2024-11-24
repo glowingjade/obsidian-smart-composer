@@ -35,7 +35,7 @@ export type LexicalContentEditableProps = {
   onEnter?: (evt: KeyboardEvent) => void
   onFocus?: () => void
   onMentionNodeMutation?: (mutations: NodeMutations<MentionNode>) => void
-  onCreateImageMentionable?: (mentionable: MentionableImage) => void
+  onCreateImageMentionables?: (mentionables: MentionableImage[]) => void
   initialEditorState?: InitialEditorStateType
   autoFocus?: boolean
   plugins?: {
@@ -55,7 +55,7 @@ export default function LexicalContentEditable({
   onEnter,
   onFocus,
   onMentionNodeMutation,
-  onCreateImageMentionable,
+  onCreateImageMentionables,
   initialEditorState,
   autoFocus = false,
   plugins,
@@ -138,7 +138,7 @@ export default function LexicalContentEditable({
       <EditorRefPlugin editorRef={editorRef} />
       <NoFormatPlugin />
       <AutoLinkMentionPlugin />
-      <ImagePastePlugin onCreateImageMentionable={onCreateImageMentionable} />
+      <ImagePastePlugin onCreateImageMentionables={onCreateImageMentionables} />
       <TemplatePlugin />
       {plugins?.templatePopover && (
         <CreateTemplatePopoverPlugin
