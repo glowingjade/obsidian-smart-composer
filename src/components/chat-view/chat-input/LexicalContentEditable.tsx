@@ -16,6 +16,7 @@ import { useApp } from '../../../contexts/app-context'
 import { MentionableImage } from '../../../types/mentionable'
 import { fuzzySearch } from '../../../utils/fuzzy-search'
 
+import DragDropPaste from './plugins/image/DragDropPastePlugin'
 import ImagePastePlugin from './plugins/image/ImagePastePlugin'
 import AutoLinkMentionPlugin from './plugins/mention/AutoLinkMentionPlugin'
 import { MentionNode } from './plugins/mention/MentionNode'
@@ -139,6 +140,7 @@ export default function LexicalContentEditable({
       <NoFormatPlugin />
       <AutoLinkMentionPlugin />
       <ImagePastePlugin onCreateImageMentionables={onCreateImageMentionables} />
+      <DragDropPaste onCreateImageMentionables={onCreateImageMentionables} />
       <TemplatePlugin />
       {plugins?.templatePopover && (
         <CreateTemplatePopoverPlugin
