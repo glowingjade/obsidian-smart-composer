@@ -273,8 +273,10 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
         />
 
         <div className="smtcmp-chat-user-input-controls">
-          <ModelSelect />
-          <div className="smtcmp-chat-user-input-controls-buttons">
+          <div className="smtcmp-chat-user-input-controls__model-select-container">
+            <ModelSelect />
+          </div>
+          <div className="smtcmp-chat-user-input-controls__buttons">
             <ImageUploadButton onUpload={handleUploadImages} />
             <SubmitButton onClick={() => handleSubmit()} />
             <VaultChatButton

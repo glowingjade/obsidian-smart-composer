@@ -11,12 +11,16 @@ export function ModelSelect() {
   return (
     <DropdownMenu.Root open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenu.Trigger className="smtcmp-chat-input-model-select">
-        {
-          CHAT_MODEL_OPTIONS.find(
-            (option) => option.id === settings.chatModelId,
-          )?.name
-        }
-        {isOpen ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+        <div className="smtcmp-chat-input-model-select__model-name">
+          {
+            CHAT_MODEL_OPTIONS.find(
+              (option) => option.id === settings.chatModelId,
+            )?.name
+          }
+        </div>
+        <div className="smtcmp-chat-input-model-select__icon">
+          {isOpen ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+        </div>
       </DropdownMenu.Trigger>
 
       <DropdownMenu.Portal>
