@@ -36,7 +36,7 @@ export class ChatView extends ItemView {
   }
 
   getIcon() {
-    return 'message-square'
+    return 'wand-sparkles'
   }
 
   getDisplayText() {
