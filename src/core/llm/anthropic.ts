@@ -29,6 +29,8 @@ import {
 export class AnthropicProvider implements BaseLLMProvider {
   private client: Anthropic
 
+  private static readonly DEFAULT_MAX_TOKENS = 8192
+
   constructor(apiKey: string) {
     this.client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true })
   }
@@ -54,7 +56,8 @@ export class AnthropicProvider implements BaseLLMProvider {
             .filter((m) => m.role !== 'system')
             .map((m) => AnthropicProvider.parseRequestMessage(m)),
           system: systemMessage,
-          max_tokens: request.max_tokens ?? 4096,
+          max_tokens:
+            request.max_tokens ?? AnthropicProvider.DEFAULT_MAX_TOKENS,
           temperature: request.temperature,
           top_p: request.top_p,
         },
@@ -96,7 +99,8 @@ export class AnthropicProvider implements BaseLLMProvider {
             .filter((m) => m.role !== 'system')
             .map((m) => AnthropicProvider.parseRequestMessage(m)),
           system: systemMessage,
-          max_tokens: request.max_tokens ?? 4096,
+          max_tokens:
+            request.max_tokens ?? AnthropicProvider.DEFAULT_MAX_TOKENS,
           temperature: request.temperature,
           top_p: request.top_p,
           stream: true,
