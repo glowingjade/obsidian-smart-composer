@@ -3,13 +3,14 @@ import { SerializedEditorState } from 'lexical'
 import { SelectVector } from '../database/schema'
 
 import { LLMModel } from './llm/model'
+import { ContentPart } from './llm/request'
 import { ResponseUsage } from './llm/response'
 import { Mentionable, SerializedMentionable } from './mentionable'
 
 export type ChatUserMessage = {
   role: 'user'
   content: SerializedEditorState | null
-  promptContent: string | null
+  promptContent: string | ContentPart[] | null
   id: string
   mentionables: Mentionable[]
   similaritySearchResults?: (Omit<SelectVector, 'embedding'> & {
@@ -30,7 +31,7 @@ export type ChatMessage = ChatUserMessage | ChatAssistantMessage
 export type SerializedChatUserMessage = {
   role: 'user'
   content: SerializedEditorState | null
-  promptContent: string | null
+  promptContent: string | ContentPart[] | null
   id: string
   mentionables: SerializedMentionable[]
   similaritySearchResults?: (Omit<SelectVector, 'embedding'> & {

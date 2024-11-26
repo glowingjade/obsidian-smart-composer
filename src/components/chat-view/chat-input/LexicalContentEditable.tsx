@@ -13,8 +13,11 @@ import { LexicalEditor, SerializedEditorState } from 'lexical'
 import { RefObject, useCallback, useEffect } from 'react'
 
 import { useApp } from '../../../contexts/app-context'
+import { MentionableImage } from '../../../types/mentionable'
 import { fuzzySearch } from '../../../utils/fuzzy-search'
 
+import DragDropPaste from './plugins/image/DragDropPastePlugin'
+import ImagePastePlugin from './plugins/image/ImagePastePlugin'
 import AutoLinkMentionPlugin from './plugins/mention/AutoLinkMentionPlugin'
 import { MentionNode } from './plugins/mention/MentionNode'
 import MentionPlugin from './plugins/mention/MentionPlugin'
@@ -33,6 +36,7 @@ export type LexicalContentEditableProps = {
   onEnter?: (evt: KeyboardEvent) => void
   onFocus?: () => void
   onMentionNodeMutation?: (mutations: NodeMutations<MentionNode>) => void
+  onCreateImageMentionables?: (mentionables: MentionableImage[]) => void
   initialEditorState?: InitialEditorStateType
   autoFocus?: boolean
   plugins?: {
@@ -52,6 +56,7 @@ export default function LexicalContentEditable({
   onEnter,
   onFocus,
   onMentionNodeMutation,
+  onCreateImageMentionables,
   initialEditorState,
   autoFocus = false,
   plugins,
@@ -134,6 +139,8 @@ export default function LexicalContentEditable({
       <EditorRefPlugin editorRef={editorRef} />
       <NoFormatPlugin />
       <AutoLinkMentionPlugin />
+      <ImagePastePlugin onCreateImageMentionables={onCreateImageMentionables} />
+      <DragDropPaste onCreateImageMentionables={onCreateImageMentionables} />
       <TemplatePlugin />
       {plugins?.templatePopover && (
         <CreateTemplatePopoverPlugin
