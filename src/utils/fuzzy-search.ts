@@ -22,6 +22,7 @@ type VaultSearchItem = {
 type FileWithMetadata = {
   type: 'file'
   path: string
+  name: string
   file: TFile
   opened: boolean
   distance: number | null
@@ -31,15 +32,27 @@ type FileWithMetadata = {
 type FolderWithMetadata = {
   type: 'folder'
   path: string
+  name: string
   folder: TFolder
+  distance: number | null
 }
 
 type SearchItem = FolderWithMetadata | FileWithMetadata | VaultSearchItem
 
-function scoreFnWithBoost(score: number, searchItem: SearchItem) {
+function scoreFnWithBoost({
+  searchItem,
+  pathScore,
+  nameScore,
+}: {
+  searchItem: SearchItem
+  pathScore: number
+  nameScore: number
+}): number {
+  const score = Math.max(pathScore, nameScore)
+
+  let boost = 1
   switch (searchItem.type) {
     case 'file': {
-      let boost = 1
       const { opened, distance, daysSinceLastModified } = searchItem
 
       // Boost for open files
@@ -57,20 +70,32 @@ function scoreFnWithBoost(score: number, searchItem: SearchItem) {
         boost = Math.max(boost, nearbyBoost)
       }
 
-      // Normalize the boost
-      const normalizedBoost =
-        boost > 1 ? Math.log(boost * score + 1) / Math.log(boost + 1) : score
-      return normalizedBoost
+      break
     }
-    // TODO: Implement scoring logic for folders
     case 'folder': {
-      return score
+      const { distance } = searchItem
+
+      // Boost for nearby folders
+      if (distance !== null && distance > 0 && distance <= 5) {
+        const nearbyBoost = 1 + 0.5 / Math.max(distance - 1, 1)
+        boost = Math.max(boost, nearbyBoost)
+      }
+
+      break
     }
-    // TODO: Implement scoring logic for vault
     case 'vault': {
-      return score
+      if (score === 1) {
+        boost = 3
+      }
+
+      break
     }
   }
+
+  // Normalize the boost
+  const normalizedScore =
+    boost > 1 ? Math.log(boost * score + 1) / Math.log(boost + 1) : score
+  return normalizedScore
 }
 
 function getEmptyQueryResult(
@@ -79,8 +104,16 @@ function getEmptyQueryResult(
 ): SearchableMentionable[] {
   // Sort files based on a custom scoring function
   const sortedFiles = searchItems.sort((a, b) => {
-    const scoreA = scoreFnWithBoost(0.5, a) // Use 0.5 as a base score
-    const scoreB = scoreFnWithBoost(0.5, b)
+    const scoreA = scoreFnWithBoost({
+      searchItem: a,
+      pathScore: 0.5, // Use 0.5 as a base score
+      nameScore: 0.5,
+    })
+    const scoreB = scoreFnWithBoost({
+      searchItem: b,
+      pathScore: 0.5,
+      nameScore: 0.5,
+    })
     return scoreB - scoreA // Sort in descending order
   })
 
@@ -102,6 +135,7 @@ export function fuzzySearch(app: App, query: string): SearchableMentionable[] {
   const allFilesWithMetadata: SearchItem[] = allSupportedFiles.map((file) => ({
     type: 'file',
     path: file.path,
+    name: file.name,
     file,
     opened: openFiles.some((f) => f.path === file.path),
     distance: currentFile
@@ -117,7 +151,9 @@ export function fuzzySearch(app: App, query: string): SearchableMentionable[] {
   const allFoldersWithMetadata: SearchItem[] = allFolders.map((folder) => ({
     type: 'folder',
     path: folder.path,
+    name: folder.name,
     folder,
+    distance: currentFile ? calculateFileDistance(currentFile, folder) : null,
   }))
 
   const vaultItem: VaultSearchItem = {
@@ -136,11 +172,16 @@ export function fuzzySearch(app: App, query: string): SearchableMentionable[] {
   }
 
   const results = fuzzysort.go(query, searchItems, {
-    keys: ['path'],
+    keys: ['path', 'name'],
     threshold: 0.2,
     limit: 20,
     all: true,
-    scoreFn: (result) => scoreFnWithBoost(result.score, result.obj),
+    scoreFn: (result) =>
+      scoreFnWithBoost({
+        searchItem: result.obj,
+        pathScore: result[0].score,
+        nameScore: result[1].score,
+      }),
   })
 
   return results.map((result) => searchItemToMentionable(result.obj))

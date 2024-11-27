@@ -67,8 +67,8 @@ export function getOpenFiles(app: App): TFile[] {
 }
 
 export function calculateFileDistance(
-  file1: TFile,
-  file2: TFile,
+  file1: TFile | TFolder,
+  file2: TFile | TFolder,
 ): number | null {
   const path1 = file1.path.split('/')
   const path2 = file2.path.split('/')
