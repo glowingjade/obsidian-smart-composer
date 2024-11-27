@@ -1,6 +1,6 @@
 import * as Popover from '@radix-ui/react-popover'
 import { Pencil, Trash2 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { ChatConversationMeta } from '../../types/chat'
 
@@ -137,8 +137,8 @@ export function ChatListDropdown({
     }
   }, [open])
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
       if (e.key === 'ArrowUp') {
         setFocusedIndex(Math.max(0, focusedIndex - 1))
       } else if (e.key === 'ArrowDown') {
@@ -147,10 +147,9 @@ export function ChatListDropdown({
         onSelect(chatList[focusedIndex].id)
         setOpen(false)
       }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [chatList, focusedIndex, setFocusedIndex, onSelect])
+    },
+    [chatList, focusedIndex, setFocusedIndex, onSelect],
+  )
 
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
@@ -159,7 +158,10 @@ export function ChatListDropdown({
       </Popover.Trigger>
 
       <Popover.Portal>
-        <Popover.Content className="smtcmp-popover smtcmp-chat-list-dropdown-content">
+        <Popover.Content
+          className="smtcmp-popover smtcmp-chat-list-dropdown-content"
+          onKeyDown={handleKeyDown}
+        >
           <ul>
             {chatList.length === 0 ? (
               <li className="smtcmp-chat-list-dropdown-empty">
