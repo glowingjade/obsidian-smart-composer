@@ -83,6 +83,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     createOrUpdateConversation,
     deleteConversation,
     getChatMessagesById,
+    updateConversationTitle,
     chatList,
   } = useChatHistory()
   const { generateResponse, streamResponse, chatModel, applyModel } = useLLM()
@@ -544,11 +545,12 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           </button>
           <ChatListDropdown
             chatList={chatList}
-            onSelectConversation={(conversationId) =>
-              void handleLoadConversation(conversationId)
-            }
-            onDeleteConversation={(conversationId) => {
-              void deleteConversation(conversationId)
+            onSelect={async (conversationId) => {
+              if (conversationId === currentConversationId) return
+              await handleLoadConversation(conversationId)
+            }}
+            onDelete={async (conversationId) => {
+              await deleteConversation(conversationId)
               if (conversationId === currentConversationId) {
                 const nextConversation = chatList.find(
                   (chat) => chat.id !== conversationId,
@@ -559,6 +561,9 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
                   handleNewChat()
                 }
               }
+            }}
+            onUpdateTitle={async (conversationId, newTitle) => {
+              await updateConversationTitle(conversationId, newTitle)
             }}
             className="smtcmp-chat-list-dropdown"
           >

@@ -1,59 +1,195 @@
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import { Trash2 } from 'lucide-react'
+import * as Popover from '@radix-ui/react-popover'
+import { Pencil, Trash2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 
 import { ChatConversationMeta } from '../../types/chat'
 
+function TitleInput({
+  title,
+  onSubmit,
+}: {
+  title: string
+  onSubmit: (title: string) => Promise<void>
+}) {
+  const [value, setValue] = useState(title)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.select()
+      inputRef.current.scrollLeft = 0
+    }
+  }, [])
+
+  return (
+    <input
+      ref={inputRef}
+      type="text"
+      value={value}
+      className="smtcmp-chat-list-dropdown-item-title-input"
+      onClick={(e) => e.stopPropagation()}
+      onChange={(e) => setValue(e.target.value)}
+      onKeyDown={(e) => {
+        e.stopPropagation()
+        if (e.key === 'Enter') {
+          onSubmit(value)
+        }
+      }}
+      autoFocus
+      maxLength={100}
+    />
+  )
+}
+
+function ChatListItem({
+  title,
+  isFocused,
+  isEditing,
+  onMouseEnter,
+  onSelect,
+  onDelete,
+  onStartEdit,
+  onFinishEdit,
+}: {
+  title: string
+  isFocused: boolean
+  isEditing: boolean
+  onMouseEnter: () => void
+  onSelect: () => Promise<void>
+  onDelete: () => Promise<void>
+  onStartEdit: () => void
+  onFinishEdit: (title: string) => Promise<void>
+}) {
+  const itemRef = useRef<HTMLLIElement>(null)
+
+  useEffect(() => {
+    if (isFocused && itemRef.current) {
+      itemRef.current.scrollIntoView({
+        block: 'nearest',
+      })
+    }
+  }, [isFocused])
+
+  return (
+    <li
+      ref={itemRef}
+      onClick={onSelect}
+      onMouseEnter={onMouseEnter}
+      className={isFocused ? 'selected' : ''}
+    >
+      {isEditing ? (
+        <TitleInput title={title} onSubmit={onFinishEdit} />
+      ) : (
+        <div className="smtcmp-chat-list-dropdown-item-title">{title}</div>
+      )}
+      <div className="smtcmp-chat-list-dropdown-item-actions">
+        <div
+          onClick={(e) => {
+            e.stopPropagation()
+            onStartEdit()
+          }}
+          className="smtcmp-chat-list-dropdown-item-icon"
+        >
+          <Pencil size={14} />
+        </div>
+        <div
+          onClick={async (e) => {
+            e.stopPropagation()
+            await onDelete()
+          }}
+          className="smtcmp-chat-list-dropdown-item-icon"
+        >
+          <Trash2 size={14} />
+        </div>
+      </div>
+    </li>
+  )
+}
+
 export function ChatListDropdown({
   chatList,
-  onSelectConversation,
-  onDeleteConversation,
+  onSelect,
+  onDelete,
+  onUpdateTitle,
   className,
   children,
 }: {
   chatList: ChatConversationMeta[]
-  onSelectConversation: (conversationId: string) => void
-  onDeleteConversation: (conversationId: string) => void
+  onSelect: (conversationId: string) => Promise<void>
+  onDelete: (conversationId: string) => Promise<void>
+  onUpdateTitle: (conversationId: string, newTitle: string) => Promise<void>
   className?: string
   children: React.ReactNode
 }) {
-  return (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger asChild>
-        <button className={className}>{children}</button>
-      </DropdownMenu.Trigger>
+  const [open, setOpen] = useState(false)
+  const [focusedIndex, setFocusedIndex] = useState<number>(0)
+  const [editingId, setEditingId] = useState<string | null>(null)
 
-      <DropdownMenu.Portal>
-        <DropdownMenu.Content className="smtcmp-popover smtcmp-chat-list-dropdown-content">
+  useEffect(() => {
+    if (open) {
+      setFocusedIndex(0)
+      setEditingId(null)
+    }
+  }, [open])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowUp') {
+        setFocusedIndex(Math.max(0, focusedIndex - 1))
+      } else if (e.key === 'ArrowDown') {
+        setFocusedIndex(Math.min(chatList.length - 1, focusedIndex + 1))
+      } else if (e.key === 'Enter') {
+        onSelect(chatList[focusedIndex].id)
+        setOpen(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [chatList, focusedIndex, setFocusedIndex, onSelect])
+
+  return (
+    <Popover.Root open={open} onOpenChange={setOpen}>
+      <Popover.Trigger asChild>
+        <button className={className}>{children}</button>
+      </Popover.Trigger>
+
+      <Popover.Portal>
+        <Popover.Content className="smtcmp-popover smtcmp-chat-list-dropdown-content">
           <ul>
             {chatList.length === 0 ? (
               <li className="smtcmp-chat-list-dropdown-empty">
                 No conversations
               </li>
             ) : (
-              chatList.map((chat) => (
-                <DropdownMenu.Item
-                  onSelect={() => onSelectConversation(chat.id)}
-                  asChild
+              chatList.map((chat, index) => (
+                <ChatListItem
                   key={chat.id}
-                >
-                  <li>
-                    <div>{chat.title}</div>
-                    <div
-                      onClick={(e) => {
-                        e.stopPropagation() // Prevent the dropdown from closing
-                        onDeleteConversation(chat.id)
-                      }}
-                      className={`smtcmp-chat-list-dropdown-item-delete`} // TODO: Add style for selected item
-                    >
-                      <Trash2 size={14} />
-                    </div>
-                  </li>
-                </DropdownMenu.Item>
+                  title={chat.title}
+                  isFocused={focusedIndex === index}
+                  isEditing={editingId === chat.id}
+                  onMouseEnter={() => {
+                    setFocusedIndex(index)
+                  }}
+                  onSelect={async () => {
+                    setEditingId(null)
+                    await onSelect(chat.id)
+                  }}
+                  onDelete={async () => {
+                    await onDelete(chat.id)
+                  }}
+                  onStartEdit={() => {
+                    setEditingId(chat.id)
+                  }}
+                  onFinishEdit={async (title) => {
+                    await onUpdateTitle(chat.id, title)
+                    setEditingId(null)
+                  }}
+                />
               ))
             )}
           </ul>
-        </DropdownMenu.Content>
-      </DropdownMenu.Portal>
-    </DropdownMenu.Root>
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   )
 }

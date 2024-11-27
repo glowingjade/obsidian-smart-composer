@@ -474,7 +474,7 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   background-color: var(--background-modifier-hover);
   cursor: pointer;
 }
-.smtcmp-popover li .smtcmp-chat-list-dropdown-item-delete {
+.smtcmp-popover li .smtcmp-chat-list-dropdown-item-icon {
   visibility: hidden;
   padding: var(--size-2-1);
   display: flex;
@@ -482,18 +482,40 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   justify-content: center;
   color: var(--text-muted);
 }
-.smtcmp-popover li:hover .smtcmp-chat-list-dropdown-item-delete {
+.smtcmp-popover li:hover .smtcmp-chat-list-dropdown-item-icon {
   visibility: visible;
 }
-.smtcmp-popover li .smtcmp-chat-list-dropdown-item-delete:hover {
+.smtcmp-popover li .smtcmp-chat-list-dropdown-item-icon:hover {
   background-color: var(--background-modifier-hover);
   border-radius: var(--radius-s);
+}
+
+.smtcmp-chat-list-dropdown-content {
+  width: 280px;
+  max-width: 280px;
 }
 
 .smtcmp-chat-list-dropdown-content li {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.smtcmp-chat-list-dropdown-item-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+input[type='text'].smtcmp-chat-list-dropdown-item-title-input {
+  width: 100%;
+  font-size: var(--font-ui-smaller);
+}
+
+.smtcmp-chat-list-dropdown-item-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-1);
 }
 
 .smtcmp-code-block {
