@@ -1,4 +1,4 @@
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+import * as Popover from '@radix-ui/react-popover'
 import { Pencil, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
@@ -36,97 +36,160 @@ function TitleInput({
         }
       }}
       autoFocus
+      maxLength={100}
     />
+  )
+}
+
+function ChatListItem({
+  title,
+  isFocused,
+  isEditing,
+  onMouseEnter,
+  onSelect,
+  onDelete,
+  onStartEdit,
+  onFinishEdit,
+}: {
+  title: string
+  isFocused: boolean
+  isEditing: boolean
+  onMouseEnter: () => void
+  onSelect: () => Promise<void>
+  onDelete: () => Promise<void>
+  onStartEdit: () => void
+  onFinishEdit: (title: string) => Promise<void>
+}) {
+  const itemRef = useRef<HTMLLIElement>(null)
+
+  useEffect(() => {
+    if (isFocused && itemRef.current) {
+      itemRef.current.scrollIntoView({
+        block: 'nearest',
+      })
+    }
+  }, [isFocused])
+
+  return (
+    <li
+      ref={itemRef}
+      onClick={onSelect}
+      onMouseEnter={onMouseEnter}
+      className={isFocused ? 'selected' : ''}
+    >
+      {isEditing ? (
+        <TitleInput title={title} onSubmit={onFinishEdit} />
+      ) : (
+        <div className="smtcmp-chat-list-dropdown-item-title">{title}</div>
+      )}
+      <div className="smtcmp-chat-list-dropdown-item-actions">
+        <div
+          onClick={(e) => {
+            e.stopPropagation()
+            onStartEdit()
+          }}
+          className="smtcmp-chat-list-dropdown-item-icon"
+        >
+          <Pencil size={14} />
+        </div>
+        <div
+          onClick={async (e) => {
+            e.stopPropagation()
+            await onDelete()
+          }}
+          className="smtcmp-chat-list-dropdown-item-icon"
+        >
+          <Trash2 size={14} />
+        </div>
+      </div>
+    </li>
   )
 }
 
 export function ChatListDropdown({
   chatList,
-  onSelectConversation,
-  onDeleteConversation,
-  onEditTitle,
+  onSelect,
+  onDelete,
+  onUpdateTitle,
   className,
   children,
 }: {
   chatList: ChatConversationMeta[]
-  onSelectConversation: (conversationId: string) => Promise<void>
-  onDeleteConversation: (conversationId: string) => Promise<void>
-  onEditTitle: (conversationId: string, newTitle: string) => Promise<void>
+  onSelect: (conversationId: string) => Promise<void>
+  onDelete: (conversationId: string) => Promise<void>
+  onUpdateTitle: (conversationId: string, newTitle: string) => Promise<void>
   className?: string
   children: React.ReactNode
 }) {
+  const [open, setOpen] = useState(false)
+  const [focusedIndex, setFocusedIndex] = useState<number>(0)
   const [editingId, setEditingId] = useState<string | null>(null)
 
-  return (
-    <DropdownMenu.Root
-      onOpenChange={(open) => {
-        if (!open) {
-          setEditingId(null)
-        }
-      }}
-    >
-      <DropdownMenu.Trigger asChild>
-        <button className={className}>{children}</button>
-      </DropdownMenu.Trigger>
+  useEffect(() => {
+    if (open) {
+      setFocusedIndex(0)
+      setEditingId(null)
+    }
+  }, [open])
 
-      <DropdownMenu.Portal>
-        <DropdownMenu.Content className="smtcmp-popover smtcmp-chat-list-dropdown-content">
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowUp') {
+        setFocusedIndex(Math.max(0, focusedIndex - 1))
+      } else if (e.key === 'ArrowDown') {
+        setFocusedIndex(Math.min(chatList.length - 1, focusedIndex + 1))
+      } else if (e.key === 'Enter') {
+        onSelect(chatList[focusedIndex].id)
+        setOpen(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [chatList, focusedIndex, setFocusedIndex, onSelect])
+
+  return (
+    <Popover.Root open={open} onOpenChange={setOpen}>
+      <Popover.Trigger asChild>
+        <button className={className}>{children}</button>
+      </Popover.Trigger>
+
+      <Popover.Portal>
+        <Popover.Content className="smtcmp-popover smtcmp-chat-list-dropdown-content">
           <ul>
             {chatList.length === 0 ? (
               <li className="smtcmp-chat-list-dropdown-empty">
                 No conversations
               </li>
             ) : (
-              chatList.map((chat) => (
-                <DropdownMenu.Item
+              chatList.map((chat, index) => (
+                <ChatListItem
+                  key={chat.id}
+                  title={chat.title}
+                  isFocused={focusedIndex === index}
+                  isEditing={editingId === chat.id}
+                  onMouseEnter={() => {
+                    setFocusedIndex(index)
+                  }}
                   onSelect={async () => {
                     setEditingId(null)
-                    await onSelectConversation(chat.id)
+                    await onSelect(chat.id)
                   }}
-                  asChild
-                  key={chat.id}
-                >
-                  <li>
-                    {editingId === chat.id ? (
-                      <TitleInput
-                        title={chat.title}
-                        onSubmit={async (newTitle) => {
-                          await onEditTitle(chat.id, newTitle)
-                          setEditingId(null)
-                        }}
-                      />
-                    ) : (
-                      <div className="smtcmp-chat-list-dropdown-item-title">
-                        {chat.title}
-                      </div>
-                    )}
-                    <div className="smtcmp-chat-list-dropdown-item-actions">
-                      <div
-                        onClick={(e) => {
-                          e.stopPropagation() // Prevent the dropdown from closing
-                          setEditingId(chat.id)
-                        }}
-                        className="smtcmp-chat-list-dropdown-item-icon"
-                      >
-                        <Pencil size={14} />
-                      </div>
-                      <div
-                        onClick={async (e) => {
-                          e.stopPropagation() // Prevent the dropdown from closing
-                          await onDeleteConversation(chat.id)
-                        }}
-                        className="smtcmp-chat-list-dropdown-item-icon"
-                      >
-                        <Trash2 size={14} />
-                      </div>
-                    </div>
-                  </li>
-                </DropdownMenu.Item>
+                  onDelete={async () => {
+                    await onDelete(chat.id)
+                  }}
+                  onStartEdit={() => {
+                    setEditingId(chat.id)
+                  }}
+                  onFinishEdit={async (title) => {
+                    await onUpdateTitle(chat.id, title)
+                    setEditingId(null)
+                  }}
+                />
               ))
             )}
           </ul>
-        </DropdownMenu.Content>
-      </DropdownMenu.Portal>
-    </DropdownMenu.Root>
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   )
 }

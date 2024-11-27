@@ -545,11 +545,11 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           </button>
           <ChatListDropdown
             chatList={chatList}
-            onSelectConversation={async (conversationId) => {
+            onSelect={async (conversationId) => {
               if (conversationId === currentConversationId) return
               await handleLoadConversation(conversationId)
             }}
-            onDeleteConversation={async (conversationId) => {
+            onDelete={async (conversationId) => {
               await deleteConversation(conversationId)
               if (conversationId === currentConversationId) {
                 const nextConversation = chatList.find(
@@ -562,7 +562,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
                 }
               }
             }}
-            onEditTitle={async (conversationId, newTitle) => {
+            onUpdateTitle={async (conversationId, newTitle) => {
               await updateConversationTitle(conversationId, newTitle)
             }}
             className="smtcmp-chat-list-dropdown"
