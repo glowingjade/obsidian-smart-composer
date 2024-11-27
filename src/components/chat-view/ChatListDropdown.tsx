@@ -108,6 +108,7 @@ function ChatListItem({
 
 export function ChatListDropdown({
   chatList,
+  currentConversationId,
   onSelect,
   onDelete,
   onUpdateTitle,
@@ -115,6 +116,7 @@ export function ChatListDropdown({
   children,
 }: {
   chatList: ChatConversationMeta[]
+  currentConversationId: string
   onSelect: (conversationId: string) => Promise<void>
   onDelete: (conversationId: string) => Promise<void>
   onUpdateTitle: (conversationId: string, newTitle: string) => Promise<void>
@@ -127,7 +129,10 @@ export function ChatListDropdown({
 
   useEffect(() => {
     if (open) {
-      setFocusedIndex(0)
+      const currentIndex = chatList.findIndex(
+        (chat) => chat.id === currentConversationId,
+      )
+      setFocusedIndex(currentIndex === -1 ? 0 : currentIndex)
       setEditingId(null)
     }
   }, [open])
@@ -171,8 +176,8 @@ export function ChatListDropdown({
                     setFocusedIndex(index)
                   }}
                   onSelect={async () => {
-                    setEditingId(null)
                     await onSelect(chat.id)
+                    setOpen(false)
                   }}
                   onDelete={async () => {
                     await onDelete(chat.id)

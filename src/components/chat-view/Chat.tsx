@@ -545,6 +545,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           </button>
           <ChatListDropdown
             chatList={chatList}
+            currentConversationId={currentConversationId}
             onSelect={async (conversationId) => {
               if (conversationId === currentConversationId) return
               await handleLoadConversation(conversationId)
