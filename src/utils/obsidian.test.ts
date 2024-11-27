@@ -1,4 +1,4 @@
-import { TFile } from 'obsidian'
+import { TFile, TFolder } from 'obsidian'
 
 import { calculateFileDistance } from './obsidian'
 
@@ -48,5 +48,13 @@ describe('calculateFileDistance', () => {
 
     const result = calculateFileDistance(file, file)
     expect(result).toBe(0)
+  })
+
+  it('should calculate the correct distance between a folder and a file', () => {
+    const file = new MockTFile('folder1/folder2/file1.md') as TFile
+    const folder = new MockTFile('folder1/folder2') as TFolder
+
+    const result = calculateFileDistance(file, folder)
+    expect(result).toBe(1)
   })
 })
