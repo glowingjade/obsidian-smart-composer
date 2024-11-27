@@ -31,9 +31,24 @@ export type LLMRequestStreaming = LLMRequestBase & {
 
 export type LLMRequest = LLMRequestNonStreaming | LLMRequestStreaming
 
+type TextContent = {
+  type: 'text'
+  text: string
+}
+
+type ImageContentPart = {
+  type: 'image_url'
+  image_url: {
+    url: string // URL or base64 encoded image data
+  }
+}
+
+export type ContentPart = TextContent | ImageContentPart
+
 export type RequestMessage = {
   role: 'user' | 'assistant' | 'system'
-  content: string
+  // ContentParts are only for the 'user' role:
+  content: string | ContentPart[]
 }
 
 export type LLMOptions = {

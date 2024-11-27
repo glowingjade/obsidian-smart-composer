@@ -1,7 +1,9 @@
 import Anthropic from '@anthropic-ai/sdk'
 import {
+  ImageBlockParam,
   MessageParam,
   MessageStreamEvent,
+  TextBlockParam,
 } from '@anthropic-ai/sdk/resources/messages'
 
 import { LLMModel } from '../../types/llm/model'
@@ -16,6 +18,7 @@ import {
   LLMResponseStreaming,
   ResponseUsage,
 } from '../../types/llm/response'
+import { parseImageDataUrl } from '../../utils/image'
 
 import { BaseLLMProvider } from './base'
 import {
@@ -25,6 +28,8 @@ import {
 
 export class AnthropicProvider implements BaseLLMProvider {
   private client: Anthropic
+
+  private static readonly DEFAULT_MAX_TOKENS = 8192
 
   constructor(apiKey: string) {
     this.client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true })
@@ -41,10 +46,7 @@ export class AnthropicProvider implements BaseLLMProvider {
       )
     }
 
-    const systemMessages = request.messages.filter((m) => m.role === 'system')
-    if (systemMessages.length > 1) {
-      throw new Error('Anthropic does not support more than one system message')
-    }
+    const systemMessage = this.validateSystemMessages(request.messages)
 
     try {
       const response = await this.client.messages.create(
@@ -53,9 +55,9 @@ export class AnthropicProvider implements BaseLLMProvider {
           messages: request.messages
             .filter((m) => m.role !== 'system')
             .map((m) => AnthropicProvider.parseRequestMessage(m)),
-          system:
-            systemMessages.length > 0 ? systemMessages[0].content : undefined,
-          max_tokens: request.max_tokens ?? 4096,
+          system: systemMessage,
+          max_tokens:
+            request.max_tokens ?? AnthropicProvider.DEFAULT_MAX_TOKENS,
           temperature: request.temperature,
           top_p: request.top_p,
         },
@@ -87,10 +89,7 @@ export class AnthropicProvider implements BaseLLMProvider {
       )
     }
 
-    const systemMessages = request.messages.filter((m) => m.role === 'system')
-    if (systemMessages.length > 1) {
-      throw new Error('Anthropic does not support more than one system message')
-    }
+    const systemMessage = this.validateSystemMessages(request.messages)
 
     try {
       const stream = await this.client.messages.create(
@@ -99,9 +98,9 @@ export class AnthropicProvider implements BaseLLMProvider {
           messages: request.messages
             .filter((m) => m.role !== 'system')
             .map((m) => AnthropicProvider.parseRequestMessage(m)),
-          system:
-            systemMessages.length > 0 ? systemMessages[0].content : undefined,
-          max_tokens: request.max_tokens ?? 4096,
+          system: systemMessage,
+          max_tokens:
+            request.max_tokens ?? AnthropicProvider.DEFAULT_MAX_TOKENS,
           temperature: request.temperature,
           top_p: request.top_p,
           stream: true,
@@ -172,11 +171,39 @@ export class AnthropicProvider implements BaseLLMProvider {
 
   static parseRequestMessage(message: RequestMessage): MessageParam {
     if (message.role !== 'user' && message.role !== 'assistant') {
-      throw new Error('Unsupported role')
+      throw new Error(`Anthropic does not support role: ${message.role}`)
     }
+
+    if (message.role === 'user' && Array.isArray(message.content)) {
+      const content = message.content.map(
+        (part): TextBlockParam | ImageBlockParam => {
+          switch (part.type) {
+            case 'text':
+              return { type: 'text', text: part.text }
+            case 'image_url': {
+              const { mimeType, base64Data } = parseImageDataUrl(
+                part.image_url.url,
+              )
+              AnthropicProvider.validateImageType(mimeType)
+              return {
+                type: 'image',
+                source: {
+                  data: base64Data,
+                  media_type:
+                    mimeType as ImageBlockParam['source']['media_type'],
+                  type: 'base64',
+                },
+              }
+            }
+          }
+        },
+      )
+      return { role: 'user', content }
+    }
+
     return {
       role: message.role,
-      content: message.content,
+      content: message.content as string,
     }
   }
 
@@ -231,6 +258,39 @@ export class AnthropicProvider implements BaseLLMProvider {
       ],
       object: 'chat.completion.chunk',
       model: model,
+    }
+  }
+
+  private validateSystemMessages(
+    messages: RequestMessage[],
+  ): string | undefined {
+    const systemMessages = messages.filter((m) => m.role === 'system')
+    if (systemMessages.length > 1) {
+      throw new Error(`Anthropic does not support more than one system message`)
+    }
+    const systemMessage =
+      systemMessages.length > 0 ? systemMessages[0].content : undefined
+    if (systemMessage && typeof systemMessage !== 'string') {
+      throw new Error(
+        `Anthropic only supports string content for system messages`,
+      )
+    }
+    return systemMessage
+  }
+
+  private static validateImageType(mimeType: string) {
+    const SUPPORTED_IMAGE_TYPES = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+    ]
+    if (!SUPPORTED_IMAGE_TYPES.includes(mimeType)) {
+      throw new Error(
+        `Anthropic does not support image type ${mimeType}. Supported types: ${SUPPORTED_IMAGE_TYPES.join(
+          ', ',
+        )}`,
+      )
     }
   }
 }

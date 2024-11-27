@@ -38,6 +38,13 @@ export const serializeMentionable = (
         type: 'url',
         url: mentionable.url,
       }
+    case 'image':
+      return {
+        type: 'image',
+        name: mentionable.name,
+        mimeType: mentionable.mimeType,
+        data: mentionable.data,
+      }
   }
 }
 
@@ -103,6 +110,14 @@ export const deserializeMentionable = (
           url: mentionable.url,
         }
       }
+      case 'image': {
+        return {
+          type: 'image',
+          name: mentionable.name,
+          mimeType: mentionable.mimeType,
+          data: mentionable.data,
+        }
+      }
     }
   } catch (e) {
     console.error('Error deserializing mentionable', e)
@@ -124,6 +139,8 @@ export function getMentionableKey(mentionable: SerializedMentionable): string {
       return `block:${mentionable.file}:${mentionable.startLine}:${mentionable.endLine}:${mentionable.content}`
     case 'url':
       return `url:${mentionable.url}`
+    case 'image':
+      return `image:${mentionable.name}:${mentionable.data.length}:${mentionable.data.slice(-32)}`
   }
 }
 
@@ -141,5 +158,7 @@ export function getMentionableName(mentionable: Mentionable): string {
       return `${mentionable.file.name} (${mentionable.startLine}:${mentionable.endLine})`
     case 'url':
       return mentionable.url
+    case 'image':
+      return mentionable.name
   }
 }

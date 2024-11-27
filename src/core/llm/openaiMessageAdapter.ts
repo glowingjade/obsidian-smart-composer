@@ -2,6 +2,7 @@ import OpenAI from 'openai'
 import {
   ChatCompletion,
   ChatCompletionChunk,
+  ChatCompletionContentPart,
   ChatCompletionMessageParam,
 } from 'openai/resources/chat/completions'
 
@@ -83,9 +84,32 @@ export class OpenAIMessageAdapter {
   static parseRequestMessage(
     message: RequestMessage,
   ): ChatCompletionMessageParam {
-    return {
-      role: message.role,
-      content: message.content,
+    switch (message.role) {
+      case 'user': {
+        const content = Array.isArray(message.content)
+          ? message.content.map((part): ChatCompletionContentPart => {
+              switch (part.type) {
+                case 'text':
+                  return { type: 'text', text: part.text }
+                case 'image_url':
+                  return { type: 'image_url', image_url: part.image_url }
+              }
+            })
+          : message.content
+        return { role: 'user', content }
+      }
+      case 'assistant': {
+        if (Array.isArray(message.content)) {
+          throw new Error('Assistant message should be a string')
+        }
+        return { role: 'assistant', content: message.content }
+      }
+      case 'system': {
+        if (Array.isArray(message.content)) {
+          throw new Error('System message should be a string')
+        }
+        return { role: 'system', content: message.content }
+      }
     }
   }
 

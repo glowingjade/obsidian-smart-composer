@@ -17,6 +17,7 @@ import {
   LLMResponseNonStreaming,
   LLMResponseStreaming,
 } from '../../types/llm/response'
+import { parseImageDataUrl } from '../../utils/image'
 
 import { BaseLLMProvider } from './base'
 import {
@@ -47,7 +48,7 @@ export class GeminiProvider implements BaseLLMProvider {
   ): Promise<LLMResponseNonStreaming> {
     if (!this.apiKey) {
       throw new LLMAPIKeyNotSetException(
-        'Gemini API key is missing. Please set it in settings menu.',
+        `Gemini API key is missing. Please set it in settings menu.`,
       )
     }
 
@@ -95,7 +96,7 @@ export class GeminiProvider implements BaseLLMProvider {
 
       if (isInvalidApiKey) {
         throw new LLMAPIKeyInvalidException(
-          'Gemini API key is invalid. Please update it in settings menu.',
+          `Gemini API key is invalid. Please update it in settings menu.`,
         )
       }
 
@@ -110,7 +111,7 @@ export class GeminiProvider implements BaseLLMProvider {
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
     if (!this.apiKey) {
       throw new LLMAPIKeyNotSetException(
-        'Gemini API key is missing. Please set it in settings menu.',
+        `Gemini API key is missing. Please set it in settings menu.`,
       )
     }
 
@@ -154,7 +155,7 @@ export class GeminiProvider implements BaseLLMProvider {
 
       if (isInvalidApiKey) {
         throw new LLMAPIKeyInvalidException(
-          'Gemini API key is invalid. Please update it in settings menu.',
+          `Gemini API key is invalid. Please update it in settings menu.`,
         )
       }
 
@@ -176,6 +177,32 @@ export class GeminiProvider implements BaseLLMProvider {
     if (message.role === 'system') {
       return null
     }
+
+    if (Array.isArray(message.content)) {
+      return {
+        role: message.role === 'user' ? 'user' : 'model',
+        parts: message.content.map((part) => {
+          switch (part.type) {
+            case 'text':
+              return { text: part.text }
+            case 'image_url': {
+              const { mimeType, base64Data } = parseImageDataUrl(
+                part.image_url.url,
+              )
+              GeminiProvider.validateImageType(mimeType)
+
+              return {
+                inlineData: {
+                  data: base64Data,
+                  mimeType,
+                },
+              }
+            }
+          }
+        }),
+      }
+    }
+
     return {
       role: message.role === 'user' ? 'user' : 'model',
       parts: [
@@ -242,6 +269,23 @@ export class GeminiProvider implements BaseLLMProvider {
             total_tokens: chunk.usageMetadata.totalTokenCount,
           }
         : undefined,
+    }
+  }
+
+  private static validateImageType(mimeType: string) {
+    const SUPPORTED_IMAGE_TYPES = [
+      'image/png',
+      'image/jpeg',
+      'image/webp',
+      'image/heic',
+      'image/heif',
+    ]
+    if (!SUPPORTED_IMAGE_TYPES.includes(mimeType)) {
+      throw new Error(
+        `Gemini does not support image type ${mimeType}. Supported types: ${SUPPORTED_IMAGE_TYPES.join(
+          ', ',
+        )}`,
+      )
     }
   }
 }

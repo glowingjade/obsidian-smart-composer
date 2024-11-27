@@ -241,7 +241,13 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   align-items: center;
   height: var(--size-4-4);
 
-  .smtcmp-chat-user-input-controls-buttons {
+  .smtcmp-chat-user-input-controls__model-select-container {
+    flex-shrink: 1;
+    overflow: hidden;
+  }
+
+  .smtcmp-chat-user-input-controls__buttons {
+    flex-shrink: 0;
     display: flex;
     gap: var(--size-4-2);
     align-items: center;
@@ -285,6 +291,10 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+
+  &.smtcmp-chat-user-input-file-badge-focused {
+    border: 1px solid var(--interactive-accent);
+  }
 }
 
 .smtcmp-chat-user-input-file-badge:hover {
@@ -333,6 +343,11 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   max-height: 350px;
   overflow-y: auto;
   white-space: pre-line;
+
+  img {
+    max-width: 100%;
+    max-height: 350px;
+  }
 }
 
 /**
@@ -731,11 +746,27 @@ button.smtcmp-chat-input-model-select {
   font-weight: var(--font-medium);
   color: var(--text-muted);
   justify-content: flex-start;
+  align-items: center;
+  cursor: pointer;
   height: var(--size-4-4);
-  width: fit-content;
+  max-width: 100%;
 
   &:hover {
     color: var(--text-normal);
+  }
+
+  .smtcmp-chat-input-model-select__model-name {
+    flex-shrink: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .smtcmp-chat-input-model-select__icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 

@@ -5,11 +5,12 @@ import { QueryProgressState } from '../components/chat-view/QueryProgress'
 import { RAGEngine } from '../core/rag/ragEngine'
 import { SelectVector } from '../database/schema'
 import { ChatMessage, ChatUserMessage } from '../types/chat'
-import { RequestMessage } from '../types/llm/request'
+import { ContentPart, RequestMessage } from '../types/llm/request'
 import {
   MentionableBlock,
   MentionableFile,
   MentionableFolder,
+  MentionableImage,
   MentionableUrl,
   MentionableVault,
 } from '../types/mentionable'
@@ -137,7 +138,7 @@ export class PromptGenerator {
     useVaultSearch?: boolean
     onQueryProgressChange?: (queryProgress: QueryProgressState) => void
   }): Promise<{
-    promptContent: string
+    promptContent: ChatUserMessage['promptContent']
     shouldUseRAG: boolean
     similaritySearchResults?: (Omit<SelectVector, 'embedding'> & {
       similarity: number
@@ -255,8 +256,25 @@ ${await this.getWebsiteContent(url)}
 `
         : ''
 
+    const imageDataUrls = message.mentionables
+      .filter((m): m is MentionableImage => m.type === 'image')
+      .map(({ data }) => data)
+
     return {
-      promptContent: `${filePrompt}${blockPrompt}${urlPrompt}\n\n${query}\n\n`,
+      promptContent: [
+        ...imageDataUrls.map(
+          (data): ContentPart => ({
+            type: 'image_url',
+            image_url: {
+              url: data,
+            },
+          }),
+        ),
+        {
+          type: 'text',
+          text: `${filePrompt}${blockPrompt}${urlPrompt}\n\n${query}\n\n`,
+        },
+      ],
       shouldUseRAG,
       similaritySearchResults: similaritySearchResults,
     }
