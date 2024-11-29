@@ -29,11 +29,15 @@ Everytime we ask ChatGPT, we need to put so much context information for each qu
 
 <img src="https://github.com/user-attachments/assets/b22175d4-80a2-4122-8555-2b9dd4987f93" alt="SC2-2_MultiContext.png" width="360"/>
 
-Now, you can **add website links** as additional context for your queries.
+Now, you can **add website links and images** as additional context for your queries.
 
 - Website content is automatically extracted
+- **Image support**: Add images directly to your chat through:
+  - Upload button
+  - Drag & drop
+  - Paste from clipboard
 - **Youtube link support**: YouTube transcripts are fetched and included as context
-- **Coming soon**: Support for image, and external files (PDF, DOCX, ...)
+- **Coming soon**: Support for external files (PDF, DOCX, ...)
 
 ### Apply Edit
 
@@ -95,7 +99,7 @@ To see our up-to-date project roadmap and progress, please check out our [GitHub
 
 Some of our planned features include:
 
-- Support for image inputs or external files (PDF, DOCX, etc.)
+- Support for external files (PDF, DOCX, etc.)
 - Mentioning with tags or other metadata
 
 ## Feedback and Support
