@@ -213,62 +213,6 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
     )
     let modelDropdown: DropdownComponent | null = null // Store reference to the dropdown
 
-    const updateModelOptions = async (
-      baseUrl: string,
-      dropdown: DropdownComponent,
-    ) => {
-      const currentValue = dropdown.getValue()
-      dropdown.selectEl.empty()
-
-      try {
-        const models = await getOllamaModels(baseUrl)
-        if (models.length > 0) {
-          const modelOptions = models.reduce<Record<string, string>>(
-            (acc, model) => {
-              acc[model] = model
-              return acc
-            },
-            {},
-          )
-          dropdown.addOptions(modelOptions)
-
-          if (models.includes(currentValue)) {
-            dropdown.setValue(currentValue)
-          } else {
-            dropdown.setValue(models[0])
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              ollamaChatModel: {
-                ...this.plugin.settings.ollamaChatModel,
-                model: models[0],
-              },
-            })
-          }
-        } else {
-          dropdown.addOption('', 'No models found - check base URL')
-          dropdown.setValue('')
-          await this.plugin.setSettings({
-            ...this.plugin.settings,
-            ollamaChatModel: {
-              ...this.plugin.settings.ollamaChatModel,
-              model: '',
-            },
-          })
-        }
-      } catch (error) {
-        console.error('Failed to fetch Ollama models:', error)
-        dropdown.addOption('', 'No models found - check base URL')
-        dropdown.setValue('')
-        await this.plugin.setSettings({
-          ...this.plugin.settings,
-          ollamaChatModel: {
-            ...this.plugin.settings.ollamaChatModel,
-            model: '',
-          },
-        })
-      }
-    }
-
     // Base URL Setting
     new Setting(ollamaContainer)
       .setName('Base URL')
@@ -288,7 +232,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
               },
             })
             if (modelDropdown) {
-              await updateModelOptions(value, modelDropdown)
+              await this.updateOllamaModelOptions(value, modelDropdown)
             }
           })
       })
@@ -299,7 +243,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
       .setDesc('Select a model from your Ollama instance')
       .addDropdown(async (dropdown) => {
         modelDropdown = dropdown
-        await updateModelOptions(
+        await this.updateOllamaModelOptions(
           this.plugin.settings.ollamaChatModel.baseUrl,
           dropdown,
         )
@@ -642,6 +586,63 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
             }
           }),
       )
+  }
+
+  private async updateOllamaModelOptions(
+    baseUrl: string,
+    dropdown: DropdownComponent,
+  ): Promise<void> {
+    const currentValue = dropdown.getValue()
+    dropdown.selectEl.empty()
+
+    try {
+      const models = await getOllamaModels(baseUrl)
+      if (models.length > 0) {
+        const modelOptions = models.reduce<Record<string, string>>(
+          (acc, model) => {
+            acc[model] = model
+            return acc
+          },
+          {},
+        )
+
+        dropdown.addOptions(modelOptions)
+
+        if (models.includes(currentValue)) {
+          dropdown.setValue(currentValue)
+        } else {
+          dropdown.setValue(models[0])
+          await this.plugin.setSettings({
+            ...this.plugin.settings,
+            ollamaChatModel: {
+              ...this.plugin.settings.ollamaChatModel,
+              model: models[0],
+            },
+          })
+        }
+      } else {
+        dropdown.addOption('', 'No models found - check base URL')
+        dropdown.setValue('')
+        await this.plugin.setSettings({
+          ...this.plugin.settings,
+          ollamaChatModel: {
+            ...this.plugin.settings.ollamaChatModel,
+            model: '',
+          },
+        })
+      }
+    } catch (error) {
+      console.error('Failed to fetch Ollama models:', error)
+      dropdown.addOption('', 'No models found - check base URL')
+      dropdown.setValue('')
+      await this.plugin.setSettings({
+        ...this.plugin.settings,
+        ollamaChatModel: {
+          ...this.plugin.settings.ollamaChatModel,
+          model: '',
+        },
+      })
+    }
   }
 }
 
