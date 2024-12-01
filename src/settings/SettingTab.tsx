@@ -1,4 +1,11 @@
-import { App, Modal, PluginSettingTab, Setting, TFile } from 'obsidian'
+import {
+  App,
+  DropdownComponent,
+  Modal,
+  PluginSettingTab,
+  Setting,
+  TFile,
+} from 'obsidian'
 
 import {
   APPLY_MODEL_OPTIONS,
@@ -7,6 +14,7 @@ import {
 } from '../constants'
 import SmartCopilotPlugin from '../main'
 import { findFilesMatchingPatterns } from '../utils/globUtils'
+import { getOllamaModels } from '../utils/ollama'
 
 export class SmartCopilotSettingTab extends PluginSettingTab {
   plugin: SmartCopilotPlugin
@@ -203,13 +211,71 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
     const ollamaContainer = containerEl.createDiv(
       'smtcmp-settings-model-container',
     )
+    let modelDropdown: DropdownComponent | null = null // Store reference to the dropdown
 
+    const updateModelOptions = async (
+      baseUrl: string,
+      dropdown: DropdownComponent,
+    ) => {
+      const currentValue = dropdown.getValue()
+      dropdown.selectEl.empty()
+
+      try {
+        const models = await getOllamaModels(baseUrl)
+        if (models.length > 0) {
+          const modelOptions = models.reduce<Record<string, string>>(
+            (acc, model) => {
+              acc[model] = model
+              return acc
+            },
+            {},
+          )
+          dropdown.addOptions(modelOptions)
+
+          if (models.includes(currentValue)) {
+            dropdown.setValue(currentValue)
+          } else {
+            dropdown.setValue(models[0])
+            await this.plugin.setSettings({
+              ...this.plugin.settings,
+              ollamaChatModel: {
+                ...this.plugin.settings.ollamaChatModel,
+                model: models[0],
+              },
+            })
+          }
+        } else {
+          dropdown.addOption('', 'No models found - check base URL')
+          dropdown.setValue('')
+          await this.plugin.setSettings({
+            ...this.plugin.settings,
+            ollamaChatModel: {
+              ...this.plugin.settings.ollamaChatModel,
+              model: '',
+            },
+          })
+        }
+      } catch (error) {
+        console.error('Failed to fetch Ollama models:', error)
+        dropdown.addOption('', 'No models found - check base URL')
+        dropdown.setValue('')
+        await this.plugin.setSettings({
+          ...this.plugin.settings,
+          ollamaChatModel: {
+            ...this.plugin.settings.ollamaChatModel,
+            model: '',
+          },
+        })
+      }
+    }
+
+    // Base URL Setting
     new Setting(ollamaContainer)
       .setName('Base URL')
       .setDesc(
         'The API endpoint for your Ollama service (e.g., http://127.0.0.1:11434)',
       )
-      .addText((text) =>
+      .addText((text) => {
         text
           .setPlaceholder('http://127.0.0.1:11434')
           .setValue(this.plugin.settings.ollamaChatModel.baseUrl || '')
@@ -221,28 +287,23 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
                 baseUrl: value,
               },
             })
-          }),
-      )
+            if (modelDropdown) {
+              await updateModelOptions(value, modelDropdown)
+            }
+          })
+      })
 
+    // Model Setting
     new Setting(ollamaContainer)
       .setName('Model Name')
-      .setDesc(
-        'The specific model to use with your service (e.g., llama-3.1-70b, mixtral-8x7b)',
-      )
-      .addText((text) =>
-        text
-          .setPlaceholder('llama-3.1-70b')
-          .setValue(this.plugin.settings.ollamaChatModel.model || '')
-          .onChange(async (value) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              ollamaChatModel: {
-                ...this.plugin.settings.ollamaChatModel,
-                model: value,
-              },
-            })
-          }),
-      )
+      .setDesc('Select a model from your Ollama instance')
+      .addDropdown(async (dropdown) => {
+        modelDropdown = dropdown
+        await updateModelOptions(
+          this.plugin.settings.ollamaChatModel.baseUrl,
+          dropdown,
+        )
+      })
   }
 
   renderOpenAICompatibleChatModelSettings(containerEl: HTMLElement): void {
