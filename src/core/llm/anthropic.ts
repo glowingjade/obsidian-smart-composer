@@ -46,7 +46,9 @@ export class AnthropicProvider implements BaseLLMProvider {
       )
     }
 
-    const systemMessage = this.validateSystemMessages(request.messages)
+    const systemMessage = AnthropicProvider.validateSystemMessages(
+      request.messages,
+    )
 
     try {
       const response = await this.client.messages.create(
@@ -54,6 +56,7 @@ export class AnthropicProvider implements BaseLLMProvider {
           model: request.model,
           messages: request.messages
             .filter((m) => m.role !== 'system')
+            .filter((m) => !AnthropicProvider.isMessageEmpty(m))
             .map((m) => AnthropicProvider.parseRequestMessage(m)),
           system: systemMessage,
           max_tokens:
@@ -89,7 +92,9 @@ export class AnthropicProvider implements BaseLLMProvider {
       )
     }
 
-    const systemMessage = this.validateSystemMessages(request.messages)
+    const systemMessage = AnthropicProvider.validateSystemMessages(
+      request.messages,
+    )
 
     try {
       const stream = await this.client.messages.create(
@@ -97,6 +102,7 @@ export class AnthropicProvider implements BaseLLMProvider {
           model: request.model,
           messages: request.messages
             .filter((m) => m.role !== 'system')
+            .filter((m) => !AnthropicProvider.isMessageEmpty(m))
             .map((m) => AnthropicProvider.parseRequestMessage(m)),
           system: systemMessage,
           max_tokens:
@@ -261,7 +267,7 @@ export class AnthropicProvider implements BaseLLMProvider {
     }
   }
 
-  private validateSystemMessages(
+  private static validateSystemMessages(
     messages: RequestMessage[],
   ): string | undefined {
     const systemMessages = messages.filter((m) => m.role === 'system')
@@ -276,6 +282,13 @@ export class AnthropicProvider implements BaseLLMProvider {
       )
     }
     return systemMessage
+  }
+
+  private static isMessageEmpty(message: RequestMessage) {
+    if (typeof message.content === 'string') {
+      return message.content.trim() === ''
+    }
+    return message.content.length === 0
   }
 
   private static validateImageType(mimeType: string) {
