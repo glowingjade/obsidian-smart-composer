@@ -462,7 +462,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName('Exclude patterns')
       .setDesc(
-        'Files matching these patterns will be excluded from indexing. One pattern per line. Uses glob patterns (e.g., "private/*", "*.tmp"). After changing this, use the command "Rebuild entire vault index" to apply changes.',
+        'Files matching ANY of these patterns will be excluded from indexing. One pattern per line. Uses glob patterns (e.g., "private/*", "*.tmp"). Leave empty to exclude nothing. After changing this, use the command "Rebuild entire vault index" to apply changes.',
       )
       .addButton((button) =>
         button.setButtonText('Test patterns').onClick(async () => {
@@ -490,6 +490,42 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
               ragOptions: {
                 ...this.plugin.settings.ragOptions,
                 excludePatterns: patterns,
+              },
+            })
+          }),
+      )
+
+    new Setting(containerEl)
+      .setName('Include patterns')
+      .setDesc(
+        'If any patterns are specified, ONLY files matching at least one pattern will be included in indexing. One pattern per line. Uses glob patterns (e.g., "notes/*", "*.md"). Leave empty to include all files not excluded by exclude patterns. After changing this, use the command "Rebuild entire vault index" to apply changes.',
+      )
+      .addButton((button) =>
+        button.setButtonText('Test patterns').onClick(async () => {
+          const patterns = this.plugin.settings.ragOptions.includePatterns
+          const includedFiles = await findFilesMatchingPatterns(
+            patterns,
+            this.plugin.app.vault,
+          )
+          new IncludedFilesModal(this.app, includedFiles, patterns).open()
+        }),
+      )
+
+    new Setting(containerEl)
+      .setClass('smtcmp-settings-textarea')
+      .addTextArea((text) =>
+        text
+          .setValue(this.plugin.settings.ragOptions.includePatterns.join('\n'))
+          .onChange(async (value) => {
+            const patterns = value
+              .split('\n')
+              .map((p) => p.trim())
+              .filter((p) => p.length > 0)
+            await this.plugin.setSettings({
+              ...this.plugin.settings,
+              ragOptions: {
+                ...this.plugin.settings.ragOptions,
+                includePatterns: patterns,
               },
             })
           }),
@@ -662,6 +698,48 @@ class ExcludedFilesModal extends Modal {
 
     if (this.files.length === 0) {
       contentEl.createEl('p', { text: 'No files match the exclusion patterns' })
+      return
+    }
+
+    const list = contentEl.createEl('ul')
+    this.files.forEach((file) => {
+      list.createEl('li', { text: file.path })
+    })
+  }
+
+  onClose() {
+    const { contentEl } = this
+    contentEl.empty()
+  }
+}
+
+class IncludedFilesModal extends Modal {
+  private files: TFile[]
+  private patterns: string[]
+
+  constructor(app: App, files: TFile[], patterns: string[]) {
+    super(app)
+    this.files = files
+    this.patterns = patterns
+  }
+
+  onOpen() {
+    const { contentEl } = this
+    contentEl.empty()
+
+    this.titleEl.setText(`Included Files (${this.files.length})`)
+
+    if (this.patterns.length === 0) {
+      contentEl.createEl('p', {
+        text: 'No inclusion patterns specified - all files will be included (except those matching exclusion patterns)',
+      })
+      return
+    }
+
+    if (this.files.length === 0) {
+      contentEl.createEl('p', {
+        text: 'No files match the inclusion patterns',
+      })
       return
     }
 
