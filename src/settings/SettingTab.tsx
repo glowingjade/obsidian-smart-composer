@@ -232,7 +232,19 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
               },
             })
             if (modelDropdown) {
-              await this.updateOllamaModelOptions(value, modelDropdown)
+              await this.updateOllamaModelOptions({
+                baseUrl: value,
+                dropdown: modelDropdown,
+                onModelChange: async (model: string) => {
+                  await this.plugin.setSettings({
+                    ...this.plugin.settings,
+                    ollamaChatModel: {
+                      ...this.plugin.settings.ollamaChatModel,
+                      model,
+                    },
+                  })
+                },
+              })
             }
           })
       })
@@ -243,10 +255,19 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
       .setDesc('Select a model from your Ollama instance')
       .addDropdown(async (dropdown) => {
         modelDropdown = dropdown
-        await this.updateOllamaModelOptions(
-          this.plugin.settings.ollamaChatModel.baseUrl,
+        await this.updateOllamaModelOptions({
+          baseUrl: this.plugin.settings.ollamaChatModel.baseUrl,
           dropdown,
-        )
+          onModelChange: async (model: string) => {
+            await this.plugin.setSettings({
+              ...this.plugin.settings,
+              ollamaChatModel: {
+                ...this.plugin.settings.ollamaChatModel,
+                model,
+              },
+            })
+          },
+        })
       })
   }
 
@@ -320,13 +341,15 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
     const ollamaContainer = containerEl.createDiv(
       'smtcmp-settings-model-container',
     )
+    let modelDropdown: DropdownComponent | null = null // Store reference to the dropdown
 
+    // Base URL Setting
     new Setting(ollamaContainer)
       .setName('Base URL')
       .setDesc(
         'The API endpoint for your Ollama service (e.g., http://127.0.0.1:11434)',
       )
-      .addText((text) =>
+      .addText((text) => {
         text
           .setPlaceholder('http://127.0.0.1:11434')
           .setValue(this.plugin.settings.ollamaApplyModel.baseUrl || '')
@@ -338,28 +361,44 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
                 baseUrl: value,
               },
             })
-          }),
-      )
+            if (modelDropdown) {
+              await this.updateOllamaModelOptions({
+                baseUrl: value,
+                dropdown: modelDropdown,
+                onModelChange: async (model: string) => {
+                  await this.plugin.setSettings({
+                    ...this.plugin.settings,
+                    ollamaApplyModel: {
+                      ...this.plugin.settings.ollamaApplyModel,
+                      model,
+                    },
+                  })
+                },
+              })
+            }
+          })
+      })
 
+    // Model Setting
     new Setting(ollamaContainer)
       .setName('Model Name')
-      .setDesc(
-        'The specific model to use with your service (e.g., llama-3.1-70b, mixtral-8x7b)',
-      )
-      .addText((text) =>
-        text
-          .setPlaceholder('llama-3.1-70b')
-          .setValue(this.plugin.settings.ollamaApplyModel.model || '')
-          .onChange(async (value) => {
+      .setDesc('Select a model from your Ollama instance')
+      .addDropdown(async (dropdown) => {
+        modelDropdown = dropdown
+        await this.updateOllamaModelOptions({
+          baseUrl: this.plugin.settings.ollamaApplyModel.baseUrl,
+          dropdown,
+          onModelChange: async (model: string) => {
             await this.plugin.setSettings({
               ...this.plugin.settings,
               ollamaApplyModel: {
                 ...this.plugin.settings.ollamaApplyModel,
-                model: value,
+                model,
               },
             })
-          }),
-      )
+          },
+        })
+      })
   }
 
   renderOpenAICompatibleApplyModelSettings(containerEl: HTMLElement): void {
@@ -622,10 +661,15 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
       )
   }
 
-  private async updateOllamaModelOptions(
-    baseUrl: string,
-    dropdown: DropdownComponent,
-  ): Promise<void> {
+  private async updateOllamaModelOptions({
+    baseUrl,
+    dropdown,
+    onModelChange,
+  }: {
+    baseUrl: string
+    dropdown: DropdownComponent
+    onModelChange: (model: string) => Promise<void>
+  }): Promise<void> {
     const currentValue = dropdown.getValue()
     dropdown.selectEl.empty()
 
@@ -646,36 +690,18 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
           dropdown.setValue(currentValue)
         } else {
           dropdown.setValue(models[0])
-          await this.plugin.setSettings({
-            ...this.plugin.settings,
-            ollamaChatModel: {
-              ...this.plugin.settings.ollamaChatModel,
-              model: models[0],
-            },
-          })
+          await onModelChange(models[0])
         }
       } else {
         dropdown.addOption('', 'No models found - check base URL')
         dropdown.setValue('')
-        await this.plugin.setSettings({
-          ...this.plugin.settings,
-          ollamaChatModel: {
-            ...this.plugin.settings.ollamaChatModel,
-            model: '',
-          },
-        })
+        await onModelChange('')
       }
     } catch (error) {
       console.error('Failed to fetch Ollama models:', error)
       dropdown.addOption('', 'No models found - check base URL')
       dropdown.setValue('')
-      await this.plugin.setSettings({
-        ...this.plugin.settings,
-        ollamaChatModel: {
-          ...this.plugin.settings.ollamaChatModel,
-          model: '',
-        },
-      })
+      await onModelChange('')
     }
   }
 }
