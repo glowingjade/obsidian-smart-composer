@@ -38,6 +38,14 @@ export const CHAT_MODEL_OPTIONS: ModelOption[] = [
     },
   },
   {
+    id: 'gemini/gemini-2.0-flash',
+    name: 'gemini-2.0-flash',
+    model: {
+      provider: 'gemini',
+      model: 'gemini-2.0-flash-exp',
+    },
+  },
+  {
     id: 'groq/llama-3.1-70b-versatile',
     name: 'llama-3.1-70b (Groq)',
     model: {
@@ -89,6 +97,14 @@ export const APPLY_MODEL_OPTIONS: ModelOption[] = [
     model: {
       provider: 'gemini',
       model: 'gemini-1.5-flash',
+    },
+  },
+  {
+    id: 'gemini/gemini-2.0-flash',
+    name: 'gemini-2.0-flash',
+    model: {
+      provider: 'gemini',
+      model: 'gemini-2.0-flash-exp',
     },
   },
   {
