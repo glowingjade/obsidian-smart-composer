@@ -46,6 +46,7 @@ describe('parseSmartCopilotSettings', () => {
         minSimilarity: 0.0,
         limit: 10,
         excludePatterns: [],
+        includePatterns: [],
       },
     })
   })
@@ -114,6 +115,7 @@ describe('settings migration', () => {
         minSimilarity: 0.0,
         limit: 10,
         excludePatterns: [],
+        includePatterns: [],
       },
     })
   })

@@ -57,6 +57,7 @@ export class VectorManager {
     options: {
       chunkSize: number
       excludePatterns: string[]
+      includePatterns: string[]
       reindexAll?: boolean
     },
     updateProgress?: (indexProgress: IndexProgress) => void,
@@ -66,6 +67,7 @@ export class VectorManager {
       filesToIndex = await this.getFilesToIndex({
         embeddingModel: embeddingModel,
         excludePatterns: options.excludePatterns,
+        includePatterns: options.includePatterns,
         reindexAll: true,
       })
       await this.repository.clearAllVectors(embeddingModel)
@@ -74,6 +76,7 @@ export class VectorManager {
       filesToIndex = await this.getFilesToIndex({
         embeddingModel: embeddingModel,
         excludePatterns: options.excludePatterns,
+        includePatterns: options.includePatterns,
       })
       await this.repository.deleteVectorsForMultipleFiles(
         filesToIndex.map((file) => file.path),
@@ -220,10 +223,12 @@ export class VectorManager {
   private async getFilesToIndex({
     embeddingModel,
     excludePatterns,
+    includePatterns,
     reindexAll,
   }: {
     embeddingModel: EmbeddingModel
     excludePatterns: string[]
+    includePatterns: string[]
     reindexAll?: boolean
   }): Promise<TFile[]> {
     let filesToIndex = this.app.vault.getMarkdownFiles()
@@ -231,6 +236,12 @@ export class VectorManager {
     filesToIndex = filesToIndex.filter((file) => {
       return !excludePatterns.some((pattern) => minimatch(file.path, pattern))
     })
+
+    if (includePatterns.length > 0) {
+      filesToIndex = filesToIndex.filter((file) => {
+        return includePatterns.some((pattern) => minimatch(file.path, pattern))
+      })
+    }
 
     if (reindexAll) {
       return filesToIndex
