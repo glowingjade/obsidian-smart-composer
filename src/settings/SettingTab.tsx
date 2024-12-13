@@ -460,42 +460,6 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
     new Setting(containerEl).setHeading().setName('RAG')
 
     new Setting(containerEl)
-      .setName('Exclude patterns')
-      .setDesc(
-        'Files matching ANY of these patterns will be excluded from indexing. One pattern per line. Uses glob patterns (e.g., "private/*", "*.tmp"). Leave empty to exclude nothing. After changing this, use the command "Rebuild entire vault index" to apply changes.',
-      )
-      .addButton((button) =>
-        button.setButtonText('Test patterns').onClick(async () => {
-          const patterns = this.plugin.settings.ragOptions.excludePatterns
-          const excludedFiles = await findFilesMatchingPatterns(
-            patterns,
-            this.plugin.app.vault,
-          )
-          new ExcludedFilesModal(this.app, excludedFiles).open()
-        }),
-      )
-
-    new Setting(containerEl)
-      .setClass('smtcmp-settings-textarea')
-      .addTextArea((text) =>
-        text
-          .setValue(this.plugin.settings.ragOptions.excludePatterns.join('\n'))
-          .onChange(async (value) => {
-            const patterns = value
-              .split('\n')
-              .map((p) => p.trim())
-              .filter((p) => p.length > 0)
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              ragOptions: {
-                ...this.plugin.settings.ragOptions,
-                excludePatterns: patterns,
-              },
-            })
-          }),
-      )
-
-    new Setting(containerEl)
       .setName('Include patterns')
       .setDesc(
         'If any patterns are specified, ONLY files matching at least one pattern will be included in indexing. One pattern per line. Uses glob patterns (e.g., "notes/*", "*.md"). Leave empty to include all files not excluded by exclude patterns. After changing this, use the command "Rebuild entire vault index" to apply changes.',
@@ -510,7 +474,6 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
           new IncludedFilesModal(this.app, includedFiles, patterns).open()
         }),
       )
-
     new Setting(containerEl)
       .setClass('smtcmp-settings-textarea')
       .addTextArea((text) =>
@@ -526,6 +489,41 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
               ragOptions: {
                 ...this.plugin.settings.ragOptions,
                 includePatterns: patterns,
+              },
+            })
+          }),
+      )
+
+    new Setting(containerEl)
+      .setName('Exclude patterns')
+      .setDesc(
+        'Files matching ANY of these patterns will be excluded from indexing. One pattern per line. Uses glob patterns (e.g., "private/*", "*.tmp"). Leave empty to exclude nothing. After changing this, use the command "Rebuild entire vault index" to apply changes.',
+      )
+      .addButton((button) =>
+        button.setButtonText('Test patterns').onClick(async () => {
+          const patterns = this.plugin.settings.ragOptions.excludePatterns
+          const excludedFiles = await findFilesMatchingPatterns(
+            patterns,
+            this.plugin.app.vault,
+          )
+          new ExcludedFilesModal(this.app, excludedFiles).open()
+        }),
+      )
+    new Setting(containerEl)
+      .setClass('smtcmp-settings-textarea')
+      .addTextArea((text) =>
+        text
+          .setValue(this.plugin.settings.ragOptions.excludePatterns.join('\n'))
+          .onChange(async (value) => {
+            const patterns = value
+              .split('\n')
+              .map((p) => p.trim())
+              .filter((p) => p.length > 0)
+            await this.plugin.setSettings({
+              ...this.plugin.settings,
+              ragOptions: {
+                ...this.plugin.settings.ragOptions,
+                excludePatterns: patterns,
               },
             })
           }),
