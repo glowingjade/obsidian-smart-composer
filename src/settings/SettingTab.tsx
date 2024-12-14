@@ -44,7 +44,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
     apiKeysHeading.descEl.createEl('a', {
       text: 'How to obtain API keys',
       attr: {
-        href: 'https://github.com/glowingjade/obsidian-smart-composer/#initial-setup',
+        href: 'https://github.com/glowingjade/obsidian-smart-composer/wiki/1.2-Initial-Setup#getting-your-api-key',
         target: '_blank',
       },
     })
