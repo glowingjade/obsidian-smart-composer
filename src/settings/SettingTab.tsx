@@ -254,7 +254,10 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
       .setName('Model Name')
       .setDesc('Select a model from your Ollama instance')
       .addDropdown(async (dropdown) => {
+        const currentModel = this.plugin.settings.ollamaChatModel.model
         modelDropdown = dropdown
+          .addOption(currentModel, currentModel)
+          .setValue(currentModel)
         await this.updateOllamaModelOptions({
           baseUrl: this.plugin.settings.ollamaChatModel.baseUrl,
           dropdown,
@@ -384,7 +387,10 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
       .setName('Model Name')
       .setDesc('Select a model from your Ollama instance')
       .addDropdown(async (dropdown) => {
+        const currentModel = this.plugin.settings.ollamaApplyModel.model
         modelDropdown = dropdown
+          .addOption(currentModel, currentModel)
+          .setValue(currentModel)
         await this.updateOllamaModelOptions({
           baseUrl: this.plugin.settings.ollamaApplyModel.baseUrl,
           dropdown,
@@ -703,6 +709,10 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
       dropdown.setValue('')
       await onModelChange('')
     }
+
+    dropdown.onChange(async (value) => {
+      await onModelChange(value)
+    })
   }
 }
 
