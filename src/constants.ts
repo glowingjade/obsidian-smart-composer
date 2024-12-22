@@ -46,6 +46,14 @@ export const CHAT_MODEL_OPTIONS: ModelOption[] = [
     },
   },
   {
+    id: 'gemini/gemini-2.0-flash-thinking',
+    name: 'gemini-2.0-flash-thinking',
+    model: {
+      provider: 'gemini',
+      model: 'gemini-2.0-flash-thinking-exp',
+    },
+  },
+  {
     id: 'groq/llama-3.1-70b-versatile',
     name: 'llama-3.1-70b (Groq)',
     model: {
