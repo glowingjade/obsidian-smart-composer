@@ -54,6 +54,14 @@ export const CHAT_MODEL_OPTIONS: ModelOption[] = [
     },
   },
   {
+    id: 'gemini/gemini-exp-1206',
+    name: 'gemini-exp-1206',
+    model: {
+      provider: 'gemini',
+      model: 'gemini-exp-1206',
+    },
+  },
+  {
     id: 'groq/llama-3.1-70b-versatile',
     name: 'llama-3.1-70b (Groq)',
     model: {
