@@ -88,6 +88,15 @@ export const CHAT_MODEL_OPTIONS: ModelOption[] = [
       baseURL: '',
     },
   },
+  {
+    id: 'openai/o1',
+    name: 'OpenAI o1 (Non-Streaming)',
+    model: {
+      provider: 'openai',
+      model: 'o1',
+      supportsStreaming: false
+    },
+  },
 ]
 
 export const APPLY_MODEL_OPTIONS: ModelOption[] = [
