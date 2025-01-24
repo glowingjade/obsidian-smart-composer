@@ -129,6 +129,18 @@ If you're interested in contributing, please refer to our [CONTRIBUTING.md](CONT
 - Known issues and solutions for developers
 
 
+## Contributors
+
+### Core Team
+
+These contributors were instrumental in shaping the initial vision, architecture, and design of Smart Composer:
+
+**[@kevin-on](https://github.com/kevin-on)**, **[@realsnoopso](https://github.com/realsnoopso)** ([Twitter](https://twitter.com/RealSnoopSo) · [LinkedIn](https://linkedin.com/in/realsnoopso)), **[@woosukji](https://github.com/woosukji)**
+
+### Additional Contributors
+
+We also want to thank everyone else who has contributed. Your time and effort help make Smart Composer better for everyone!
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
