@@ -15,6 +15,7 @@ import { GroqProvider } from './groq'
 import { OllamaProvider } from './ollama'
 import { OpenAIAuthenticatedProvider } from './openai'
 import { OpenAICompatibleProvider } from './openaiCompatibleProvider'
+import { DeepseekProvider } from './deepseek'
 
 export type LLMManagerInterface = {
   generateResponse(
@@ -36,12 +37,14 @@ class LLMManager implements LLMManagerInterface {
   private groqProvider: GroqProvider
   private ollamaProvider: OllamaProvider
   private openaiCompatibleProvider: OpenAICompatibleProvider
+  private deepseekProvider: DeepseekProvider
 
   constructor(apiKeys: {
     openai?: string
     anthropic?: string
     gemini?: string
     groq?: string
+    deepseek?: string
   }) {
     this.openaiProvider = new OpenAIAuthenticatedProvider(apiKeys.openai ?? '')
     this.anthropicProvider = new AnthropicProvider(apiKeys.anthropic ?? '')
@@ -49,6 +52,7 @@ class LLMManager implements LLMManagerInterface {
     this.groqProvider = new GroqProvider(apiKeys.groq ?? '')
     this.ollamaProvider = new OllamaProvider()
     this.openaiCompatibleProvider = new OpenAICompatibleProvider()
+    this.deepseekProvider = new DeepseekProvider(apiKeys.deepseek ?? '', 'https://api.deepseek.com/v1')
   }
 
   async generateResponse(
@@ -89,6 +93,12 @@ class LLMManager implements LLMManagerInterface {
           request,
           options,
         )
+      case 'deepseek':
+        return await this.deepseekProvider.generateResponse(
+          model,
+          request,
+          options,
+        )
     }
   }
 
@@ -119,6 +129,12 @@ class LLMManager implements LLMManagerInterface {
         return await this.ollamaProvider.streamResponse(model, request, options)
       case 'openai-compatible':
         return await this.openaiCompatibleProvider.streamResponse(
+          model,
+          request,
+          options,
+        )
+      case 'deepseek':
+        return await this.deepseekProvider.streamResponse(
           model,
           request,
           options,

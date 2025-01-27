@@ -88,6 +88,16 @@ export const CHAT_MODEL_OPTIONS: ModelOption[] = [
       baseURL: '',
     },
   },
+  {
+    id: 'deepseek',
+    name: 'Deepseek R1',
+    model: {
+      provider: 'deepseek',
+      model: 'deepseek-r1',
+      apiKey: '',
+      baseURL: 'https://api.deepseek.com/v1',
+    },
+  },
 ]
 
 export const APPLY_MODEL_OPTIONS: ModelOption[] = [
@@ -156,6 +166,16 @@ export const APPLY_MODEL_OPTIONS: ModelOption[] = [
       model: '',
       apiKey: '',
       baseURL: '',
+    },
+  },
+  {
+    id: 'deepseek',
+    name: 'Deepseek R1',
+    model: {
+      provider: 'deepseek',
+      model: 'deepseek-r1',
+      apiKey: '',
+      baseURL: 'https://api.deepseek.com/v1',
     },
   },
 ]

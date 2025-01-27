@@ -67,6 +67,14 @@ Note: The Apply Edit feature is currently slower than desired. We are working on
 - **Prompt Templates**: Create and reuse templates for common queries by typing `/` in the chat view. Perfect for standardizing repetitive tasks.
   - Create templates from any selected text with one click
 
+### Deepseek R1 Support
+
+> **Deepseek R1** is now supported with a separate `deepseekProvider` and accompanying UI elements in settings.
+
+- Added `deepseekProvider` implementation in `src/core/llm/manager.ts` and `src/core/llm/deepseek.ts`.
+- Updated `CHAT_MODEL_OPTIONS` and `APPLY_MODEL_OPTIONS` in `src/constants.ts` to include Deepseek R1.
+- Added Deepseek R1 specific settings UI in `src/settings/SettingTab.tsx`.
+
 ## Getting Started
 
 > **⚠️ Important: Installer Version Requirement**  

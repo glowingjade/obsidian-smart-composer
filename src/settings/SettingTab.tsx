@@ -128,6 +128,9 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
     if (this.plugin.settings.chatModelId === 'openai-compatible') {
       this.renderOpenAICompatibleChatModelSettings(containerEl)
     }
+    if (this.plugin.settings.chatModelId === 'deepseek') {
+      this.renderDeepseekChatModelSettings(containerEl)
+    }
 
     new Setting(containerEl)
       .setName('Apply model')
@@ -158,6 +161,9 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
     }
     if (this.plugin.settings.applyModelId === 'openai-compatible') {
       this.renderOpenAICompatibleApplyModelSettings(containerEl)
+    }
+    if (this.plugin.settings.applyModelId === 'deepseek') {
+      this.renderDeepseekApplyModelSettings(containerEl)
     }
 
     new Setting(containerEl)
@@ -340,6 +346,70 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
       )
   }
 
+  renderDeepseekChatModelSettings(containerEl: HTMLElement): void {
+    const deepseekContainer = containerEl.createDiv(
+      'smtcmp-settings-model-container',
+    )
+
+    new Setting(deepseekContainer)
+      .setName('Base URL')
+      .setDesc(
+        'The API endpoint for your Deepseek service (e.g., https://api.deepseek.com/v1)',
+      )
+      .addText((text) =>
+        text
+          .setPlaceholder('https://api.deepseek.com/v1')
+          .setValue(this.plugin.settings.deepseekChatModel.baseUrl || '')
+          .onChange(async (value) => {
+            await this.plugin.setSettings({
+              ...this.plugin.settings,
+              deepseekChatModel: {
+                ...this.plugin.settings.deepseekChatModel,
+                baseUrl: value,
+              },
+            })
+          }),
+      )
+
+    new Setting(deepseekContainer)
+      .setName('API Key')
+      .setDesc('Your authentication key for the Deepseek service')
+      .addText((text) =>
+        text
+          .setPlaceholder('Enter your API key')
+          .setValue(this.plugin.settings.deepseekChatModel.apiKey || '')
+          .onChange(async (value) => {
+            await this.plugin.setSettings({
+              ...this.plugin.settings,
+              deepseekChatModel: {
+                ...this.plugin.settings.deepseekChatModel,
+                apiKey: value,
+              },
+            })
+          }),
+      )
+
+    new Setting(deepseekContainer)
+      .setName('Model Name')
+      .setDesc(
+        'The specific model to use with your service (e.g., deepseek-r1)',
+      )
+      .addText((text) =>
+        text
+          .setPlaceholder('deepseek-r1')
+          .setValue(this.plugin.settings.deepseekChatModel.model || '')
+          .onChange(async (value) => {
+            await this.plugin.setSettings({
+              ...this.plugin.settings,
+              deepseekChatModel: {
+                ...this.plugin.settings.deepseekChatModel,
+                model: value,
+              },
+            })
+          }),
+      )
+  }
+
   renderOllamaApplyModelSettings(containerEl: HTMLElement): void {
     const ollamaContainer = containerEl.createDiv(
       'smtcmp-settings-model-container',
@@ -468,6 +538,70 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
               ...this.plugin.settings,
               openAICompatibleApplyModel: {
                 ...this.plugin.settings.openAICompatibleApplyModel,
+                model: value,
+              },
+            })
+          }),
+      )
+  }
+
+  renderDeepseekApplyModelSettings(containerEl: HTMLElement): void {
+    const deepseekContainer = containerEl.createDiv(
+      'smtcmp-settings-model-container',
+    )
+
+    new Setting(deepseekContainer)
+      .setName('Base URL')
+      .setDesc(
+        'The API endpoint for your Deepseek service (e.g., https://api.deepseek.com/v1)',
+      )
+      .addText((text) =>
+        text
+          .setPlaceholder('https://api.deepseek.com/v1')
+          .setValue(this.plugin.settings.deepseekApplyModel.baseUrl || '')
+          .onChange(async (value) => {
+            await this.plugin.setSettings({
+              ...this.plugin.settings,
+              deepseekApplyModel: {
+                ...this.plugin.settings.deepseekApplyModel,
+                baseUrl: value,
+              },
+            })
+          }),
+      )
+
+    new Setting(deepseekContainer)
+      .setName('API Key')
+      .setDesc('Your authentication key for the Deepseek service')
+      .addText((text) =>
+        text
+          .setPlaceholder('Enter your API key')
+          .setValue(this.plugin.settings.deepseekApplyModel.apiKey || '')
+          .onChange(async (value) => {
+            await this.plugin.setSettings({
+              ...this.plugin.settings,
+              deepseekApplyModel: {
+                ...this.plugin.settings.deepseekApplyModel,
+                apiKey: value,
+              },
+            })
+          }),
+      )
+
+    new Setting(deepseekContainer)
+      .setName('Model Name')
+      .setDesc(
+        'The specific model to use with your service (e.g., deepseek-r1)',
+      )
+      .addText((text) =>
+        text
+          .setPlaceholder('deepseek-r1')
+          .setValue(this.plugin.settings.deepseekApplyModel.model || '')
+          .onChange(async (value) => {
+            await this.plugin.setSettings({
+              ...this.plugin.settings,
+              deepseekApplyModel: {
+                ...this.plugin.settings.deepseekApplyModel,
                 model: value,
               },
             })
