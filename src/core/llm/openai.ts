@@ -32,33 +32,40 @@ export class OpenAIAuthenticatedProvider implements BaseLLMProvider {
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
-    
     if (!this.client.apiKey) {
       throw new LLMAPIKeyNotSetException(
         'OpenAI API key is missing. Please set it in settings menu.',
       )
     }
     try {
-      const response = await this.adapter.generateResponse(this.client, request, options)
-            
+      const response = await this.adapter.generateResponse(
+        this.client,
+        request,
+        options,
+      )
+
       // Ensure choices exist and have at least one choice
       if (!response.choices || response.choices.length === 0) {
         console.error('No response choices available')
         throw new Error('No response choices available')
       }
-      
+
       // Ensure the first choice has a message with content
-      const firstChoice = response.choices[0]      
-      if (!firstChoice.message || firstChoice.message.content === null || firstChoice.message.content === undefined) {
+      const firstChoice = response.choices[0]
+      if (
+        !firstChoice.message ||
+        firstChoice.message.content === null ||
+        firstChoice.message.content === undefined
+      ) {
         console.error('No content in the first response choice')
         throw new Error('No content in the first response choice')
       }
-      
+
       const finalResponse = {
         ...response,
-        content: firstChoice.message.content
+        content: firstChoice.message.content,
       }
-            
+
       return finalResponse
     } catch (error) {
       console.error('Error in generateResponse:', error)
@@ -82,25 +89,27 @@ export class OpenAIAuthenticatedProvider implements BaseLLMProvider {
       const nonStreamingResponse = await this.generateResponse(
         model,
         { ...request, stream: false },
-        options
+        options,
       )
 
       // Create an async generator to convert the non-streaming response to a stream
       async function* generateStream(): AsyncGenerator<LLMResponseStreaming> {
         yield {
           id: nonStreamingResponse.id,
-          choices: [{
-            finish_reason: nonStreamingResponse.choices[0].finish_reason,
-            delta: {
-              content: nonStreamingResponse.choices[0].message.content,
-              role: 'assistant'
-            }
-          }],
+          choices: [
+            {
+              finish_reason: nonStreamingResponse.choices[0].finish_reason,
+              delta: {
+                content: nonStreamingResponse.choices[0].message.content,
+                role: 'assistant',
+              },
+            },
+          ],
           created: nonStreamingResponse.created,
           model: nonStreamingResponse.model,
           object: 'chat.completion.chunk',
           system_fingerprint: nonStreamingResponse.system_fingerprint,
-          usage: nonStreamingResponse.usage
+          usage: nonStreamingResponse.usage,
         }
       }
 
