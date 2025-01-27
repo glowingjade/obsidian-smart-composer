@@ -94,7 +94,7 @@ export const CHAT_MODEL_OPTIONS: ModelOption[] = [
     model: {
       provider: 'openai',
       model: 'o1',
-      supportsStreaming: false
+      supportsStreaming: false,
     },
   },
 ]
