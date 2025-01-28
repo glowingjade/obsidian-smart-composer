@@ -75,6 +75,27 @@ We recommend creating a single migration file for each change. To squash multipl
 
 This process ensures a clean and organized migration history.
 
+### Debugging Database Issues
+
+When debugging database-related issues in Obsidian's developer console, you can use the "Store as global variable" feature to interact with the database directly:
+
+1. Look for the console message "Smart composer database initialized." 
+2. Right-click on this DatabaseManager object and select "Store as global variable" (it will be stored as `tempN`)
+3. You can then run SQL queries directly using the stored variable. For example:
+
+   ```javascript
+   await temp1.pgClient.query(`
+     SELECT table_schema, table_name
+     FROM information_schema.tables
+     WHERE table_schema NOT IN ('information_schema', 'pg_catalog')
+       AND table_type = 'BASE TABLE'
+     ORDER BY table_schema, table_name;
+   `);
+   ```
+4. should call `await temp1.save()` to save the database to disk
+
+This method allows you to inspect database tables, run queries, and debug database-related issues directly in the console.
+
 ## Sending a Pull Request
 
 The core team is monitoring for pull requests. We will review your pull request and either merge it, request changes to it, or close it with an explanation.

@@ -16,7 +16,7 @@ import { App } from 'obsidian'
 
 import { EmbeddingModel } from '../../../types/embedding'
 import { DatabaseNotInitializedException } from '../../exception'
-import { InsertVector, SelectVector, vectorTables } from '../../schema'
+import { InsertEmbedding, SelectEmbedding, embeddingTable } from '../../schema'
 
 export class VectorRepository {
   private app: App
@@ -31,27 +31,31 @@ export class VectorRepository {
     if (!this.db) {
       throw new DatabaseNotInitializedException()
     }
-    const vectors = vectorTables[embeddingModel.id]
     const indexedFiles = await this.db
       .select({
-        path: vectors.path,
+        path: embeddingTable.path,
       })
-      .from(vectors)
+      .from(embeddingTable)
+      .where(eq(embeddingTable.model, embeddingModel.id))
     return indexedFiles.map((row) => row.path)
   }
 
   async getVectorsByFilePath(
     filePath: string,
     embeddingModel: EmbeddingModel,
-  ): Promise<SelectVector[]> {
+  ): Promise<SelectEmbedding[]> {
     if (!this.db) {
       throw new DatabaseNotInitializedException()
     }
-    const vectors = vectorTables[embeddingModel.id]
     const fileVectors = await this.db
       .select()
-      .from(vectors)
-      .where(eq(vectors.path, filePath))
+      .from(embeddingTable)
+      .where(
+        and(
+          eq(embeddingTable.path, filePath),
+          eq(embeddingTable.model, embeddingModel.id),
+        ),
+      )
     return fileVectors
   }
 
@@ -62,8 +66,14 @@ export class VectorRepository {
     if (!this.db) {
       throw new DatabaseNotInitializedException()
     }
-    const vectors = vectorTables[embeddingModel.id]
-    await this.db.delete(vectors).where(eq(vectors.path, filePath))
+    await this.db
+      .delete(embeddingTable)
+      .where(
+        and(
+          eq(embeddingTable.path, filePath),
+          eq(embeddingTable.model, embeddingModel.id),
+        ),
+      )
   }
 
   async deleteVectorsForMultipleFiles(
@@ -73,27 +83,30 @@ export class VectorRepository {
     if (!this.db) {
       throw new DatabaseNotInitializedException()
     }
-    const vectors = vectorTables[embeddingModel.id]
-    await this.db.delete(vectors).where(inArray(vectors.path, filePaths))
+    await this.db
+      .delete(embeddingTable)
+      .where(
+        and(
+          inArray(embeddingTable.path, filePaths),
+          eq(embeddingTable.model, embeddingModel.id),
+        ),
+      )
   }
 
   async clearAllVectors(embeddingModel: EmbeddingModel): Promise<void> {
     if (!this.db) {
       throw new DatabaseNotInitializedException()
     }
-    const vectors = vectorTables[embeddingModel.id]
-    await this.db.delete(vectors)
+    await this.db
+      .delete(embeddingTable)
+      .where(eq(embeddingTable.model, embeddingModel.id))
   }
 
-  async insertVectors(
-    data: InsertVector[],
-    embeddingModel: EmbeddingModel,
-  ): Promise<void> {
+  async insertVectors(data: InsertEmbedding[]): Promise<void> {
     if (!this.db) {
       throw new DatabaseNotInitializedException()
     }
-    const vectors = vectorTables[embeddingModel.id]
-    await this.db.insert(vectors).values(data)
+    await this.db.insert(embeddingTable).values(data)
   }
 
   async performSimilaritySearch(
@@ -108,16 +121,14 @@ export class VectorRepository {
       }
     },
   ): Promise<
-    (Omit<SelectVector, 'embedding'> & {
+    (Omit<SelectEmbedding, 'embedding'> & {
       similarity: number
     })[]
   > {
     if (!this.db) {
       throw new DatabaseNotInitializedException()
     }
-    const vectors = vectorTables[embeddingModel.id]
-
-    const similarity = sql<number>`1 - (${cosineDistance(vectors.embedding, queryVector)})`
+    const similarity = sql<number>`1 - (${cosineDistance(embeddingTable.embedding, queryVector)})`
     const similarityCondition = gt(similarity, options.minSimilarity)
 
     const getScopeCondition = (): SQL | undefined => {
@@ -126,13 +137,13 @@ export class VectorRepository {
       }
       const conditions: (SQL | undefined)[] = []
       if (options.scope.files.length > 0) {
-        conditions.push(inArray(vectors.path, options.scope.files))
+        conditions.push(inArray(embeddingTable.path, options.scope.files))
       }
       if (options.scope.folders.length > 0) {
         conditions.push(
           or(
             ...options.scope.folders.map((folder) =>
-              like(vectors.path, `${folder}/%`),
+              like(embeddingTable.path, `${folder}/%`),
             ),
           ),
         )
@@ -148,13 +159,19 @@ export class VectorRepository {
       .select({
         ...(() => {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { embedding, ...rest } = getTableColumns(vectors)
+          const { embedding, ...rest } = getTableColumns(embeddingTable)
           return rest
         })(),
         similarity,
       })
-      .from(vectors)
-      .where(and(similarityCondition, scopeCondition))
+      .from(embeddingTable)
+      .where(
+        and(
+          similarityCondition,
+          scopeCondition,
+          eq(embeddingTable.model, embeddingModel.id),
+        ),
+      )
       .orderBy((t) => desc(t.similarity))
       .limit(options.limit)
 

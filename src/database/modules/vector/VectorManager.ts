@@ -11,7 +11,7 @@ import {
   LLMBaseUrlNotSetException,
   LLMRateLimitExceededException,
 } from '../../../core/llm/exception'
-import { InsertVector, SelectVector } from '../../../database/schema'
+import { InsertEmbedding, SelectEmbedding } from '../../../database/schema'
 import { EmbeddingModel } from '../../../types/embedding'
 import { openSettingsModalWithError } from '../../../utils/openSettingsModal'
 import { DatabaseManager } from '../../DatabaseManager'
@@ -41,7 +41,7 @@ export class VectorManager {
       }
     },
   ): Promise<
-    (Omit<SelectVector, 'embedding'> & {
+    (Omit<SelectEmbedding, 'embedding'> & {
       similarity: number
     })[]
   > {
@@ -100,24 +100,26 @@ export class VectorManager {
       },
     )
 
-    const contentChunks: InsertVector[] = (
+    const contentChunks = (
       await Promise.all(
         filesToIndex.map(async (file) => {
           const fileContent = await this.app.vault.cachedRead(file)
           const fileDocuments = await textSplitter.createDocuments([
             fileContent,
           ])
-          return fileDocuments.map((chunk): InsertVector => {
-            return {
-              path: file.path,
-              mtime: file.stat.mtime,
-              content: chunk.pageContent,
-              metadata: {
-                startLine: chunk.metadata.loc.lines.from as number,
-                endLine: chunk.metadata.loc.lines.to as number,
-              },
-            }
-          })
+          return fileDocuments.map(
+            (chunk): Omit<InsertEmbedding, 'model' | 'dimensions'> => {
+              return {
+                path: file.path,
+                mtime: file.stat.mtime,
+                content: chunk.pageContent,
+                metadata: {
+                  startLine: chunk.metadata.loc.lines.from as number,
+                  endLine: chunk.metadata.loc.lines.to as number,
+                },
+              }
+            },
+          )
         }),
       )
     ).flat()
@@ -129,7 +131,7 @@ export class VectorManager {
     })
 
     const embeddingProgress = { completed: 0, inserted: 0 }
-    const embeddingChunks: InsertVector[] = []
+    const embeddingChunks: InsertEmbedding[] = []
     const batchSize = 100
     const limit = pLimit(50)
     const abortController = new AbortController()
@@ -146,6 +148,8 @@ export class VectorManager {
                 path: chunk.path,
                 mtime: chunk.mtime,
                 content: chunk.content,
+                model: embeddingModel.id,
+                dimensions: embeddingModel.dimension,
                 embedding,
                 metadata: chunk.metadata,
               }
@@ -168,7 +172,6 @@ export class VectorManager {
                     embeddingProgress.inserted,
                     embeddingProgress.inserted + batchSize,
                   ),
-                  embeddingModel,
                 )
                 embeddingProgress.inserted += batchSize
               }
@@ -250,6 +253,7 @@ export class VectorManager {
     // Check for updated or new files
     filesToIndex = await Promise.all(
       filesToIndex.map(async (file) => {
+        // TODO: Query all rows at once and compare them to enhance performance
         const fileChunks = await this.repository.getVectorsByFilePath(
           file.path,
           embeddingModel,

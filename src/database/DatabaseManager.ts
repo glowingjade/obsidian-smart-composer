@@ -33,7 +33,8 @@ export class DatabaseManager {
     dbManager.vectorManager = new VectorManager(app, dbManager)
     dbManager.templateManager = new TemplateManager(app, dbManager)
 
-    console.log('Smart composer database initialized.')
+    console.log('Smart composer database initialized.', dbManager)
+
     return dbManager
   }
 

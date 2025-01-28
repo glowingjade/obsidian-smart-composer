@@ -57,6 +57,13 @@
       "when": 1732189839252,
       "tag": "0007_create_vector_data_gemini_text_embedding_004",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1738072928722,
+      "tag": "0008_unify_embedding_table",
+      "breakpoints": true
     }
   ]
 }

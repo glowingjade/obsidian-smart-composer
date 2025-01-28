@@ -3,7 +3,7 @@ import { App, TFile, htmlToMarkdown, requestUrl } from 'obsidian'
 import { editorStateToPlainText } from '../components/chat-view/chat-input/utils/editor-state-to-plain-text'
 import { QueryProgressState } from '../components/chat-view/QueryProgress'
 import { RAGEngine } from '../core/rag/ragEngine'
-import { SelectVector } from '../database/schema'
+import { SelectEmbedding } from '../database/schema'
 import { ChatMessage, ChatUserMessage } from '../types/chat'
 import { ContentPart, RequestMessage } from '../types/llm/request'
 import {
@@ -140,7 +140,7 @@ export class PromptGenerator {
   }): Promise<{
     promptContent: ChatUserMessage['promptContent']
     shouldUseRAG: boolean
-    similaritySearchResults?: (Omit<SelectVector, 'embedding'> & {
+    similaritySearchResults?: (Omit<SelectEmbedding, 'embedding'> & {
       similarity: number
     })[]
   }> {
