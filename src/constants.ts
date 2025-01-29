@@ -199,8 +199,8 @@ export const EMBEDDING_MODEL_OPTIONS: EmbeddingModelOption[] = [
     dimension: 768,
   },
   {
-    name: 'ollama/nomic-embed-text',
     id: 'ollama/nomic-embed-text',
+    name: 'ollama/nomic-embed-text',
     model: {
       provider: 'ollama',
       model: 'nomic-embed-text',
@@ -209,8 +209,8 @@ export const EMBEDDING_MODEL_OPTIONS: EmbeddingModelOption[] = [
     dimension: 768,
   },
   {
-    name: 'ollama/mxbai-embed-large',
     id: 'ollama/mxbai-embed-large',
+    name: 'ollama/mxbai-embed-large',
     model: {
       provider: 'ollama',
       model: 'mxbai-embed-large',
@@ -219,8 +219,8 @@ export const EMBEDDING_MODEL_OPTIONS: EmbeddingModelOption[] = [
     dimension: 1024,
   },
   {
-    name: 'ollama/bge-m3',
     id: 'ollama/bge-m3',
+    name: 'ollama/bge-m3',
     model: {
       provider: 'ollama',
       model: 'bge-m3',

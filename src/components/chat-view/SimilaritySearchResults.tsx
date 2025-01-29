@@ -4,13 +4,13 @@ import { ChevronDown, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 
 import { useApp } from '../../contexts/app-context'
-import { SelectVector } from '../../database/schema'
+import { SelectEmbedding } from '../../database/schema'
 import { openMarkdownFile } from '../../utils/obsidian'
 
 function SimiliartySearchItem({
   chunk,
 }: {
-  chunk: Omit<SelectVector, 'embedding'> & {
+  chunk: Omit<SelectEmbedding, 'embedding'> & {
     similarity: number
   }
 }) {
@@ -37,7 +37,7 @@ function SimiliartySearchItem({
 export default function SimilaritySearchResults({
   similaritySearchResults,
 }: {
-  similaritySearchResults: (Omit<SelectVector, 'embedding'> & {
+  similaritySearchResults: (Omit<SelectEmbedding, 'embedding'> & {
     similarity: number
   })[]
 }) {

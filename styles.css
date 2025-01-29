@@ -1122,3 +1122,53 @@ button.smtcmp-chat-input-model-select {
   height: var(--size-4-4);
   width: var(--size-4-4);
 }
+
+.smtcmp-settings-embedding-db-manage-root {
+  padding: var(--size-4-2);
+}
+
+.smtcmp-settings-embedding-db-manage-header {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  font-size: var(--font-ui-small);
+}
+
+.smtcmp-settings-embedding-db-manage-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.smtcmp-settings-embedding-db-manage-table tr {
+  border-bottom: var(--border-width) solid var(--background-modifier-border);
+}
+
+.smtcmp-settings-embedding-db-manage-table th,
+.smtcmp-settings-embedding-db-manage-table td {
+  padding: var(--size-4-2);
+  text-align: left;
+}
+
+.smtcmp-settings-embedding-db-manage-table th {
+  font-weight: var(--font-medium);
+  color: var(--text-muted);
+  padding-bottom: var(--size-4-3);
+}
+
+.smtcmp-settings-embedding-db-manage-table td {
+  padding-top: var(--size-4-3);
+  padding-bottom: var(--size-4-3);
+  vertical-align: middle;
+}
+
+.smtcmp-settings-embedding-db-manage-actions {
+  display: flex;
+  gap: var(--size-4-2);
+}
+
+.smtcmp-settings-embedding-db-manage-actions-loading {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2-2);
+  font-size: var(--font-ui-smaller);
+}

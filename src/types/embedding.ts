@@ -20,3 +20,9 @@ export type EmbeddingModel = {
   dimension: number
   getEmbedding: (text: string) => Promise<number[]>
 }
+
+export type EmbeddingDbStats = {
+  model: string
+  rowCount: number
+  totalDataBytes: number
+}

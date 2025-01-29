@@ -33,7 +33,8 @@ export class DatabaseManager {
     dbManager.vectorManager = new VectorManager(app, dbManager)
     dbManager.templateManager = new TemplateManager(app, dbManager)
 
-    console.log('Smart composer database initialized.')
+    console.log('Smart composer database initialized.', dbManager)
+
     return dbManager
   }
 
@@ -47,6 +48,14 @@ export class DatabaseManager {
 
   getTemplateManager() {
     return this.templateManager
+  }
+
+  // vacuum the database to release unused space
+  async vacuum() {
+    if (!this.pgClient) {
+      return
+    }
+    await this.pgClient.query('VACUUM FULL;')
   }
 
   private async createNewDatabase() {

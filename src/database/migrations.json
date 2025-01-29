@@ -77,5 +77,31 @@
     "bps": true,
     "folderMillis": 1732189839252,
     "hash": "9eef3295787aab3582954d7b8fbdeda90de062f43e09a0a53d839c601c00fe0f"
+  },
+  {
+    "sql": [
+      "CREATE TABLE \"embeddings\" (\n\t\"id\" serial PRIMARY KEY NOT NULL,\n\t\"path\" text NOT NULL,\n\t\"mtime\" bigint NOT NULL,\n\t\"content\" text NOT NULL,\n\t\"model\" text NOT NULL,\n\t\"dimension\" smallint NOT NULL,\n\t\"embedding\" vector,\n\t\"metadata\" jsonb NOT NULL\n);\n",
+      "\n\nCREATE INDEX \"embeddings_path_index\" ON \"embeddings\" USING btree (\"path\");",
+      "\nCREATE INDEX \"embeddings_model_index\" ON \"embeddings\" USING btree (\"model\");",
+      "\nCREATE INDEX \"embeddings_dimension_index\" ON \"embeddings\" USING btree (\"dimension\");",
+      "\nCREATE INDEX \"embeddings_embedding_768_index\" ON \"embeddings\" USING hnsw ((embedding::vector(768)) vector_cosine_ops) WHERE dimension = 768;",
+      "\nCREATE INDEX \"embeddings_embedding_1024_index\" ON \"embeddings\" USING hnsw ((embedding::vector(1024)) vector_cosine_ops) WHERE dimension = 1024;",
+      "\nCREATE INDEX \"embeddings_embedding_1536_index\" ON \"embeddings\" USING hnsw ((embedding::vector(1536)) vector_cosine_ops) WHERE dimension = 1536;",
+      "\n\n-- Migrate data from openai-text-embedding-3-small\nINSERT INTO \"embeddings\" (\"path\", \"mtime\", \"content\", \"model\", \"dimension\", \"embedding\", \"metadata\")\nSELECT \"path\", \"mtime\", \"content\", 'openai/text-embedding-3-small', 1536, \"embedding\", \"metadata\"\nFROM \"vector_data_openai_text_embedding_3_small\";",
+      "\n\n-- Migrate data from openai-text-embedding-3-large\nINSERT INTO \"embeddings\" (\"path\", \"mtime\", \"content\", \"model\", \"dimension\", \"embedding\", \"metadata\")\nSELECT \"path\", \"mtime\", \"content\", 'openai/text-embedding-3-large', 3072, \"embedding\", \"metadata\"\nFROM \"vector_data_openai_text_embedding_3_large\";",
+      "\n\n-- Migrate data from gemini-text-embedding-004\nINSERT INTO \"embeddings\" (\"path\", \"mtime\", \"content\", \"model\", \"dimension\", \"embedding\", \"metadata\")\nSELECT \"path\", \"mtime\", \"content\", 'gemini/text-embedding-004', 768, \"embedding\", \"metadata\"\nFROM \"vector_data_gemini_text_embedding_004\";",
+      "\n\n-- Migrate data from nomic-embed-text\nINSERT INTO \"embeddings\" (\"path\", \"mtime\", \"content\", \"model\", \"dimension\", \"embedding\", \"metadata\")\nSELECT \"path\", \"mtime\", \"content\", 'ollama/nomic-embed-text', 768, \"embedding\", \"metadata\"\nFROM \"vector_data_ollama_nomic_embed_text\";",
+      "\n\n-- Migrate data from mxbai-embed-large\nINSERT INTO \"embeddings\" (\"path\", \"mtime\", \"content\", \"model\", \"dimension\", \"embedding\", \"metadata\")\nSELECT \"path\", \"mtime\", \"content\", 'ollama/mxbai-embed-large', 1024, \"embedding\", \"metadata\"\nFROM \"vector_data_ollama_mxbai_embed_large\";",
+      "\n\n-- Migrate data from bge-m3\nINSERT INTO \"embeddings\" (\"path\", \"mtime\", \"content\", \"model\", \"dimension\", \"embedding\", \"metadata\")\nSELECT \"path\", \"mtime\", \"content\", 'ollama/bge-m3', 1024, \"embedding\", \"metadata\"\nFROM \"vector_data_ollama_bge_m3\";",
+      "\n\nDROP TABLE \"vector_data_openai_text_embedding_3_small\" CASCADE;",
+      "\nDROP TABLE \"vector_data_openai_text_embedding_3_large\" CASCADE;",
+      "\nDROP TABLE \"vector_data_gemini_text_embedding_004\" CASCADE;",
+      "\nDROP TABLE \"vector_data_ollama_nomic_embed_text\" CASCADE;",
+      "\nDROP TABLE \"vector_data_ollama_mxbai_embed_large\" CASCADE;",
+      "\nDROP TABLE \"vector_data_ollama_bge_m3\" CASCADE;\n"
+    ],
+    "bps": true,
+    "folderMillis": 1738138268694,
+    "hash": "01ff79bbbba4e3a9dda7a5dc47faf9b649b1fef812897ef714dbf99cdc787efb"
   }
 ]
