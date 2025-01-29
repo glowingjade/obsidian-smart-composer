@@ -170,6 +170,7 @@ export class VectorRepository {
           similarityCondition,
           scopeCondition,
           eq(embeddingTable.model, embeddingModel.id),
+          eq(embeddingTable.dimensions, embeddingModel.dimension), // include this to fully utilize partial index
         ),
       )
       .orderBy((t) => desc(t.similarity))
