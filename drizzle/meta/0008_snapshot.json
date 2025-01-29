@@ -204,9 +204,7 @@
         "template_name_unique": {
           "name": "template_name_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "name"
-          ]
+          "columns": ["name"]
         }
       },
       "policies": {},
