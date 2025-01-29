@@ -1,6 +1,6 @@
 import * as Tooltip from '@radix-ui/react-tooltip'
 import { useQuery } from '@tanstack/react-query'
-import { Loader2, RefreshCw, Trash2 } from 'lucide-react'
+import { Loader2, PickaxeIcon, Trash2 } from 'lucide-react'
 import { Notice } from 'obsidian'
 import { useState } from 'react'
 
@@ -42,8 +42,6 @@ export default function EmbeddingDbManageRoot({
         },
         settings.ollamaEmbeddingModel.baseUrl,
       )
-
-      await refetch()
 
       await (
         await getVectorManager()
@@ -131,7 +129,7 @@ export default function EmbeddingDbManageRoot({
                     <Tooltip.Root>
                       <Tooltip.Trigger asChild>
                         <button onClick={() => handleRebuildIndex(stat.model)}>
-                          <RefreshCw size={16} />
+                          <PickaxeIcon size={16} />
                         </button>
                       </Tooltip.Trigger>
                       <Tooltip.Portal container={contentEl}>
