@@ -1127,6 +1127,13 @@ button.smtcmp-chat-input-model-select {
   padding: var(--size-4-2);
 }
 
+.smtcmp-settings-embedding-db-manage-header {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  font-size: var(--font-ui-small);
+}
+
 .smtcmp-settings-embedding-db-manage-table {
   width: 100%;
   border-collapse: collapse;

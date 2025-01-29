@@ -1,6 +1,7 @@
 import * as Tooltip from '@radix-ui/react-tooltip'
 import { useQuery } from '@tanstack/react-query'
-import { Loader2, PickaxeIcon, Trash2 } from 'lucide-react'
+import dayjs from 'dayjs'
+import { Loader2, PickaxeIcon, RefreshCw, Trash2 } from 'lucide-react'
 import { Notice } from 'obsidian'
 import { useState } from 'react'
 
@@ -25,7 +26,9 @@ export default function EmbeddingDbManageRoot({
   const {
     data: stats = [],
     isLoading,
+    isFetching,
     refetch,
+    dataUpdatedAt,
   } = useQuery<EmbeddingDbStats[]>({
     queryKey: ['embedding-db-stats'],
     queryFn: async () => {
@@ -108,6 +111,30 @@ export default function EmbeddingDbManageRoot({
 
   return (
     <div className="smtcmp-settings-embedding-db-manage-root">
+      <div className="smtcmp-settings-embedding-db-manage-header">
+        <Tooltip.Provider delayDuration={0}>
+          <Tooltip.Root>
+            <Tooltip.Trigger asChild>
+              <button
+                onClick={() => refetch()}
+                disabled={isFetching}
+                className="smtcmp-settings-embedding-db-manage-refresh"
+              >
+                <RefreshCw size={16} className={isFetching ? 'spinner' : ''} />
+              </button>
+            </Tooltip.Trigger>
+            <Tooltip.Portal container={contentEl}>
+              <Tooltip.Content className="smtcmp-tooltip-content">
+                Refresh
+              </Tooltip.Content>
+            </Tooltip.Portal>
+          </Tooltip.Root>
+        </Tooltip.Provider>
+
+        <span className="smtcmp-settings-embedding-db-manage-last-updated">
+          Last updated: {dayjs(dataUpdatedAt).format('YYYY-MM-DD HH:mm:ss')}
+        </span>
+      </div>
       <table className="smtcmp-settings-embedding-db-manage-table">
         <thead>
           <tr>
