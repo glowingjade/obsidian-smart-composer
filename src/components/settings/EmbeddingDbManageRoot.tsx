@@ -154,9 +154,13 @@ export default function EmbeddingDbManageRoot({
                 <td className="smtcmp-settings-embedding-db-manage-actions-loading">
                   <Loader2 className="spinner" size={14} />
                   <div>
-                    Indexing chunks:{' '}
-                    {indexProgressMap.get(stat.model)?.completedChunks} /{' '}
-                    {indexProgressMap.get(stat.model)?.totalChunks}
+                    {Math.round(
+                      ((indexProgressMap.get(stat.model)?.completedChunks ??
+                        0) /
+                        (indexProgressMap.get(stat.model)?.totalChunks ?? 1)) *
+                        100,
+                    )}
+                    %
                   </div>
                 </td>
               ) : (
