@@ -2,7 +2,6 @@ import { backOff } from 'exponential-backoff'
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter'
 import { minimatch } from 'minimatch'
 import { App, Notice, TFile } from 'obsidian'
-import pLimit from 'p-limit'
 
 import { IndexProgress } from '../../../components/chat-view/QueryProgress'
 import {
@@ -13,6 +12,7 @@ import {
 } from '../../../core/llm/exception'
 import { InsertEmbedding, SelectEmbedding } from '../../../database/schema'
 import { EmbeddingModel } from '../../../types/embedding'
+import { chunkArray } from '../../../utils/chunk-array'
 import { openSettingsModalWithError } from '../../../utils/openSettingsModal'
 import { DatabaseManager } from '../../DatabaseManager'
 
@@ -130,68 +130,49 @@ export class VectorManager {
       totalFiles: filesToIndex.length,
     })
 
-    const embeddingProgress = { completed: 0, inserted: 0 }
-    const embeddingChunks: InsertEmbedding[] = []
-    const batchSize = 100
-    const limit = pLimit(50)
-    const abortController = new AbortController()
-    const tasks = contentChunks.map((chunk) =>
-      limit(async () => {
-        if (abortController.signal.aborted) {
-          throw new Error('Operation was aborted')
-        }
-        try {
-          await backOff(
-            async () => {
-              const embedding = await embeddingModel.getEmbedding(chunk.content)
-              const embeddedChunk = {
-                path: chunk.path,
-                mtime: chunk.mtime,
-                content: chunk.content,
-                model: embeddingModel.id,
-                dimensions: embeddingModel.dimension,
-                embedding,
-                metadata: chunk.metadata,
-              }
-              embeddingChunks.push(embeddedChunk)
-              embeddingProgress.completed++
-              updateProgress?.({
-                completedChunks: embeddingProgress.completed,
-                totalChunks: contentChunks.length,
-                totalFiles: filesToIndex.length,
-              })
-
-              // Insert vectors in batches
-              if (
-                embeddingChunks.length >=
-                  embeddingProgress.inserted + batchSize ||
-                embeddingChunks.length === contentChunks.length
-              ) {
-                await this.repository.insertVectors(
-                  embeddingChunks.slice(
-                    embeddingProgress.inserted,
-                    embeddingProgress.inserted + batchSize,
-                  ),
-                )
-                embeddingProgress.inserted += batchSize
-              }
-            },
-            {
-              numOfAttempts: 5,
-              startingDelay: 1000,
-              timeMultiple: 1.5,
-              jitter: 'full',
-            },
-          )
-        } catch (error) {
-          abortController.abort()
-          throw error
-        }
-      }),
-    )
+    let completedChunks = 0
+    const batchChunks = chunkArray(contentChunks, 100)
 
     try {
-      await Promise.all(tasks)
+      for (const batchChunk of batchChunks) {
+        const embeddingChunks: InsertEmbedding[] = await Promise.all(
+          batchChunk.map(
+            async (chunk) =>
+              await backOff(
+                async () => {
+                  const embedding = await embeddingModel.getEmbedding(
+                    chunk.content,
+                  )
+                  completedChunks += 1
+
+                  updateProgress?.({
+                    completedChunks,
+                    totalChunks: contentChunks.length,
+                    totalFiles: filesToIndex.length,
+                  })
+
+                  return {
+                    path: chunk.path,
+                    mtime: chunk.mtime,
+                    content: chunk.content,
+                    model: embeddingModel.id,
+                    dimensions: embeddingModel.dimension,
+                    embedding,
+                    metadata: chunk.metadata,
+                  }
+                },
+                {
+                  numOfAttempts: 5,
+                  startingDelay: 1000,
+                  timeMultiple: 1.5,
+                  jitter: 'full',
+                },
+              ),
+          ),
+        )
+
+        await this.repository.insertVectors(embeddingChunks)
+      }
     } catch (error) {
       if (
         error instanceof LLMAPIKeyNotSetException ||

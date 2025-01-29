@@ -12,11 +12,22 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core'
 import { SerializedLexicalNode } from 'lexical'
+import { z } from 'zod'
 
 // custom vector type for dynamic dimension
 const customVector = customType<{ data: number[] }>({
   dataType() {
     return 'vector'
+  },
+  toDriver(value) {
+    return JSON.stringify(value)
+  },
+  fromDriver(value) {
+    if (typeof value !== 'string') {
+      throw new Error('Invalid vector value from pg driver')
+    }
+    const parsed = z.array(z.number()).parse(JSON.parse(value))
+    return parsed
   },
 })
 
