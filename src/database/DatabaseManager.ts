@@ -50,6 +50,7 @@ export class DatabaseManager {
     return this.templateManager
   }
 
+  // vacuum the database to release unused space
   async vacuum() {
     if (!this.pgClient) {
       return
