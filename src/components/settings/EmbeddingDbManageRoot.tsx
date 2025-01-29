@@ -4,6 +4,7 @@ import { Loader2, PickaxeIcon, Trash2 } from 'lucide-react'
 import { Notice } from 'obsidian'
 import { useState } from 'react'
 
+import { EMBEDDING_MODEL_OPTIONS } from '../../constants'
 import { useDatabase } from '../../contexts/database-context'
 import { useSettings } from '../../contexts/settings-context'
 import { getEmbeddingModel } from '../../core/rag/embedding'
@@ -28,7 +29,15 @@ export default function EmbeddingDbManageRoot({
   } = useQuery<EmbeddingDbStats[]>({
     queryKey: ['embedding-db-stats'],
     queryFn: async () => {
-      return (await getVectorManager()).getEmbeddingStats()
+      const dbStats = await (await getVectorManager()).getEmbeddingStats()
+
+      const statsMap = new Map(dbStats.map((stat) => [stat.model, stat]))
+
+      return EMBEDDING_MODEL_OPTIONS.map((option) => ({
+        model: option.id,
+        rowCount: statsMap.get(option.id)?.rowCount ?? 0,
+        totalDataBytes: statsMap.get(option.id)?.totalDataBytes ?? 0,
+      }))
     },
   })
 
