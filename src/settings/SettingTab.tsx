@@ -1,11 +1,4 @@
-import {
-  App,
-  DropdownComponent,
-  Modal,
-  PluginSettingTab,
-  Setting,
-  TFile,
-} from 'obsidian'
+import { App, DropdownComponent, PluginSettingTab, Setting } from 'obsidian'
 
 import {
   APPLY_MODEL_OPTIONS,
@@ -15,6 +8,10 @@ import {
 import SmartCopilotPlugin from '../main'
 import { findFilesMatchingPatterns } from '../utils/globUtils'
 import { getOllamaModels } from '../utils/ollama'
+
+import { EmbeddingDbManageModal } from './EmbeddingDbManageModal'
+import { ExcludedFilesModal } from './ExcludedFilesModal'
+import { IncludedFilesModal } from './IncludedFilesModal'
 
 export class SmartCopilotSettingTab extends PluginSettingTab {
   plugin: SmartCopilotPlugin
@@ -665,6 +662,14 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
             }
           }),
       )
+
+    new Setting(containerEl)
+      .setName('Manage Embedding Database')
+      .addButton((button) =>
+        button.setButtonText('Manage').onClick(async () => {
+          new EmbeddingDbManageModal(this.app, this.plugin).open()
+        }),
+      )
   }
 
   private async updateOllamaModelOptions({
@@ -713,78 +718,5 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
     dropdown.onChange(async (value) => {
       await onModelChange(value)
     })
-  }
-}
-
-class ExcludedFilesModal extends Modal {
-  private files: TFile[]
-
-  constructor(app: App, files: TFile[]) {
-    super(app)
-    this.files = files
-  }
-
-  onOpen() {
-    const { contentEl } = this
-    contentEl.empty()
-
-    this.titleEl.setText(`Excluded Files (${this.files.length})`)
-
-    if (this.files.length === 0) {
-      contentEl.createEl('p', { text: 'No files match the exclusion patterns' })
-      return
-    }
-
-    const list = contentEl.createEl('ul')
-    this.files.forEach((file) => {
-      list.createEl('li', { text: file.path })
-    })
-  }
-
-  onClose() {
-    const { contentEl } = this
-    contentEl.empty()
-  }
-}
-
-class IncludedFilesModal extends Modal {
-  private files: TFile[]
-  private patterns: string[]
-
-  constructor(app: App, files: TFile[], patterns: string[]) {
-    super(app)
-    this.files = files
-    this.patterns = patterns
-  }
-
-  onOpen() {
-    const { contentEl } = this
-    contentEl.empty()
-
-    this.titleEl.setText(`Included Files (${this.files.length})`)
-
-    if (this.patterns.length === 0) {
-      contentEl.createEl('p', {
-        text: 'No inclusion patterns specified - all files will be included (except those matching exclusion patterns)',
-      })
-      return
-    }
-
-    if (this.files.length === 0) {
-      contentEl.createEl('p', {
-        text: 'No files match the inclusion patterns',
-      })
-      return
-    }
-
-    const list = contentEl.createEl('ul')
-    this.files.forEach((file) => {
-      list.createEl('li', { text: file.path })
-    })
-  }
-
-  onClose() {
-    const { contentEl } = this
-    contentEl.empty()
   }
 }

@@ -11,7 +11,7 @@ import {
   LLMRateLimitExceededException,
 } from '../../../core/llm/exception'
 import { InsertEmbedding, SelectEmbedding } from '../../../database/schema'
-import { EmbeddingModel } from '../../../types/embedding'
+import { EmbeddingDbStats, EmbeddingModel } from '../../../types/embedding'
 import { chunkArray } from '../../../utils/chunk-array'
 import { openSettingsModalWithError } from '../../../utils/openSettingsModal'
 import { DatabaseManager } from '../../DatabaseManager'
@@ -191,6 +191,12 @@ export class VectorManager {
     }
   }
 
+  async clearAllVectors(embeddingModel: EmbeddingModel) {
+    await this.repository.clearAllVectors(embeddingModel)
+    await this.dbManager.vacuum()
+    await this.dbManager.save()
+  }
+
   private async deleteVectorsForDeletedFiles(embeddingModel: EmbeddingModel) {
     const indexedFilePaths =
       await this.repository.getIndexedFilePaths(embeddingModel)
@@ -258,5 +264,9 @@ export class VectorManager {
     ).then((files) => files.filter(Boolean) as TFile[])
 
     return filesToIndex
+  }
+
+  async getEmbeddingStats(): Promise<EmbeddingDbStats[]> {
+    return await this.repository.getEmbeddingStats()
   }
 }

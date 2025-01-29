@@ -2,6 +2,7 @@ import {
   SQL,
   and,
   cosineDistance,
+  count,
   desc,
   eq,
   getTableColumns,
@@ -10,11 +11,12 @@ import {
   like,
   or,
   sql,
+  sum,
 } from 'drizzle-orm'
 import { PgliteDatabase } from 'drizzle-orm/pglite'
 import { App } from 'obsidian'
 
-import { EmbeddingModel } from '../../../types/embedding'
+import { EmbeddingDbStats, EmbeddingModel } from '../../../types/embedding'
 import { DatabaseNotInitializedException } from '../../exception'
 import { InsertEmbedding, SelectEmbedding, embeddingTable } from '../../schema'
 
@@ -177,5 +179,25 @@ export class VectorRepository {
       .limit(options.limit)
 
     return similaritySearchResults
+  }
+
+  async getEmbeddingStats(): Promise<EmbeddingDbStats[]> {
+    if (!this.db) {
+      throw new DatabaseNotInitializedException()
+    }
+
+    const stats = await this.db
+      .select({
+        model: embeddingTable.model,
+        rowCount: count(),
+        totalDataBytes: sum(sql`pg_column_size(${embeddingTable}.*)`).mapWith(
+          Number,
+        ),
+      })
+      .from(embeddingTable)
+      .groupBy(embeddingTable.model)
+      .orderBy(embeddingTable.model)
+
+    return stats
   }
 }

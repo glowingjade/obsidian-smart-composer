@@ -50,6 +50,13 @@ export class DatabaseManager {
     return this.templateManager
   }
 
+  async vacuum() {
+    if (!this.pgClient) {
+      return
+    }
+    await this.pgClient.query('VACUUM FULL;')
+  }
+
   private async createNewDatabase() {
     const { fsBundle, wasmModule, vectorExtensionBundlePath } =
       await this.loadPGliteResources()

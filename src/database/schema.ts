@@ -56,6 +56,7 @@ export const embeddingTable = pgTable(
     index('embeddings_model_index').on(table.model),
     index('embeddings_dimensions_index').on(table.dimensions),
     ...supportedDimensionsForIndex.map((dimension) =>
+      // https://github.com/pgvector/pgvector?tab=readme-ov-file#can-i-store-vectors-with-different-dimensions-in-the-same-column
       index(`embeddings_embedding_${dimension}_index`)
         .using(
           'hnsw',
