@@ -1,0 +1,102 @@
+name: Bug Report
+description: Report a bug to help us improve
+title: '[Bug]: '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please provide as much detail as possible to help us investigate the issue.
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Describe the bug
+      description: What happened? What did you expect to happen?
+      placeholder: A clear and concise description of what the bug is...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: How can we reproduce this issue?
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      description: What operating system are you using?
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: obsidian-version
+    attributes:
+      label: Obsidian Version
+      description: What version of Obsidian are you running?
+      placeholder: e.g., 1.4.16
+    validations:
+      required: true
+
+  - type: input
+    id: obsidian-installer-version
+    attributes:
+      label: Obsidian Installer Version
+      description: What version of Obsidian Installer are you running? (You can find this in Settings > General menu, listed as "installer version" below the current version)
+      placeholder: e.g., 1.4.16
+    validations:
+      required: true
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Smart Composer Version
+      description: What version of Smart Composer are you using?
+      placeholder: e.g., 1.0.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain your problem
+      placeholder: Drag and drop images here
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error logs
+      description: |
+        If you have any error messages or logs, please provide them here. 
+        To access logs:
+        1. Open Obsidian's Developer Tools:
+           - Windows/Linux: Press Ctrl+Shift+I
+           - macOS: Press Cmd+Option+I
+           - Or use View > Toggle Developer Tools from the menu
+        2. Go to the "Console" tab
+        3. Look for any red error messages or warnings
+        4. Copy and paste them here
+      render: shell
+      placeholder: Error messages will be automatically formatted
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add any other context about the problem here
+      placeholder: Any other details you think might be helpful...
