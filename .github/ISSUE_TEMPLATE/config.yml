@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Feature Ideas & Suggestions
+    url: https://github.com/glowingjade/obsidian-smart-composer/discussions/categories/ideas-feature-requests
+    about: Have an idea? Start a discussion to gather feedback and refine your proposal
+  - name: General Questions
+    url: https://github.com/glowingjade/obsidian-smart-composer/discussions/categories/q-a
+    about: Please submit general questions about using Smart Composer in our Discussions section

@@ -1,0 +1,42 @@
+name: Feature Request
+description: Propose a feature request to help us improve
+title: '[Feature Request]: '
+labels: ['feature request']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this feature request!
+
+        💡 Have an initial idea? Start a [discussion](https://github.com/glowingjade/obsidian-smart-composer/discussions/categories/ideas-feature-requests) first to gather community feedback and refine your proposal.
+
+        This issue template is for well-thought-out feature proposals with clear implementation details.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve? Please describe.
+      placeholder: A clear and concise description of what the problem is. e.g. I'm always frustrated when [...]
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like to see implemented
+      placeholder: |
+        A clear and detailed description of what you want to happen. Include:
+        - How the feature should work
+        - What UI elements would be needed
+        - How users would interact with it
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context, mockups, or screenshots about the feature request here
+      placeholder: Any other details that might help understand the feature request better...

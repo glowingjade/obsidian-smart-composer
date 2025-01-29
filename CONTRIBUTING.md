@@ -77,6 +77,12 @@ This process ensures a clean and organized migration history.
 
 ## Sending a Pull Request
 
+Before starting work on a significant change, please first discuss the proposed changes by either:
+1. Opening a new issue
+2. Starting a discussion in GitHub Discussions
+
+This helps avoid duplicate work and ensures your contribution aligns with the project's direction.
+
 The core team is monitoring for pull requests. We will review your pull request and either merge it, request changes to it, or close it with an explanation.
 
 **Before submitting a pull request**, please make sure the following is done:
