@@ -108,7 +108,7 @@ export class VectorManager {
             fileContent,
           ])
           return fileDocuments.map(
-            (chunk): Omit<InsertEmbedding, 'model' | 'dimensions'> => {
+            (chunk): Omit<InsertEmbedding, 'model' | 'dimension'> => {
               return {
                 path: file.path,
                 mtime: file.stat.mtime,
@@ -156,7 +156,7 @@ export class VectorManager {
                     mtime: chunk.mtime,
                     content: chunk.content,
                     model: embeddingModel.id,
-                    dimensions: embeddingModel.dimension,
+                    dimension: embeddingModel.dimension,
                     embedding,
                     metadata: chunk.metadata,
                   }

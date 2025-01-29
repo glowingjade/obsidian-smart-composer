@@ -47,14 +47,14 @@ export const embeddingTable = pgTable(
     mtime: bigint('mtime', { mode: 'number' }).notNull(), // mtime of the file
     content: text('content').notNull(), // content of the file
     model: text('model').notNull(), // model id
-    dimensions: smallint('dimensions').notNull(), // dimensions of the vector
+    dimension: smallint('dimension').notNull(), // dimension of the vector
     embedding: customVector('embedding'), // embedding of the file
     metadata: jsonb('metadata').notNull().$type<VectorMetaData>(),
   },
   (table) => [
     index('embeddings_path_index').on(table.path),
     index('embeddings_model_index').on(table.model),
-    index('embeddings_dimensions_index').on(table.dimensions),
+    index('embeddings_dimension_index').on(table.dimension),
     ...supportedDimensionsForIndex.map((dimension) =>
       // https://github.com/pgvector/pgvector?tab=readme-ov-file#can-i-store-vectors-with-different-dimensions-in-the-same-column
       index(`embeddings_embedding_${dimension}_index`)
@@ -64,7 +64,7 @@ export const embeddingTable = pgTable(
             `(${table.embedding.name}::vector(${dimension})) vector_cosine_ops`,
           ),
         )
-        .where(sql.raw(`${table.dimensions.name} = ${dimension}`)),
+        .where(sql.raw(`${table.dimension.name} = ${dimension}`)),
     ),
   ],
 )

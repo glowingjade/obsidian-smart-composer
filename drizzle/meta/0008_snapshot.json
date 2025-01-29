@@ -1,5 +1,5 @@
 {
-  "id": "d8189bf8-dc17-4bd0-a6f6-1b8776531544",
+  "id": "2c32e6c0-5482-4d73-8594-32fc62a7c72f",
   "prevId": "ab9cffab-e98f-49a2-be13-6fb5f3eda0ac",
   "version": "7",
   "dialect": "postgresql",
@@ -38,8 +38,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "dimensions": {
-          "name": "dimensions",
+        "dimension": {
+          "name": "dimension",
           "type": "smallint",
           "primaryKey": false,
           "notNull": true
@@ -88,11 +88,11 @@
           "method": "btree",
           "with": {}
         },
-        "embeddings_dimensions_index": {
-          "name": "embeddings_dimensions_index",
+        "embeddings_dimension_index": {
+          "name": "embeddings_dimension_index",
           "columns": [
             {
-              "expression": "dimensions",
+              "expression": "dimension",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -114,7 +114,7 @@
             }
           ],
           "isUnique": false,
-          "where": "dimensions = 768",
+          "where": "dimension = 768",
           "concurrently": false,
           "method": "hnsw",
           "with": {}
@@ -130,7 +130,7 @@
             }
           ],
           "isUnique": false,
-          "where": "dimensions = 1024",
+          "where": "dimension = 1024",
           "concurrently": false,
           "method": "hnsw",
           "with": {}
@@ -146,7 +146,7 @@
             }
           ],
           "isUnique": false,
-          "where": "dimensions = 1536",
+          "where": "dimension = 1536",
           "concurrently": false,
           "method": "hnsw",
           "with": {}
@@ -204,7 +204,9 @@
         "template_name_unique": {
           "name": "template_name_unique",
           "nullsNotDistinct": false,
-          "columns": ["name"]
+          "columns": [
+            "name"
+          ]
         }
       },
       "policies": {},
