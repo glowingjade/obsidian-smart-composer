@@ -60,10 +60,12 @@ export const embeddingTable = pgTable(
       index(`embeddings_embedding_${dimension}_index`)
         .using(
           'hnsw',
+          // use sql.raw for index definition because it shouldn't be parameterized
           sql.raw(
             `(${table.embedding.name}::vector(${dimension})) vector_cosine_ops`,
           ),
         )
+        // use sql.raw for index definition because it shouldn't be parameterized
         .where(sql.raw(`${table.dimension.name} = ${dimension}`)),
     ),
   ],
