@@ -10,7 +10,7 @@ body:
 
         💡 Have an initial idea? Start a [discussion](https://github.com/glowingjade/obsidian-smart-composer/discussions/categories/ideas-feature-requests) first to gather community feedback and refine your proposal.
 
-        This issue template is for well-thought-out feature proposals with clear implementation details.
+        This issue template is for well-thought-out feature proposals
 
   - type: textarea
     id: problem

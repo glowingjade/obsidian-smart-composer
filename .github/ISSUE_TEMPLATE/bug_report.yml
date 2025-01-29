@@ -65,7 +65,7 @@ body:
     id: plugin-version
     attributes:
       label: Smart Composer Version
-      description: What version of Smart Composer are you using?
+      description: What version of Smart Composer are you using? (You can find this in Settings > Community plugins menu)
       placeholder: e.g., 1.0.0
     validations:
       required: true
@@ -92,7 +92,7 @@ body:
         3. Look for any red error messages or warnings
         4. Copy and paste them here
       render: shell
-      placeholder: Error messages will be automatically formatted
+      placeholder: Paste your logs here
 
   - type: textarea
     id: additional-context
