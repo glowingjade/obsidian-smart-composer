@@ -14,7 +14,7 @@ import { RAGProvider } from './contexts/rag-context'
 import { SettingsProvider } from './contexts/settings-context'
 import SmartCopilotPlugin from './main'
 import { MentionableBlockData } from './types/mentionable'
-import { SmartCopilotSettings } from './types/settings'
+import { SmartCopilotSettings } from './settings/schema/setting.types'
 
 export class ChatView extends ItemView {
   private root: Root | null = null

@@ -14,7 +14,7 @@ import {
   MentionableUrl,
   MentionableVault,
 } from '../types/mentionable'
-import { SmartCopilotSettings } from '../types/settings'
+import { SmartCopilotSettings } from 'src/settings/schema/setting.types'
 
 import {
   getNestedFiles,

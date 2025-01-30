@@ -1,58 +1,6 @@
-import { SETTINGS_SCHEMA_VERSION, parseSmartCopilotSettings } from './settings'
+import { migrateFrom0To1 } from './0_to_1'
 
-describe('parseSmartCopilotSettings', () => {
-  it('should return default values for empty input', () => {
-    const result = parseSmartCopilotSettings({})
-    expect(result).toEqual({
-      version: SETTINGS_SCHEMA_VERSION,
-
-      openAIApiKey: '',
-      anthropicApiKey: '',
-      geminiApiKey: '',
-      groqApiKey: '',
-
-      chatModelId: 'anthropic/claude-3.5-sonnet-latest',
-      ollamaChatModel: {
-        baseUrl: '',
-        model: '',
-      },
-      openAICompatibleChatModel: {
-        baseUrl: '',
-        apiKey: '',
-        model: '',
-      },
-
-      applyModelId: 'openai/gpt-4o-mini',
-      ollamaApplyModel: {
-        baseUrl: '',
-        model: '',
-      },
-      openAICompatibleApplyModel: {
-        baseUrl: '',
-        apiKey: '',
-        model: '',
-      },
-
-      embeddingModelId: 'openai/text-embedding-3-small',
-      ollamaEmbeddingModel: {
-        baseUrl: '',
-        model: '',
-      },
-
-      systemPrompt: '',
-      ragOptions: {
-        chunkSize: 1000,
-        thresholdTokens: 8192,
-        minSimilarity: 0.0,
-        limit: 10,
-        excludePatterns: [],
-        includePatterns: [],
-      },
-    })
-  })
-})
-
-describe('settings migration', () => {
+describe('settings 0_to_1 migration', () => {
   it('should migrate from v0 to v1', () => {
     const oldSettings = {
       openAIApiKey: 'openai-api-key',
@@ -71,7 +19,7 @@ describe('settings migration', () => {
       },
     }
 
-    const result = parseSmartCopilotSettings(oldSettings)
+    const result = migrateFrom0To1(oldSettings)
     expect(result).toEqual({
       version: 1,
 

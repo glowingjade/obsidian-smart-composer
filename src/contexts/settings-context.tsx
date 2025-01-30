@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
-import { SmartCopilotSettings } from '../types/settings'
+import { SmartCopilotSettings } from '../settings/schema/setting.types'
 
 type SettingsContextType = {
   settings: SmartCopilotSettings

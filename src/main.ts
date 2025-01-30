@@ -6,11 +6,9 @@ import { ChatProps } from './components/chat-view/Chat'
 import { APPLY_VIEW_TYPE, CHAT_VIEW_TYPE } from './constants'
 import { RAGEngine } from './core/rag/ragEngine'
 import { DatabaseManager } from './database/DatabaseManager'
+import { SmartCopilotSettings } from './settings/schema/setting.types'
+import { parseSmartCopilotSettings } from './settings/schema/settings'
 import { SmartCopilotSettingTab } from './settings/SettingTab'
-import {
-  SmartCopilotSettings,
-  parseSmartCopilotSettings,
-} from './types/settings'
 import { getMentionableBlockData } from './utils/obsidian'
 
 // Remember to rename these classes and interfaces!

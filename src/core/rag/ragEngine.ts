@@ -4,8 +4,8 @@ import { QueryProgressState } from '../../components/chat-view/QueryProgress'
 import { DatabaseManager } from '../../database/DatabaseManager'
 import { VectorManager } from '../../database/modules/vector/VectorManager'
 import { SelectEmbedding } from '../../database/schema'
+import { SmartCopilotSettings } from '../../settings/schema/setting.types'
 import { EmbeddingModel } from '../../types/embedding'
-import { SmartCopilotSettings } from '../../types/settings'
 
 import { getEmbeddingModel } from './embedding'
 
