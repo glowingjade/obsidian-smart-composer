@@ -135,7 +135,7 @@ export function ChatListDropdown({
       setFocusedIndex(currentIndex === -1 ? 0 : currentIndex)
       setEditingId(null)
     }
-  }, [open])
+  }, [open, chatList, currentConversationId])
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
