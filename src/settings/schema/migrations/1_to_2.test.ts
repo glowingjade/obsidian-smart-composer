@@ -40,7 +40,7 @@ describe('settings 1_to_2 migration', () => {
       embeddingModelId: 'ollama/nomic-embed-text',
       ollamaEmbeddingModel: {
         baseUrl: 'http://127.0.0.1:11434',
-        model: 'ollama/nomic-embed-text',
+        model: '', // this can be empty
       },
 
       systemPrompt: 'You are a helpful assistant',
@@ -82,12 +82,12 @@ describe('settings 1_to_2 migration', () => {
         {
           type: 'ollama',
           id: 'ollama',
-          baseURL: 'http://localhost:11434',
+          baseUrl: 'http://127.0.0.1:11434',
         },
         {
           type: 'openai-compatible',
           id: 'custom-1',
-          baseURL: 'https://custom-openai-compatible-base-url',
+          baseUrl: 'https://custom-openai-compatible-base-url',
           apiKey: 'custom-openai-compatible-key',
         },
       ],
@@ -166,10 +166,11 @@ describe('settings 1_to_2 migration', () => {
         { type: 'anthropic', id: 'anthropic', apiKey: '' },
         { type: 'gemini', id: 'gemini', apiKey: '' },
         { type: 'groq', id: 'groq', apiKey: '' },
-        { type: 'ollama', id: 'ollama', baseURL: '' },
+        { type: 'ollama', id: 'ollama', baseUrl: '' },
       ],
 
       chatModels: DEFAULT_CHAT_MODELS,
+      embeddingModels: DEFAULT_EMBEDDING_MODELS,
 
       chatModelId: 'claude-3.5-sonnet',
       applyModelId: 'gpt-4o-mini',
@@ -188,6 +189,93 @@ describe('settings 1_to_2 migration', () => {
   })
 
   it('should migrate ollama chat, apply, and embedding models with distinct baseUrls', () => {
+    const oldSettings = {
+      version: 1,
+      openAIApiKey: '',
+      anthropicApiKey: '',
+      geminiApiKey: '',
+      groqApiKey: '',
+
+      chatModelId: 'ollama',
+      ollamaChatModel: {
+        baseUrl: 'http://local-chat:11434',
+        model: 'ollama-chat',
+      },
+      openAICompatibleChatModel: { baseUrl: '', apiKey: '', model: '' },
+
+      applyModelId: 'ollama',
+      ollamaApplyModel: {
+        baseUrl: 'http://local-apply:11434',
+        model: 'ollama-apply',
+      },
+      openAICompatibleApplyModel: { baseUrl: '', apiKey: '', model: '' },
+
+      embeddingModelId: 'ollama/nomic-embed-text',
+      ollamaEmbeddingModel: {
+        baseUrl: '',
+        model: '',
+      },
+
+      systemPrompt: 'You are using Ollama for everything!',
+      ragOptions: {
+        chunkSize: 500,
+        thresholdTokens: 4000,
+        minSimilarity: 0.5,
+        limit: 5,
+        excludePatterns: ['ignore/**'],
+        includePatterns: ['docs/**'],
+      },
+    }
+
+    const result = migrateFrom1To2(oldSettings)
+
+    expect(result).toEqual({
+      version: 2,
+
+      providers: [
+        { type: 'openai', id: 'openai', apiKey: '' },
+        { type: 'anthropic', id: 'anthropic', apiKey: '' },
+        { type: 'gemini', id: 'gemini', apiKey: '' },
+        { type: 'groq', id: 'groq', apiKey: '' },
+        { type: 'ollama', id: 'ollama', baseUrl: 'http://local-chat:11434' },
+        { type: 'ollama', id: 'ollama-1', baseUrl: 'http://local-apply:11434' },
+      ],
+
+      chatModels: [
+        ...DEFAULT_CHAT_MODELS,
+        {
+          providerType: 'ollama',
+          providerId: 'ollama',
+          id: 'ollama/ollama-chat',
+          model: 'ollama-chat',
+        },
+        {
+          providerType: 'ollama',
+          providerId: 'ollama-1',
+          id: 'ollama-1/ollama-apply',
+          model: 'ollama-apply',
+        },
+      ],
+
+      embeddingModels: DEFAULT_EMBEDDING_MODELS,
+
+      chatModelId: 'ollama/ollama-chat',
+      applyModelId: 'ollama-1/ollama-apply',
+      embeddingModelId: 'ollama/nomic-embed-text',
+
+      systemPrompt: 'You are using Ollama for everything!',
+      ragOptions: {
+        chunkSize: 500,
+        thresholdTokens: 4000,
+        minSimilarity: 0.5,
+        limit: 5,
+        excludePatterns: ['ignore/**'],
+        includePatterns: ['docs/**'],
+      },
+    })
+  })
+
+  it('should migrate ollama chat, apply, and embedding models with distinct baseUrls (when embedding exists it takes precedence)', () => {
     const oldSettings = {
       version: 1,
       openAIApiKey: '',
@@ -236,41 +324,32 @@ describe('settings 1_to_2 migration', () => {
         { type: 'anthropic', id: 'anthropic', apiKey: '' },
         { type: 'gemini', id: 'gemini', apiKey: '' },
         { type: 'groq', id: 'groq', apiKey: '' },
-        { type: 'ollama', id: 'ollama', baseURL: 'http://local-chat:11434' },
-        { type: 'ollama', id: 'ollama-1', baseURL: 'http://local-apply:11434' },
-        { type: 'ollama', id: 'ollama-2', baseURL: 'http://local-embed:11434' },
+        { type: 'ollama', id: 'ollama', baseUrl: 'http://local-embed:11434' },
+        { type: 'ollama', id: 'ollama-1', baseUrl: 'http://local-chat:11434' },
+        { type: 'ollama', id: 'ollama-2', baseUrl: 'http://local-apply:11434' },
       ],
 
       chatModels: [
         ...DEFAULT_CHAT_MODELS,
         {
           providerType: 'ollama',
-          providerId: 'ollama',
-          id: 'ollama/ollama-chat',
+          providerId: 'ollama-1',
+          id: 'ollama-1/ollama-chat',
           model: 'ollama-chat',
         },
         {
           providerType: 'ollama',
-          providerId: 'ollama-1',
-          id: 'ollama-1/ollama-apply',
+          providerId: 'ollama-2',
+          id: 'ollama-2/ollama-apply',
           model: 'ollama-apply',
         },
       ],
 
-      embeddingModels: [
-        ...DEFAULT_EMBEDDING_MODELS,
-        {
-          providerType: 'ollama',
-          providerId: 'ollama-2',
-          id: 'ollama-2/nomic-embed-text',
-          model: 'nomic-embed-text',
-          dimension: 768,
-        },
-      ],
+      embeddingModels: DEFAULT_EMBEDDING_MODELS,
 
-      chatModelId: 'ollama/ollama-chat',
-      applyModelId: 'ollama/ollama-apply',
-      embeddingModelId: 'ollama-2/nomic-embed-text',
+      chatModelId: 'ollama-1/ollama-chat',
+      applyModelId: 'ollama-2/ollama-apply',
+      embeddingModelId: 'ollama/nomic-embed-text',
 
       systemPrompt: 'You are using Ollama for everything!',
       ragOptions: {
@@ -333,17 +412,17 @@ describe('settings 1_to_2 migration', () => {
         { type: 'anthropic', id: 'anthropic', apiKey: '' },
         { type: 'gemini', id: 'gemini', apiKey: '' },
         { type: 'groq', id: 'groq', apiKey: '' },
-        { type: 'ollama', id: 'ollama', baseURL: '' },
+        { type: 'ollama', id: 'ollama', baseUrl: '' },
         {
           type: 'openai-compatible',
           id: 'custom-1',
-          baseURL: 'https://custom-chat-endpoint',
+          baseUrl: 'https://custom-chat-endpoint',
           apiKey: 'CUSTOM_CHAT_KEY',
         },
         {
           type: 'openai-compatible',
           id: 'custom-2',
-          baseURL: 'https://custom-apply-endpoint',
+          baseUrl: 'https://custom-apply-endpoint',
           apiKey: 'CUSTOM_APPLY_KEY',
         },
       ],
