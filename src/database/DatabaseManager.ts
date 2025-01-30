@@ -4,6 +4,7 @@ import { App, normalizePath, requestUrl } from 'obsidian'
 
 import { PGLITE_DB_PATH } from '../constants'
 
+import { PGLiteAbortedException } from './exception'
 import migrations from './migrations.json'
 import { TemplateManager } from './modules/template/TemplateManager'
 import { VectorManager } from './modules/vector/VectorManager'
@@ -59,17 +60,31 @@ export class DatabaseManager {
   }
 
   private async createNewDatabase() {
-    const { fsBundle, wasmModule, vectorExtensionBundlePath } =
-      await this.loadPGliteResources()
-    this.pgClient = await PGlite.create({
-      fsBundle: fsBundle,
-      wasmModule: wasmModule,
-      extensions: {
-        vector: vectorExtensionBundlePath,
-      },
-    })
-    const db = drizzle(this.pgClient)
-    return db
+    try {
+      const { fsBundle, wasmModule, vectorExtensionBundlePath } =
+        await this.loadPGliteResources()
+      this.pgClient = await PGlite.create({
+        fsBundle: fsBundle,
+        wasmModule: wasmModule,
+        extensions: {
+          vector: vectorExtensionBundlePath,
+        },
+      })
+      const db = drizzle(this.pgClient)
+      return db
+    } catch (error) {
+      console.log('createNewDatabase error', error)
+      if (
+        error instanceof Error &&
+        error.message.includes(
+          'Aborted(). Build with -sASSERTIONS for more info.',
+        )
+      ) {
+        // This error occurs when using an outdated Obsidian installer version
+        throw new PGLiteAbortedException()
+      }
+      throw error
+    }
   }
 
   private async loadExistingDatabase(): Promise<PgliteDatabase | null> {
@@ -94,7 +109,16 @@ export class DatabaseManager {
       })
       return drizzle(this.pgClient)
     } catch (error) {
-      console.error('Error loading database:', error)
+      console.log('loadExistingDatabase error', error)
+      if (
+        error instanceof Error &&
+        error.message.includes(
+          'Aborted(). Build with -sASSERTIONS for more info.',
+        )
+      ) {
+        // This error occurs when using an outdated Obsidian installer version
+        throw new PGLiteAbortedException()
+      }
       return null
     }
   }
