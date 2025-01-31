@@ -3,6 +3,7 @@ import { App } from 'obsidian'
 
 import { DatabaseManager } from '../../DatabaseManager'
 import { DuplicateTemplateException } from '../../exception'
+import { TemplateManager as JsonTemplateManager } from '../../json/models/template'
 import { InsertTemplate, SelectTemplate } from '../../schema'
 
 import { TemplateRepository } from './TemplateRepository'
@@ -16,6 +17,20 @@ export class TemplateManager {
     this.app = app
     this.dbManager = dbManager
     this.repository = new TemplateRepository(app, dbManager.getDb())
+    this.migrateTemplates()
+  }
+
+  // TODO: Drop template table and remove this template functionality
+  // once all users have migrated to the new JSON-based system
+  async migrateTemplates(): Promise<void> {
+    const templates = await this.repository.findAll()
+    const jsonTemplateManager = new JsonTemplateManager(this.app)
+    for (const template of templates) {
+      await jsonTemplateManager.createDocument({
+        name: template.name,
+        content: template.content,
+      })
+    }
   }
 
   async createTemplate(template: InsertTemplate): Promise<SelectTemplate> {
