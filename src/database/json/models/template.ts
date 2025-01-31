@@ -37,7 +37,6 @@ export class TemplateManager extends IndexedFileStorage<
   }
 
   async searchTemplates(query: string): Promise<TemplateDocument[]> {
-    // const templateIndexList = await this.getIndex()
     const templates = await this.findAllDocuments()
     const results = fuzzysort.go(query, templates, {
       keys: ['name'],
