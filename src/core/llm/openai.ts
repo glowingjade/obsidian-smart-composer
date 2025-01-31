@@ -1,6 +1,6 @@
 import OpenAI from 'openai'
 
-import { LLMModel } from '../../types/llm/model'
+import { ChatModel } from '../../types/chat-model.types'
 import {
   LLMOptions,
   LLMRequestNonStreaming,
@@ -10,6 +10,7 @@ import {
   LLMResponseNonStreaming,
   LLMResponseStreaming,
 } from '../../types/llm/response'
+import { LLMProvider } from '../../types/provider.types'
 
 import { BaseLLMProvider } from './base'
 import {
@@ -18,20 +19,28 @@ import {
 } from './exception'
 import { OpenAIMessageAdapter } from './openaiMessageAdapter'
 
-export class OpenAIAuthenticatedProvider implements BaseLLMProvider {
+export class OpenAIAuthenticatedProvider extends BaseLLMProvider {
   private adapter: OpenAIMessageAdapter
   private client: OpenAI
 
-  constructor(apiKey: string) {
-    this.client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true })
+  constructor(provider: Extract<LLMProvider, { type: 'openai' }>) {
+    super(provider)
+    this.client = new OpenAI({
+      apiKey: provider.apiKey,
+      dangerouslyAllowBrowser: true,
+    })
     this.adapter = new OpenAIMessageAdapter()
   }
 
   async generateResponse(
-    model: LLMModel,
+    model: ChatModel,
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
+    if (model.providerType !== 'openai') {
+      throw new Error('Model is not an OpenAI model')
+    }
+
     if (!this.client.apiKey) {
       throw new LLMAPIKeyNotSetException(
         'OpenAI API key is missing. Please set it in settings menu.',
@@ -79,12 +88,16 @@ export class OpenAIAuthenticatedProvider implements BaseLLMProvider {
   }
 
   async streamResponse(
-    model: LLMModel,
+    model: ChatModel,
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
+    if (model.providerType !== 'openai') {
+      throw new Error('Model is not an OpenAI model')
+    }
+
     // Check if the model explicitly does not support streaming
-    if (model.supportsStreaming === false) {
+    if (model.streamingDisabled) {
       // For non-streaming models, fall back to generateResponse
       const nonStreamingResponse = await this.generateResponse(
         model,

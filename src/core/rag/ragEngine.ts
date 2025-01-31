@@ -5,15 +5,21 @@ import { DatabaseManager } from '../../database/DatabaseManager'
 import { VectorManager } from '../../database/modules/vector/VectorManager'
 import { SelectEmbedding } from '../../database/schema'
 import { SmartCopilotSettings } from '../../settings/schema/setting.types'
-import { EmbeddingModel } from '../../types/embedding'
+import { EmbeddingModelClient } from '../../types/embedding'
 
-import { getEmbeddingModel } from './embedding'
+import { getEmbeddingModelClient } from './embedding'
 
+/**
+ * TODO:
+ * do we really need this class? It just complicates things.
+ * since it doesn't do anything inside itself, we can just move logic into rag-context.tsx
+ * and then we don't have to consider about settings changes. It would be much simpler.
+ */
 export class RAGEngine {
   private app: App
   private settings: SmartCopilotSettings
   private vectorManager: VectorManager
-  private embeddingModel: EmbeddingModel | null = null
+  private embeddingModel: EmbeddingModelClient | null = null
 
   constructor(
     app: App,
@@ -23,26 +29,18 @@ export class RAGEngine {
     this.app = app
     this.settings = settings
     this.vectorManager = dbManager.getVectorManager()
-    this.embeddingModel = getEmbeddingModel(
-      settings.embeddingModelId,
-      {
-        openAIApiKey: settings.openAIApiKey,
-        geminiApiKey: settings.geminiApiKey,
-      },
-      settings.ollamaEmbeddingModel.baseUrl,
-    )
+    this.embeddingModel = getEmbeddingModelClient({
+      settings,
+      embeddingModelId: settings.embeddingModelId,
+    })
   }
 
   setSettings(settings: SmartCopilotSettings) {
     this.settings = settings
-    this.embeddingModel = getEmbeddingModel(
-      settings.embeddingModelId,
-      {
-        openAIApiKey: settings.openAIApiKey,
-        geminiApiKey: settings.geminiApiKey,
-      },
-      settings.ollamaEmbeddingModel.baseUrl,
-    )
+    this.embeddingModel = getEmbeddingModelClient({
+      settings,
+      embeddingModelId: settings.embeddingModelId,
+    })
   }
 
   // TODO: Implement automatic vault re-indexing when settings are changed.

@@ -6,7 +6,7 @@ import {
   TextBlockParam,
 } from '@anthropic-ai/sdk/resources/messages'
 
-import { LLMModel } from '../../types/llm/model'
+import { ChatModel } from '../../types/chat-model.types'
 import {
   LLMOptions,
   LLMRequestNonStreaming,
@@ -18,6 +18,7 @@ import {
   LLMResponseStreaming,
   ResponseUsage,
 } from '../../types/llm/response'
+import { LLMProvider } from '../../types/provider.types'
 import { parseImageDataUrl } from '../../utils/image'
 
 import { BaseLLMProvider } from './base'
@@ -26,20 +27,28 @@ import {
   LLMAPIKeyNotSetException,
 } from './exception'
 
-export class AnthropicProvider implements BaseLLMProvider {
+export class AnthropicProvider extends BaseLLMProvider {
   private client: Anthropic
 
   private static readonly DEFAULT_MAX_TOKENS = 8192
 
-  constructor(apiKey: string) {
-    this.client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true })
+  constructor(provider: Extract<LLMProvider, { type: 'anthropic' }>) {
+    super(provider)
+    this.client = new Anthropic({
+      apiKey: provider.apiKey,
+      dangerouslyAllowBrowser: true,
+    })
   }
 
   async generateResponse(
-    model: LLMModel,
+    model: ChatModel,
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
+    if (model.providerType !== 'anthropic') {
+      throw new Error('Model is not a Anthropic model')
+    }
+
     if (!this.client.apiKey) {
       throw new LLMAPIKeyNotSetException(
         'Anthropic API key is missing. Please set it in settings menu.',
@@ -82,10 +91,14 @@ export class AnthropicProvider implements BaseLLMProvider {
   }
 
   async streamResponse(
-    model: LLMModel,
+    model: ChatModel,
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
+    if (model.providerType !== 'anthropic') {
+      throw new Error('Model is not a Anthropic model')
+    }
+
     if (!this.client.apiKey) {
       throw new LLMAPIKeyNotSetException(
         'Anthropic API key is missing. Please set it in settings menu.',

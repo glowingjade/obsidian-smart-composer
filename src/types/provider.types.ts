@@ -60,7 +60,7 @@ export const DEFAULT_PROVIDER_IDS = {
   'openai-compatible': null, // no default provider for this type
 } satisfies Record<LLMProviderType, string | null>
 
-export const DEFAULT_PROVIDERS: LLMProvider[] = [
+export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
   {
     type: 'openai',
     id: DEFAULT_PROVIDER_IDS.openai,

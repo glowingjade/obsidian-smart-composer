@@ -5,8 +5,9 @@ import {
   GenerateContentStreamResult,
   GoogleGenerativeAI,
 } from '@google/generative-ai'
+import { LLMProvider } from 'src/types/provider.types'
 
-import { LLMModel } from '../../types/llm/model'
+import { ChatModel } from '../../types/chat-model.types'
 import {
   LLMOptions,
   LLMRequestNonStreaming,
@@ -32,20 +33,25 @@ import {
  * preventing its use in Obsidian. Consider switching to this endpoint in the future once these
  * issues are resolved.
  */
-export class GeminiProvider implements BaseLLMProvider {
+export class GeminiProvider extends BaseLLMProvider {
   private client: GoogleGenerativeAI
   private apiKey: string
 
-  constructor(apiKey: string) {
-    this.apiKey = apiKey
-    this.client = new GoogleGenerativeAI(apiKey)
+  constructor(provider: Extract<LLMProvider, { type: 'gemini' }>) {
+    super(provider)
+    this.client = new GoogleGenerativeAI(provider.apiKey ?? '')
+    this.apiKey = provider.apiKey ?? ''
   }
 
   async generateResponse(
-    model: LLMModel,
+    model: ChatModel,
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
+    if (model.providerType !== 'gemini') {
+      throw new Error('Model is not a Gemini model')
+    }
+
     if (!this.apiKey) {
       throw new LLMAPIKeyNotSetException(
         `Gemini API key is missing. Please set it in settings menu.`,
@@ -105,10 +111,14 @@ export class GeminiProvider implements BaseLLMProvider {
   }
 
   async streamResponse(
-    model: LLMModel,
+    model: ChatModel,
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
+    if (model.providerType !== 'gemini') {
+      throw new Error('Model is not a Gemini model')
+    }
+
     if (!this.apiKey) {
       throw new LLMAPIKeyNotSetException(
         `Gemini API key is missing. Please set it in settings menu.`,

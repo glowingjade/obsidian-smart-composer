@@ -8,7 +8,7 @@ import { useState } from 'react'
 import { EMBEDDING_MODEL_OPTIONS } from '../../constants'
 import { useDatabase } from '../../contexts/database-context'
 import { useSettings } from '../../contexts/settings-context'
-import { getEmbeddingModel } from '../../core/rag/embedding'
+import { getEmbeddingModelClient } from '../../core/rag/embedding'
 import { EmbeddingDbStats } from '../../types/embedding'
 import { IndexProgress } from '../chat-view/QueryProgress'
 
@@ -46,14 +46,10 @@ export default function EmbeddingDbManageRoot({
 
   const handleRebuildIndex = async (modelId: string) => {
     try {
-      const embeddingModel = getEmbeddingModel(
-        modelId,
-        {
-          openAIApiKey: settings.openAIApiKey,
-          geminiApiKey: settings.geminiApiKey,
-        },
-        settings.ollamaEmbeddingModel.baseUrl,
-      )
+      const embeddingModel = getEmbeddingModelClient({
+        settings,
+        embeddingModelId: modelId,
+      })
 
       await (
         await getVectorManager()
@@ -88,14 +84,10 @@ export default function EmbeddingDbManageRoot({
 
   const handleRemoveIndex = async (modelId: string) => {
     try {
-      const embeddingModel = getEmbeddingModel(
-        modelId,
-        {
-          openAIApiKey: settings.openAIApiKey,
-          geminiApiKey: settings.geminiApiKey,
-        },
-        settings.ollamaEmbeddingModel.baseUrl,
-      )
+      const embeddingModel = getEmbeddingModelClient({
+        settings,
+        embeddingModelId: modelId,
+      })
       await (await getVectorManager()).clearAllVectors(embeddingModel)
     } catch (error) {
       console.error(error)

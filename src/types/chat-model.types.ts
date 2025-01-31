@@ -44,7 +44,7 @@ export const chatModelSchema = z.discriminatedUnion('providerType', [
 
 export type ChatModel = z.infer<typeof chatModelSchema>
 
-export const DEFAULT_CHAT_MODELS: ChatModel[] = [
+export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
   {
     providerType: 'anthropic',
     providerId: DEFAULT_PROVIDER_IDS.anthropic,

@@ -1,9 +1,9 @@
 import { TFile } from 'obsidian'
 
 import { editorStateToPlainText } from '../components/chat-view/chat-input/utils/editor-state-to-plain-text'
-import { LLMContextType } from '../contexts/llm-context'
+import { BaseLLMProvider } from '../core/llm/base'
 import { ChatMessage, ChatUserMessage } from '../types/chat'
-import { LLMModel } from '../types/llm/model'
+import { ChatModel } from '../types/chat-model.types'
 import { RequestMessage } from '../types/llm/request'
 import { MentionableBlock, MentionableFile } from '../types/mentionable'
 
@@ -80,14 +80,21 @@ ${blockToApply}
 Now rewrite the entire file with the changes applied. Immediately start your response with \`\`\`${currentFile.path}`
 }
 
-export const applyChangesToFile = async (
-  blockToApply: string,
-  currentFile: TFile,
-  currentFileContent: string,
-  chatMessages: ChatMessage[],
-  applyModel: LLMModel,
-  generateResponse: LLMContextType['generateResponse'],
-): Promise<string | null> => {
+export const applyChangesToFile = async ({
+  blockToApply,
+  currentFile,
+  currentFileContent,
+  chatMessages,
+  providerClient,
+  model,
+}: {
+  blockToApply: string
+  currentFile: TFile
+  currentFileContent: string
+  chatMessages: ChatMessage[]
+  providerClient: BaseLLMProvider
+  model: ChatModel
+}): Promise<string | null> => {
   const requestMessages: RequestMessage[] = [
     {
       role: 'system',
@@ -104,8 +111,8 @@ export const applyChangesToFile = async (
     },
   ]
 
-  const response = await generateResponse(applyModel, {
-    model: applyModel.model,
+  const response = await providerClient.generateResponse(model, {
+    model: model.model,
     messages: requestMessages,
     stream: false,
 

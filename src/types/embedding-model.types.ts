@@ -39,7 +39,7 @@ export const embeddingModelSchema = z.discriminatedUnion('providerType', [
 
 export type EmbeddingModel = z.infer<typeof embeddingModelSchema>
 
-export const DEFAULT_EMBEDDING_MODELS: EmbeddingModel[] = [
+export const DEFAULT_EMBEDDING_MODELS: readonly EmbeddingModel[] = [
   {
     providerType: 'openai',
     providerId: DEFAULT_PROVIDER_IDS.openai,

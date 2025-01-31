@@ -598,7 +598,7 @@ export const migrateFrom1To2: SettingMigration['migrate'] = (
     version: 2,
     providers,
     chatModels,
-    embeddingModels: DEFAULT_EMBEDDING_MODELS,
+    embeddingModels: [...DEFAULT_EMBEDDING_MODELS],
     chatModelId,
     applyModelId,
     embeddingModelId: data.embeddingModelId,

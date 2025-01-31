@@ -1,3 +1,5 @@
+// TODO: remove these types
+
 export type NativeLLMModel = {
   provider: 'openai' | 'anthropic' | 'gemini' | 'groq'
   model: string

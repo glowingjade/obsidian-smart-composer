@@ -1,7 +1,8 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { OpenAI } from 'openai'
 
-import { EmbeddingModel } from '../../types/embedding'
+import { SmartCopilotSettings } from '../../settings/schema/setting.types'
+import { EmbeddingModelClient } from '../../types/embedding'
 import {
   LLMAPIKeyNotSetException,
   LLMBaseUrlNotSetException,
@@ -9,32 +10,51 @@ import {
 } from '../llm/exception'
 import { NoStainlessOpenAI } from '../llm/ollama'
 
-export const getEmbeddingModel = (
-  embeddingModelId: string,
-  apiKeys: {
-    openAIApiKey: string
-    geminiApiKey: string
-  },
-  ollamaBaseUrl: string,
-): EmbeddingModel => {
-  switch (embeddingModelId) {
-    case 'openai/text-embedding-3-small': {
+// TODO: these logic should go into model provider implementation
+export const getEmbeddingModelClient = ({
+  settings,
+  embeddingModelId,
+}: {
+  settings: SmartCopilotSettings
+  embeddingModelId: string
+}): EmbeddingModelClient => {
+  const embeddingModel = settings.embeddingModels.find(
+    (model) => model.id === embeddingModelId,
+  )
+  if (!embeddingModel) {
+    throw new Error(`Embedding model ${embeddingModelId} not found`)
+  }
+
+  const embeddingProvider = settings.providers.find(
+    (provider) => provider.id === embeddingModel.providerId,
+  )
+  if (!embeddingProvider) {
+    throw new Error(`Model provider ${embeddingModel.providerId} not found`)
+  }
+
+  if (embeddingModel.providerType !== embeddingProvider.type) {
+    throw new Error('Embedding model and provider type do not match')
+  }
+
+  switch (embeddingProvider.type) {
+    case 'openai': {
+      if (!embeddingProvider.apiKey) {
+        throw new LLMAPIKeyNotSetException(
+          `${embeddingProvider.id} API key is missing. Please set it in settings menu.`,
+        )
+      }
+
       const openai = new OpenAI({
-        apiKey: apiKeys.openAIApiKey,
+        apiKey: embeddingProvider.apiKey,
         dangerouslyAllowBrowser: true,
       })
       return {
-        id: 'openai/text-embedding-3-small',
-        dimension: 1536,
+        id: embeddingModel.id,
+        dimension: embeddingModel.dimension,
         getEmbedding: async (text: string) => {
           try {
-            if (!openai.apiKey) {
-              throw new LLMAPIKeyNotSetException(
-                'OpenAI API key is missing. Please set it in settings menu.',
-              )
-            }
             const embedding = await openai.embeddings.create({
-              model: 'text-embedding-3-small',
+              model: embeddingModel.model,
               input: text,
             })
             return embedding.data[0].embedding
@@ -52,46 +72,18 @@ export const getEmbeddingModel = (
         },
       }
     }
-    case 'openai/text-embedding-3-large': {
-      const openai = new OpenAI({
-        apiKey: apiKeys.openAIApiKey,
-        dangerouslyAllowBrowser: true,
-      })
-      return {
-        id: 'openai/text-embedding-3-large',
-        dimension: 3072,
-        getEmbedding: async (text: string) => {
-          try {
-            if (!openai.apiKey) {
-              throw new LLMAPIKeyNotSetException(
-                'OpenAI API key is missing. Please set it in settings menu.',
-              )
-            }
-            const embedding = await openai.embeddings.create({
-              model: 'text-embedding-3-large',
-              input: text,
-            })
-            return embedding.data[0].embedding
-          } catch (error) {
-            if (
-              error.status === 429 &&
-              error.message.toLowerCase().includes('rate limit')
-            ) {
-              throw new LLMRateLimitExceededException(
-                'OpenAI API rate limit exceeded. Please try again later.',
-              )
-            }
-            throw error
-          }
-        },
+    case 'gemini': {
+      if (!embeddingProvider.apiKey) {
+        throw new LLMAPIKeyNotSetException(
+          `${embeddingProvider.id} API key is missing. Please set it in settings menu.`,
+        )
       }
-    }
-    case 'gemini/text-embedding-004': {
-      const client = new GoogleGenerativeAI(apiKeys.geminiApiKey)
-      const model = client.getGenerativeModel({ model: 'text-embedding-004' })
+
+      const client = new GoogleGenerativeAI(embeddingProvider.apiKey)
+      const model = client.getGenerativeModel({ model: embeddingModel.model })
       return {
-        id: 'gemini/text-embedding-004',
-        dimension: 768,
+        id: embeddingModel.id,
+        dimension: embeddingModel.dimension,
         getEmbedding: async (text: string) => {
           try {
             const response = await model.embedContent(text)
@@ -110,69 +102,24 @@ export const getEmbeddingModel = (
         },
       }
     }
-    case 'ollama/nomic-embed-text': {
-      const openai = new NoStainlessOpenAI({
-        apiKey: '',
-        dangerouslyAllowBrowser: true,
-        baseURL: `${ollamaBaseUrl}/v1`,
-      })
-      return {
-        id: 'ollama/nomic-embed-text',
-        dimension: 768,
-        getEmbedding: async (text: string) => {
-          if (!ollamaBaseUrl) {
-            throw new LLMBaseUrlNotSetException(
-              'Ollama Address is missing. Please set it in settings menu.',
-            )
-          }
-          const embedding = await openai.embeddings.create({
-            model: 'nomic-embed-text',
-            input: text,
-          })
-          return embedding.data[0].embedding
-        },
+    case 'ollama': {
+      if (!embeddingProvider.baseUrl) {
+        throw new LLMBaseUrlNotSetException(
+          `${embeddingProvider.id} base url is missing. Please set it in settings menu.`,
+        )
       }
-    }
-    case 'ollama/mxbai-embed-large': {
+
       const openai = new NoStainlessOpenAI({
-        apiKey: '',
+        apiKey: embeddingProvider.apiKey,
         dangerouslyAllowBrowser: true,
-        baseURL: `${ollamaBaseUrl}/v1`,
+        baseURL: `${embeddingProvider.baseUrl}/v1`,
       })
       return {
-        id: 'ollama/mxbai-embed-large',
-        dimension: 1024,
+        id: embeddingModel.id,
+        dimension: embeddingModel.dimension,
         getEmbedding: async (text: string) => {
-          if (!ollamaBaseUrl) {
-            throw new LLMBaseUrlNotSetException(
-              'Ollama Address is missing. Please set it in settings menu.',
-            )
-          }
           const embedding = await openai.embeddings.create({
-            model: 'mxbai-embed-large',
-            input: text,
-          })
-          return embedding.data[0].embedding
-        },
-      }
-    }
-    case 'ollama/bge-m3': {
-      const openai = new NoStainlessOpenAI({
-        apiKey: '',
-        dangerouslyAllowBrowser: true,
-        baseURL: `${ollamaBaseUrl}/v1`,
-      })
-      return {
-        id: 'ollama/bge-m3',
-        dimension: 1024,
-        getEmbedding: async (text: string) => {
-          if (!ollamaBaseUrl) {
-            throw new LLMBaseUrlNotSetException(
-              'Ollama Address is missing. Please set it in settings menu.',
-            )
-          }
-          const embedding = await openai.embeddings.create({
-            model: 'bge-m3',
+            model: embeddingModel.model,
             input: text,
           })
           return embedding.data[0].embedding
@@ -180,6 +127,8 @@ export const getEmbeddingModel = (
       }
     }
     default:
-      throw new Error('Invalid embedding model')
+      throw new Error(
+        `Embedding model is not supported for provider type: ${embeddingProvider.type}`,
+      )
   }
 }

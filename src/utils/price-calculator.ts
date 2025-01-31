@@ -4,7 +4,7 @@ import {
   GROQ_PRICES,
   OPENAI_PRICES,
 } from '../constants'
-import { LLMModel } from '../types/llm/model'
+import { ChatModel } from '../types/chat-model.types'
 import { ResponseUsage } from '../types/llm/response'
 
 // Returns the cost in dollars. Returns null if the model is not supported.
@@ -12,10 +12,10 @@ export const calculateLLMCost = ({
   model,
   usage,
 }: {
-  model: LLMModel
+  model: ChatModel
   usage: ResponseUsage
 }): number | null => {
-  switch (model.provider) {
+  switch (model.providerType) {
     case 'openai': {
       const modelPricing = OPENAI_PRICES[model.model]
       if (!modelPricing) return null

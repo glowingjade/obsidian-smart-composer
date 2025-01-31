@@ -4,6 +4,7 @@ import { ModelOption } from './types/llm/model'
 export const CHAT_VIEW_TYPE = 'smtcmp-chat-view'
 export const APPLY_VIEW_TYPE = 'smtcmp-apply-view'
 
+// TODO: remove this
 export const CHAT_MODEL_OPTIONS: ModelOption[] = [
   {
     id: 'anthropic/claude-3.5-sonnet-latest',

@@ -46,53 +46,53 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
       },
     })
 
-    new Setting(containerEl).setName('OpenAI API key').addText((text) =>
-      text
-        .setPlaceholder('Enter your API key')
-        .setValue(this.plugin.settings.openAIApiKey)
-        .onChange(async (value) => {
-          await this.plugin.setSettings({
-            ...this.plugin.settings,
-            openAIApiKey: value,
-          })
-        }),
-    )
+    // new Setting(containerEl).setName('OpenAI API key').addText((text) =>
+    //   text
+    //     .setPlaceholder('Enter your API key')
+    //     .setValue(this.plugin.settings.openAIApiKey)
+    //     .onChange(async (value) => {
+    //       await this.plugin.setSettings({
+    //         ...this.plugin.settings,
+    //         openAIApiKey: value,
+    //       })
+    //     }),
+    // )
 
-    new Setting(containerEl).setName('Anthropic API key').addText((text) =>
-      text
-        .setPlaceholder('Enter your API key')
-        .setValue(this.plugin.settings.anthropicApiKey)
-        .onChange(async (value) => {
-          await this.plugin.setSettings({
-            ...this.plugin.settings,
-            anthropicApiKey: value,
-          })
-        }),
-    )
+    // new Setting(containerEl).setName('Anthropic API key').addText((text) =>
+    //   text
+    //     .setPlaceholder('Enter your API key')
+    //     .setValue(this.plugin.settings.anthropicApiKey)
+    //     .onChange(async (value) => {
+    //       await this.plugin.setSettings({
+    //         ...this.plugin.settings,
+    //         anthropicApiKey: value,
+    //       })
+    //     }),
+    // )
 
-    new Setting(containerEl).setName('Gemini API key').addText((text) =>
-      text
-        .setPlaceholder('Enter your API key')
-        .setValue(this.plugin.settings.geminiApiKey)
-        .onChange(async (value) => {
-          await this.plugin.setSettings({
-            ...this.plugin.settings,
-            geminiApiKey: value,
-          })
-        }),
-    )
+    // new Setting(containerEl).setName('Gemini API key').addText((text) =>
+    //   text
+    //     .setPlaceholder('Enter your API key')
+    //     .setValue(this.plugin.settings.geminiApiKey)
+    //     .onChange(async (value) => {
+    //       await this.plugin.setSettings({
+    //         ...this.plugin.settings,
+    //         geminiApiKey: value,
+    //       })
+    //     }),
+    // )
 
-    new Setting(containerEl).setName('Groq API key').addText((text) =>
-      text
-        .setPlaceholder('Enter your API key')
-        .setValue(this.plugin.settings.groqApiKey)
-        .onChange(async (value) => {
-          await this.plugin.setSettings({
-            ...this.plugin.settings,
-            groqApiKey: value,
-          })
-        }),
-    )
+    // new Setting(containerEl).setName('Groq API key').addText((text) =>
+    //   text
+    //     .setPlaceholder('Enter your API key')
+    //     .setValue(this.plugin.settings.groqApiKey)
+    //     .onChange(async (value) => {
+    //       await this.plugin.setSettings({
+    //         ...this.plugin.settings,
+    //         groqApiKey: value,
+    //       })
+    //     }),
+    // )
   }
 
   renderModelSection(containerEl: HTMLElement): void {
@@ -119,12 +119,12 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
             this.display()
           }),
       )
-    if (this.plugin.settings.chatModelId === 'ollama') {
-      this.renderOllamaChatModelSettings(containerEl)
-    }
-    if (this.plugin.settings.chatModelId === 'openai-compatible') {
-      this.renderOpenAICompatibleChatModelSettings(containerEl)
-    }
+    // if (this.plugin.settings.chatModelId === 'ollama') {
+    //   this.renderOllamaChatModelSettings(containerEl)
+    // }
+    // if (this.plugin.settings.chatModelId === 'openai-compatible') {
+    //   this.renderOpenAICompatibleChatModelSettings(containerEl)
+    // }
 
     new Setting(containerEl)
       .setName('Apply model')
@@ -150,12 +150,12 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
             this.display()
           }),
       )
-    if (this.plugin.settings.applyModelId === 'ollama') {
-      this.renderOllamaApplyModelSettings(containerEl)
-    }
-    if (this.plugin.settings.applyModelId === 'openai-compatible') {
-      this.renderOpenAICompatibleApplyModelSettings(containerEl)
-    }
+    // if (this.plugin.settings.applyModelId === 'ollama') {
+    //   this.renderOllamaApplyModelSettings(containerEl)
+    // }
+    // if (this.plugin.settings.applyModelId === 'openai-compatible') {
+    //   this.renderOpenAICompatibleApplyModelSettings(containerEl)
+    // }
 
     new Setting(containerEl)
       .setName('Embedding model')
@@ -181,9 +181,9 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
             this.display()
           }),
       )
-    if (this.plugin.settings.embeddingModelId.startsWith('ollama/')) {
-      this.renderOllamaEmbeddingModelSettings(containerEl)
-    }
+    // if (this.plugin.settings.embeddingModelId.startsWith('ollama/')) {
+    //   this.renderOllamaEmbeddingModelSettings(containerEl)
+    // }
 
     new Setting(containerEl)
       .setHeading()
@@ -204,299 +204,299 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
       )
   }
 
-  renderOllamaChatModelSettings(containerEl: HTMLElement): void {
-    const ollamaContainer = containerEl.createDiv(
-      'smtcmp-settings-model-container',
-    )
-    let modelDropdown: DropdownComponent | null = null // Store reference to the dropdown
+  // renderOllamaChatModelSettings(containerEl: HTMLElement): void {
+  //   const ollamaContainer = containerEl.createDiv(
+  //     'smtcmp-settings-model-container',
+  //   )
+  //   let modelDropdown: DropdownComponent | null = null // Store reference to the dropdown
 
-    // Base URL Setting
-    new Setting(ollamaContainer)
-      .setName('Base URL')
-      .setDesc(
-        'The API endpoint for your Ollama service (e.g., http://127.0.0.1:11434)',
-      )
-      .addText((text) => {
-        text
-          .setPlaceholder('http://127.0.0.1:11434')
-          .setValue(this.plugin.settings.ollamaChatModel.baseUrl || '')
-          .onChange(async (value) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              ollamaChatModel: {
-                ...this.plugin.settings.ollamaChatModel,
-                baseUrl: value,
-              },
-            })
-            if (modelDropdown) {
-              await this.updateOllamaModelOptions({
-                baseUrl: value,
-                dropdown: modelDropdown,
-                onModelChange: async (model: string) => {
-                  await this.plugin.setSettings({
-                    ...this.plugin.settings,
-                    ollamaChatModel: {
-                      ...this.plugin.settings.ollamaChatModel,
-                      model,
-                    },
-                  })
-                },
-              })
-            }
-          })
-      })
+  //   // Base URL Setting
+  //   new Setting(ollamaContainer)
+  //     .setName('Base URL')
+  //     .setDesc(
+  //       'The API endpoint for your Ollama service (e.g., http://127.0.0.1:11434)',
+  //     )
+  //     .addText((text) => {
+  //       text
+  //         .setPlaceholder('http://127.0.0.1:11434')
+  //         .setValue(this.plugin.settings.ollamaChatModel.baseUrl || '')
+  //         .onChange(async (value) => {
+  //           await this.plugin.setSettings({
+  //             ...this.plugin.settings,
+  //             ollamaChatModel: {
+  //               ...this.plugin.settings.ollamaChatModel,
+  //               baseUrl: value,
+  //             },
+  //           })
+  //           if (modelDropdown) {
+  //             await this.updateOllamaModelOptions({
+  //               baseUrl: value,
+  //               dropdown: modelDropdown,
+  //               onModelChange: async (model: string) => {
+  //                 await this.plugin.setSettings({
+  //                   ...this.plugin.settings,
+  //                   ollamaChatModel: {
+  //                     ...this.plugin.settings.ollamaChatModel,
+  //                     model,
+  //                   },
+  //                 })
+  //               },
+  //             })
+  //           }
+  //         })
+  //     })
 
-    // Model Setting
-    new Setting(ollamaContainer)
-      .setName('Model Name')
-      .setDesc('Select a model from your Ollama instance')
-      .addDropdown(async (dropdown) => {
-        const currentModel = this.plugin.settings.ollamaChatModel.model
-        modelDropdown = dropdown
-          .addOption(currentModel, currentModel)
-          .setValue(currentModel)
-        await this.updateOllamaModelOptions({
-          baseUrl: this.plugin.settings.ollamaChatModel.baseUrl,
-          dropdown,
-          onModelChange: async (model: string) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              ollamaChatModel: {
-                ...this.plugin.settings.ollamaChatModel,
-                model,
-              },
-            })
-          },
-        })
-      })
-  }
+  //   // Model Setting
+  //   new Setting(ollamaContainer)
+  //     .setName('Model Name')
+  //     .setDesc('Select a model from your Ollama instance')
+  //     .addDropdown(async (dropdown) => {
+  //       const currentModel = this.plugin.settings.ollamaChatModel.model
+  //       modelDropdown = dropdown
+  //         .addOption(currentModel, currentModel)
+  //         .setValue(currentModel)
+  //       await this.updateOllamaModelOptions({
+  //         baseUrl: this.plugin.settings.ollamaChatModel.baseUrl,
+  //         dropdown,
+  //         onModelChange: async (model: string) => {
+  //           await this.plugin.setSettings({
+  //             ...this.plugin.settings,
+  //             ollamaChatModel: {
+  //               ...this.plugin.settings.ollamaChatModel,
+  //               model,
+  //             },
+  //           })
+  //         },
+  //       })
+  //     })
+  // }
 
-  renderOpenAICompatibleChatModelSettings(containerEl: HTMLElement): void {
-    const openAICompatContainer = containerEl.createDiv(
-      'smtcmp-settings-model-container',
-    )
+  // renderOpenAICompatibleChatModelSettings(containerEl: HTMLElement): void {
+  //   const openAICompatContainer = containerEl.createDiv(
+  //     'smtcmp-settings-model-container',
+  //   )
 
-    new Setting(openAICompatContainer)
-      .setName('Base URL')
-      .setDesc(
-        'The API endpoint for your OpenAI-compatible service (e.g., https://api.example.com/v1)',
-      )
-      .addText((text) =>
-        text
-          .setPlaceholder('https://api.example.com/v1')
-          .setValue(
-            this.plugin.settings.openAICompatibleChatModel.baseUrl || '',
-          )
-          .onChange(async (value) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              openAICompatibleChatModel: {
-                ...this.plugin.settings.openAICompatibleChatModel,
-                baseUrl: value,
-              },
-            })
-          }),
-      )
+  //   new Setting(openAICompatContainer)
+  //     .setName('Base URL')
+  //     .setDesc(
+  //       'The API endpoint for your OpenAI-compatible service (e.g., https://api.example.com/v1)',
+  //     )
+  //     .addText((text) =>
+  //       text
+  //         .setPlaceholder('https://api.example.com/v1')
+  //         .setValue(
+  //           this.plugin.settings.openAICompatibleChatModel.baseUrl || '',
+  //         )
+  //         .onChange(async (value) => {
+  //           await this.plugin.setSettings({
+  //             ...this.plugin.settings,
+  //             openAICompatibleChatModel: {
+  //               ...this.plugin.settings.openAICompatibleChatModel,
+  //               baseUrl: value,
+  //             },
+  //           })
+  //         }),
+  //     )
 
-    new Setting(openAICompatContainer)
-      .setName('API Key')
-      .setDesc('Your authentication key for the OpenAI-compatible service')
-      .addText((text) =>
-        text
-          .setPlaceholder('Enter your API key')
-          .setValue(this.plugin.settings.openAICompatibleChatModel.apiKey || '')
-          .onChange(async (value) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              openAICompatibleChatModel: {
-                ...this.plugin.settings.openAICompatibleChatModel,
-                apiKey: value,
-              },
-            })
-          }),
-      )
+  //   new Setting(openAICompatContainer)
+  //     .setName('API Key')
+  //     .setDesc('Your authentication key for the OpenAI-compatible service')
+  //     .addText((text) =>
+  //       text
+  //         .setPlaceholder('Enter your API key')
+  //         .setValue(this.plugin.settings.openAICompatibleChatModel.apiKey || '')
+  //         .onChange(async (value) => {
+  //           await this.plugin.setSettings({
+  //             ...this.plugin.settings,
+  //             openAICompatibleChatModel: {
+  //               ...this.plugin.settings.openAICompatibleChatModel,
+  //               apiKey: value,
+  //             },
+  //           })
+  //         }),
+  //     )
 
-    new Setting(openAICompatContainer)
-      .setName('Model Name')
-      .setDesc(
-        'The specific model to use with your service (e.g., llama-3.1-70b, mixtral-8x7b)',
-      )
-      .addText((text) =>
-        text
-          .setPlaceholder('llama-3.1-70b')
-          .setValue(this.plugin.settings.openAICompatibleChatModel.model || '')
-          .onChange(async (value) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              openAICompatibleChatModel: {
-                ...this.plugin.settings.openAICompatibleChatModel,
-                model: value,
-              },
-            })
-          }),
-      )
-  }
+  //   new Setting(openAICompatContainer)
+  //     .setName('Model Name')
+  //     .setDesc(
+  //       'The specific model to use with your service (e.g., llama-3.1-70b, mixtral-8x7b)',
+  //     )
+  //     .addText((text) =>
+  //       text
+  //         .setPlaceholder('llama-3.1-70b')
+  //         .setValue(this.plugin.settings.openAICompatibleChatModel.model || '')
+  //         .onChange(async (value) => {
+  //           await this.plugin.setSettings({
+  //             ...this.plugin.settings,
+  //             openAICompatibleChatModel: {
+  //               ...this.plugin.settings.openAICompatibleChatModel,
+  //               model: value,
+  //             },
+  //           })
+  //         }),
+  //     )
+  // }
 
-  renderOllamaApplyModelSettings(containerEl: HTMLElement): void {
-    const ollamaContainer = containerEl.createDiv(
-      'smtcmp-settings-model-container',
-    )
-    let modelDropdown: DropdownComponent | null = null // Store reference to the dropdown
+  // renderOllamaApplyModelSettings(containerEl: HTMLElement): void {
+  //   const ollamaContainer = containerEl.createDiv(
+  //     'smtcmp-settings-model-container',
+  //   )
+  //   let modelDropdown: DropdownComponent | null = null // Store reference to the dropdown
 
-    // Base URL Setting
-    new Setting(ollamaContainer)
-      .setName('Base URL')
-      .setDesc(
-        'The API endpoint for your Ollama service (e.g., http://127.0.0.1:11434)',
-      )
-      .addText((text) => {
-        text
-          .setPlaceholder('http://127.0.0.1:11434')
-          .setValue(this.plugin.settings.ollamaApplyModel.baseUrl || '')
-          .onChange(async (value) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              ollamaApplyModel: {
-                ...this.plugin.settings.ollamaApplyModel,
-                baseUrl: value,
-              },
-            })
-            if (modelDropdown) {
-              await this.updateOllamaModelOptions({
-                baseUrl: value,
-                dropdown: modelDropdown,
-                onModelChange: async (model: string) => {
-                  await this.plugin.setSettings({
-                    ...this.plugin.settings,
-                    ollamaApplyModel: {
-                      ...this.plugin.settings.ollamaApplyModel,
-                      model,
-                    },
-                  })
-                },
-              })
-            }
-          })
-      })
+  //   // Base URL Setting
+  //   new Setting(ollamaContainer)
+  //     .setName('Base URL')
+  //     .setDesc(
+  //       'The API endpoint for your Ollama service (e.g., http://127.0.0.1:11434)',
+  //     )
+  //     .addText((text) => {
+  //       text
+  //         .setPlaceholder('http://127.0.0.1:11434')
+  //         .setValue(this.plugin.settings.ollamaApplyModel.baseUrl || '')
+  //         .onChange(async (value) => {
+  //           await this.plugin.setSettings({
+  //             ...this.plugin.settings,
+  //             ollamaApplyModel: {
+  //               ...this.plugin.settings.ollamaApplyModel,
+  //               baseUrl: value,
+  //             },
+  //           })
+  //           if (modelDropdown) {
+  //             await this.updateOllamaModelOptions({
+  //               baseUrl: value,
+  //               dropdown: modelDropdown,
+  //               onModelChange: async (model: string) => {
+  //                 await this.plugin.setSettings({
+  //                   ...this.plugin.settings,
+  //                   ollamaApplyModel: {
+  //                     ...this.plugin.settings.ollamaApplyModel,
+  //                     model,
+  //                   },
+  //                 })
+  //               },
+  //             })
+  //           }
+  //         })
+  //     })
 
-    // Model Setting
-    new Setting(ollamaContainer)
-      .setName('Model Name')
-      .setDesc('Select a model from your Ollama instance')
-      .addDropdown(async (dropdown) => {
-        const currentModel = this.plugin.settings.ollamaApplyModel.model
-        modelDropdown = dropdown
-          .addOption(currentModel, currentModel)
-          .setValue(currentModel)
-        await this.updateOllamaModelOptions({
-          baseUrl: this.plugin.settings.ollamaApplyModel.baseUrl,
-          dropdown,
-          onModelChange: async (model: string) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              ollamaApplyModel: {
-                ...this.plugin.settings.ollamaApplyModel,
-                model,
-              },
-            })
-          },
-        })
-      })
-  }
+  //   // Model Setting
+  //   new Setting(ollamaContainer)
+  //     .setName('Model Name')
+  //     .setDesc('Select a model from your Ollama instance')
+  //     .addDropdown(async (dropdown) => {
+  //       const currentModel = this.plugin.settings.ollamaApplyModel.model
+  //       modelDropdown = dropdown
+  //         .addOption(currentModel, currentModel)
+  //         .setValue(currentModel)
+  //       await this.updateOllamaModelOptions({
+  //         baseUrl: this.plugin.settings.ollamaApplyModel.baseUrl,
+  //         dropdown,
+  //         onModelChange: async (model: string) => {
+  //           await this.plugin.setSettings({
+  //             ...this.plugin.settings,
+  //             ollamaApplyModel: {
+  //               ...this.plugin.settings.ollamaApplyModel,
+  //               model,
+  //             },
+  //           })
+  //         },
+  //       })
+  //     })
+  // }
 
-  renderOpenAICompatibleApplyModelSettings(containerEl: HTMLElement): void {
-    const openAICompatContainer = containerEl.createDiv(
-      'smtcmp-settings-model-container',
-    )
+  // renderOpenAICompatibleApplyModelSettings(containerEl: HTMLElement): void {
+  //   const openAICompatContainer = containerEl.createDiv(
+  //     'smtcmp-settings-model-container',
+  //   )
 
-    new Setting(openAICompatContainer)
-      .setName('Base URL')
-      .setDesc(
-        'The API endpoint for your OpenAI-compatible service (e.g., https://api.example.com/v1)',
-      )
-      .addText((text) =>
-        text
-          .setPlaceholder('https://api.example.com/v1')
-          .setValue(
-            this.plugin.settings.openAICompatibleApplyModel.baseUrl || '',
-          )
-          .onChange(async (value) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              openAICompatibleApplyModel: {
-                ...this.plugin.settings.openAICompatibleApplyModel,
-                baseUrl: value,
-              },
-            })
-          }),
-      )
+  //   new Setting(openAICompatContainer)
+  //     .setName('Base URL')
+  //     .setDesc(
+  //       'The API endpoint for your OpenAI-compatible service (e.g., https://api.example.com/v1)',
+  //     )
+  //     .addText((text) =>
+  //       text
+  //         .setPlaceholder('https://api.example.com/v1')
+  //         .setValue(
+  //           this.plugin.settings.openAICompatibleApplyModel.baseUrl || '',
+  //         )
+  //         .onChange(async (value) => {
+  //           await this.plugin.setSettings({
+  //             ...this.plugin.settings,
+  //             openAICompatibleApplyModel: {
+  //               ...this.plugin.settings.openAICompatibleApplyModel,
+  //               baseUrl: value,
+  //             },
+  //           })
+  //         }),
+  //     )
 
-    new Setting(openAICompatContainer)
-      .setName('API Key')
-      .setDesc('Your authentication key for the OpenAI-compatible service')
-      .addText((text) =>
-        text
-          .setPlaceholder('Enter your API key')
-          .setValue(
-            this.plugin.settings.openAICompatibleApplyModel.apiKey || '',
-          )
-          .onChange(async (value) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              openAICompatibleApplyModel: {
-                ...this.plugin.settings.openAICompatibleApplyModel,
-                apiKey: value,
-              },
-            })
-          }),
-      )
+  //   new Setting(openAICompatContainer)
+  //     .setName('API Key')
+  //     .setDesc('Your authentication key for the OpenAI-compatible service')
+  //     .addText((text) =>
+  //       text
+  //         .setPlaceholder('Enter your API key')
+  //         .setValue(
+  //           this.plugin.settings.openAICompatibleApplyModel.apiKey || '',
+  //         )
+  //         .onChange(async (value) => {
+  //           await this.plugin.setSettings({
+  //             ...this.plugin.settings,
+  //             openAICompatibleApplyModel: {
+  //               ...this.plugin.settings.openAICompatibleApplyModel,
+  //               apiKey: value,
+  //             },
+  //           })
+  //         }),
+  //     )
 
-    new Setting(openAICompatContainer)
-      .setName('Model Name')
-      .setDesc(
-        'The specific model to use with your service (e.g., llama-3.1-70b, mixtral-8x7b)',
-      )
-      .addText((text) =>
-        text
-          .setPlaceholder('llama-3.1-70b')
-          .setValue(this.plugin.settings.openAICompatibleApplyModel.model || '')
-          .onChange(async (value) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              openAICompatibleApplyModel: {
-                ...this.plugin.settings.openAICompatibleApplyModel,
-                model: value,
-              },
-            })
-          }),
-      )
-  }
+  //   new Setting(openAICompatContainer)
+  //     .setName('Model Name')
+  //     .setDesc(
+  //       'The specific model to use with your service (e.g., llama-3.1-70b, mixtral-8x7b)',
+  //     )
+  //     .addText((text) =>
+  //       text
+  //         .setPlaceholder('llama-3.1-70b')
+  //         .setValue(this.plugin.settings.openAICompatibleApplyModel.model || '')
+  //         .onChange(async (value) => {
+  //           await this.plugin.setSettings({
+  //             ...this.plugin.settings,
+  //             openAICompatibleApplyModel: {
+  //               ...this.plugin.settings.openAICompatibleApplyModel,
+  //               model: value,
+  //             },
+  //           })
+  //         }),
+  //     )
+  // }
 
-  renderOllamaEmbeddingModelSettings(containerEl: HTMLElement): void {
-    const ollamaContainer = containerEl.createDiv(
-      'smtcmp-settings-model-container',
-    )
+  // renderOllamaEmbeddingModelSettings(containerEl: HTMLElement): void {
+  //   const ollamaContainer = containerEl.createDiv(
+  //     'smtcmp-settings-model-container',
+  //   )
 
-    new Setting(ollamaContainer)
-      .setName('Base URL')
-      .setDesc(
-        'The API endpoint for your Ollama service (e.g., http://127.0.0.1:11434)',
-      )
-      .addText((text) =>
-        text
-          .setPlaceholder('http://127.0.0.1:11434')
-          .setValue(this.plugin.settings.ollamaEmbeddingModel.baseUrl || '')
-          .onChange(async (value) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              ollamaEmbeddingModel: {
-                ...this.plugin.settings.ollamaEmbeddingModel,
-                baseUrl: value,
-              },
-            })
-          }),
-      )
-  }
+  //   new Setting(ollamaContainer)
+  //     .setName('Base URL')
+  //     .setDesc(
+  //       'The API endpoint for your Ollama service (e.g., http://127.0.0.1:11434)',
+  //     )
+  //     .addText((text) =>
+  //       text
+  //         .setPlaceholder('http://127.0.0.1:11434')
+  //         .setValue(this.plugin.settings.ollamaEmbeddingModel.baseUrl || '')
+  //         .onChange(async (value) => {
+  //           await this.plugin.setSettings({
+  //             ...this.plugin.settings,
+  //             ollamaEmbeddingModel: {
+  //               ...this.plugin.settings.ollamaEmbeddingModel,
+  //               baseUrl: value,
+  //             },
+  //           })
+  //         }),
+  //     )
+  // }
 
   renderRAGSection(containerEl: HTMLElement): void {
     new Setting(containerEl).setHeading().setName('RAG')

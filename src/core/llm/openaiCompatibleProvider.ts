@@ -1,6 +1,6 @@
 import OpenAI from 'openai'
 
-import { OpenAICompatibleModel } from '../../types/llm/model'
+import { ChatModel } from '../../types/chat-model.types'
 import {
   LLMOptions,
   LLMRequestNonStreaming,
@@ -10,24 +10,36 @@ import {
   LLMResponseNonStreaming,
   LLMResponseStreaming,
 } from '../../types/llm/response'
+import { LLMProvider } from '../../types/provider.types'
 
 import { BaseLLMProvider } from './base'
 import { LLMBaseUrlNotSetException, LLMModelNotSetException } from './exception'
 import { OpenAIMessageAdapter } from './openaiMessageAdapter'
 
-export class OpenAICompatibleProvider implements BaseLLMProvider {
+export class OpenAICompatibleProvider extends BaseLLMProvider {
   private adapter: OpenAIMessageAdapter
+  private client: OpenAI
 
-  constructor() {
+  constructor(provider: Extract<LLMProvider, { type: 'openai-compatible' }>) {
+    super(provider)
     this.adapter = new OpenAIMessageAdapter()
+    this.client = new OpenAI({
+      apiKey: provider.apiKey ?? '',
+      baseURL: provider.baseUrl ?? '',
+      dangerouslyAllowBrowser: true,
+    })
   }
 
   async generateResponse(
-    model: OpenAICompatibleModel,
+    model: ChatModel,
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
-    if (!model.baseURL) {
+    if (model.providerType !== 'openai-compatible') {
+      throw new Error('Model is not an OpenAI Compatible model')
+    }
+
+    if (!this.provider.baseUrl) {
       throw new LLMBaseUrlNotSetException(
         'OpenAI Compatible base URL is missing. Please set it in settings menu.',
       )
@@ -39,20 +51,19 @@ export class OpenAICompatibleProvider implements BaseLLMProvider {
       )
     }
 
-    const client = new OpenAI({
-      apiKey: model.apiKey,
-      baseURL: model.baseURL,
-      dangerouslyAllowBrowser: true,
-    })
-    return this.adapter.generateResponse(client, request, options)
+    return this.adapter.generateResponse(this.client, request, options)
   }
 
   async streamResponse(
-    model: OpenAICompatibleModel,
+    model: ChatModel,
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
-    if (!model.baseURL) {
+    if (model.providerType !== 'openai-compatible') {
+      throw new Error('Model is not an OpenAI Compatible model')
+    }
+
+    if (!this.provider.baseUrl) {
       throw new LLMBaseUrlNotSetException(
         'OpenAI Compatible base URL is missing. Please set it in settings menu.',
       )
@@ -64,11 +75,6 @@ export class OpenAICompatibleProvider implements BaseLLMProvider {
       )
     }
 
-    const client = new OpenAI({
-      apiKey: model.apiKey,
-      baseURL: model.baseURL,
-      dangerouslyAllowBrowser: true,
-    })
-    return this.adapter.streamResponse(client, request, options)
+    return this.adapter.streamResponse(this.client, request, options)
   }
 }
