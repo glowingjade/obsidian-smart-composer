@@ -24,7 +24,7 @@ import {
   LLMBaseUrlNotSetException,
   LLMModelNotSetException,
 } from '../../core/llm/exception'
-import { useChatHistory } from '../../hooks/useChatHistory'
+import { useChatManager } from '../../hooks/useChatManager'
 import { ChatMessage, ChatUserMessage } from '../../types/chat'
 import {
   MentionableBlock,
@@ -80,12 +80,12 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const { getRAGEngine } = useRAG()
 
   const {
-    createOrUpdateConversation,
-    deleteConversation,
+    createOrUpdateChat,
+    deleteChat,
     getChatMessagesById,
-    updateConversationTitle,
-    chatList,
-  } = useChatHistory()
+    updateChatTitle,
+    chatIndexList,
+  } = useChatManager()
   const { generateResponse, streamResponse, chatModel, applyModel } = useLLM()
 
   const promptGenerator = useMemo(() => {
@@ -117,8 +117,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   )
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
   const [focusedMessageId, setFocusedMessageId] = useState<string | null>(null)
-  const [currentConversationId, setCurrentConversationId] =
-    useState<string>(uuidv4())
+  const [currentChatId, setCurrentChatId] = useState<string>(uuidv4())
   const [queryProgress, setQueryProgress] = useState<QueryProgressState>({
     type: 'idle',
   })
@@ -177,15 +176,15 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     activeStreamAbortControllersRef.current = []
   }
 
-  const handleLoadConversation = async (conversationId: string) => {
+  const handleLoadChat = async (chatId: string) => {
     try {
       abortActiveStreams()
-      const conversation = await getChatMessagesById(conversationId)
-      if (!conversation) {
-        throw new Error('Conversation not found')
+      const chat = await getChatMessagesById(chatId)
+      if (!chat) {
+        throw new Error('Chat not found')
       }
-      setCurrentConversationId(conversationId)
-      setChatMessages(conversation)
+      setCurrentChatId(chatId)
+      setChatMessages(chat)
       const newInputMessage = getNewInputMessage(app)
       setInputMessage(newInputMessage)
       setFocusedMessageId(newInputMessage.id)
@@ -193,13 +192,13 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         type: 'idle',
       })
     } catch (error) {
-      new Notice('Failed to load conversation')
-      console.error('Failed to load conversation', error)
+      new Notice('Failed to load chat')
+      console.error('Failed to load chat', error)
     }
   }
 
   const handleNewChat = (selectedBlock?: MentionableBlockData) => {
-    setCurrentConversationId(uuidv4())
+    setCurrentChatId(uuidv4())
     setChatMessages([])
     const newInputMessage = getNewInputMessage(app)
     if (selectedBlock) {
@@ -408,18 +407,18 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   }, [])
 
   useEffect(() => {
-    const updateConversationAsync = async () => {
+    const updateChatAsync = async () => {
       try {
         if (chatMessages.length > 0) {
-          createOrUpdateConversation(currentConversationId, chatMessages)
+          createOrUpdateChat(currentChatId, chatMessages)
         }
       } catch (error) {
         new Notice('Failed to save chat history')
         console.error('Failed to save chat history', error)
       }
     }
-    updateConversationAsync()
-  }, [currentConversationId, chatMessages, createOrUpdateConversation])
+    updateChatAsync()
+  }, [currentChatId, chatMessages, createOrUpdateChat])
 
   // Updates the currentFile of the focused message (input or chat history)
   // This happens when active file changes or focused message changes
@@ -544,27 +543,27 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
             <Plus size={18} />
           </button>
           <ChatListDropdown
-            chatList={chatList}
-            currentConversationId={currentConversationId}
-            onSelect={async (conversationId) => {
-              if (conversationId === currentConversationId) return
-              await handleLoadConversation(conversationId)
+            chatIndexList={chatIndexList}
+            currentChatId={currentChatId}
+            onSelect={async (chatId) => {
+              if (chatId === currentChatId) return
+              await handleLoadChat(chatId)
             }}
-            onDelete={async (conversationId) => {
-              await deleteConversation(conversationId)
-              if (conversationId === currentConversationId) {
-                const nextConversation = chatList.find(
-                  (chat) => chat.id !== conversationId,
+            onDelete={async (chatId) => {
+              await deleteChat(chatId)
+              if (chatId === currentChatId) {
+                const nextChat = chatIndexList.find(
+                  (chat) => chat.id !== chatId,
                 )
-                if (nextConversation) {
-                  void handleLoadConversation(nextConversation.id)
+                if (nextChat) {
+                  void handleLoadChat(nextChat.id)
                 } else {
                   handleNewChat()
                 }
               }
             }}
-            onUpdateTitle={async (conversationId, newTitle) => {
-              await updateConversationTitle(conversationId, newTitle)
+            onUpdateTitle={async (chatId, newTitle) => {
+              await updateChatTitle(chatId, newTitle)
             }}
             className="smtcmp-chat-list-dropdown"
           >

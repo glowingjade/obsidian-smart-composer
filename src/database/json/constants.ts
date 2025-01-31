@@ -1,0 +1,21 @@
+import { m0000_InitChatDb } from './migrations/0000_init_chat_db'
+import { m0001_InitTemplateDb } from './migrations/0001_init_template_db'
+
+export const DB_ROOT = '.smtcmp_json_db'
+
+export const CHAT = {
+  ROOT_DIR: 'chats',
+  INDEX_FILE: 'index.json',
+  DOCUMENTS_DIR: 'documents',
+  SCHEMA_VERSION: 2,
+} as const
+
+export const TEMPLATE = {
+  ROOT_DIR: 'templates',
+  INDEX_FILE: 'index.json',
+  DOCUMENTS_DIR: 'documents',
+  SCHEMA_VERSION: 1,
+} as const
+
+export const MIGRATIONS_FILE = '_migrations.json'
+export const MIGRATIONS = [m0000_InitChatDb, m0001_InitTemplateDb]

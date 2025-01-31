@@ -5,71 +5,63 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { editorStateToPlainText } from '../components/chat-view/chat-input/utils/editor-state-to-plain-text'
 import { useApp } from '../contexts/app-context'
-import {
-  ChatConversationMeta,
-  ChatMessage,
-  SerializedChatMessage,
-} from '../types/chat'
+import { ChatManager } from '../database/json/models/chat'
+import { ChatIndex } from '../database/json/schemas/chat'
+import { ChatMessage, SerializedChatMessage } from '../types/chat'
 import { Mentionable } from '../types/mentionable'
-import { ChatConversationManager } from '../utils/chatHistoryManager'
 import {
   deserializeMentionable,
   serializeMentionable,
 } from '../utils/mentionable'
 
-type UseChatHistory = {
-  createOrUpdateConversation: (
+type UseChatManagerReturn = {
+  createOrUpdateChat: (
     id: string,
     messages: ChatMessage[],
   ) => Promise<void> | undefined
-  deleteConversation: (id: string) => Promise<void>
+  deleteChat: (id: string) => Promise<void>
   getChatMessagesById: (id: string) => Promise<ChatMessage[] | null>
-  updateConversationTitle: (id: string, title: string) => Promise<void>
-  chatList: ChatConversationMeta[]
+  updateChatTitle: (id: string, title: string) => Promise<void>
+  chatIndexList: ChatIndex[]
 }
 
-export function useChatHistory(): UseChatHistory {
+export function useChatManager(): UseChatManagerReturn {
   const app = useApp()
-  const chatConversationManager = useMemo(
-    () => new ChatConversationManager(app),
-    [app],
-  )
-  const [chatList, setChatList] = useState<ChatConversationMeta[]>([])
+  const chatManager = useMemo(() => new ChatManager(app), [app])
+  const [chatIndexList, setChatIndexList] = useState<ChatIndex[]>([])
 
-  const fetchChatList = useCallback(async () => {
-    const list = await chatConversationManager.getChatList()
-    setChatList(list)
-  }, [chatConversationManager])
+  const fetchChatIndexList = useCallback(async () => {
+    const list = await chatManager.getIndex()
+    setChatIndexList(list)
+  }, [chatManager])
 
   useEffect(() => {
-    void fetchChatList()
+    void fetchChatIndexList()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const createOrUpdateConversation = useMemo(
+  const createOrUpdateChat = useMemo(
     () =>
       debounce(
         async (id: string, messages: ChatMessage[]): Promise<void> => {
           const serializedMessages = messages.map(serializeChatMessage)
-          const existingConversation =
-            await chatConversationManager.findChatConversation(id)
+          const existingChat = await chatManager.findDocument(id)
 
-          if (existingConversation) {
-            if (isEqual(existingConversation.messages, serializedMessages)) {
+          if (existingChat) {
+            if (isEqual(existingChat.messages, serializedMessages)) {
               return
             }
-            await chatConversationManager.saveChatConversation({
-              ...existingConversation,
+            await chatManager.saveDocument({
+              ...existingChat,
               messages: serializedMessages,
               updatedAt: Date.now(),
             })
           } else {
-            const newConversation =
-              await chatConversationManager.createChatConversation(id)
+            const newChat = await chatManager.createChatDocument(id)
             const firstUserMessage = messages.find((v) => v.role === 'user')
 
-            await chatConversationManager.saveChatConversation({
-              ...newConversation,
+            await chatManager.saveDocument({
+              ...newChat,
               title: firstUserMessage?.content
                 ? editorStateToPlainText(firstUserMessage.content).substring(
                     0,
@@ -81,60 +73,58 @@ export function useChatHistory(): UseChatHistory {
             })
           }
 
-          await fetchChatList()
+          await fetchChatIndexList()
         },
         300,
         {
           maxWait: 1000,
         },
       ),
-    [chatConversationManager, fetchChatList],
+    [chatManager, fetchChatIndexList],
   )
 
-  const deleteConversation = useCallback(
+  const deleteChat = useCallback(
     async (id: string): Promise<void> => {
-      await chatConversationManager.deleteChatConversation(id)
-      await fetchChatList()
+      await chatManager.deleteDocument(id)
+      await fetchChatIndexList()
     },
-    [chatConversationManager, fetchChatList],
+    [chatManager, fetchChatIndexList],
   )
 
   const getChatMessagesById = useCallback(
     async (id: string): Promise<ChatMessage[] | null> => {
-      const conversation =
-        await chatConversationManager.findChatConversation(id)
-      if (!conversation) {
+      const chat = await chatManager.findDocument(id)
+      if (!chat) {
         return null
       }
-      return conversation.messages.map((message) =>
+      return chat.messages.map((message) =>
         deserializeChatMessage(message, app),
       )
     },
-    [chatConversationManager, app],
+    [chatManager, app],
   )
 
-  const updateConversationTitle = useCallback(
+  const updateChatTitle = useCallback(
     async (id: string, title: string): Promise<void> => {
-      const conversation =
-        await chatConversationManager.findChatConversation(id)
-      if (!conversation) {
-        throw new Error('Conversation not found')
+      const chat = await chatManager.findDocument(id)
+      if (!chat) {
+        throw new Error('Chat not found')
       }
-      await chatConversationManager.saveChatConversation({
-        ...conversation,
+      await chatManager.saveDocument({
+        ...chat,
         title,
       })
-      await fetchChatList()
+      await fetchChatIndexList()
     },
-    [chatConversationManager, fetchChatList],
+    [chatManager, fetchChatIndexList],
   )
 
   return {
-    createOrUpdateConversation,
-    deleteConversation,
+    createOrUpdateChat,
+    deleteChat,
     getChatMessagesById,
-    updateConversationTitle,
-    chatList,
+    updateChatTitle,
+    chatIndexList,
   }
 }
 

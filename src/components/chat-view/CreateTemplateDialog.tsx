@@ -5,11 +5,12 @@ import * as Dialog from '@radix-ui/react-dialog'
 import { $insertNodes, LexicalEditor } from 'lexical'
 import { X } from 'lucide-react'
 import { Notice } from 'obsidian'
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
-import { useDatabase } from '../../contexts/database-context'
+import { useApp } from '../../contexts/app-context'
 import { useDialogContainer } from '../../contexts/dialog-container-context'
-import { DuplicateTemplateException } from '../../database/exception'
+import { DuplicateTemplateException } from '../../database/json/exception'
+import { TemplateManager } from '../../database/json/models/template'
 
 import LexicalContentEditable from './chat-input/LexicalContentEditable'
 
@@ -25,8 +26,9 @@ export default function CreateTemplateDialogContent({
   selectedSerializedNodes?: BaseSerializedNode[] | null
   onClose: () => void
 }) {
+  const app = useApp()
   const container = useDialogContainer()
-  const { getTemplateManager } = useDatabase()
+  const templateManager = useMemo(() => new TemplateManager(app), [app])
 
   const [templateName, setTemplateName] = useState('')
   const editorRef = useRef<LexicalEditor | null>(null)
@@ -58,9 +60,7 @@ export default function CreateTemplateDialogContent({
         return
       }
 
-      await (
-        await getTemplateManager()
-      ).createTemplate({
+      await templateManager.createTemplate({
         name: templateName,
         content: { nodes },
       })

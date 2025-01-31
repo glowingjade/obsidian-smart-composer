@@ -50,19 +50,3 @@ export type SerializedChatAssistantMessage = {
 export type SerializedChatMessage =
   | SerializedChatUserMessage
   | SerializedChatAssistantMessage
-
-export type ChatConversation = {
-  schemaVersion: number
-  id: string
-  title: string
-  createdAt: number
-  updatedAt: number
-  messages: SerializedChatMessage[]
-}
-export type ChatConversationMeta = {
-  schemaVersion: number
-  id: string
-  title: string
-  createdAt: number
-  updatedAt: number
-}
