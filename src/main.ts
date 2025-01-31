@@ -6,6 +6,7 @@ import { ChatProps } from './components/chat-view/Chat'
 import { APPLY_VIEW_TYPE, CHAT_VIEW_TYPE } from './constants'
 import { RAGEngine } from './core/rag/ragEngine'
 import { DatabaseManager } from './database/DatabaseManager'
+import { MigrationRunner } from './database/json/migrations/runner'
 import { SmartCopilotSettingTab } from './settings/SettingTab'
 import {
   SmartCopilotSettings,
@@ -25,6 +26,7 @@ export default class SmartCopilotPlugin extends Plugin {
 
   async onload() {
     await this.loadSettings()
+    void this.migrateJsonDb()
 
     this.registerView(CHAT_VIEW_TYPE, (leaf) => new ChatView(leaf, this))
     this.registerView(APPLY_VIEW_TYPE, (leaf) => new ApplyView(leaf))
@@ -230,5 +232,10 @@ export default class SmartCopilotPlugin extends Plugin {
 
     // if initialization is running, wait for it to complete instead of creating a new initialization promise
     return this.ragEngineInitPromise
+  }
+
+  async migrateJsonDb() {
+    const migrationRunner = new MigrationRunner(this.app)
+    await migrationRunner.run()
   }
 }

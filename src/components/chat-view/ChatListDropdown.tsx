@@ -2,7 +2,7 @@ import * as Popover from '@radix-ui/react-popover'
 import { Pencil, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { ChatConversationMeta } from '../../types/chat'
+import { ChatIndex } from '../../database/json/schemas/chat'
 
 function TitleInput({
   title,
@@ -107,19 +107,19 @@ function ChatListItem({
 }
 
 export function ChatListDropdown({
-  chatList,
-  currentConversationId,
+  chatIndexList,
+  currentChatId,
   onSelect,
   onDelete,
   onUpdateTitle,
   className,
   children,
 }: {
-  chatList: ChatConversationMeta[]
-  currentConversationId: string
-  onSelect: (conversationId: string) => Promise<void>
-  onDelete: (conversationId: string) => Promise<void>
-  onUpdateTitle: (conversationId: string, newTitle: string) => Promise<void>
+  chatIndexList: ChatIndex[]
+  currentChatId: string
+  onSelect: (chatId: string) => Promise<void>
+  onDelete: (chatId: string) => Promise<void>
+  onUpdateTitle: (chatId: string, newTitle: string) => Promise<void>
   className?: string
   children: React.ReactNode
 }) {
@@ -129,8 +129,8 @@ export function ChatListDropdown({
 
   useEffect(() => {
     if (open) {
-      const currentIndex = chatList.findIndex(
-        (chat) => chat.id === currentConversationId,
+      const currentIndex = chatIndexList.findIndex(
+        (chat) => chat.id === currentChatId,
       )
       setFocusedIndex(currentIndex === -1 ? 0 : currentIndex)
       setEditingId(null)
@@ -142,13 +142,13 @@ export function ChatListDropdown({
       if (e.key === 'ArrowUp') {
         setFocusedIndex(Math.max(0, focusedIndex - 1))
       } else if (e.key === 'ArrowDown') {
-        setFocusedIndex(Math.min(chatList.length - 1, focusedIndex + 1))
+        setFocusedIndex(Math.min(chatIndexList.length - 1, focusedIndex + 1))
       } else if (e.key === 'Enter') {
-        onSelect(chatList[focusedIndex].id)
+        onSelect(chatIndexList[focusedIndex].id)
         setOpen(false)
       }
     },
-    [chatList, focusedIndex, setFocusedIndex, onSelect],
+    [chatIndexList, focusedIndex, setFocusedIndex, onSelect],
   )
 
   return (
@@ -163,12 +163,10 @@ export function ChatListDropdown({
           onKeyDown={handleKeyDown}
         >
           <ul>
-            {chatList.length === 0 ? (
-              <li className="smtcmp-chat-list-dropdown-empty">
-                No conversations
-              </li>
+            {chatIndexList.length === 0 ? (
+              <li className="smtcmp-chat-list-dropdown-empty">No chats</li>
             ) : (
-              chatList.map((chat, index) => (
+              chatIndexList.map((chat, index) => (
                 <ChatListItem
                   key={chat.id}
                   title={chat.title}
