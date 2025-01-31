@@ -72,8 +72,7 @@ async function migrateLegacyChatToJsonDb(app: App): Promise<void> {
       }
     }
 
-    // FIXME: Remove this after testing
-    // await app.vault.adapter.rmdir(oldChatDir, true)
+    await app.vault.adapter.rmdir(oldChatDir, true)
   } catch (error) {
     console.error('Failed to migrate chat directory:', error)
     throw error
