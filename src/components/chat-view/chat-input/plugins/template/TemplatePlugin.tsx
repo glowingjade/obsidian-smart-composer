@@ -9,8 +9,9 @@ import { Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-import { useDatabase } from '../../../../../contexts/database-context'
-import { SelectTemplate } from '../../../../../database/schema'
+import { useApp } from '../../../../../contexts/app-context'
+import { TemplateManager } from '../../../../../database/json/models/template'
+import { TemplateDocument } from '../../../../../database/json/schemas/template'
 import { MenuOption } from '../shared/LexicalMenu'
 import {
   LexicalTypeaheadMenuPlugin,
@@ -19,9 +20,9 @@ import {
 
 class TemplateTypeaheadOption extends MenuOption {
   name: string
-  template: SelectTemplate
+  template: TemplateDocument
 
-  constructor(name: string, template: SelectTemplate) {
+  constructor(name: string, template: TemplateDocument) {
     super(name)
     this.name = name
     this.template = template
@@ -73,18 +74,18 @@ function TemplateMenuItem({
 }
 
 export default function TemplatePlugin() {
+  const app = useApp()
+  const templateManager = useMemo(() => new TemplateManager(app), [app])
+
   const [editor] = useLexicalComposerContext()
-  const { getTemplateManager } = useDatabase()
 
   const [queryString, setQueryString] = useState<string | null>(null)
-  const [searchResults, setSearchResults] = useState<SelectTemplate[]>([])
+  const [searchResults, setSearchResults] = useState<TemplateDocument[]>([])
 
   useEffect(() => {
     if (queryString == null) return
-    getTemplateManager().then((templateManager) =>
-      templateManager.searchTemplates(queryString).then(setSearchResults),
-    )
-  }, [queryString, getTemplateManager])
+    templateManager.searchTemplates(queryString).then(setSearchResults)
+  }, [queryString, templateManager])
 
   const options = useMemo(
     () =>
@@ -122,15 +123,14 @@ export default function TemplatePlugin() {
 
   const handleDelete = useCallback(
     async (option: TemplateTypeaheadOption) => {
-      await (await getTemplateManager()).deleteTemplate(option.template.id)
+      await templateManager.deleteDocument(option.template.id)
       if (queryString !== null) {
-        const updatedResults = await (
-          await getTemplateManager()
-        ).searchTemplates(queryString)
+        const updatedResults =
+          await templateManager.searchTemplates(queryString)
         setSearchResults(updatedResults)
       }
     },
-    [getTemplateManager, queryString],
+    [templateManager, queryString],
   )
 
   return (

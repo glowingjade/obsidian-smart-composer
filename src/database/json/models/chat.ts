@@ -16,7 +16,8 @@ export class ChatManager extends IndexedFileStorage<ChatDocument, ChatIndex> {
   }
 
   async createChatDocument(id: string): Promise<ChatDocument> {
-    return this.createDocument(id, {
+    return this.createDocument({
+      id,
       title: 'New chat',
       messages: [],
     })

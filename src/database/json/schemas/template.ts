@@ -5,14 +5,19 @@
  * 3. Add the migration to MIGRATIONS array in src/database/json/constants.ts
  */
 
-import { SerializedChatMessage } from '../../../types/chat'
+import { SerializedLexicalNode } from 'lexical'
+
 import { BaseDocument } from '../models/indexedFileStorage'
 
-export type ChatDocument = {
-  title: string
-  messages: SerializedChatMessage[]
+type TemplateContent = {
+  nodes: SerializedLexicalNode[]
+}
+
+export type TemplateDocument = {
+  name: string
+  content: TemplateContent
 } & BaseDocument
 
-export type ChatIndex = {
-  title: string
+export type TemplateIndex = {
+  name: string
 } & BaseDocument

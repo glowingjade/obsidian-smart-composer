@@ -1,4 +1,5 @@
 import { App, normalizePath } from 'obsidian'
+import { v4 as uuidv4 } from 'uuid'
 
 import { DB_ROOT } from '../constants'
 
@@ -28,13 +29,10 @@ export class IndexedFileStorage<
     this.config = config
   }
 
-  async createDocument(
-    id: string,
-    documentData: Partial<TDocument>,
-  ): Promise<TDocument> {
+  async createDocument(documentData: Partial<TDocument>): Promise<TDocument> {
     const newDocument = {
       schemaVersion: this.config.currentSchemaVersion,
-      id,
+      id: uuidv4(),
       createdAt: Date.now(),
       updatedAt: Date.now(),
       ...documentData,
@@ -82,6 +80,20 @@ export class IndexedFileStorage<
       )
     }
     return null
+  }
+
+  async findAllDocuments(): Promise<TDocument[]> {
+    const indexEntries = await this.getIndex()
+    const documents: TDocument[] = []
+
+    for (const entry of indexEntries) {
+      const document = await this.findDocument(entry.id)
+      if (document) {
+        documents.push(document)
+      }
+    }
+
+    return documents
   }
 
   async saveDocument(document: TDocument): Promise<void> {

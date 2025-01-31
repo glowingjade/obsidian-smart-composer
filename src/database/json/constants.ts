@@ -9,5 +9,12 @@ export const CHAT = {
   SCHEMA_VERSION: 2,
 } as const
 
+export const TEMPLATE = {
+  ROOT_DIR: 'templates',
+  INDEX_FILE: 'index.json',
+  DOCUMENTS_DIR: 'documents',
+  SCHEMA_VERSION: 1,
+} as const
+
 export const MIGRATIONS_FILE = '_migrations.json'
 export const MIGRATIONS = [m0000_InitChatDb]
