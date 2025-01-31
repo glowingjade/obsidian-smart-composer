@@ -16,6 +16,7 @@ export class MigrationRunner {
   }
 
   async run(): Promise<void> {
+    await this.ensureJsonDbExists()
     const { appliedMigrations } = await this.readMigrationLog()
 
     for (const migration of this.migrations) {
@@ -61,5 +62,12 @@ export class MigrationRunner {
       this.migrationsPath,
       JSON.stringify(migrationLog),
     )
+  }
+
+  private async ensureJsonDbExists(): Promise<void> {
+    const jsonDbPath = normalizePath(DB_ROOT)
+    if (!(await this.app.vault.adapter.exists(jsonDbPath))) {
+      await this.app.vault.createFolder(jsonDbPath)
+    }
   }
 }
