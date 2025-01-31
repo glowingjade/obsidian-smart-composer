@@ -1,4 +1,5 @@
 import { m0000_InitChatDb } from './migrations/0000_init_chat_db'
+import { m0001_InitTemplateDb } from './migrations/0001_init_template_db'
 
 export const DB_ROOT = '.smtcmp_json_db'
 
@@ -17,4 +18,4 @@ export const TEMPLATE = {
 } as const
 
 export const MIGRATIONS_FILE = '_migrations.json'
-export const MIGRATIONS = [m0000_InitChatDb]
+export const MIGRATIONS = [m0000_InitChatDb, m0001_InitTemplateDb]

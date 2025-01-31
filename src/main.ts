@@ -235,7 +235,7 @@ export default class SmartCopilotPlugin extends Plugin {
   }
 
   async migrateJsonDb() {
-    const migrationRunner = new MigrationRunner(this.app)
+    const migrationRunner = new MigrationRunner(this)
     await migrationRunner.run()
   }
 }

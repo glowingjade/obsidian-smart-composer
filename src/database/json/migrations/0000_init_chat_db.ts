@@ -25,10 +25,10 @@ export const m0000_InitChatDb: Migration = {
   id: '0000_init_chat_db',
   description:
     'Migrates chat history files from legacy directory to new JSON database structure',
-  up: (app: App) => migrateLegacyChatToJsonDb(app),
+  up: ({ app }: { app: App }) => migrateLegacyChatToJsonDb(app),
 }
 
-export async function migrateLegacyChatToJsonDb(app: App): Promise<void> {
+async function migrateLegacyChatToJsonDb(app: App): Promise<void> {
   const OLD_CHAT_DIR = '.smtcmp_chat_histories'
   const OLD_CHAT_LIST_FILE = 'chat_list.json'
   const NEW_CHAT_DIR = '.smtcmp_json_db/chats'

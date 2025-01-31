@@ -1,5 +1,7 @@
 import { App } from 'obsidian'
 
+import SmartCopilotPlugin from '../../../main'
+
 export type Migration = {
   /** Unique ID of the migration. Should match the filename or a logical ID. */
   id: string
@@ -10,7 +12,7 @@ export type Migration = {
    * The "up" method applies the migration: reads from the JSON files,
    * modifies them, and writes back to disk.
    */
-  up(app: App): Promise<void> | void
+  up(params: { app: App; plugin: SmartCopilotPlugin }): Promise<void> | void
 }
 
 export type MigrationLogEntry = {

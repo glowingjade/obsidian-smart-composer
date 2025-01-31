@@ -1,16 +1,19 @@
 import { App, normalizePath } from 'obsidian'
 
+import SmartCopilotPlugin from '../../../main'
 import { DB_ROOT, MIGRATIONS, MIGRATIONS_FILE } from '../constants'
 
 import { Migration, MigrationLog } from './types'
 
 export class MigrationRunner {
+  private plugin: SmartCopilotPlugin
   private app: App
   private migrationsPath: string
   private migrations: Migration[]
 
-  constructor(app: App) {
-    this.app = app
+  constructor(plugin: SmartCopilotPlugin) {
+    this.plugin = plugin
+    this.app = plugin.app
     this.migrationsPath = normalizePath(`${DB_ROOT}/${MIGRATIONS_FILE}`)
     this.migrations = MIGRATIONS
   }
@@ -29,7 +32,10 @@ export class MigrationRunner {
       }
 
       try {
-        await migration.up(this.app)
+        await migration.up({
+          app: this.app,
+          plugin: this.plugin,
+        })
         await this.recordMigration(migration)
         console.log(`Successfully completed migration: ${migration.id}`)
       } catch (error) {
