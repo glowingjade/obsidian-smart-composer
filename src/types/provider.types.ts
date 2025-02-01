@@ -50,35 +50,3 @@ export const llmProviderSchema = z.discriminatedUnion('type', [
 
 export type LLMProvider = z.infer<typeof llmProviderSchema>
 export type LLMProviderType = LLMProvider['type']
-
-export const DEFAULT_PROVIDER_IDS = {
-  openai: 'openai',
-  anthropic: 'anthropic',
-  gemini: 'gemini',
-  groq: 'groq',
-  ollama: 'ollama',
-  'openai-compatible': null, // no default provider for this type
-} satisfies Record<LLMProviderType, string | null>
-
-export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
-  {
-    type: 'openai',
-    id: DEFAULT_PROVIDER_IDS.openai,
-  },
-  {
-    type: 'anthropic',
-    id: DEFAULT_PROVIDER_IDS.anthropic,
-  },
-  {
-    type: 'gemini',
-    id: DEFAULT_PROVIDER_IDS.gemini,
-  },
-  {
-    type: 'groq',
-    id: DEFAULT_PROVIDER_IDS.groq,
-  },
-  {
-    type: 'ollama',
-    id: DEFAULT_PROVIDER_IDS.ollama,
-  },
-]

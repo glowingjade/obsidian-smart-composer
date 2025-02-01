@@ -1,5 +1,7 @@
-import { DEFAULT_CHAT_MODELS } from '../../../types/chat-model.types'
-import { DEFAULT_EMBEDDING_MODELS } from '../../../types/embedding-model.types'
+import {
+  DEFAULT_CHAT_MODELS,
+  DEFAULT_EMBEDDING_MODELS,
+} from '../../../constants'
 
 import { migrateFrom1To2 } from './1_to_2'
 

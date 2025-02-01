@@ -2,16 +2,12 @@ import { z } from 'zod'
 
 import {
   DEFAULT_CHAT_MODELS,
-  chatModelSchema,
-} from '../../types/chat-model.types'
-import {
   DEFAULT_EMBEDDING_MODELS,
-  embeddingModelSchema,
-} from '../../types/embedding-model.types'
-import {
   DEFAULT_PROVIDERS,
-  llmProviderSchema,
-} from '../../types/provider.types'
+} from '../../constants'
+import { chatModelSchema } from '../../types/chat-model.types'
+import { embeddingModelSchema } from '../../types/embedding-model.types'
+import { llmProviderSchema } from '../../types/provider.types'
 
 const ragOptionsSchema = z.object({
   chunkSize: z.number().catch(1000),

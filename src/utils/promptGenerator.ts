@@ -4,6 +4,7 @@ import { editorStateToPlainText } from '../components/chat-view/chat-input/utils
 import { QueryProgressState } from '../components/chat-view/QueryProgress'
 import { RAGEngine } from '../core/rag/ragEngine'
 import { SelectEmbedding } from '../database/schema'
+import { SmartCopilotSettings } from '../settings/schema/setting.types'
 import { ChatMessage, ChatUserMessage } from '../types/chat'
 import { ContentPart, RequestMessage } from '../types/llm/request'
 import {
@@ -14,7 +15,6 @@ import {
   MentionableUrl,
   MentionableVault,
 } from '../types/mentionable'
-import { SmartCopilotSettings } from 'src/settings/schema/setting.types'
 
 import {
   getNestedFiles,

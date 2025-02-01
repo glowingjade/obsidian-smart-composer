@@ -1,13 +1,7 @@
-import { App, DropdownComponent, PluginSettingTab, Setting } from 'obsidian'
+import { App, PluginSettingTab, Setting } from 'obsidian'
 
-import {
-  APPLY_MODEL_OPTIONS,
-  CHAT_MODEL_OPTIONS,
-  EMBEDDING_MODEL_OPTIONS,
-} from '../constants'
 import SmartCopilotPlugin from '../main'
 import { findFilesMatchingPatterns } from '../utils/globUtils'
-import { getOllamaModels } from '../utils/ollama'
 
 import { EmbeddingDbManageModal } from './EmbeddingDbManageModal'
 import { ExcludedFilesModal } from './ExcludedFilesModal'
@@ -98,27 +92,27 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
   renderModelSection(containerEl: HTMLElement): void {
     new Setting(containerEl).setHeading().setName('Model')
 
-    new Setting(containerEl)
-      .setName('Chat model')
-      .setDesc('Choose the model you want to use for chat')
-      .addDropdown((dropdown) =>
-        dropdown
-          .addOptions(
-            CHAT_MODEL_OPTIONS.reduce<Record<string, string>>((acc, option) => {
-              acc[option.id] = option.name
-              return acc
-            }, {}),
-          )
-          .setValue(this.plugin.settings.chatModelId)
-          .onChange(async (value) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              chatModelId: value,
-            })
-            // Force refresh to show/hide Ollama and OpenAI-compatible settings
-            this.display()
-          }),
-      )
+    // new Setting(containerEl)
+    //   .setName('Chat model')
+    //   .setDesc('Choose the model you want to use for chat')
+    //   .addDropdown((dropdown) =>
+    //     dropdown
+    //       .addOptions(
+    //         CHAT_MODEL_OPTIONS.reduce<Record<string, string>>((acc, option) => {
+    //           acc[option.id] = option.name
+    //           return acc
+    //         }, {}),
+    //       )
+    //       .setValue(this.plugin.settings.chatModelId)
+    //       .onChange(async (value) => {
+    //         await this.plugin.setSettings({
+    //           ...this.plugin.settings,
+    //           chatModelId: value,
+    //         })
+    //         // Force refresh to show/hide Ollama and OpenAI-compatible settings
+    //         this.display()
+    //       }),
+    //   )
     // if (this.plugin.settings.chatModelId === 'ollama') {
     //   this.renderOllamaChatModelSettings(containerEl)
     // }
@@ -126,30 +120,30 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
     //   this.renderOpenAICompatibleChatModelSettings(containerEl)
     // }
 
-    new Setting(containerEl)
-      .setName('Apply model')
-      .setDesc('Choose the model you want to use for apply')
-      .addDropdown((dropdown) =>
-        dropdown
-          .addOptions(
-            APPLY_MODEL_OPTIONS.reduce<Record<string, string>>(
-              (acc, option) => {
-                acc[option.id] = option.name
-                return acc
-              },
-              {},
-            ),
-          )
-          .setValue(this.plugin.settings.applyModelId)
-          .onChange(async (value) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              applyModelId: value,
-            })
-            // Force refresh to show/hide Ollama and OpenAI-compatible settings
-            this.display()
-          }),
-      )
+    // new Setting(containerEl)
+    //   .setName('Apply model')
+    //   .setDesc('Choose the model you want to use for apply')
+    //   .addDropdown((dropdown) =>
+    //     dropdown
+    //       .addOptions(
+    //         APPLY_MODEL_OPTIONS.reduce<Record<string, string>>(
+    //           (acc, option) => {
+    //             acc[option.id] = option.name
+    //             return acc
+    //           },
+    //           {},
+    //         ),
+    //       )
+    //       .setValue(this.plugin.settings.applyModelId)
+    //       .onChange(async (value) => {
+    //         await this.plugin.setSettings({
+    //           ...this.plugin.settings,
+    //           applyModelId: value,
+    //         })
+    //         // Force refresh to show/hide Ollama and OpenAI-compatible settings
+    //         this.display()
+    //       }),
+    //   )
     // if (this.plugin.settings.applyModelId === 'ollama') {
     //   this.renderOllamaApplyModelSettings(containerEl)
     // }
@@ -157,30 +151,30 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
     //   this.renderOpenAICompatibleApplyModelSettings(containerEl)
     // }
 
-    new Setting(containerEl)
-      .setName('Embedding model')
-      .setDesc('Choose the model you want to use for embeddings')
-      .addDropdown((dropdown) =>
-        dropdown
-          .addOptions(
-            EMBEDDING_MODEL_OPTIONS.reduce<Record<string, string>>(
-              (acc, option) => {
-                acc[option.id] = option.name
-                return acc
-              },
-              {},
-            ),
-          )
-          .setValue(this.plugin.settings.embeddingModelId)
-          .onChange(async (value) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              embeddingModelId: value,
-            })
-            // Force refresh to show/hide Ollama settings
-            this.display()
-          }),
-      )
+    // new Setting(containerEl)
+    //   .setName('Embedding model')
+    //   .setDesc('Choose the model you want to use for embeddings')
+    //   .addDropdown((dropdown) =>
+    //     dropdown
+    //       .addOptions(
+    //         EMBEDDING_MODEL_OPTIONS.reduce<Record<string, string>>(
+    //           (acc, option) => {
+    //             acc[option.id] = option.name
+    //             return acc
+    //           },
+    //           {},
+    //         ),
+    //       )
+    //       .setValue(this.plugin.settings.embeddingModelId)
+    //       .onChange(async (value) => {
+    //         await this.plugin.setSettings({
+    //           ...this.plugin.settings,
+    //           embeddingModelId: value,
+    //         })
+    //         // Force refresh to show/hide Ollama settings
+    //         this.display()
+    //       }),
+    //   )
     // if (this.plugin.settings.embeddingModelId.startsWith('ollama/')) {
     //   this.renderOllamaEmbeddingModelSettings(containerEl)
     // }
@@ -672,51 +666,51 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
       )
   }
 
-  private async updateOllamaModelOptions({
-    baseUrl,
-    dropdown,
-    onModelChange,
-  }: {
-    baseUrl: string
-    dropdown: DropdownComponent
-    onModelChange: (model: string) => Promise<void>
-  }): Promise<void> {
-    const currentValue = dropdown.getValue()
-    dropdown.selectEl.empty()
+  // private async updateOllamaModelOptions({
+  //   baseUrl,
+  //   dropdown,
+  //   onModelChange,
+  // }: {
+  //   baseUrl: string
+  //   dropdown: DropdownComponent
+  //   onModelChange: (model: string) => Promise<void>
+  // }): Promise<void> {
+  //   const currentValue = dropdown.getValue()
+  //   dropdown.selectEl.empty()
 
-    try {
-      const models = await getOllamaModels(baseUrl)
-      if (models.length > 0) {
-        const modelOptions = models.reduce<Record<string, string>>(
-          (acc, model) => {
-            acc[model] = model
-            return acc
-          },
-          {},
-        )
+  //   try {
+  //     const models = await getOllamaModels(baseUrl)
+  //     if (models.length > 0) {
+  //       const modelOptions = models.reduce<Record<string, string>>(
+  //         (acc, model) => {
+  //           acc[model] = model
+  //           return acc
+  //         },
+  //         {},
+  //       )
 
-        dropdown.addOptions(modelOptions)
+  //       dropdown.addOptions(modelOptions)
 
-        if (models.includes(currentValue)) {
-          dropdown.setValue(currentValue)
-        } else {
-          dropdown.setValue(models[0])
-          await onModelChange(models[0])
-        }
-      } else {
-        dropdown.addOption('', 'No models found - check base URL')
-        dropdown.setValue('')
-        await onModelChange('')
-      }
-    } catch (error) {
-      console.error('Failed to fetch Ollama models:', error)
-      dropdown.addOption('', 'No models found - check base URL')
-      dropdown.setValue('')
-      await onModelChange('')
-    }
+  //       if (models.includes(currentValue)) {
+  //         dropdown.setValue(currentValue)
+  //       } else {
+  //         dropdown.setValue(models[0])
+  //         await onModelChange(models[0])
+  //       }
+  //     } else {
+  //       dropdown.addOption('', 'No models found - check base URL')
+  //       dropdown.setValue('')
+  //       await onModelChange('')
+  //     }
+  //   } catch (error) {
+  //     console.error('Failed to fetch Ollama models:', error)
+  //     dropdown.addOption('', 'No models found - check base URL')
+  //     dropdown.setValue('')
+  //     await onModelChange('')
+  //   }
 
-    dropdown.onChange(async (value) => {
-      await onModelChange(value)
-    })
-  }
+  //   dropdown.onChange(async (value) => {
+  //     await onModelChange(value)
+  //   })
+  // }
 }

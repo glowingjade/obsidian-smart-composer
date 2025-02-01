@@ -1,12 +1,13 @@
 import { z } from 'zod'
 
-import { ChatModel, DEFAULT_CHAT_MODELS } from '../../../types/chat-model.types'
-import { DEFAULT_EMBEDDING_MODELS } from '../../../types/embedding-model.types'
 import {
+  DEFAULT_CHAT_MODELS,
+  DEFAULT_EMBEDDING_MODELS,
   DEFAULT_PROVIDERS,
   DEFAULT_PROVIDER_IDS,
-  LLMProvider,
-} from '../../../types/provider.types'
+} from '../../../constants'
+import { ChatModel } from '../../../types/chat-model.types'
+import { LLMProvider } from '../../../types/provider.types'
 import { SettingMigration, SmartCopilotSettings } from '../setting.types'
 
 type NativeLLMModel = {

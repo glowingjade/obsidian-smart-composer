@@ -5,7 +5,6 @@ import {
   GenerateContentStreamResult,
   GoogleGenerativeAI,
 } from '@google/generative-ai'
-import { LLMProvider } from 'src/types/provider.types'
 
 import { ChatModel } from '../../types/chat-model.types'
 import {
@@ -18,6 +17,7 @@ import {
   LLMResponseNonStreaming,
   LLMResponseStreaming,
 } from '../../types/llm/response'
+import { LLMProvider } from '../../types/provider.types'
 import { parseImageDataUrl } from '../../utils/image'
 
 import { BaseLLMProvider } from './base'
