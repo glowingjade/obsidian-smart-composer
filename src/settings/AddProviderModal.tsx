@@ -32,8 +32,10 @@ export class AddProviderModal extends Modal {
     this.titleEl.setText('Add custom provider')
 
     new Setting(contentEl)
-      .setName('Provider ID')
-      .setDesc('Enter a unique ID for this provider')
+      .setName('ID')
+      .setDesc(
+        'Choose an ID to identify this provider in your settings. This is just for your reference.',
+      )
       .addText((text) =>
         text
           .setPlaceholder('my-custom-provider')

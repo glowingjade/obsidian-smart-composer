@@ -1125,6 +1125,29 @@ button.smtcmp-chat-input-model-select {
 
 /* Settings */
 
+.smtcmp-settings-header {
+  color: var(--text-normal);
+  font-size: var(--h1-size);
+  line-height: var(--line-height-tight);
+  font-weight: var(--h1-weight);
+  margin: var(--size-4-3) 0;
+}
+
+.smtcmp-settings-sub-header {
+  color: var(--text-normal);
+  font-size: var(--h4-size);
+  line-height: var(--line-height-tight);
+  font-weight: var(--h4-weight);
+  margin: var(--size-4-3) 0;
+}
+
+.smtcmp-settings-desc {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  line-height: var(--line-height-tight);
+  margin: var(--size-4-1) 0;
+}
+
 .smtcmp-settings-required::after {
   color: var(--color-red);
   content: '*';
@@ -1188,12 +1211,8 @@ button.smtcmp-chat-input-model-select {
 
 /* Settings: Providers */
 
-.smtcmp-settings-provider-desc {
-  font-size: var(--font-ui-small);
-}
-
 .smtcmp-settings-provider-table {
-  margin: var(--size-4-2) 0;
+  margin: var(--size-4-3) 0;
   width: 100%;
   border-collapse: collapse;
 }
@@ -1243,5 +1262,51 @@ button.smtcmp-chat-input-model-select {
 }
 
 .smtcmp-settings-provider-actions button {
+  padding: var(--size-4-1) var(--size-4-2);
+}
+
+/* TODO */
+
+.smtcmp-settings-model-table {
+  margin: var(--size-4-2) 0;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.smtcmp-settings-model-table th {
+  padding: var(--size-4-1) var(--size-4-1) var(--size-4-2) var(--size-4-1);
+  text-align: left;
+  vertical-align: middle;
+  font-weight: var(--font-medium);
+  color: var(--text-muted);
+}
+
+.smtcmp-settings-model-table tbody td {
+  padding: var(--size-4-1);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.smtcmp-settings-model-table tfoot td {
+  padding: var(--size-4-1);
+  text-align: right;
+  vertical-align: middle;
+}
+
+.smtcmp-settings-model-table thead tr {
+  border-bottom: var(--border-width) solid var(--background-modifier-border);
+}
+
+.smtcmp-settings-model-table tbody tr {
+  border-bottom: var(--border-width) solid var(--background-modifier-border);
+}
+
+.smtcmp-settings-model-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+}
+
+.smtcmp-settings-model-actions button {
   padding: var(--size-4-1) var(--size-4-2);
 }

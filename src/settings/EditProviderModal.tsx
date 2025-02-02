@@ -67,7 +67,7 @@ export class EditProviderModal extends Modal {
               (v) => v.id === this.formData.id,
             )
 
-            if (!currentProviderIndex) {
+            if (currentProviderIndex === -1) {
               new Notice(`No provider found with this ID`)
               return
             }

@@ -1,10 +1,16 @@
 import { App, PluginSettingTab, Setting, setIcon } from 'obsidian'
 
-import { DEFAULT_PROVIDERS, PROVIDER_TYPES_INFO } from '../constants'
+import {
+  DEFAULT_CHAT_MODELS,
+  DEFAULT_PROVIDERS,
+  PROVIDER_TYPES_INFO,
+} from '../constants'
 import SmartCopilotPlugin from '../main'
 import { findFilesMatchingPatterns } from '../utils/globUtils'
 
+import { AddChatModelModal } from './AddChatModelModal'
 import { AddProviderModal } from './AddProviderModal'
+import { EditChatModelModal } from './EditChatModelModal'
 import { EditProviderModal } from './EditProviderModal'
 import { EmbeddingDbManageModal } from './EmbeddingDbManageModal'
 import { ExcludedFilesModal } from './ExcludedFilesModal'
@@ -39,13 +45,14 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
 
   renderProvidersSection(containerEl: HTMLElement): void {
     // create heading
-    containerEl.createEl('h1', {
+    containerEl.createDiv({
       text: 'Providers',
+      cls: 'smtcmp-settings-header',
     })
 
     // create description
-    const descContainer = containerEl.createEl('p', {
-      cls: 'smtcmp-settings-provider-desc',
+    const descContainer = containerEl.createDiv({
+      cls: 'smtcmp-settings-desc',
     })
     descContainer.createEl('span', {
       text: 'Enter your API keys for the providers you want to use',
@@ -66,7 +73,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
     const thead = table.createEl('thead')
     const headerRow = thead.createEl('tr')
 
-    headerRow.createEl('th', { text: 'Provider ID' })
+    headerRow.createEl('th', { text: 'ID' })
     headerRow.createEl('th', { text: 'Type' })
     headerRow.createEl('th', { text: 'API Key' })
     headerRow.createEl('th', { text: 'Actions' })
@@ -143,7 +150,95 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
   }
 
   renderModelsSection(containerEl: HTMLElement): void {
-    new Setting(containerEl).setHeading().setName('Models')
+    containerEl.createDiv({
+      text: 'Models',
+      cls: 'smtcmp-settings-header',
+    })
+
+    this.renderChatModelsSection(containerEl)
+  }
+
+  renderChatModelsSection(containerEl: HTMLElement): void {
+    containerEl.createDiv({
+      text: 'Chat Models',
+      cls: 'smtcmp-settings-sub-header',
+    })
+
+    // create description
+    containerEl.createDiv({
+      text: 'Models used for chat and apply',
+      cls: 'smtcmp-settings-desc',
+    })
+
+    // create table
+    const table = containerEl.createEl('table', {
+      cls: 'smtcmp-settings-model-table',
+    })
+    const thead = table.createEl('thead')
+    const headerRow = thead.createEl('tr')
+
+    headerRow.createEl('th', { text: 'ID' })
+    headerRow.createEl('th', { text: 'Provider ID' })
+    headerRow.createEl('th', { text: 'Model' })
+    headerRow.createEl('th', { text: 'Actions' })
+
+    const tbody = table.createEl('tbody')
+
+    this.plugin.settings.chatModels.forEach((chatModel) => {
+      const row = tbody.createEl('tr')
+
+      // id cell
+      row.createEl('td', { text: chatModel.id })
+
+      // provider id cell
+      row.createEl('td', { text: chatModel.providerId })
+
+      // model cell
+      row.createEl('td', { text: chatModel.model })
+
+      // actions cell
+      const actionsCell = row.createEl('td')
+      const actionsContainer = actionsCell.createEl('div', {
+        cls: 'smtcmp-settings-model-actions',
+      })
+
+      const settingsButton = actionsContainer.createEl('button')
+      setIcon(settingsButton, 'settings')
+      settingsButton.addEventListener('click', () => {
+        new EditChatModelModal(this.app, this.plugin, chatModel, () =>
+          this.display(),
+        ).open()
+      })
+
+      if (!DEFAULT_CHAT_MODELS.some((v) => v.id === chatModel.id)) {
+        // prevent default chat model being removed
+        const removeButton = actionsContainer.createEl('button')
+        setIcon(removeButton, 'trash')
+        removeButton.addEventListener('click', async () => {
+          await this.plugin.setSettings({
+            ...this.plugin.settings,
+            chatModels: [...this.plugin.settings.chatModels].filter(
+              (v) => v.id !== chatModel.id,
+            ),
+          })
+          this.display()
+        })
+      }
+    })
+
+    const tfoot = table.createEl('tfoot')
+    const footerRow = tfoot.createEl('tr')
+    const footerCell = footerRow.createEl('td', {
+      attr: {
+        colspan: 4,
+      },
+    })
+    const addCustomChatModelButton = footerCell.createEl('button', {
+      text: 'Add custom model',
+    })
+    addCustomChatModelButton.addEventListener('click', () => {
+      new AddChatModelModal(this.app, this.plugin, () => this.display()).open()
+    })
   }
 
   renderChatSection(containerEl: HTMLElement): void {
