@@ -123,6 +123,7 @@ export default class SmartCopilotPlugin extends Plugin {
     await this.saveData(this.settings) // Save updated settings
   }
 
+  // TODO: validate before saving?
   async setSettings(newSettings: SmartCopilotSettings) {
     this.settings = newSettings
     await this.saveData(newSettings)

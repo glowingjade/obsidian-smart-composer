@@ -4,7 +4,7 @@ import {
   DEFAULT_CHAT_MODELS,
   DEFAULT_EMBEDDING_MODELS,
   DEFAULT_PROVIDERS,
-  DEFAULT_PROVIDER_IDS,
+  PROVIDER_TYPES_INFO,
 } from '../../../constants'
 import { ChatModel } from '../../../types/chat-model.types'
 import { LLMProvider } from '../../../types/provider.types'
@@ -428,7 +428,7 @@ export const migrateFrom1To2: SettingMigration['migrate'] = (
     })
     ollamaCustomProviderCount += 1
   } else {
-    ollamaChatProviderId = DEFAULT_PROVIDER_IDS.ollama
+    ollamaChatProviderId = PROVIDER_TYPES_INFO.ollama.defaultProviderId
   }
   if (data.ollamaChatModel.model) {
     const ollamaChatModelId = `${ollamaChatProviderId}/${data.ollamaChatModel.model}`
@@ -461,7 +461,8 @@ export const migrateFrom1To2: SettingMigration['migrate'] = (
     ollamaCustomProviderCount += 1
   } else {
     ollamaApplyProviderId =
-      existingSameOllamaProviderForApplyModel?.id ?? DEFAULT_PROVIDER_IDS.ollama
+      existingSameOllamaProviderForApplyModel?.id ??
+      PROVIDER_TYPES_INFO.ollama.defaultProviderId
   }
   if (data.ollamaApplyModel.model) {
     const existingSameChatModelForApplyModel = chatModels.find(

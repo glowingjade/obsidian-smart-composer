@@ -1123,6 +1123,19 @@ button.smtcmp-chat-input-model-select {
   width: var(--size-4-4);
 }
 
+/* Settings */
+
+.smtcmp-settings-required::after {
+  color: var(--color-red);
+  content: '*';
+  display: inline-block;
+  font-size: var(--font-ui-medium);
+  font-weight: var(--font-bold);
+  margin-left: var(--size-4-1);
+}
+
+/* Settings: Embedding DB Manage */
+
 .smtcmp-settings-embedding-db-manage-root {
   padding: var(--size-4-2);
 }
@@ -1171,4 +1184,64 @@ button.smtcmp-chat-input-model-select {
   align-items: center;
   gap: var(--size-2-2);
   font-size: var(--font-ui-smaller);
+}
+
+/* Settings: Providers */
+
+.smtcmp-settings-provider-desc {
+  font-size: var(--font-ui-small);
+}
+
+.smtcmp-settings-provider-table {
+  margin: var(--size-4-2) 0;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.smtcmp-settings-provider-table th {
+  padding: var(--size-4-1) var(--size-4-1) var(--size-4-2) var(--size-4-1);
+  text-align: left;
+  vertical-align: middle;
+  font-weight: var(--font-medium);
+  color: var(--text-muted);
+}
+
+.smtcmp-settings-provider-table tbody td {
+  padding: var(--size-4-1);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.smtcmp-settings-provider-table tfoot td {
+  padding: var(--size-4-1);
+  text-align: right;
+  vertical-align: middle;
+}
+
+.smtcmp-settings-provider-table thead tr {
+  border-bottom: var(--border-width) solid var(--background-modifier-border);
+}
+
+.smtcmp-settings-provider-table tbody tr {
+  border-bottom: var(--border-width) solid var(--background-modifier-border);
+}
+
+.smtcmp-settings-provider-table-api-key {
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.smtcmp-settings-provider-table-api-key:hover {
+  text-decoration: underline;
+}
+
+.smtcmp-settings-provider-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+}
+
+.smtcmp-settings-provider-actions button {
+  padding: var(--size-4-1) var(--size-4-2);
 }

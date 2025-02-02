@@ -16,7 +16,7 @@ import { z } from 'zod'
 // TODO: there may exists additional settings for specific provider types (e.g. Azure OpenAI required deployment name)
 // TODO: check if each provider type allow overriding baseUrl and apiKey. If not, remove those settings.
 export const baseLlmProviderSchema = z.object({
-  id: z.string(),
+  id: z.string().min(1, 'id is required'),
   baseUrl: z.string().optional(),
   apiKey: z.string().optional(),
 })
@@ -45,6 +45,11 @@ export const llmProviderSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('openai-compatible'),
     ...baseLlmProviderSchema.shape,
+    baseUrl: z
+      .string({
+        required_error: 'base URL is required',
+      })
+      .min(1, 'base URL is required'),
   }),
 ])
 

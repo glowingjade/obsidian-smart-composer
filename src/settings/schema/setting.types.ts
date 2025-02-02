@@ -25,7 +25,7 @@ export const SETTINGS_SCHEMA_VERSION = 2
  * 1. since default chat model and apply model shares same model list, we should let users know that lighter model is good for apply feature.
  * 2. Let users hide default models in model dropdown
  * 3. show recommended for models
- * 4. Add tests that ensure default provider/model ids are unique
+ * 4. Add tests that ensure default provider/model ids are unique (can we enforce it by zod schema?)
  * 5. On migration, should create provider if user have set openAI compatible models (multiple ones if settings differ)
  * 6. validate settings with zod schema before saving on SettingTab
  * 7. Ensure provider for chat/embedding models exists (should remove models when provider is removed)

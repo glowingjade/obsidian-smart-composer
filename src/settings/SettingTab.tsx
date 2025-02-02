@@ -1,8 +1,11 @@
-import { App, PluginSettingTab, Setting } from 'obsidian'
+import { App, PluginSettingTab, Setting, setIcon } from 'obsidian'
 
+import { DEFAULT_PROVIDERS, PROVIDER_TYPES_INFO } from '../constants'
 import SmartCopilotPlugin from '../main'
 import { findFilesMatchingPatterns } from '../utils/globUtils'
 
+import { AddProviderModal } from './AddProviderModal'
+import { EditProviderModal } from './EditProviderModal'
 import { EmbeddingDbManageModal } from './EmbeddingDbManageModal'
 import { ExcludedFilesModal } from './ExcludedFilesModal'
 import { IncludedFilesModal } from './IncludedFilesModal'
@@ -19,20 +22,36 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
     const { containerEl } = this
     containerEl.empty()
 
-    this.renderAPIKeysSection(containerEl)
-    this.renderModelSection(containerEl)
+    /**
+     * Sections
+     * 1. Providers
+     * 2. Models
+     * 3. Chat
+     * 4. RAG
+     */
+
+    this.renderProvidersSection(containerEl)
+    this.renderModelsSection(containerEl)
+    this.renderChatSection(containerEl)
+
     this.renderRAGSection(containerEl)
   }
 
-  renderAPIKeysSection(containerEl: HTMLElement): void {
-    const apiKeysHeading = new Setting(containerEl)
-      .setHeading()
-      .setName('API keys')
-      .setDesc('Enter your API keys for the services you want to use')
+  renderProvidersSection(containerEl: HTMLElement): void {
+    // create heading
+    containerEl.createEl('h1', {
+      text: 'Providers',
+    })
 
-    apiKeysHeading.descEl.createEl('br')
-
-    apiKeysHeading.descEl.createEl('a', {
+    // create description
+    const descContainer = containerEl.createEl('p', {
+      cls: 'smtcmp-settings-provider-desc',
+    })
+    descContainer.createEl('span', {
+      text: 'Enter your API keys for the providers you want to use',
+    })
+    descContainer.createEl('br')
+    descContainer.createEl('a', {
       text: 'How to obtain API keys',
       attr: {
         href: 'https://github.com/glowingjade/obsidian-smart-composer/wiki/1.2-Initial-Setup#getting-your-api-key',
@@ -40,56 +59,94 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
       },
     })
 
-    // new Setting(containerEl).setName('OpenAI API key').addText((text) =>
-    //   text
-    //     .setPlaceholder('Enter your API key')
-    //     .setValue(this.plugin.settings.openAIApiKey)
-    //     .onChange(async (value) => {
-    //       await this.plugin.setSettings({
-    //         ...this.plugin.settings,
-    //         openAIApiKey: value,
-    //       })
-    //     }),
-    // )
+    // create table
+    const table = containerEl.createEl('table', {
+      cls: 'smtcmp-settings-provider-table',
+    })
+    const thead = table.createEl('thead')
+    const headerRow = thead.createEl('tr')
 
-    // new Setting(containerEl).setName('Anthropic API key').addText((text) =>
-    //   text
-    //     .setPlaceholder('Enter your API key')
-    //     .setValue(this.plugin.settings.anthropicApiKey)
-    //     .onChange(async (value) => {
-    //       await this.plugin.setSettings({
-    //         ...this.plugin.settings,
-    //         anthropicApiKey: value,
-    //       })
-    //     }),
-    // )
+    headerRow.createEl('th', { text: 'Provider ID' })
+    headerRow.createEl('th', { text: 'Type' })
+    headerRow.createEl('th', { text: 'API Key' })
+    headerRow.createEl('th', { text: 'Actions' })
 
-    // new Setting(containerEl).setName('Gemini API key').addText((text) =>
-    //   text
-    //     .setPlaceholder('Enter your API key')
-    //     .setValue(this.plugin.settings.geminiApiKey)
-    //     .onChange(async (value) => {
-    //       await this.plugin.setSettings({
-    //         ...this.plugin.settings,
-    //         geminiApiKey: value,
-    //       })
-    //     }),
-    // )
+    const tbody = table.createEl('tbody')
 
-    // new Setting(containerEl).setName('Groq API key').addText((text) =>
-    //   text
-    //     .setPlaceholder('Enter your API key')
-    //     .setValue(this.plugin.settings.groqApiKey)
-    //     .onChange(async (value) => {
-    //       await this.plugin.setSettings({
-    //         ...this.plugin.settings,
-    //         groqApiKey: value,
-    //       })
-    //     }),
-    // )
+    this.plugin.settings.providers.forEach((provider) => {
+      const row = tbody.createEl('tr')
+
+      // provider id cell
+      row.createEl('td', { text: provider.id })
+
+      // provider type cell
+      row.createEl('td', { text: PROVIDER_TYPES_INFO[provider.type].label })
+
+      // api key cell
+      const apiKeyCell = row.createEl('td', {
+        cls: 'smtcmp-settings-provider-table-api-key',
+        text: provider.apiKey ? '••••••••' : 'Set API key',
+      })
+      apiKeyCell.addEventListener('click', () => {
+        new EditProviderModal(this.app, this.plugin, provider, () =>
+          this.display(),
+        ).open()
+      })
+
+      // actions cell
+      const actionsCell = row.createEl('td')
+      const actionsContainer = actionsCell.createEl('div', {
+        cls: 'smtcmp-settings-provider-actions',
+      })
+
+      const settingsButton = actionsContainer.createEl('button')
+      setIcon(settingsButton, 'settings')
+      settingsButton.addEventListener('click', () => {
+        new EditProviderModal(this.app, this.plugin, provider, () =>
+          this.display(),
+        ).open()
+      })
+
+      if (!DEFAULT_PROVIDERS.some((v) => v.id === provider.id)) {
+        // prevent default provider being removed
+        const removeButton = actionsContainer.createEl('button')
+        setIcon(removeButton, 'trash')
+        removeButton.addEventListener('click', async () => {
+          // TODO: should confirm to delete all models belong to this provider
+          await this.plugin.setSettings({
+            ...this.plugin.settings,
+            providers: [...this.plugin.settings.providers].filter(
+              (v) => v.id !== provider.id,
+            ),
+            chatModels: [...this.plugin.settings.chatModels].filter(
+              (v) => v.providerId !== provider.id,
+            ),
+          })
+          this.display()
+        })
+      }
+    })
+
+    const tfoot = table.createEl('tfoot')
+    const footerRow = tfoot.createEl('tr')
+    const footerCell = footerRow.createEl('td', {
+      attr: {
+        colspan: 4,
+      },
+    })
+    const addCustomProviderButton = footerCell.createEl('button', {
+      text: 'Add custom provider',
+    })
+    addCustomProviderButton.addEventListener('click', () => {
+      new AddProviderModal(this.app, this.plugin, () => this.display()).open()
+    })
   }
 
-  renderModelSection(containerEl: HTMLElement): void {
+  renderModelsSection(containerEl: HTMLElement): void {
+    new Setting(containerEl).setHeading().setName('Models')
+  }
+
+  renderChatSection(containerEl: HTMLElement): void {
     new Setting(containerEl).setHeading().setName('Model')
 
     // new Setting(containerEl)
