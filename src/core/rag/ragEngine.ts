@@ -9,12 +9,7 @@ import { EmbeddingModelClient } from '../../types/embedding'
 
 import { getEmbeddingModelClient } from './embedding'
 
-/**
- * TODO:
- * do we really need this class? It just complicates things.
- * since it doesn't do anything inside itself, we can just move logic into rag-context.tsx
- * and then we don't have to consider about settings changes. It would be much simpler.
- */
+// TODO: do we really need this class? It seems like unnecessary abstraction.
 export class RAGEngine {
   private app: App
   private settings: SmartCopilotSettings

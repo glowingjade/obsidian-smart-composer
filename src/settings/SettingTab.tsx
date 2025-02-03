@@ -124,17 +124,36 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
         const removeButton = actionsContainer.createEl('button')
         setIcon(removeButton, 'trash')
         removeButton.addEventListener('click', async () => {
-          // TODO: should confirm to delete all models belong to this provider
-          await this.plugin.setSettings({
-            ...this.plugin.settings,
-            providers: [...this.plugin.settings.providers].filter(
-              (v) => v.id !== provider.id,
-            ),
-            chatModels: [...this.plugin.settings.chatModels].filter(
-              (v) => v.providerId !== provider.id,
-            ),
-          })
-          this.display()
+          // Get associated models
+          const associatedChatModels = this.plugin.settings.chatModels.filter(
+            (m) => m.providerId === provider.id,
+          )
+          const associatedEmbeddingModels =
+            this.plugin.settings.embeddingModels.filter(
+              (m) => m.providerId === provider.id,
+            )
+
+          const message =
+            `Are you sure you want to delete provider "${provider.id}"?\n\n` +
+            `This will also delete:\n` +
+            `- ${associatedChatModels.length} chat model(s)\n` +
+            `- ${associatedEmbeddingModels.length} embedding model(s)`
+
+          new ConfirmModal(this.app, 'Delete Provider', message, async () => {
+            await this.plugin.setSettings({
+              ...this.plugin.settings,
+              providers: [...this.plugin.settings.providers].filter(
+                (v) => v.id !== provider.id,
+              ),
+              chatModels: [...this.plugin.settings.chatModels].filter(
+                (v) => v.providerId !== provider.id,
+              ),
+              embeddingModels: [...this.plugin.settings.embeddingModels].filter(
+                (v) => v.providerId !== provider.id,
+              ),
+            })
+            this.display()
+          }).open()
         })
       }
     })

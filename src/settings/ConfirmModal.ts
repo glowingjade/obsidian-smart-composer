@@ -13,8 +13,10 @@ export class ConfirmModal extends Modal {
   onOpen() {
     this.titleEl.setText(this.title)
 
-    this.contentEl.createEl('p', {
-      text: this.message,
+    this.message.split('\n').forEach((line) => {
+      this.contentEl.createEl('p', {
+        text: line,
+      })
     })
 
     new Setting(this.contentEl)

@@ -1270,8 +1270,6 @@ button.smtcmp-chat-input-model-select {
   padding: var(--size-4-1) var(--size-4-2);
 }
 
-/* TODO */
-
 .smtcmp-settings-model-table {
   margin: var(--size-4-2) 0;
   width: 100%;

@@ -2,7 +2,6 @@ import { SmartCopilotSettings } from '../../settings/schema/setting.types'
 import { EmbeddingModelClient } from '../../types/embedding'
 import { getProviderClient } from '../llm/manager'
 
-// TODO: these logic should go into model provider implementation
 export const getEmbeddingModelClient = ({
   settings,
   embeddingModelId,

@@ -11,7 +11,6 @@ type ModelPricing = {
   output: number
 }
 
-// TODO: ensure we use model name (not our id) on checking price
 export const OPENAI_PRICES: Record<string, ModelPricing> = {
   'gpt-4o': { input: 2.5, output: 10 },
   'gpt-4o-mini': { input: 0.15, output: 0.6 },
