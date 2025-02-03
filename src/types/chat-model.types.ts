@@ -6,9 +6,21 @@ import { z } from 'zod'
  */
 
 const baseChatModelSchema = z.object({
-  providerId: z.string().min(1, 'provider ID is required'),
-  id: z.string().min(1, 'id is required'),
-  model: z.string().min(1, 'model is required'),
+  providerId: z
+    .string({
+      required_error: 'provider ID is required',
+    })
+    .min(1, 'provider ID is required'),
+  id: z
+    .string({
+      required_error: 'id is required',
+    })
+    .min(1, 'id is required'),
+  model: z
+    .string({
+      required_error: 'model is required',
+    })
+    .min(1, 'model is required'),
 })
 
 // TODO: ensure providerType is valid

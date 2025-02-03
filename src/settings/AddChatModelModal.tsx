@@ -25,7 +25,7 @@ export class AddChatModelModal extends Modal {
     const { contentEl } = this
     contentEl.empty()
 
-    this.titleEl.setText('Add custom chat model')
+    this.titleEl.setText('Add Custom Chat Model')
 
     new Setting(contentEl)
       .setName('ID')
@@ -98,6 +98,15 @@ export class AddChatModelModal extends Modal {
               new Notice(
                 'Model with this ID already exists. Try a different ID.',
               )
+              return
+            }
+
+            if (
+              !this.plugin.settings.providers.some(
+                (provider) => provider.id === this.formData.providerId,
+              )
+            ) {
+              new Notice('Provider with this ID does not exist')
               return
             }
 

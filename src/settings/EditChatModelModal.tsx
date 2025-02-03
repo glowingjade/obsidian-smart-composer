@@ -27,7 +27,7 @@ export class EditChatModelModal extends Modal {
     const { contentEl } = this
     contentEl.empty()
 
-    this.titleEl.setText(`Edit chat model: ${this.formData.id}`)
+    this.titleEl.setText(`Edit Chat Model: ${this.formData.id}`)
 
     new Setting(contentEl)
       .setName('Model Name')

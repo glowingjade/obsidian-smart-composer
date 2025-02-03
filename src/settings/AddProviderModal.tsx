@@ -29,7 +29,7 @@ export class AddProviderModal extends Modal {
     const { contentEl } = this
     contentEl.empty()
 
-    this.titleEl.setText('Add custom provider')
+    this.titleEl.setText('Add Custom Provider')
 
     new Setting(contentEl)
       .setName('ID')

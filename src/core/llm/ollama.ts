@@ -107,4 +107,18 @@ export class OllamaProvider extends BaseLLMProvider {
 
     return this.adapter.streamResponse(this.client, request, options)
   }
+
+  async getEmbedding(model: string, text: string): Promise<number[]> {
+    if (!this.provider.baseUrl) {
+      throw new LLMBaseUrlNotSetException(
+        'Ollama base URL is missing. Please set it in settings menu.',
+      )
+    }
+
+    const embedding = await this.client.embeddings.create({
+      model: model,
+      input: text,
+    })
+    return embedding.data[0].embedding
+  }
 }

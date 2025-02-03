@@ -24,6 +24,7 @@ import { BaseLLMProvider } from './base'
 import {
   LLMAPIKeyInvalidException,
   LLMAPIKeyNotSetException,
+  LLMRateLimitExceededException,
 } from './exception'
 
 /**
@@ -296,6 +297,31 @@ export class GeminiProvider extends BaseLLMProvider {
           ', ',
         )}`,
       )
+    }
+  }
+
+  async getEmbedding(model: string, text: string): Promise<number[]> {
+    if (!this.apiKey) {
+      throw new LLMAPIKeyNotSetException(
+        'Gemini API key is missing. Please set it in settings menu.',
+      )
+    }
+
+    try {
+      const response = await this.client
+        .getGenerativeModel({ model: model })
+        .embedContent(text)
+      return response.embedding.values
+    } catch (error) {
+      if (
+        error.status === 429 &&
+        error.message.includes('RATE_LIMIT_EXCEEDED')
+      ) {
+        throw new LLMRateLimitExceededException(
+          'Gemini API rate limit exceeded. Please try again later.',
+        )
+      }
+      throw error
     }
   }
 }

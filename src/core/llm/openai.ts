@@ -16,6 +16,7 @@ import { BaseLLMProvider } from './base'
 import {
   LLMAPIKeyInvalidException,
   LLMAPIKeyNotSetException,
+  LLMRateLimitExceededException,
 } from './exception'
 import { OpenAIMessageAdapter } from './openaiMessageAdapter'
 
@@ -142,6 +143,32 @@ export class OpenAIAuthenticatedProvider extends BaseLLMProvider {
       if (error instanceof OpenAI.AuthenticationError) {
         throw new LLMAPIKeyInvalidException(
           'OpenAI API key is invalid. Please update it in settings menu.',
+        )
+      }
+      throw error
+    }
+  }
+
+  async getEmbedding(model: string, text: string): Promise<number[]> {
+    if (!this.client.apiKey) {
+      throw new LLMAPIKeyNotSetException(
+        'OpenAI API key is missing. Please set it in settings menu.', // TODO: show provide id instead
+      )
+    }
+
+    try {
+      const embedding = await this.client.embeddings.create({
+        model: model,
+        input: text,
+      })
+      return embedding.data[0].embedding
+    } catch (error) {
+      if (
+        error.status === 429 &&
+        error.message.toLowerCase().includes('rate limit')
+      ) {
+        throw new LLMRateLimitExceededException(
+          'OpenAI API rate limit exceeded. Please try again later.',
         )
       }
       throw error

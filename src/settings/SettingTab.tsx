@@ -2,6 +2,7 @@ import { App, PluginSettingTab, Setting, setIcon } from 'obsidian'
 
 import {
   DEFAULT_CHAT_MODELS,
+  DEFAULT_EMBEDDING_MODELS,
   DEFAULT_PROVIDERS,
   PROVIDER_TYPES_INFO,
 } from '../constants'
@@ -9,6 +10,7 @@ import SmartCopilotPlugin from '../main'
 import { findFilesMatchingPatterns } from '../utils/globUtils'
 
 import { AddChatModelModal } from './AddChatModelModal'
+import { AddEmbeddingModelModal } from './AddEmbeddingModelModal'
 import { AddProviderModal } from './AddProviderModal'
 import { EditChatModelModal } from './EditChatModelModal'
 import { EditProviderModal } from './EditProviderModal'
@@ -156,6 +158,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
     })
 
     this.renderChatModelsSection(containerEl)
+    this.renderEmbeddingModelsSection(containerEl)
   }
 
   renderChatModelsSection(containerEl: HTMLElement): void {
@@ -238,6 +241,88 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
     })
     addCustomChatModelButton.addEventListener('click', () => {
       new AddChatModelModal(this.app, this.plugin, () => this.display()).open()
+    })
+  }
+
+  renderEmbeddingModelsSection(containerEl: HTMLElement): void {
+    containerEl.createDiv({
+      text: 'Embedding Models',
+      cls: 'smtcmp-settings-sub-header',
+    })
+
+    // create description
+    containerEl.createDiv({
+      text: 'Models used for generating embeddings for RAG',
+      cls: 'smtcmp-settings-desc',
+    })
+
+    // create table
+    const table = containerEl.createEl('table', {
+      cls: 'smtcmp-settings-model-table',
+    })
+    const thead = table.createEl('thead')
+    const headerRow = thead.createEl('tr')
+
+    headerRow.createEl('th', { text: 'ID' })
+    headerRow.createEl('th', { text: 'Provider ID' })
+    headerRow.createEl('th', { text: 'Model' })
+    headerRow.createEl('th', { text: 'Dimension' })
+    headerRow.createEl('th', { text: 'Actions' })
+
+    const tbody = table.createEl('tbody')
+
+    this.plugin.settings.embeddingModels.forEach((embeddingModel) => {
+      const row = tbody.createEl('tr')
+
+      // id cell
+      row.createEl('td', { text: embeddingModel.id })
+
+      // provider id cell
+      row.createEl('td', { text: embeddingModel.providerId })
+
+      // model cell
+      row.createEl('td', { text: embeddingModel.model })
+
+      // dimension cell
+      row.createEl('td', { text: String(embeddingModel.dimension) })
+
+      // actions cell
+      const actionsCell = row.createEl('td')
+      const actionsContainer = actionsCell.createEl('div', {
+        cls: 'smtcmp-settings-model-actions',
+      })
+
+      if (!DEFAULT_EMBEDDING_MODELS.some((v) => v.id === embeddingModel.id)) {
+        // prevent default embedding model being removed
+        const removeButton = actionsContainer.createEl('button')
+        setIcon(removeButton, 'trash')
+        removeButton.addEventListener('click', async () => {
+          // TODO: remove all embeddings in the database that use this model & get confirmation from user
+          await this.plugin.setSettings({
+            ...this.plugin.settings,
+            embeddingModels: [...this.plugin.settings.embeddingModels].filter(
+              (v) => v.id !== embeddingModel.id,
+            ),
+          })
+          this.display()
+        })
+      }
+    })
+
+    const tfoot = table.createEl('tfoot')
+    const footerRow = tfoot.createEl('tr')
+    const footerCell = footerRow.createEl('td', {
+      attr: {
+        colspan: 5,
+      },
+    })
+    const addCustomEmbeddingModelButton = footerCell.createEl('button', {
+      text: 'Add custom model',
+    })
+    addCustomEmbeddingModelButton.addEventListener('click', () => {
+      new AddEmbeddingModelModal(this.app, this.plugin, () =>
+        this.display(),
+      ).open()
     })
   }
 

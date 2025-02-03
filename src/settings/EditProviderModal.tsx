@@ -28,7 +28,7 @@ export class EditProviderModal extends Modal {
     const { contentEl } = this
     contentEl.empty()
 
-    this.titleEl.setText(`Edit provider: ${this.formData.id}`)
+    this.titleEl.setText(`Edit Provider: ${this.formData.id}`)
 
     new Setting(contentEl)
       .setName('API Key')

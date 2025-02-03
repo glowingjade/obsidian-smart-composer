@@ -1226,6 +1226,7 @@ button.smtcmp-chat-input-model-select {
 }
 
 .smtcmp-settings-provider-table tbody td {
+  height: var(--size-4-10);
   padding: var(--size-4-1);
   text-align: left;
   vertical-align: middle;
@@ -1282,6 +1283,7 @@ button.smtcmp-chat-input-model-select {
 }
 
 .smtcmp-settings-model-table tbody td {
+  height: var(--size-4-10);
   padding: var(--size-4-1);
   text-align: left;
   vertical-align: middle;

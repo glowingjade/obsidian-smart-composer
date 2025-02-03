@@ -40,31 +40,37 @@ export const PROVIDER_TYPES_INFO = {
     label: 'OpenAI',
     defaultProviderId: 'openai',
     requireBaseUrl: false,
+    supportEmbedding: true,
   },
   anthropic: {
     label: 'Anthropic',
     defaultProviderId: 'anthropic',
     requireBaseUrl: false,
+    supportEmbedding: false,
   },
   gemini: {
     label: 'Gemini',
     defaultProviderId: 'gemini',
     requireBaseUrl: false,
+    supportEmbedding: true,
   },
   groq: {
     label: 'Groq',
     defaultProviderId: 'groq',
     requireBaseUrl: false,
+    supportEmbedding: false,
   },
   ollama: {
     label: 'Ollama',
     defaultProviderId: 'ollama',
     requireBaseUrl: false,
+    supportEmbedding: true,
   },
   'openai-compatible': {
     label: 'OpenAI Compatible',
     defaultProviderId: null, // no default provider for this type
     requireBaseUrl: true,
+    supportEmbedding: false,
   },
 } as const satisfies Record<
   LLMProviderType,
@@ -72,6 +78,7 @@ export const PROVIDER_TYPES_INFO = {
     label: string
     defaultProviderId: string | null
     requireBaseUrl: boolean
+    supportEmbedding: boolean
   }
 >
 

@@ -15,6 +15,40 @@ import { OpenAICompatibleProvider } from './openaiCompatibleProvider'
  * Groq and Ollama currently do not support usage statistics for streaming responses.
  */
 
+export function getProviderClient({
+  settings,
+  providerId,
+}: {
+  settings: SmartCopilotSettings
+  providerId: string
+}): BaseLLMProvider {
+  const provider = settings.providers.find((p) => p.id === providerId)
+  if (!provider) {
+    throw new Error(`Provider ${providerId} not found`)
+  }
+
+  switch (provider.type) {
+    case 'openai': {
+      return new OpenAIAuthenticatedProvider(provider)
+    }
+    case 'anthropic': {
+      return new AnthropicProvider(provider)
+    }
+    case 'gemini': {
+      return new GeminiProvider(provider)
+    }
+    case 'groq': {
+      return new GroqProvider(provider)
+    }
+    case 'ollama': {
+      return new OllamaProvider(provider)
+    }
+    case 'openai-compatible': {
+      return new OpenAICompatibleProvider(provider)
+    }
+  }
+}
+
 export function getChatModelClient({
   settings,
   modelId,
@@ -30,53 +64,13 @@ export function getChatModelClient({
     throw new Error(`Chat model ${modelId} not found`)
   }
 
-  const chatProvider = settings.providers.find(
-    (provider) => provider.id === chatModel.providerId,
-  )
-  if (!chatProvider) {
-    throw new Error(`Model provider ${chatModel.providerId} not found`)
-  }
+  const providerClient = getProviderClient({
+    settings,
+    providerId: chatModel.providerId,
+  })
 
-  if (chatModel.providerType !== chatProvider.type) {
-    throw new Error('Chat model and provider type do not match')
-  }
-
-  switch (chatProvider.type) {
-    case 'openai': {
-      return {
-        providerClient: new OpenAIAuthenticatedProvider(chatProvider),
-        model: chatModel,
-      }
-    }
-    case 'anthropic': {
-      return {
-        providerClient: new AnthropicProvider(chatProvider),
-        model: chatModel,
-      }
-    }
-    case 'gemini': {
-      return {
-        providerClient: new GeminiProvider(chatProvider),
-        model: chatModel,
-      }
-    }
-    case 'groq': {
-      return {
-        providerClient: new GroqProvider(chatProvider),
-        model: chatModel,
-      }
-    }
-    case 'ollama': {
-      return {
-        providerClient: new OllamaProvider(chatProvider),
-        model: chatModel,
-      }
-    }
-    case 'openai-compatible': {
-      return {
-        providerClient: new OpenAICompatibleProvider(chatProvider),
-        model: chatModel,
-      }
-    }
+  return {
+    providerClient,
+    model: chatModel,
   }
 }
