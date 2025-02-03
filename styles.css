@@ -1130,7 +1130,11 @@ button.smtcmp-chat-input-model-select {
   font-size: var(--h1-size);
   line-height: var(--line-height-tight);
   font-weight: var(--h1-weight);
-  margin: var(--size-4-3) 0;
+  margin: var(--size-4-8) 0 var(--size-4-2) 0;
+}
+
+.smtcmp-settings-header:first-child {
+  margin-top: 0;
 }
 
 .smtcmp-settings-sub-header {
