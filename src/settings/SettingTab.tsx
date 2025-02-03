@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting, setIcon } from 'obsidian'
+import { App, Notice, PluginSettingTab, Setting, setIcon } from 'obsidian'
 
 import {
   DEFAULT_CHAT_MODELS,
@@ -12,11 +12,13 @@ import { findFilesMatchingPatterns } from '../utils/globUtils'
 import { AddChatModelModal } from './AddChatModelModal'
 import { AddEmbeddingModelModal } from './AddEmbeddingModelModal'
 import { AddProviderModal } from './AddProviderModal'
+import { ConfirmModal } from './ConfirmModal'
 import { EditChatModelModal } from './EditChatModelModal'
 import { EditProviderModal } from './EditProviderModal'
 import { EmbeddingDbManageModal } from './EmbeddingDbManageModal'
 import { ExcludedFilesModal } from './ExcludedFilesModal'
 import { IncludedFilesModal } from './IncludedFilesModal'
+import { smartCopilotSettingsSchema } from './schema/setting.types'
 
 export class SmartCopilotSettingTab extends PluginSettingTab {
   plugin: SmartCopilotPlugin
@@ -43,6 +45,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
     this.renderChatSection(containerEl)
 
     this.renderRAGSection(containerEl)
+    this.renderEtcSection(containerEl)
   }
 
   renderProvidersSection(containerEl: HTMLElement): void {
@@ -367,11 +370,11 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
               ]),
             ),
           )
-          .setValue(this.plugin.settings.chatModelId)
+          .setValue(this.plugin.settings.applyModelId)
           .onChange(async (value) => {
             await this.plugin.setSettings({
               ...this.plugin.settings,
-              chatModelId: value,
+              applyModelId: value,
             })
           }),
       )
@@ -591,6 +594,35 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
         button.setButtonText('Manage').onClick(async () => {
           new EmbeddingDbManageModal(this.app, this.plugin).open()
         }),
+      )
+  }
+
+  renderEtcSection(containerEl: HTMLElement): void {
+    containerEl.createDiv({
+      text: 'Etc',
+      cls: 'smtcmp-settings-header',
+    })
+
+    new Setting(containerEl)
+      .setName('Reset settings')
+      .setDesc('Reset all settings to default values')
+      .addButton((button) =>
+        button
+          .setButtonText('Reset')
+          .setWarning()
+          .onClick(() => {
+            new ConfirmModal(
+              this.app,
+              'Reset settings',
+              'Are you sure you want to reset all settings to default values? This cannot be undone.',
+              async () => {
+                const defaultSettings = smartCopilotSettingsSchema.parse({})
+                await this.plugin.setSettings(defaultSettings)
+                new Notice('Settings have been reset to defaults')
+                this.display()
+              },
+            ).open()
+          }),
       )
   }
 
