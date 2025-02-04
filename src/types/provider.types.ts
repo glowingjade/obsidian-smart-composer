@@ -1,11 +1,5 @@
-/**
- * Decisions
- * 1. Prevent duplicate id for provider and models.
- */
-
 import { z } from 'zod'
 
-// TODO: there may exists additional settings for specific provider types (e.g. Azure OpenAI required deployment name)
 export const baseLlmProviderSchema = z.object({
   id: z.string().min(1, 'id is required'),
   baseUrl: z.string().optional(),

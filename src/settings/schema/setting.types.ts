@@ -33,6 +33,7 @@ export const SETTINGS_SCHEMA_VERSION = 2
  * 9. check if provider is valid when adding embedding model (because some providers don't support embedding)
  * 10. When adding embedding model, show message about its dimension (only some dimensions support indexing, so for models that's not included in supported dimensions, performance could be bad)
  * 11. When adding chat/embedding model, check if it's valid (e.g. prevent adding chat model to embedding list, or embedding model to chat list)
+ * 12. Prevent duplicate provider/model ids
  */
 
 /**
