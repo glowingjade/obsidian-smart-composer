@@ -1,10 +1,5 @@
 import { z } from 'zod'
 
-/**
- * TODO
- * 1. should remove groq llama models in default options?
- */
-
 const baseChatModelSchema = z.object({
   providerId: z
     .string({
@@ -23,7 +18,6 @@ const baseChatModelSchema = z.object({
     .min(1, 'model is required'),
 })
 
-// TODO: ensure providerType is valid
 export const chatModelSchema = z.discriminatedUnion('providerType', [
   z.object({
     providerType: z.literal('openai'),

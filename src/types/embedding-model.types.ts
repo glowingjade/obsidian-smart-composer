@@ -19,7 +19,6 @@ const baseEmbeddingModelSchema = z.object({
   dimension: z.number(), // default dimension of the model
 })
 
-// TODO: ensure providerType is valid
 export const embeddingModelSchema = z.discriminatedUnion('providerType', [
   z.object({
     providerType: z.literal('openai'),

@@ -81,6 +81,11 @@ export const PROVIDER_TYPES_INFO = {
   }
 >
 
+/**
+ * Important
+ * 1. When adding new default provider, settings migration should be added
+ * 2. If there's same provider id in user's settings, it's data should be overwritten by default provider
+ */
 export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
   {
     type: 'openai',
@@ -104,6 +109,11 @@ export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
   },
 ]
 
+/**
+ * Important
+ * 1. When adding new default model, settings migration should be added
+ * 2. If there's same model id in user's settings, it's data should be overwritten by default model
+ */
 export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
   {
     providerType: 'anthropic',
@@ -168,6 +178,11 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
   },
 ]
 
+/**
+ * Important
+ * 1. When adding new default embedding model, settings migration should be added
+ * 2. If there's same embedding model id in user's settings, it's data should be overwritten by default embedding model
+ */
 export const DEFAULT_EMBEDDING_MODELS: readonly EmbeddingModel[] = [
   {
     providerType: 'openai',

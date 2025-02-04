@@ -1,15 +1,7 @@
 /**
  * Decisions
- * 1. Let users to add custom providers, and name id as they want. (If there's collision in the future, we'll just overwrite it)
- * 2. Provider types are predefined as it needs to be implemented on our side.
- * 3. Provier settings schema can be different from provider type.
- * 4. Users can't remove default providers and models. (What's being added as default can change in the future.)
- * 5. Prevent duplicate id for provider and models. Also don't allow using default provider/model ids.
- * 6. If user deletes provider, then corresponding models also should be deleted.
+ * 1. Prevent duplicate id for provider and models.
  */
-// TODO: would it be better to flatten out provider/model settings? so that provider settings sit inside model settings.
-// it could be annoying to add API keys for every model I want to use, but easier to understand.
-// but if I provide default provider and models first, it wouldn't be a problem for onboarding. Users just have to input api key and use.
 
 import { z } from 'zod'
 
