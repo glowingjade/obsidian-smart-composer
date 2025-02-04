@@ -459,4 +459,65 @@ describe('settings 1_to_2 migration', () => {
       },
     })
   })
+
+  it('should fallback to default model when grok model is specified', () => {
+    const oldSettings = {
+      version: 1,
+      openAIApiKey: '',
+      anthropicApiKey: '',
+      geminiApiKey: '',
+      groqApiKey: '',
+
+      chatModelId: 'groq/llama-3.1-70b-versatile',
+      ollamaChatModel: { baseUrl: '', model: '' },
+      openAICompatibleChatModel: { baseUrl: '', apiKey: '', model: '' },
+
+      applyModelId: 'groq/llama-3.1-8b-instant',
+      ollamaApplyModel: { baseUrl: '', model: '' },
+      openAICompatibleApplyModel: { baseUrl: '', apiKey: '', model: '' },
+
+      embeddingModelId: 'openai/text-embedding-3-small',
+      ollamaEmbeddingModel: { baseUrl: '', model: '' },
+
+      systemPrompt: '',
+      ragOptions: {
+        chunkSize: 1000,
+        thresholdTokens: 8192,
+        minSimilarity: 0,
+        limit: 10,
+        excludePatterns: [],
+        includePatterns: [],
+      },
+    }
+
+    const result = migrateFrom1To2(oldSettings)
+    expect(result).toEqual({
+      version: 2,
+
+      providers: [
+        { type: 'openai', id: 'openai', apiKey: '' },
+        { type: 'anthropic', id: 'anthropic', apiKey: '' },
+        { type: 'gemini', id: 'gemini', apiKey: '' },
+        { type: 'groq', id: 'groq', apiKey: '' },
+        { type: 'ollama', id: 'ollama', baseUrl: '' },
+      ],
+
+      chatModels: V2_DEFAULT_CHAT_MODELS,
+      embeddingModels: V2_DEFAULT_EMBEDDING_MODELS,
+
+      chatModelId: 'gpt-4o',
+      applyModelId: 'gpt-4o-mini',
+      embeddingModelId: 'openai/text-embedding-3-small',
+
+      systemPrompt: '',
+      ragOptions: {
+        chunkSize: 1000,
+        thresholdTokens: 8192,
+        minSimilarity: 0,
+        limit: 10,
+        excludePatterns: [],
+        includePatterns: [],
+      },
+    })
+  })
 })

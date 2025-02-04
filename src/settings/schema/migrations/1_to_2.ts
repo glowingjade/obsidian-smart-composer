@@ -580,8 +580,8 @@ export const migrateFrom1To2: SettingMigration['migrate'] = (
     'gemini/gemini-1.5-flash': 'gemini-1.5-flash',
 
     // Groq models
-    'groq/llama-3.1-70b-versatile': 'groq/llama-3.1-70b',
-    'groq/llama-3.1-8b-instant': 'groq/llama-3.1-8b',
+    'groq/llama-3.1-70b-versatile': 'gpt-4o', // fallback to gpt-4o because groq/llama-3.1-70b is not in the default models
+    'groq/llama-3.1-8b-instant': 'gpt-4o-mini', // fallback to gpt-4o-mini because groq/llama-3.1-8b is not in the default models
   }
 
   let chatModelId =
