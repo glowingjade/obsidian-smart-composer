@@ -6,6 +6,7 @@ import { ChatMessage, ChatUserMessage } from '../types/chat'
 import { ChatModel } from '../types/chat-model.types'
 import { RequestMessage } from '../types/llm/request'
 import { MentionableBlock, MentionableFile } from '../types/mentionable'
+import { LLMProvider } from '../types/provider.types'
 
 const systemPrompt = `You are an intelligent assistant helping a user apply changes to a markdown file.
 
@@ -92,7 +93,7 @@ export const applyChangesToFile = async ({
   currentFile: TFile
   currentFileContent: string
   chatMessages: ChatMessage[]
-  providerClient: BaseLLMProvider
+  providerClient: BaseLLMProvider<LLMProvider>
   model: ChatModel
 }): Promise<string | null> => {
   const requestMessages: RequestMessage[] = [

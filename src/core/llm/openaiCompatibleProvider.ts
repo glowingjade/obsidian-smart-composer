@@ -16,7 +16,9 @@ import { BaseLLMProvider } from './base'
 import { LLMBaseUrlNotSetException, LLMModelNotSetException } from './exception'
 import { OpenAIMessageAdapter } from './openaiMessageAdapter'
 
-export class OpenAICompatibleProvider extends BaseLLMProvider {
+export class OpenAICompatibleProvider extends BaseLLMProvider<
+  Extract<LLMProvider, { type: 'openai-compatible' }>
+> {
   private adapter: OpenAIMessageAdapter
   private client: OpenAI
 
@@ -25,7 +27,7 @@ export class OpenAICompatibleProvider extends BaseLLMProvider {
     this.adapter = new OpenAIMessageAdapter()
     this.client = new OpenAI({
       apiKey: provider.apiKey ?? '',
-      baseURL: provider.baseUrl ?? '',
+      baseURL: provider.baseUrl?.replace(/\/+$/, '') ?? '',
       dangerouslyAllowBrowser: true,
     })
   }

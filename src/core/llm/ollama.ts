@@ -19,7 +19,7 @@ import {
 import { LLMProvider } from '../../types/provider.types'
 
 import { BaseLLMProvider } from './base'
-import { LLMBaseUrlNotSetException, LLMModelNotSetException } from './exception'
+import { LLMModelNotSetException } from './exception'
 import { OpenAIMessageAdapter } from './openaiMessageAdapter'
 
 export class NoStainlessOpenAI extends OpenAI {
@@ -46,7 +46,9 @@ export class NoStainlessOpenAI extends OpenAI {
   }
 }
 
-export class OllamaProvider extends BaseLLMProvider {
+export class OllamaProvider extends BaseLLMProvider<
+  Extract<LLMProvider, { type: 'ollama' }>
+> {
   private adapter: OpenAIMessageAdapter
   private client: NoStainlessOpenAI
 
@@ -54,7 +56,7 @@ export class OllamaProvider extends BaseLLMProvider {
     super(provider)
     this.adapter = new OpenAIMessageAdapter()
     this.client = new NoStainlessOpenAI({
-      baseURL: `${provider.baseUrl ?? ''}/v1`,
+      baseURL: `${provider.baseUrl ? provider.baseUrl.replace(/\/+$/, '') : 'http://127.0.0.1:11434'}/v1`,
       apiKey: provider.apiKey ?? '',
       dangerouslyAllowBrowser: true,
     })
@@ -67,12 +69,6 @@ export class OllamaProvider extends BaseLLMProvider {
   ): Promise<LLMResponseNonStreaming> {
     if (model.providerType !== 'ollama') {
       throw new Error('Model is not an Ollama model')
-    }
-
-    if (!this.provider.baseUrl) {
-      throw new LLMBaseUrlNotSetException(
-        `Provider ${this.provider.id} base URL is missing. Please set it in settings menu.`,
-      )
     }
 
     if (!model.model) {
@@ -93,12 +89,6 @@ export class OllamaProvider extends BaseLLMProvider {
       throw new Error('Model is not an Ollama model')
     }
 
-    if (!this.provider.baseUrl) {
-      throw new LLMBaseUrlNotSetException(
-        `Provider ${this.provider.id} base URL is missing. Please set it in settings menu.`,
-      )
-    }
-
     if (!model.model) {
       throw new LLMModelNotSetException(
         `Provider ${this.provider.id} model is missing. Please set it in settings menu.`,
@@ -109,12 +99,6 @@ export class OllamaProvider extends BaseLLMProvider {
   }
 
   async getEmbedding(model: string, text: string): Promise<number[]> {
-    if (!this.provider.baseUrl) {
-      throw new LLMBaseUrlNotSetException(
-        `Provider ${this.provider.id} base URL is missing. Please set it in settings menu.`,
-      )
-    }
-
     const embedding = await this.client.embeddings.create({
       model: model,
       input: text,

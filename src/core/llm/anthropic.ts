@@ -27,7 +27,9 @@ import {
   LLMAPIKeyNotSetException,
 } from './exception'
 
-export class AnthropicProvider extends BaseLLMProvider {
+export class AnthropicProvider extends BaseLLMProvider<
+  Extract<LLMProvider, { type: 'anthropic' }>
+> {
   private client: Anthropic
 
   private static readonly DEFAULT_MAX_TOKENS = 8192
@@ -36,6 +38,9 @@ export class AnthropicProvider extends BaseLLMProvider {
     super(provider)
     this.client = new Anthropic({
       apiKey: provider.apiKey,
+      baseURL: provider.baseUrl
+        ? provider.baseUrl.replace(/\/+$/, '')
+        : undefined, // use default
       dangerouslyAllowBrowser: true,
     })
   }

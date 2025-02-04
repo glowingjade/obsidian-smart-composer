@@ -25,13 +25,18 @@ import {
   LLMAPIKeyNotSetException,
 } from './exception'
 
-export class GroqProvider extends BaseLLMProvider {
+export class GroqProvider extends BaseLLMProvider<
+  Extract<LLMProvider, { type: 'groq' }>
+> {
   private client: Groq
 
   constructor(provider: Extract<LLMProvider, { type: 'groq' }>) {
     super(provider)
     this.client = new Groq({
       apiKey: provider.apiKey,
+      baseURL: provider.baseUrl
+        ? provider.baseUrl.replace(/\/+$/, '')
+        : undefined, // use default
       dangerouslyAllowBrowser: true,
     })
   }

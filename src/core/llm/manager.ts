@@ -1,5 +1,6 @@
 import { SmartCopilotSettings } from '../../settings/schema/setting.types'
 import { ChatModel } from '../../types/chat-model.types'
+import { LLMProvider } from '../../types/provider.types'
 
 import { AnthropicProvider } from './anthropic'
 import { BaseLLMProvider } from './base'
@@ -21,7 +22,7 @@ export function getProviderClient({
 }: {
   settings: SmartCopilotSettings
   providerId: string
-}): BaseLLMProvider {
+}): BaseLLMProvider<LLMProvider> {
   const provider = settings.providers.find((p) => p.id === providerId)
   if (!provider) {
     throw new Error(`Provider ${providerId} not found`)
@@ -56,7 +57,7 @@ export function getChatModelClient({
   settings: SmartCopilotSettings
   modelId: string
 }): {
-  providerClient: BaseLLMProvider
+  providerClient: BaseLLMProvider<LLMProvider>
   model: ChatModel
 } {
   const chatModel = settings.chatModels.find((model) => model.id === modelId)

@@ -34,12 +34,18 @@ import {
  * preventing its use in Obsidian. Consider switching to this endpoint in the future once these
  * issues are resolved.
  */
-export class GeminiProvider extends BaseLLMProvider {
+export class GeminiProvider extends BaseLLMProvider<
+  Extract<LLMProvider, { type: 'gemini' }>
+> {
   private client: GoogleGenerativeAI
   private apiKey: string
 
   constructor(provider: Extract<LLMProvider, { type: 'gemini' }>) {
     super(provider)
+    if (provider.baseUrl) {
+      throw new Error('Gemini does not support custom base URL')
+    }
+
     this.client = new GoogleGenerativeAI(provider.apiKey ?? '')
     this.apiKey = provider.apiKey ?? ''
   }

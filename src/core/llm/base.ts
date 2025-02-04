@@ -11,9 +11,9 @@ import {
 import { LLMProvider } from '../../types/provider.types'
 
 // TODO: do these really have to be class? why not just function?
-export abstract class BaseLLMProvider {
-  protected readonly provider: LLMProvider
-  constructor(provider: LLMProvider) {
+export abstract class BaseLLMProvider<P extends LLMProvider> {
+  protected readonly provider: P
+  constructor(provider: P) {
     this.provider = provider
   }
 

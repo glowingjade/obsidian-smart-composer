@@ -20,7 +20,9 @@ import {
 } from './exception'
 import { OpenAIMessageAdapter } from './openaiMessageAdapter'
 
-export class OpenAIAuthenticatedProvider extends BaseLLMProvider {
+export class OpenAIAuthenticatedProvider extends BaseLLMProvider<
+  Extract<LLMProvider, { type: 'openai' }>
+> {
   private adapter: OpenAIMessageAdapter
   private client: OpenAI
 
@@ -28,6 +30,9 @@ export class OpenAIAuthenticatedProvider extends BaseLLMProvider {
     super(provider)
     this.client = new OpenAI({
       apiKey: provider.apiKey,
+      baseURL: provider.baseUrl
+        ? provider.baseUrl.replace(/\/+$/, '')
+        : undefined, // use default
       dangerouslyAllowBrowser: true,
     })
     this.adapter = new OpenAIMessageAdapter()
