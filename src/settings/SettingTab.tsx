@@ -263,6 +263,17 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
         const removeButton = actionsContainer.createEl('button')
         setIcon(removeButton, 'trash')
         removeButton.addEventListener('click', async () => {
+          // Check if model is currently in use
+          if (
+            chatModel.id === this.plugin.settings.chatModelId ||
+            chatModel.id === this.plugin.settings.applyModelId
+          ) {
+            new Notice(
+              'Cannot remove model that is currently selected as Chat Model or Apply Model',
+            )
+            return
+          }
+
           await this.plugin.setSettings({
             ...this.plugin.settings,
             chatModels: [...this.plugin.settings.chatModels].filter(
@@ -342,6 +353,14 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
         const removeButton = actionsContainer.createEl('button')
         setIcon(removeButton, 'trash')
         removeButton.addEventListener('click', async () => {
+          // Check if model is currently in use
+          if (embeddingModel.id === this.plugin.settings.embeddingModelId) {
+            new Notice(
+              'Cannot remove model that is currently selected as Embedding Model',
+            )
+            return
+          }
+
           const message =
             `Are you sure you want to delete embedding model "${embeddingModel.id}"?\n\n` +
             `This will also delete all embeddings generated using this model from the database.`
