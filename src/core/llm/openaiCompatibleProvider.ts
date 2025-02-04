@@ -41,13 +41,13 @@ export class OpenAICompatibleProvider extends BaseLLMProvider {
 
     if (!this.provider.baseUrl) {
       throw new LLMBaseUrlNotSetException(
-        'OpenAI Compatible base URL is missing. Please set it in settings menu.',
+        `Provider ${this.provider.id} base URL is missing. Please set it in settings menu.`,
       )
     }
 
     if (!model.model) {
       throw new LLMModelNotSetException(
-        'OpenAI Compatible model is missing. Please set it in settings menu.',
+        `Provider ${this.provider.id} model is missing. Please set it in settings menu.`,
       )
     }
 
@@ -65,13 +65,13 @@ export class OpenAICompatibleProvider extends BaseLLMProvider {
 
     if (!this.provider.baseUrl) {
       throw new LLMBaseUrlNotSetException(
-        'OpenAI Compatible base URL is missing. Please set it in settings menu.',
+        `Provider ${this.provider.id} base URL is missing. Please set it in settings menu.`,
       )
     }
 
     if (!model.model) {
       throw new LLMModelNotSetException(
-        'OpenAI Compatible model is missing. Please set it in settings menu.',
+        `Provider ${this.provider.id} model is missing. Please set it in settings menu.`,
       )
     }
 
@@ -81,13 +81,13 @@ export class OpenAICompatibleProvider extends BaseLLMProvider {
   async getEmbedding(model: string, text: string): Promise<number[]> {
     if (!this.provider.baseUrl) {
       throw new LLMBaseUrlNotSetException(
-        'OpenAI Compatible base URL is missing. Please set it in settings menu.',
+        `Provider ${this.provider.id} base URL is missing. Please set it in settings menu.`,
       )
     }
 
     if (!model) {
       throw new LLMModelNotSetException(
-        'OpenAI Compatible model is missing. Please set it in settings menu.',
+        `Provider ${this.provider.id} model is missing. Please set it in settings menu.`,
       )
     }
 

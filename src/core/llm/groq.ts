@@ -47,7 +47,7 @@ export class GroqProvider extends BaseLLMProvider {
 
     if (!this.client.apiKey) {
       throw new LLMAPIKeyNotSetException(
-        'Groq API key is missing. Please set it in settings menu.',
+        `Provider ${this.provider.id} API key is missing. Please set it in settings menu.`,
       )
     }
 
@@ -70,7 +70,7 @@ export class GroqProvider extends BaseLLMProvider {
     } catch (error) {
       if (error instanceof Groq.AuthenticationError) {
         throw new LLMAPIKeyInvalidException(
-          'Groq API key is invalid. Please update it in settings menu.',
+          `Provider ${this.provider.id} API key is invalid. Please update it in settings menu.`,
         )
       }
       throw error
@@ -88,7 +88,7 @@ export class GroqProvider extends BaseLLMProvider {
 
     if (!this.client.apiKey) {
       throw new LLMAPIKeyNotSetException(
-        'Groq API key is missing. Please set it in settings menu.',
+        `Provider ${this.provider.id} API key is missing. Please set it in settings menu.`,
       )
     }
 
@@ -120,7 +120,7 @@ export class GroqProvider extends BaseLLMProvider {
     } catch (error) {
       if (error instanceof Groq.AuthenticationError) {
         throw new LLMAPIKeyInvalidException(
-          'Groq API key is invalid. Please update it in settings menu.',
+          `Provider ${this.provider.id} API key is invalid. Please update it in settings menu.`,
         )
       }
       throw error
@@ -129,7 +129,7 @@ export class GroqProvider extends BaseLLMProvider {
 
   async getEmbedding(_model: string, _text: string): Promise<number[]> {
     throw new Error(
-      'Groq does not support embeddings. Please use a different provider.',
+      `Provider ${this.provider.id} does not support embeddings. Please use a different provider.`,
     )
   }
 

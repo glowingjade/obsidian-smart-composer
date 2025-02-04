@@ -44,7 +44,7 @@ export class OpenAIAuthenticatedProvider extends BaseLLMProvider {
 
     if (!this.client.apiKey) {
       throw new LLMAPIKeyNotSetException(
-        'OpenAI API key is missing. Please set it in settings menu.',
+        `Provider ${this.provider.id} API key is missing. Please set it in settings menu.`,
       )
     }
     try {
@@ -132,7 +132,7 @@ export class OpenAIAuthenticatedProvider extends BaseLLMProvider {
 
     if (!this.client.apiKey) {
       throw new LLMAPIKeyNotSetException(
-        'OpenAI API key is missing. Please set it in settings menu.',
+        `Provider ${this.provider.id} API key is missing. Please set it in settings menu.`,
       )
     }
     try {
@@ -152,7 +152,7 @@ export class OpenAIAuthenticatedProvider extends BaseLLMProvider {
   async getEmbedding(model: string, text: string): Promise<number[]> {
     if (!this.client.apiKey) {
       throw new LLMAPIKeyNotSetException(
-        'OpenAI API key is missing. Please set it in settings menu.', // TODO: show provide id instead
+        `Provider ${this.provider.id} API key is missing. Please set it in settings menu.`,
       )
     }
 

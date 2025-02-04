@@ -55,7 +55,7 @@ export class GeminiProvider extends BaseLLMProvider {
 
     if (!this.apiKey) {
       throw new LLMAPIKeyNotSetException(
-        `Gemini API key is missing. Please set it in settings menu.`,
+        `Provider ${this.provider.id} API key is missing. Please set it in settings menu.`,
       )
     }
 
@@ -103,7 +103,7 @@ export class GeminiProvider extends BaseLLMProvider {
 
       if (isInvalidApiKey) {
         throw new LLMAPIKeyInvalidException(
-          `Gemini API key is invalid. Please update it in settings menu.`,
+          `Provider ${this.provider.id} API key is invalid. Please update it in settings menu.`,
         )
       }
 
@@ -122,7 +122,7 @@ export class GeminiProvider extends BaseLLMProvider {
 
     if (!this.apiKey) {
       throw new LLMAPIKeyNotSetException(
-        `Gemini API key is missing. Please set it in settings menu.`,
+        `Provider ${this.provider.id} API key is missing. Please set it in settings menu.`,
       )
     }
 
@@ -303,7 +303,7 @@ export class GeminiProvider extends BaseLLMProvider {
   async getEmbedding(model: string, text: string): Promise<number[]> {
     if (!this.apiKey) {
       throw new LLMAPIKeyNotSetException(
-        'Gemini API key is missing. Please set it in settings menu.',
+        `Provider ${this.provider.id} API key is missing. Please set it in settings menu.`,
       )
     }
 
