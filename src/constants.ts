@@ -234,3 +234,10 @@ export const DEFAULT_EMBEDDING_MODELS: readonly EmbeddingModel[] = [
     dimension: 1024,
   },
 ]
+
+// use ids
+export const RECOMMENDED_MODELS_FOR_CHAT = ['claude-3.5-sonnet', 'gpt-4o']
+export const RECOMMENDED_MODELS_FOR_APPLY = ['gpt-4o-mini']
+export const RECOMMENDED_MODELS_FOR_EMBEDDING = [
+  'openai/text-embedding-3-small',
+]

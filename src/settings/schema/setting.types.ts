@@ -22,18 +22,12 @@ export const SETTINGS_SCHEMA_VERSION = 2
 
 /**
  * TODO
- * 1. since default chat model and apply model shares same model list, we should let users know that lighter model is good for apply feature.
  * 2. Let users hide default models in model dropdown
- * 3. show recommended for models
  * 4. Add tests that ensure default provider/model ids are unique (can we enforce it by zod schema?)
- * 5. On migration, should create provider if user have set openAI compatible models (multiple ones if settings differ)
- * 6. validate settings with zod schema before saving on SettingTab
- * 7. Ensure provider for chat/embedding models exists (should remove models when provider is removed)
- * 8. delete embeddings in database when embedding model is removed
- * 9. check if provider is valid when adding embedding model (because some providers don't support embedding)
- * 10. When adding embedding model, show message about its dimension (only some dimensions support indexing, so for models that's not included in supported dimensions, performance could be bad)
- * 11. When adding chat/embedding model, check if it's valid (e.g. prevent adding chat model to embedding list, or embedding model to chat list)
- * 12. Prevent duplicate provider/model ids
+ * 5. validate settings with zod schema before saving on SettingTab
+ * 6. Ensure provider for chat/embedding models exists (should remove models when provider is removed)
+ * 7. When adding embedding model, show message about its dimension (only some dimensions support indexing, so for models that's not included in supported dimensions, performance could be bad)
+ * 8. When adding chat/embedding model, check if it's valid (e.g. prevent adding chat model to embedding list, or embedding model to chat list)
  */
 
 /**

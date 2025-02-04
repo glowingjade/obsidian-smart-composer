@@ -5,6 +5,9 @@ import {
   DEFAULT_EMBEDDING_MODELS,
   DEFAULT_PROVIDERS,
   PROVIDER_TYPES_INFO,
+  RECOMMENDED_MODELS_FOR_APPLY,
+  RECOMMENDED_MODELS_FOR_CHAT,
+  RECOMMENDED_MODELS_FOR_EMBEDDING,
 } from '../constants'
 import { getEmbeddingModelClient } from '../core/rag/embedding'
 import SmartCopilotPlugin from '../main'
@@ -432,7 +435,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
             Object.fromEntries(
               this.plugin.settings.chatModels.map((chatModel) => [
                 chatModel.id,
-                chatModel.id,
+                `${chatModel.id}${RECOMMENDED_MODELS_FOR_CHAT.includes(chatModel.id) ? ' (Recommended)' : ''}`,
               ]),
             ),
           )
@@ -454,7 +457,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
             Object.fromEntries(
               this.plugin.settings.chatModels.map((chatModel) => [
                 chatModel.id,
-                chatModel.id,
+                `${chatModel.id}${RECOMMENDED_MODELS_FOR_APPLY.includes(chatModel.id) ? ' (Recommended)' : ''}`,
               ]),
             ),
           )
@@ -501,7 +504,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
             Object.fromEntries(
               this.plugin.settings.embeddingModels.map((embeddingModel) => [
                 embeddingModel.id,
-                embeddingModel.id,
+                `${embeddingModel.id}${RECOMMENDED_MODELS_FOR_EMBEDDING.includes(embeddingModel.id) ? ' (Recommended)' : ''}`,
               ]),
             ),
           )
