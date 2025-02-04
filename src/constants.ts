@@ -148,12 +148,6 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     model: 'gemini-exp-1206',
   },
   {
-    providerType: 'groq',
-    providerId: PROVIDER_TYPES_INFO.groq.defaultProviderId,
-    id: 'groq/llama-3.1-70b',
-    model: 'llama-3.1-70b-versatile',
-  },
-  {
     providerType: 'openai',
     providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
     id: 'o1',
@@ -171,12 +165,6 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
     id: 'gemini-1.5-flash',
     model: 'gemini-1.5-flash',
-  },
-  {
-    providerType: 'groq',
-    providerId: PROVIDER_TYPES_INFO.groq.defaultProviderId,
-    id: 'groq/llama-3.1-8b',
-    model: 'llama-3.1-8b-instant',
   },
 ]
 

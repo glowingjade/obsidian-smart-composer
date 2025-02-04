@@ -1,11 +1,8 @@
 import {
-  DEFAULT_CHAT_MODELS,
-  DEFAULT_EMBEDDING_MODELS,
-} from '../../../constants'
-
-import { migrateFrom1To2 } from './1_to_2'
-
-// TODO: should add tests more thoroughly
+  V2_DEFAULT_CHAT_MODELS,
+  V2_DEFAULT_EMBEDDING_MODELS,
+  migrateFrom1To2,
+} from './1_to_2'
 
 describe('settings 1_to_2 migration', () => {
   it('should migrate from v1 to v2', () => {
@@ -95,7 +92,7 @@ describe('settings 1_to_2 migration', () => {
       ],
 
       chatModels: [
-        ...DEFAULT_CHAT_MODELS,
+        ...V2_DEFAULT_CHAT_MODELS,
         {
           providerType: 'ollama',
           providerId: 'ollama',
@@ -110,7 +107,7 @@ describe('settings 1_to_2 migration', () => {
         },
       ],
 
-      embeddingModels: DEFAULT_EMBEDDING_MODELS,
+      embeddingModels: V2_DEFAULT_EMBEDDING_MODELS,
 
       chatModelId: 'claude-3.5-sonnet',
       applyModelId: 'gpt-4o-mini',
@@ -171,8 +168,8 @@ describe('settings 1_to_2 migration', () => {
         { type: 'ollama', id: 'ollama', baseUrl: '' },
       ],
 
-      chatModels: DEFAULT_CHAT_MODELS,
-      embeddingModels: DEFAULT_EMBEDDING_MODELS,
+      chatModels: V2_DEFAULT_CHAT_MODELS,
+      embeddingModels: V2_DEFAULT_EMBEDDING_MODELS,
 
       chatModelId: 'claude-3.5-sonnet',
       applyModelId: 'gpt-4o-mini',
@@ -244,7 +241,7 @@ describe('settings 1_to_2 migration', () => {
       ],
 
       chatModels: [
-        ...DEFAULT_CHAT_MODELS,
+        ...V2_DEFAULT_CHAT_MODELS,
         {
           providerType: 'ollama',
           providerId: 'ollama',
@@ -259,7 +256,7 @@ describe('settings 1_to_2 migration', () => {
         },
       ],
 
-      embeddingModels: DEFAULT_EMBEDDING_MODELS,
+      embeddingModels: V2_DEFAULT_EMBEDDING_MODELS,
 
       chatModelId: 'ollama/ollama-chat',
       applyModelId: 'ollama-1/ollama-apply',
@@ -332,7 +329,7 @@ describe('settings 1_to_2 migration', () => {
       ],
 
       chatModels: [
-        ...DEFAULT_CHAT_MODELS,
+        ...V2_DEFAULT_CHAT_MODELS,
         {
           providerType: 'ollama',
           providerId: 'ollama-1',
@@ -347,7 +344,7 @@ describe('settings 1_to_2 migration', () => {
         },
       ],
 
-      embeddingModels: DEFAULT_EMBEDDING_MODELS,
+      embeddingModels: V2_DEFAULT_EMBEDDING_MODELS,
 
       chatModelId: 'ollama-1/ollama-chat',
       applyModelId: 'ollama-2/ollama-apply',
@@ -430,7 +427,7 @@ describe('settings 1_to_2 migration', () => {
       ],
 
       chatModels: [
-        ...DEFAULT_CHAT_MODELS,
+        ...V2_DEFAULT_CHAT_MODELS,
         {
           providerType: 'openai-compatible',
           providerId: 'custom-1',
@@ -445,7 +442,7 @@ describe('settings 1_to_2 migration', () => {
         },
       ],
 
-      embeddingModels: DEFAULT_EMBEDDING_MODELS,
+      embeddingModels: V2_DEFAULT_EMBEDDING_MODELS,
 
       chatModelId: 'custom-1/custom-chat-model',
       applyModelId: 'custom-2/custom-apply-model',

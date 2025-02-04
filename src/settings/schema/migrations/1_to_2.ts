@@ -1,13 +1,8 @@
 import { z } from 'zod'
 
-import {
-  DEFAULT_CHAT_MODELS,
-  DEFAULT_EMBEDDING_MODELS,
-  DEFAULT_PROVIDERS,
-  PROVIDER_TYPES_INFO,
-} from '../../../constants'
 import { ChatModel } from '../../../types/chat-model.types'
-import { LLMProvider } from '../../../types/provider.types'
+import { EmbeddingModel } from '../../../types/embedding-model.types'
+import { LLMProvider, LLMProviderType } from '../../../types/provider.types'
 import { SettingMigration, SmartCopilotSettings } from '../setting.types'
 
 type NativeLLMModel = {
@@ -365,11 +360,206 @@ const smartCopilotSettingsSchemaV1 = z.object({
 })
 type SmartCopilotSettingsV1 = z.infer<typeof smartCopilotSettingsSchemaV1>
 
+/**
+ * V2 constants
+ */
+
+export const V2_PROVIDER_TYPES_INFO = {
+  openai: {
+    label: 'OpenAI',
+    defaultProviderId: 'openai',
+    requireBaseUrl: false,
+    supportEmbedding: true,
+  },
+  anthropic: {
+    label: 'Anthropic',
+    defaultProviderId: 'anthropic',
+    requireBaseUrl: false,
+    supportEmbedding: false,
+  },
+  gemini: {
+    label: 'Gemini',
+    defaultProviderId: 'gemini',
+    requireBaseUrl: false,
+    supportEmbedding: true,
+  },
+  groq: {
+    label: 'Groq',
+    defaultProviderId: 'groq',
+    requireBaseUrl: false,
+    supportEmbedding: false,
+  },
+  ollama: {
+    label: 'Ollama',
+    defaultProviderId: 'ollama',
+    requireBaseUrl: false,
+    supportEmbedding: true,
+  },
+  'openai-compatible': {
+    label: 'OpenAI Compatible',
+    defaultProviderId: null, // no default provider for this type
+    requireBaseUrl: true,
+    supportEmbedding: false,
+  },
+} as const satisfies Record<
+  LLMProviderType,
+  {
+    label: string
+    defaultProviderId: string | null
+    requireBaseUrl: boolean
+    supportEmbedding: boolean
+  }
+>
+
+export const V2_DEFAULT_PROVIDERS: readonly LLMProvider[] = [
+  {
+    type: 'openai',
+    id: V2_PROVIDER_TYPES_INFO.openai.defaultProviderId,
+  },
+  {
+    type: 'anthropic',
+    id: V2_PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
+  },
+  {
+    type: 'gemini',
+    id: V2_PROVIDER_TYPES_INFO.gemini.defaultProviderId,
+  },
+  {
+    type: 'groq',
+    id: V2_PROVIDER_TYPES_INFO.groq.defaultProviderId,
+  },
+  {
+    type: 'ollama',
+    id: V2_PROVIDER_TYPES_INFO.ollama.defaultProviderId,
+  },
+]
+
+export const V2_DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
+  {
+    providerType: 'anthropic',
+    providerId: V2_PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
+    id: 'claude-3.5-sonnet',
+    model: 'claude-3-5-sonnet-latest',
+  },
+  {
+    providerType: 'openai',
+    providerId: V2_PROVIDER_TYPES_INFO.openai.defaultProviderId,
+    id: 'gpt-4o',
+    model: 'gpt-4o',
+  },
+  {
+    providerType: 'openai',
+    providerId: V2_PROVIDER_TYPES_INFO.openai.defaultProviderId,
+    id: 'gpt-4o-mini',
+    model: 'gpt-4o-mini',
+  },
+  {
+    providerType: 'gemini',
+    providerId: V2_PROVIDER_TYPES_INFO.gemini.defaultProviderId,
+    id: 'gemini-1.5-pro',
+    model: 'gemini-1.5-pro',
+  },
+  {
+    providerType: 'gemini',
+    providerId: V2_PROVIDER_TYPES_INFO.gemini.defaultProviderId,
+    id: 'gemini-2.0-flash',
+    model: 'gemini-2.0-flash-exp',
+  },
+  {
+    providerType: 'gemini',
+    providerId: V2_PROVIDER_TYPES_INFO.gemini.defaultProviderId,
+    id: 'gemini-2.0-flash-thinking',
+    model: 'gemini-2.0-flash-thinking-exp',
+  },
+  {
+    providerType: 'gemini',
+    providerId: V2_PROVIDER_TYPES_INFO.gemini.defaultProviderId,
+    id: 'gemini-exp-1206',
+    model: 'gemini-exp-1206',
+  },
+  {
+    providerType: 'groq',
+    providerId: V2_PROVIDER_TYPES_INFO.groq.defaultProviderId,
+    id: 'groq/llama-3.1-70b',
+    model: 'llama-3.1-70b-versatile',
+  },
+  {
+    providerType: 'openai',
+    providerId: V2_PROVIDER_TYPES_INFO.openai.defaultProviderId,
+    id: 'o1',
+    model: 'o1',
+    streamingDisabled: true, // currently, o1 API doesn't support streaming
+  },
+  {
+    providerType: 'anthropic',
+    providerId: V2_PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
+    id: 'claude-3.5-haiku',
+    model: 'claude-3-5-haiku-latest',
+  },
+  {
+    providerType: 'gemini',
+    providerId: V2_PROVIDER_TYPES_INFO.gemini.defaultProviderId,
+    id: 'gemini-1.5-flash',
+    model: 'gemini-1.5-flash',
+  },
+  {
+    providerType: 'groq',
+    providerId: V2_PROVIDER_TYPES_INFO.groq.defaultProviderId,
+    id: 'groq/llama-3.1-8b',
+    model: 'llama-3.1-8b-instant',
+  },
+]
+
+export const V2_DEFAULT_EMBEDDING_MODELS: readonly EmbeddingModel[] = [
+  {
+    providerType: 'openai',
+    providerId: V2_PROVIDER_TYPES_INFO.openai.defaultProviderId,
+    id: 'openai/text-embedding-3-small',
+    model: 'text-embedding-3-small',
+    dimension: 1536,
+  },
+  {
+    providerType: 'openai',
+    providerId: V2_PROVIDER_TYPES_INFO.openai.defaultProviderId,
+    id: 'openai/text-embedding-3-large',
+    model: 'text-embedding-3-large',
+    dimension: 3072,
+  },
+  {
+    providerType: 'gemini',
+    providerId: V2_PROVIDER_TYPES_INFO.gemini.defaultProviderId,
+    id: 'gemini/text-embedding-004',
+    model: 'text-embedding-004',
+    dimension: 768,
+  },
+  {
+    providerType: 'ollama',
+    providerId: V2_PROVIDER_TYPES_INFO.ollama.defaultProviderId,
+    id: 'ollama/nomic-embed-text',
+    model: 'nomic-embed-text',
+    dimension: 768,
+  },
+  {
+    providerType: 'ollama',
+    providerId: V2_PROVIDER_TYPES_INFO.ollama.defaultProviderId,
+    id: 'ollama/mxbai-embed-large',
+    model: 'mxbai-embed-large',
+    dimension: 1024,
+  },
+  {
+    providerType: 'ollama',
+    providerId: V2_PROVIDER_TYPES_INFO.ollama.defaultProviderId,
+    id: 'ollama/bge-m3',
+    model: 'bge-m3',
+    dimension: 1024,
+  },
+]
+
 export const migrateFrom1To2: SettingMigration['migrate'] = (
   data: SmartCopilotSettingsV1,
 ): SmartCopilotSettings => {
-  const providers: LLMProvider[] = [...DEFAULT_PROVIDERS]
-  const chatModels: ChatModel[] = [...DEFAULT_CHAT_MODELS]
+  const providers: LLMProvider[] = [...V2_DEFAULT_PROVIDERS]
+  const chatModels: ChatModel[] = [...V2_DEFAULT_CHAT_MODELS]
 
   // Map old model IDs to new model IDs
   const MODEL_ID_MAP: Record<string, string> = {
@@ -394,11 +584,12 @@ export const migrateFrom1To2: SettingMigration['migrate'] = (
     'groq/llama-3.1-8b-instant': 'groq/llama-3.1-8b',
   }
 
-  let chatModelId = MODEL_ID_MAP[data.chatModelId] ?? DEFAULT_CHAT_MODELS[0].id
+  let chatModelId =
+    MODEL_ID_MAP[data.chatModelId] ?? V2_DEFAULT_CHAT_MODELS[0].id
   let applyModelId =
     MODEL_ID_MAP[data.applyModelId] ??
-    DEFAULT_CHAT_MODELS.find((v) => v.id === 'gpt-4o-mini')?.id ??
-    DEFAULT_CHAT_MODELS[0].id
+    V2_DEFAULT_CHAT_MODELS.find((v) => v.id === 'gpt-4o-mini')?.id ??
+    V2_DEFAULT_CHAT_MODELS[0].id
 
   /**
    * handle Ollama migration
@@ -428,7 +619,7 @@ export const migrateFrom1To2: SettingMigration['migrate'] = (
     })
     ollamaCustomProviderCount += 1
   } else {
-    ollamaChatProviderId = PROVIDER_TYPES_INFO.ollama.defaultProviderId
+    ollamaChatProviderId = V2_PROVIDER_TYPES_INFO.ollama.defaultProviderId
   }
   if (data.ollamaChatModel.model) {
     const ollamaChatModelId = `${ollamaChatProviderId}/${data.ollamaChatModel.model}`
@@ -462,7 +653,7 @@ export const migrateFrom1To2: SettingMigration['migrate'] = (
   } else {
     ollamaApplyProviderId =
       existingSameOllamaProviderForApplyModel?.id ??
-      PROVIDER_TYPES_INFO.ollama.defaultProviderId
+      V2_PROVIDER_TYPES_INFO.ollama.defaultProviderId
   }
   if (data.ollamaApplyModel.model) {
     const existingSameChatModelForApplyModel = chatModels.find(
@@ -600,7 +791,7 @@ export const migrateFrom1To2: SettingMigration['migrate'] = (
     version: 2,
     providers,
     chatModels,
-    embeddingModels: [...DEFAULT_EMBEDDING_MODELS],
+    embeddingModels: [...V2_DEFAULT_EMBEDDING_MODELS],
     chatModelId,
     applyModelId,
     embeddingModelId: data.embeddingModelId,
