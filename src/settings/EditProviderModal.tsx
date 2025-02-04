@@ -119,5 +119,13 @@ export class EditProviderModal extends Modal {
         .get('baseUrl')
         ?.nameEl.removeClass('smtcmp-settings-required')
     }
+
+    if (PROVIDER_TYPES_INFO[this.formData.type].requireApiKey) {
+      this.settings.get('apiKey')?.nameEl.addClass('smtcmp-settings-required')
+    } else {
+      this.settings
+        .get('apiKey')
+        ?.nameEl.removeClass('smtcmp-settings-required')
+    }
   }
 }

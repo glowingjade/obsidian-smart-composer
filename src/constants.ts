@@ -38,36 +38,42 @@ export const PROVIDER_TYPES_INFO = {
   openai: {
     label: 'OpenAI',
     defaultProviderId: 'openai',
+    requireApiKey: true,
     requireBaseUrl: false,
     supportEmbedding: true,
   },
   anthropic: {
     label: 'Anthropic',
     defaultProviderId: 'anthropic',
+    requireApiKey: true,
     requireBaseUrl: false,
     supportEmbedding: false,
   },
   gemini: {
     label: 'Gemini',
     defaultProviderId: 'gemini',
+    requireApiKey: true,
     requireBaseUrl: false,
     supportEmbedding: true,
   },
   groq: {
     label: 'Groq',
     defaultProviderId: 'groq',
+    requireApiKey: true,
     requireBaseUrl: false,
     supportEmbedding: false,
   },
   ollama: {
     label: 'Ollama',
     defaultProviderId: 'ollama',
+    requireApiKey: false,
     requireBaseUrl: false,
     supportEmbedding: true,
   },
   'openai-compatible': {
     label: 'OpenAI Compatible',
     defaultProviderId: null, // no default provider for this type
+    requireApiKey: false,
     requireBaseUrl: true,
     supportEmbedding: false,
   },
@@ -76,6 +82,7 @@ export const PROVIDER_TYPES_INFO = {
   {
     label: string
     defaultProviderId: string | null
+    requireApiKey: boolean
     requireBaseUrl: boolean
     supportEmbedding: boolean
   }
