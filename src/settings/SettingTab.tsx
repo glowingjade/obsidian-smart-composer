@@ -6,6 +6,7 @@ import {
   DEFAULT_PROVIDERS,
   PROVIDER_TYPES_INFO,
 } from '../constants'
+import { getEmbeddingModelClient } from '../core/rag/embedding'
 import SmartCopilotPlugin from '../main'
 import { findFilesMatchingPatterns } from '../utils/globUtils'
 
@@ -137,9 +138,31 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
             `Are you sure you want to delete provider "${provider.id}"?\n\n` +
             `This will also delete:\n` +
             `- ${associatedChatModels.length} chat model(s)\n` +
-            `- ${associatedEmbeddingModels.length} embedding model(s)`
+            `- ${associatedEmbeddingModels.length} embedding model(s)\n\n` +
+            `All embeddings generated using the associated embedding models will also be deleted.`
 
           new ConfirmModal(this.app, 'Delete Provider', message, async () => {
+            const vectorManager = (
+              await this.plugin.getDbManager()
+            ).getVectorManager()
+            const embeddingStats = await vectorManager.getEmbeddingStats()
+
+            // Clear embeddings for each associated embedding model
+            for (const embeddingModel of associatedEmbeddingModels) {
+              const embeddingStat = embeddingStats.find(
+                (v) => v.model === embeddingModel.id,
+              )
+
+              if (embeddingStat?.rowCount && embeddingStat.rowCount > 0) {
+                // only clear when there's data
+                const embeddingModelClient = getEmbeddingModelClient({
+                  settings: this.plugin.settings,
+                  embeddingModelId: embeddingModel.id,
+                })
+                await vectorManager.clearAllVectors(embeddingModelClient)
+              }
+            }
+
             await this.plugin.setSettings({
               ...this.plugin.settings,
               providers: [...this.plugin.settings.providers].filter(
@@ -319,14 +342,41 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
         const removeButton = actionsContainer.createEl('button')
         setIcon(removeButton, 'trash')
         removeButton.addEventListener('click', async () => {
-          // TODO: remove all embeddings in the database that use this model & get confirmation from user
-          await this.plugin.setSettings({
-            ...this.plugin.settings,
-            embeddingModels: [...this.plugin.settings.embeddingModels].filter(
-              (v) => v.id !== embeddingModel.id,
-            ),
-          })
-          this.display()
+          const message =
+            `Are you sure you want to delete embedding model "${embeddingModel.id}"?\n\n` +
+            `This will also delete all embeddings generated using this model from the database.`
+
+          new ConfirmModal(
+            this.app,
+            'Delete Embedding Model',
+            message,
+            async () => {
+              const vectorManager = (
+                await this.plugin.getDbManager()
+              ).getVectorManager()
+              const embeddingStats = await vectorManager.getEmbeddingStats()
+              const embeddingStat = embeddingStats.find(
+                (v) => v.model === embeddingModel.id,
+              )
+
+              if (embeddingStat?.rowCount && embeddingStat.rowCount > 0) {
+                // only clear when there's data
+                const embeddingModelClient = getEmbeddingModelClient({
+                  settings: this.plugin.settings,
+                  embeddingModelId: embeddingModel.id,
+                })
+                await vectorManager.clearAllVectors(embeddingModelClient)
+              }
+
+              await this.plugin.setSettings({
+                ...this.plugin.settings,
+                embeddingModels: [
+                  ...this.plugin.settings.embeddingModels,
+                ].filter((v) => v.id !== embeddingModel.id),
+              })
+              this.display()
+            },
+          ).open()
         })
       }
     })
