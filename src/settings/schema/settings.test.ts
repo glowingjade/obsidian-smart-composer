@@ -1,3 +1,9 @@
+import {
+  DEFAULT_CHAT_MODELS,
+  DEFAULT_EMBEDDING_MODELS,
+  DEFAULT_PROVIDERS,
+} from '../../constants'
+
 import { SETTINGS_SCHEMA_VERSION } from './setting.types'
 import { parseSmartCopilotSettings } from './settings'
 
@@ -7,40 +13,17 @@ describe('parseSmartCopilotSettings', () => {
     expect(result).toEqual({
       version: SETTINGS_SCHEMA_VERSION,
 
-      openAIApiKey: '',
-      anthropicApiKey: '',
-      geminiApiKey: '',
-      groqApiKey: '',
+      providers: [...DEFAULT_PROVIDERS],
 
-      chatModelId: 'anthropic/claude-3.5-sonnet-latest',
-      ollamaChatModel: {
-        baseUrl: '',
-        model: '',
-      },
-      openAICompatibleChatModel: {
-        baseUrl: '',
-        apiKey: '',
-        model: '',
-      },
+      chatModels: [...DEFAULT_CHAT_MODELS],
+      embeddingModels: [...DEFAULT_EMBEDDING_MODELS],
 
-      applyModelId: 'openai/gpt-4o-mini',
-      ollamaApplyModel: {
-        baseUrl: '',
-        model: '',
-      },
-      openAICompatibleApplyModel: {
-        baseUrl: '',
-        apiKey: '',
-        model: '',
-      },
-
+      chatModelId: 'claude-3.5-sonnet',
+      applyModelId: 'gpt-4o-mini',
       embeddingModelId: 'openai/text-embedding-3-small',
-      ollamaEmbeddingModel: {
-        baseUrl: '',
-        model: '',
-      },
 
       systemPrompt: '',
+
       ragOptions: {
         chunkSize: 1000,
         thresholdTokens: 8192,
