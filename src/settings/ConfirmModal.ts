@@ -37,4 +37,11 @@ export class ConfirmModal extends Modal {
           }),
       )
   }
+
+  onClose() {
+    const { contentEl } = this
+    contentEl.empty()
+
+    this.onCancel?.()
+  }
 }
