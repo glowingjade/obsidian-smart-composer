@@ -22,12 +22,7 @@ export const SETTINGS_SCHEMA_VERSION = 2
 
 /**
  * TODO
- * 2. Let users hide default models in model dropdown
- * 4. Add tests that ensure default provider/model ids are unique (can we enforce it by zod schema?)
- * 5. validate settings with zod schema before saving on SettingTab
- * 6. Ensure provider for chat/embedding models exists (should remove models when provider is removed)
- * 7. When adding embedding model, show message about its dimension (only some dimensions support indexing, so for models that's not included in supported dimensions, performance could be bad)
- * 8. When adding chat/embedding model, check if it's valid (e.g. prevent adding chat model to embedding list, or embedding model to chat list)
+ * 1. When adding embedding model, show message about its dimension (only some dimensions support indexing, so for models that's not included in supported dimensions, performance could be bad)
  */
 
 /**

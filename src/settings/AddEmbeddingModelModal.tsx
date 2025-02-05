@@ -2,11 +2,14 @@ import { App, Modal, Notice, Setting } from 'obsidian'
 
 import { DEFAULT_PROVIDERS, PROVIDER_TYPES_INFO } from '../constants'
 import { getProviderClient } from '../core/llm/manager'
+import { supportedDimensionsForIndex } from '../database/schema'
 import SmartCopilotPlugin from '../main'
 import {
   EmbeddingModel,
   embeddingModelSchema,
 } from '../types/embedding-model.types'
+
+import { ConfirmModal } from './ConfirmModal'
 
 export class AddEmbeddingModelModal extends Modal {
   private plugin: SmartCopilotPlugin
@@ -132,9 +135,27 @@ export class AddEmbeddingModelModal extends Modal {
                 throw new Error('Embedding model returned an invalid result')
               }
 
+              const dimension = embeddingResult.length
+
+              if (!supportedDimensionsForIndex.includes(dimension)) {
+                const confirmed = await new Promise<boolean>((resolve) => {
+                  new ConfirmModal(
+                    this.app,
+                    'Performance Warning',
+                    `This model outputs ${dimension} dimensions, but the optimized dimensions for database indexing are: ${supportedDimensionsForIndex.join(', ')}.\n\nThis may result in slower search performance.\n\nDo you want to continue anyway?`,
+                    () => resolve(true),
+                    () => resolve(false),
+                  ).open()
+                })
+
+                if (!confirmed) {
+                  return
+                }
+              }
+
               const embeddingModel: EmbeddingModel = {
                 ...this.formData,
-                dimension: embeddingResult.length,
+                dimension,
               }
 
               const validationResult =

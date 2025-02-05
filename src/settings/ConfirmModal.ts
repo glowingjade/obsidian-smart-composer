@@ -6,6 +6,7 @@ export class ConfirmModal extends Modal {
     private title: string,
     private message: string,
     private onConfirm: () => void,
+    private onCancel?: () => void,
   ) {
     super(app)
   }
@@ -23,6 +24,7 @@ export class ConfirmModal extends Modal {
       .addButton((btn) =>
         btn.setButtonText('Cancel').onClick(() => {
           this.close()
+          this.onCancel?.()
         }),
       )
       .addButton((btn) =>
