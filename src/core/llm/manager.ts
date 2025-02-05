@@ -3,6 +3,7 @@ import { ChatModel } from '../../types/chat-model.types'
 import { LLMProvider } from '../../types/provider.types'
 
 import { AnthropicProvider } from './anthropic'
+import { AzureOpenAIProvider } from './azureOpenaiProvider'
 import { BaseLLMProvider } from './base'
 import { GeminiProvider } from './gemini'
 import { GroqProvider } from './groq'
@@ -47,6 +48,9 @@ export function getProviderClient({
     }
     case 'ollama': {
       return new OllamaProvider(provider)
+    }
+    case 'azure-openai': {
+      return new AzureOpenAIProvider(provider)
     }
     case 'openai-compatible': {
       return new OpenAICompatibleProvider(provider)

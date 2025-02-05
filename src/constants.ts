@@ -41,6 +41,7 @@ export const PROVIDER_TYPES_INFO = {
     requireApiKey: true,
     requireBaseUrl: false,
     supportEmbedding: true,
+    additionalSettings: [],
   },
   anthropic: {
     label: 'Anthropic',
@@ -48,6 +49,7 @@ export const PROVIDER_TYPES_INFO = {
     requireApiKey: true,
     requireBaseUrl: false,
     supportEmbedding: false,
+    additionalSettings: [],
   },
   gemini: {
     label: 'Gemini',
@@ -55,6 +57,7 @@ export const PROVIDER_TYPES_INFO = {
     requireApiKey: true,
     requireBaseUrl: false,
     supportEmbedding: true,
+    additionalSettings: [],
   },
   groq: {
     label: 'Groq',
@@ -62,6 +65,7 @@ export const PROVIDER_TYPES_INFO = {
     requireApiKey: true,
     requireBaseUrl: false,
     supportEmbedding: false,
+    additionalSettings: [],
   },
   openrouter: {
     label: 'OpenRouter',
@@ -69,6 +73,7 @@ export const PROVIDER_TYPES_INFO = {
     requireApiKey: true,
     requireBaseUrl: false,
     supportEmbedding: false,
+    additionalSettings: [],
   },
   ollama: {
     label: 'Ollama',
@@ -76,6 +81,30 @@ export const PROVIDER_TYPES_INFO = {
     requireApiKey: false,
     requireBaseUrl: false,
     supportEmbedding: true,
+    additionalSettings: [],
+  },
+  'azure-openai': {
+    label: 'Azure OpenAI',
+    defaultProviderId: null, // no default provider for this type
+    requireApiKey: true,
+    requireBaseUrl: true,
+    supportEmbedding: false,
+    additionalSettings: [
+      {
+        label: 'Deployment',
+        key: 'deployment',
+        placeholder: 'Enter your deployment name',
+        type: 'text',
+        required: true,
+      },
+      {
+        label: 'API Version',
+        key: 'apiVersion',
+        placeholder: 'Enter your API version',
+        type: 'text',
+        required: true,
+      },
+    ],
   },
   'openai-compatible': {
     label: 'OpenAI Compatible',
@@ -83,6 +112,7 @@ export const PROVIDER_TYPES_INFO = {
     requireApiKey: false,
     requireBaseUrl: true,
     supportEmbedding: false,
+    additionalSettings: [],
   },
 } as const satisfies Record<
   LLMProviderType,
@@ -92,6 +122,13 @@ export const PROVIDER_TYPES_INFO = {
     requireApiKey: boolean
     requireBaseUrl: boolean
     supportEmbedding: boolean
+    additionalSettings: {
+      label: string
+      key: string
+      type: 'text'
+      placeholder?: string
+      required?: boolean
+    }[]
   }
 >
 

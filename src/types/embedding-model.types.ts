@@ -45,6 +45,10 @@ export const embeddingModelSchema = z.discriminatedUnion('providerType', [
     ...baseEmbeddingModelSchema.shape,
   }),
   z.object({
+    providerType: z.literal('azure-openai'),
+    ...baseEmbeddingModelSchema.shape,
+  }),
+  z.object({
     providerType: z.literal('openai-compatible'),
     ...baseEmbeddingModelSchema.shape,
   }),
