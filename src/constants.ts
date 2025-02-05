@@ -91,6 +91,14 @@ export const PROVIDER_TYPES_INFO = {
     supportEmbedding: true,
     additionalSettings: [],
   },
+  deepseek: {
+    label: 'DeepSeek',
+    defaultProviderId: null,
+    requireApiKey: true,
+    requireBaseUrl: false,
+    supportEmbedding: false,
+    additionalSettings: [],
+  },
   'azure-openai': {
     label: 'Azure OpenAI',
     defaultProviderId: null, // no default provider for this type

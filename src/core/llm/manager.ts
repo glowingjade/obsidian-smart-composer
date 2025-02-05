@@ -5,6 +5,7 @@ import { LLMProvider } from '../../types/provider.types'
 import { AnthropicProvider } from './anthropic'
 import { AzureOpenAIProvider } from './azureOpenaiProvider'
 import { BaseLLMProvider } from './base'
+import { DeepSeekStudioProvider } from './deepseekStudioProvider'
 import { GeminiProvider } from './gemini'
 import { GroqProvider } from './groq'
 import { LmStudioProvider } from './lmStudioProvider'
@@ -52,6 +53,9 @@ export function getProviderClient({
     }
     case 'lm-studio': {
       return new LmStudioProvider(provider)
+    }
+    case 'deepseek': {
+      return new DeepSeekStudioProvider(provider)
     }
     case 'azure-openai': {
       return new AzureOpenAIProvider(provider)

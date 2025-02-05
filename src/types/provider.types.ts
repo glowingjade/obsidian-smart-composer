@@ -37,6 +37,10 @@ export const llmProviderSchema = z.discriminatedUnion('type', [
     ...baseLlmProviderSchema.shape,
   }),
   z.object({
+    type: z.literal('deepseek'),
+    ...baseLlmProviderSchema.shape,
+  }),
+  z.object({
     type: z.literal('azure-openai'),
     ...baseLlmProviderSchema.shape,
     additionalSettings: z.object({
