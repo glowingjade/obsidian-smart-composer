@@ -30,6 +30,7 @@ export class RAGEngine {
     })
   }
 
+  // TODO: use addSettingsChangeListener
   setSettings(settings: SmartComposerSettings) {
     this.settings = settings
     this.embeddingModel = getEmbeddingModelClient({

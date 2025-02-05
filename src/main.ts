@@ -6,7 +6,10 @@ import { ChatProps } from './components/chat-view/Chat'
 import { APPLY_VIEW_TYPE, CHAT_VIEW_TYPE } from './constants'
 import { RAGEngine } from './core/rag/ragEngine'
 import { DatabaseManager } from './database/DatabaseManager'
-import { SmartComposerSettings } from './settings/schema/setting.types'
+import {
+  SmartComposerSettings,
+  smartComposerSettingsSchema,
+} from './settings/schema/setting.types'
 import { parseSmartComposerSettings } from './settings/schema/settings'
 import { SmartComposerSettingTab } from './settings/SettingTab'
 import { getMentionableBlockData } from './utils/obsidian'
@@ -122,8 +125,15 @@ export default class SmartComposerPlugin extends Plugin {
     await this.saveData(this.settings) // Save updated settings
   }
 
-  // TODO: validate before saving?
   async setSettings(newSettings: SmartComposerSettings) {
+    const validationResult = smartComposerSettingsSchema.safeParse(newSettings)
+
+    if (!validationResult.success) {
+      new Notice(`Invalid settings:
+${validationResult.error.issues.map((v) => v.message).join('\n')}`)
+      return
+    }
+
     this.settings = newSettings
     await this.saveData(newSettings)
     this.ragEngine?.setSettings(newSettings)
