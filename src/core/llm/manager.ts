@@ -9,6 +9,7 @@ import { GroqProvider } from './groq'
 import { OllamaProvider } from './ollama'
 import { OpenAIAuthenticatedProvider } from './openai'
 import { OpenAICompatibleProvider } from './openaiCompatibleProvider'
+import { OpenRouterProvider } from './openRouterProvider'
 
 /*
  * OpenAI, OpenAI-compatible, and Anthropic providers include token usage statistics
@@ -40,6 +41,9 @@ export function getProviderClient({
     }
     case 'groq': {
       return new GroqProvider(provider)
+    }
+    case 'openrouter': {
+      return new OpenRouterProvider(provider)
     }
     case 'ollama': {
       return new OllamaProvider(provider)

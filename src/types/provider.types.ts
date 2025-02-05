@@ -24,6 +24,10 @@ export const llmProviderSchema = z.discriminatedUnion('type', [
     ...baseLlmProviderSchema.shape,
   }),
   z.object({
+    type: z.literal('openrouter'),
+    ...baseLlmProviderSchema.shape,
+  }),
+  z.object({
     type: z.literal('ollama'),
     ...baseLlmProviderSchema.shape,
   }),

@@ -37,6 +37,10 @@ export const embeddingModelSchema = z.discriminatedUnion('providerType', [
     ...baseEmbeddingModelSchema.shape,
   }),
   z.object({
+    providerType: z.literal('openrouter'),
+    ...baseEmbeddingModelSchema.shape,
+  }),
+  z.object({
     providerType: z.literal('ollama'),
     ...baseEmbeddingModelSchema.shape,
   }),

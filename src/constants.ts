@@ -63,6 +63,13 @@ export const PROVIDER_TYPES_INFO = {
     requireBaseUrl: false,
     supportEmbedding: false,
   },
+  openrouter: {
+    label: 'OpenRouter',
+    defaultProviderId: 'openrouter',
+    requireApiKey: true,
+    requireBaseUrl: false,
+    supportEmbedding: false,
+  },
   ollama: {
     label: 'Ollama',
     defaultProviderId: 'ollama',
@@ -109,6 +116,10 @@ export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
   {
     type: 'groq',
     id: PROVIDER_TYPES_INFO.groq.defaultProviderId,
+  },
+  {
+    type: 'openrouter',
+    id: PROVIDER_TYPES_INFO.openrouter.defaultProviderId,
   },
   {
     type: 'ollama',

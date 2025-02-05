@@ -13,21 +13,22 @@ import {
 import { LLMProvider } from '../../types/provider.types'
 
 import { BaseLLMProvider } from './base'
-import { LLMBaseUrlNotSetException } from './exception'
 import { OpenAIMessageAdapter } from './openaiMessageAdapter'
 
-export class OpenAICompatibleProvider extends BaseLLMProvider<
-  Extract<LLMProvider, { type: 'openai-compatible' }>
+export class OpenRouterProvider extends BaseLLMProvider<
+  Extract<LLMProvider, { type: 'openrouter' }>
 > {
   private adapter: OpenAIMessageAdapter
   private client: OpenAI
 
-  constructor(provider: Extract<LLMProvider, { type: 'openai-compatible' }>) {
+  constructor(provider: Extract<LLMProvider, { type: 'openrouter' }>) {
     super(provider)
     this.adapter = new OpenAIMessageAdapter()
     this.client = new OpenAI({
       apiKey: provider.apiKey ?? '',
-      baseURL: provider.baseUrl ? provider.baseUrl?.replace(/\/+$/, '') : '',
+      baseURL: provider.baseUrl
+        ? provider.baseUrl?.replace(/\/+$/, '')
+        : 'https://openrouter.ai/api/v1',
       dangerouslyAllowBrowser: true,
     })
   }
@@ -37,14 +38,8 @@ export class OpenAICompatibleProvider extends BaseLLMProvider<
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
-    if (model.providerType !== 'openai-compatible') {
-      throw new Error('Model is not an OpenAI Compatible model')
-    }
-
-    if (!this.provider.baseUrl) {
-      throw new LLMBaseUrlNotSetException(
-        `Provider ${this.provider.id} base URL is missing. Please set it in settings menu.`,
-      )
+    if (model.providerType !== 'openrouter') {
+      throw new Error('Model is not an OpenRouter model')
     }
 
     return this.adapter.generateResponse(this.client, request, options)
@@ -55,14 +50,8 @@ export class OpenAICompatibleProvider extends BaseLLMProvider<
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
-    if (model.providerType !== 'openai-compatible') {
-      throw new Error('Model is not an OpenAI Compatible model')
-    }
-
-    if (!this.provider.baseUrl) {
-      throw new LLMBaseUrlNotSetException(
-        `Provider ${this.provider.id} base URL is missing. Please set it in settings menu.`,
-      )
+    if (model.providerType !== 'openrouter') {
+      throw new Error('Model is not an OpenRouter model')
     }
 
     return this.adapter.streamResponse(this.client, request, options)
