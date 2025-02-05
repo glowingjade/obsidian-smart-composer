@@ -16,7 +16,7 @@ const baseEmbeddingModelSchema = z.object({
       required_error: 'model is required',
     })
     .min(1, 'model is required'),
-  dimension: z.number(), // default dimension of the model
+  dimension: z.number(),
 })
 
 export const embeddingModelSchema = z.discriminatedUnion('providerType', [
