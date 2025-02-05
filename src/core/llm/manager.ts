@@ -3,12 +3,16 @@ import { ChatModel } from '../../types/chat-model.types'
 import { LLMProvider } from '../../types/provider.types'
 
 import { AnthropicProvider } from './anthropic'
+import { AzureOpenAIProvider } from './azureOpenaiProvider'
 import { BaseLLMProvider } from './base'
+import { DeepSeekStudioProvider } from './deepseekStudioProvider'
 import { GeminiProvider } from './gemini'
 import { GroqProvider } from './groq'
+import { LmStudioProvider } from './lmStudioProvider'
 import { OllamaProvider } from './ollama'
 import { OpenAIAuthenticatedProvider } from './openai'
 import { OpenAICompatibleProvider } from './openaiCompatibleProvider'
+import { OpenRouterProvider } from './openRouterProvider'
 
 /*
  * OpenAI, OpenAI-compatible, and Anthropic providers include token usage statistics
@@ -41,8 +45,20 @@ export function getProviderClient({
     case 'groq': {
       return new GroqProvider(provider)
     }
+    case 'openrouter': {
+      return new OpenRouterProvider(provider)
+    }
     case 'ollama': {
       return new OllamaProvider(provider)
+    }
+    case 'lm-studio': {
+      return new LmStudioProvider(provider)
+    }
+    case 'deepseek': {
+      return new DeepSeekStudioProvider(provider)
+    }
+    case 'azure-openai': {
+      return new AzureOpenAIProvider(provider)
     }
     case 'openai-compatible': {
       return new OpenAICompatibleProvider(provider)

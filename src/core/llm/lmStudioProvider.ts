@@ -13,21 +13,20 @@ import {
 import { LLMProvider } from '../../types/provider.types'
 
 import { BaseLLMProvider } from './base'
-import { LLMBaseUrlNotSetException } from './exception'
 import { OpenAIMessageAdapter } from './openaiMessageAdapter'
 
-export class OpenAICompatibleProvider extends BaseLLMProvider<
-  Extract<LLMProvider, { type: 'openai-compatible' }>
+export class LmStudioProvider extends BaseLLMProvider<
+  Extract<LLMProvider, { type: 'lm-studio' }>
 > {
   private adapter: OpenAIMessageAdapter
   private client: OpenAI
 
-  constructor(provider: Extract<LLMProvider, { type: 'openai-compatible' }>) {
+  constructor(provider: Extract<LLMProvider, { type: 'lm-studio' }>) {
     super(provider)
     this.adapter = new OpenAIMessageAdapter()
     this.client = new OpenAI({
       apiKey: provider.apiKey ?? '',
-      baseURL: provider.baseUrl ? provider.baseUrl?.replace(/\/+$/, '') : '',
+      baseURL: `${provider.baseUrl ? provider.baseUrl.replace(/\/+$/, '') : 'http://127.0.0.1:1234'}/v1`,
       dangerouslyAllowBrowser: true,
     })
   }
@@ -37,14 +36,8 @@ export class OpenAICompatibleProvider extends BaseLLMProvider<
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
-    if (model.providerType !== 'openai-compatible') {
-      throw new Error('Model is not an OpenAI Compatible model')
-    }
-
-    if (!this.provider.baseUrl) {
-      throw new LLMBaseUrlNotSetException(
-        `Provider ${this.provider.id} base URL is missing. Please set it in settings menu.`,
-      )
+    if (model.providerType !== 'lm-studio') {
+      throw new Error('Model is not an LM Studio model')
     }
 
     return this.adapter.generateResponse(this.client, request, options)
@@ -55,22 +48,18 @@ export class OpenAICompatibleProvider extends BaseLLMProvider<
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
-    if (model.providerType !== 'openai-compatible') {
-      throw new Error('Model is not an OpenAI Compatible model')
-    }
-
-    if (!this.provider.baseUrl) {
-      throw new LLMBaseUrlNotSetException(
-        `Provider ${this.provider.id} base URL is missing. Please set it in settings menu.`,
-      )
+    if (model.providerType !== 'lm-studio') {
+      throw new Error('Model is not an LM Studio model')
     }
 
     return this.adapter.streamResponse(this.client, request, options)
   }
 
-  async getEmbedding(_model: string, _text: string): Promise<number[]> {
-    throw new Error(
-      `Provider ${this.provider.id} does not support embeddings. Please use a different provider.`,
-    )
+  async getEmbedding(model: string, text: string): Promise<number[]> {
+    const embedding = await this.client.embeddings.create({
+      model: model,
+      input: text,
+    })
+    return embedding.data[0].embedding
   }
 }

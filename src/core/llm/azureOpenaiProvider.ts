@@ -1,4 +1,4 @@
-import OpenAI from 'openai'
+import OpenAI, { AzureOpenAI } from 'openai'
 
 import { ChatModel } from '../../types/chat-model.types'
 import {
@@ -13,21 +13,22 @@ import {
 import { LLMProvider } from '../../types/provider.types'
 
 import { BaseLLMProvider } from './base'
-import { LLMBaseUrlNotSetException } from './exception'
 import { OpenAIMessageAdapter } from './openaiMessageAdapter'
 
-export class OpenAICompatibleProvider extends BaseLLMProvider<
-  Extract<LLMProvider, { type: 'openai-compatible' }>
+export class AzureOpenAIProvider extends BaseLLMProvider<
+  Extract<LLMProvider, { type: 'azure-openai' }>
 > {
   private adapter: OpenAIMessageAdapter
   private client: OpenAI
 
-  constructor(provider: Extract<LLMProvider, { type: 'openai-compatible' }>) {
+  constructor(provider: Extract<LLMProvider, { type: 'azure-openai' }>) {
     super(provider)
     this.adapter = new OpenAIMessageAdapter()
-    this.client = new OpenAI({
+    this.client = new AzureOpenAI({
       apiKey: provider.apiKey ?? '',
-      baseURL: provider.baseUrl ? provider.baseUrl?.replace(/\/+$/, '') : '',
+      endpoint: provider.baseUrl ?? '',
+      apiVersion: provider.additionalSettings.apiVersion,
+      deployment: provider.additionalSettings.deployment,
       dangerouslyAllowBrowser: true,
     })
   }
@@ -37,14 +38,8 @@ export class OpenAICompatibleProvider extends BaseLLMProvider<
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
-    if (model.providerType !== 'openai-compatible') {
-      throw new Error('Model is not an OpenAI Compatible model')
-    }
-
-    if (!this.provider.baseUrl) {
-      throw new LLMBaseUrlNotSetException(
-        `Provider ${this.provider.id} base URL is missing. Please set it in settings menu.`,
-      )
+    if (model.providerType !== 'azure-openai') {
+      throw new Error('Model is not an Azure OpenAI model')
     }
 
     return this.adapter.generateResponse(this.client, request, options)
@@ -55,14 +50,8 @@ export class OpenAICompatibleProvider extends BaseLLMProvider<
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
-    if (model.providerType !== 'openai-compatible') {
-      throw new Error('Model is not an OpenAI Compatible model')
-    }
-
-    if (!this.provider.baseUrl) {
-      throw new LLMBaseUrlNotSetException(
-        `Provider ${this.provider.id} base URL is missing. Please set it in settings menu.`,
-      )
+    if (model.providerType !== 'azure-openai') {
+      throw new Error('Model is not an Azure OpenAI model')
     }
 
     return this.adapter.streamResponse(this.client, request, options)

@@ -453,7 +453,6 @@ export class SmartComposerSettingTab extends PluginSettingTab {
       )
 
     new Setting(containerEl)
-      .setHeading()
       .setName('System prompt')
       .setDesc('This prompt will be added to the beginning of every chat.')
 

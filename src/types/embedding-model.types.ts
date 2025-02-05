@@ -37,7 +37,23 @@ export const embeddingModelSchema = z.discriminatedUnion('providerType', [
     ...baseEmbeddingModelSchema.shape,
   }),
   z.object({
+    providerType: z.literal('openrouter'),
+    ...baseEmbeddingModelSchema.shape,
+  }),
+  z.object({
     providerType: z.literal('ollama'),
+    ...baseEmbeddingModelSchema.shape,
+  }),
+  z.object({
+    providerType: z.literal('lm-studio'),
+    ...baseEmbeddingModelSchema.shape,
+  }),
+  z.object({
+    providerType: z.literal('deepseek'),
+    ...baseEmbeddingModelSchema.shape,
+  }),
+  z.object({
+    providerType: z.literal('azure-openai'),
     ...baseEmbeddingModelSchema.shape,
   }),
   z.object({

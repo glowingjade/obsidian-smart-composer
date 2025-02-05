@@ -389,11 +389,35 @@ export const V2_PROVIDER_TYPES_INFO = {
     requireBaseUrl: false,
     supportEmbedding: false,
   },
+  openrouter: {
+    label: 'OpenRouter',
+    defaultProviderId: 'openrouter',
+    requireBaseUrl: false,
+    supportEmbedding: false,
+  },
   ollama: {
     label: 'Ollama',
     defaultProviderId: 'ollama',
     requireBaseUrl: false,
     supportEmbedding: true,
+  },
+  'lm-studio': {
+    label: 'LM Studio',
+    defaultProviderId: null,
+    requireBaseUrl: false,
+    supportEmbedding: true,
+  },
+  deepseek: {
+    label: 'DeepSeek',
+    defaultProviderId: null,
+    requireBaseUrl: false,
+    supportEmbedding: true,
+  },
+  'azure-openai': {
+    label: 'Azure OpenAI',
+    defaultProviderId: null, // no default provider for this type
+    requireBaseUrl: true,
+    supportEmbedding: false,
   },
   'openai-compatible': {
     label: 'OpenAI Compatible',
@@ -427,6 +451,10 @@ export const V2_DEFAULT_PROVIDERS: readonly LLMProvider[] = [
   {
     type: 'groq',
     id: V2_PROVIDER_TYPES_INFO.groq.defaultProviderId,
+  },
+  {
+    type: 'openrouter',
+    id: V2_PROVIDER_TYPES_INFO.openrouter.defaultProviderId,
   },
   {
     type: 'ollama',

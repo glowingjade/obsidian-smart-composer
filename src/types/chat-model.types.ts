@@ -37,7 +37,23 @@ export const chatModelSchema = z.discriminatedUnion('providerType', [
     ...baseChatModelSchema.shape,
   }),
   z.object({
+    providerType: z.literal('openrouter'),
+    ...baseChatModelSchema.shape,
+  }),
+  z.object({
     providerType: z.literal('ollama'),
+    ...baseChatModelSchema.shape,
+  }),
+  z.object({
+    providerType: z.literal('lm-studio'),
+    ...baseChatModelSchema.shape,
+  }),
+  z.object({
+    providerType: z.literal('deepseek'),
+    ...baseChatModelSchema.shape,
+  }),
+  z.object({
+    providerType: z.literal('azure-openai'),
     ...baseChatModelSchema.shape,
   }),
   z.object({

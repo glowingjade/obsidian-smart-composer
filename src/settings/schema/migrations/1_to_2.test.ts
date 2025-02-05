@@ -79,6 +79,10 @@ describe('settings 1_to_2 migration', () => {
           apiKey: 'groq-api-key',
         },
         {
+          type: 'openrouter',
+          id: 'openrouter',
+        },
+        {
           type: 'ollama',
           id: 'ollama',
           baseUrl: 'http://127.0.0.1:11434',
@@ -165,6 +169,7 @@ describe('settings 1_to_2 migration', () => {
         { type: 'anthropic', id: 'anthropic', apiKey: '' },
         { type: 'gemini', id: 'gemini', apiKey: '' },
         { type: 'groq', id: 'groq', apiKey: '' },
+        { type: 'openrouter', id: 'openrouter' },
         { type: 'ollama', id: 'ollama', baseUrl: '' },
       ],
 
@@ -236,6 +241,7 @@ describe('settings 1_to_2 migration', () => {
         { type: 'anthropic', id: 'anthropic', apiKey: '' },
         { type: 'gemini', id: 'gemini', apiKey: '' },
         { type: 'groq', id: 'groq', apiKey: '' },
+        { type: 'openrouter', id: 'openrouter' },
         { type: 'ollama', id: 'ollama', baseUrl: 'http://local-chat:11434' },
         { type: 'ollama', id: 'ollama-1', baseUrl: 'http://local-apply:11434' },
       ],
@@ -323,6 +329,7 @@ describe('settings 1_to_2 migration', () => {
         { type: 'anthropic', id: 'anthropic', apiKey: '' },
         { type: 'gemini', id: 'gemini', apiKey: '' },
         { type: 'groq', id: 'groq', apiKey: '' },
+        { type: 'openrouter', id: 'openrouter' },
         { type: 'ollama', id: 'ollama', baseUrl: 'http://local-embed:11434' },
         { type: 'ollama', id: 'ollama-1', baseUrl: 'http://local-chat:11434' },
         { type: 'ollama', id: 'ollama-2', baseUrl: 'http://local-apply:11434' },
@@ -411,6 +418,7 @@ describe('settings 1_to_2 migration', () => {
         { type: 'anthropic', id: 'anthropic', apiKey: '' },
         { type: 'gemini', id: 'gemini', apiKey: '' },
         { type: 'groq', id: 'groq', apiKey: '' },
+        { type: 'openrouter', id: 'openrouter' },
         { type: 'ollama', id: 'ollama', baseUrl: '' },
         {
           type: 'openai-compatible',
@@ -499,6 +507,7 @@ describe('settings 1_to_2 migration', () => {
         { type: 'anthropic', id: 'anthropic', apiKey: '' },
         { type: 'gemini', id: 'gemini', apiKey: '' },
         { type: 'groq', id: 'groq', apiKey: '' },
+        { type: 'openrouter', id: 'openrouter' },
         { type: 'ollama', id: 'ollama', baseUrl: '' },
       ],
 
