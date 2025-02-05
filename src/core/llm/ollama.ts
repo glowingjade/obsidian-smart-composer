@@ -19,7 +19,6 @@ import {
 import { LLMProvider } from '../../types/provider.types'
 
 import { BaseLLMProvider } from './base'
-import { LLMModelNotSetException } from './exception'
 import { OpenAIMessageAdapter } from './openaiMessageAdapter'
 
 export class NoStainlessOpenAI extends OpenAI {
@@ -71,12 +70,6 @@ export class OllamaProvider extends BaseLLMProvider<
       throw new Error('Model is not an Ollama model')
     }
 
-    if (!model.model) {
-      throw new LLMModelNotSetException(
-        `Provider ${this.provider.id} model is missing. Please set it in settings menu.`,
-      )
-    }
-
     return this.adapter.generateResponse(this.client, request, options)
   }
 
@@ -87,12 +80,6 @@ export class OllamaProvider extends BaseLLMProvider<
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
     if (model.providerType !== 'ollama') {
       throw new Error('Model is not an Ollama model')
-    }
-
-    if (!model.model) {
-      throw new LLMModelNotSetException(
-        `Provider ${this.provider.id} model is missing. Please set it in settings menu.`,
-      )
     }
 
     return this.adapter.streamResponse(this.client, request, options)

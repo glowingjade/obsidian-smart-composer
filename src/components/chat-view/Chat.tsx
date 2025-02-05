@@ -21,7 +21,6 @@ import {
   LLMAPIKeyInvalidException,
   LLMAPIKeyNotSetException,
   LLMBaseUrlNotSetException,
-  LLMModelNotSetException,
 } from '../../core/llm/exception'
 import { getChatModelClient } from '../../core/llm/manager'
 import { useChatHistory } from '../../hooks/useChatHistory'
@@ -328,8 +327,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       if (
         error instanceof LLMAPIKeyNotSetException ||
         error instanceof LLMAPIKeyInvalidException ||
-        error instanceof LLMBaseUrlNotSetException ||
-        error instanceof LLMModelNotSetException
+        error instanceof LLMBaseUrlNotSetException
       ) {
         openSettingsModalWithError(app, error.message)
       } else {
@@ -393,8 +391,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       if (
         error instanceof LLMAPIKeyNotSetException ||
         error instanceof LLMAPIKeyInvalidException ||
-        error instanceof LLMBaseUrlNotSetException ||
-        error instanceof LLMModelNotSetException
+        error instanceof LLMBaseUrlNotSetException
       ) {
         openSettingsModalWithError(app, error.message)
       } else {

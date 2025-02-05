@@ -13,7 +13,7 @@ import {
 import { LLMProvider } from '../../types/provider.types'
 
 import { BaseLLMProvider } from './base'
-import { LLMBaseUrlNotSetException, LLMModelNotSetException } from './exception'
+import { LLMBaseUrlNotSetException } from './exception'
 import { OpenAIMessageAdapter } from './openaiMessageAdapter'
 
 export class OpenAICompatibleProvider extends BaseLLMProvider<
@@ -47,12 +47,6 @@ export class OpenAICompatibleProvider extends BaseLLMProvider<
       )
     }
 
-    if (!model.model) {
-      throw new LLMModelNotSetException(
-        `Provider ${this.provider.id} model is missing. Please set it in settings menu.`,
-      )
-    }
-
     return this.adapter.generateResponse(this.client, request, options)
   }
 
@@ -71,12 +65,6 @@ export class OpenAICompatibleProvider extends BaseLLMProvider<
       )
     }
 
-    if (!model.model) {
-      throw new LLMModelNotSetException(
-        `Provider ${this.provider.id} model is missing. Please set it in settings menu.`,
-      )
-    }
-
     return this.adapter.streamResponse(this.client, request, options)
   }
 
@@ -84,12 +72,6 @@ export class OpenAICompatibleProvider extends BaseLLMProvider<
     if (!this.provider.baseUrl) {
       throw new LLMBaseUrlNotSetException(
         `Provider ${this.provider.id} base URL is missing. Please set it in settings menu.`,
-      )
-    }
-
-    if (!model) {
-      throw new LLMModelNotSetException(
-        `Provider ${this.provider.id} model is missing. Please set it in settings menu.`,
       )
     }
 
