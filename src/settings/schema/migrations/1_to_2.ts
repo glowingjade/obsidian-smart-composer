@@ -401,6 +401,12 @@ export const V2_PROVIDER_TYPES_INFO = {
     requireBaseUrl: false,
     supportEmbedding: true,
   },
+  'lm-studio': {
+    label: 'LM Studio',
+    defaultProviderId: null,
+    requireBaseUrl: false,
+    supportEmbedding: true,
+  },
   'azure-openai': {
     label: 'Azure OpenAI',
     defaultProviderId: null, // no default provider for this type

@@ -7,6 +7,7 @@ import { AzureOpenAIProvider } from './azureOpenaiProvider'
 import { BaseLLMProvider } from './base'
 import { GeminiProvider } from './gemini'
 import { GroqProvider } from './groq'
+import { LmStudioProvider } from './lmStudioProvider'
 import { OllamaProvider } from './ollama'
 import { OpenAIAuthenticatedProvider } from './openai'
 import { OpenAICompatibleProvider } from './openaiCompatibleProvider'
@@ -48,6 +49,9 @@ export function getProviderClient({
     }
     case 'ollama': {
       return new OllamaProvider(provider)
+    }
+    case 'lm-studio': {
+      return new LmStudioProvider(provider)
     }
     case 'azure-openai': {
       return new AzureOpenAIProvider(provider)

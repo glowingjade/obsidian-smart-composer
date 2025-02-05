@@ -83,6 +83,14 @@ export const PROVIDER_TYPES_INFO = {
     supportEmbedding: true,
     additionalSettings: [],
   },
+  'lm-studio': {
+    label: 'LM Studio',
+    defaultProviderId: null,
+    requireApiKey: false,
+    requireBaseUrl: false,
+    supportEmbedding: true,
+    additionalSettings: [],
+  },
   'azure-openai': {
     label: 'Azure OpenAI',
     defaultProviderId: null, // no default provider for this type

@@ -45,6 +45,10 @@ export const chatModelSchema = z.discriminatedUnion('providerType', [
     ...baseChatModelSchema.shape,
   }),
   z.object({
+    providerType: z.literal('lm-studio'),
+    ...baseChatModelSchema.shape,
+  }),
+  z.object({
     providerType: z.literal('azure-openai'),
     ...baseChatModelSchema.shape,
   }),
