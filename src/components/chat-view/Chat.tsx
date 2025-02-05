@@ -86,8 +86,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     updateConversationTitle,
     chatList,
   } = useChatHistory()
-  // const { generateResponse, streamResponse, chatModel, applyModel } = useLLM()
-
   const promptGenerator = useMemo(() => {
     return new PromptGenerator(getRAGEngine, app, settings)
   }, [getRAGEngine, app, settings])
