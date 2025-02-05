@@ -1,7 +1,7 @@
 import { App, Modal } from 'obsidian'
 import { createRoot } from 'react-dom/client'
 
-import ProviderFormModalRoot from '../components/settings/AddProviderModalRoot'
+import ProviderFormModalRoot from '../components/settings/ProviderFormModalRoot'
 import SmartComposerPlugin from '../main'
 import { LLMProvider } from '../types/provider.types'
 
