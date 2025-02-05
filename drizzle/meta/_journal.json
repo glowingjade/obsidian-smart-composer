@@ -64,6 +64,13 @@
       "when": 1738138268694,
       "tag": "0008_unify_embedding_table",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1738720225813,
+      "tag": "0009_support_more_dimension_for_indexing",
+      "breakpoints": true
     }
   ]
 }

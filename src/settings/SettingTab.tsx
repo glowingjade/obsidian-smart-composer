@@ -1,22 +1,32 @@
-import { App, DropdownComponent, PluginSettingTab, Setting } from 'obsidian'
+import { App, Notice, PluginSettingTab, Setting, setIcon } from 'obsidian'
 
 import {
-  APPLY_MODEL_OPTIONS,
-  CHAT_MODEL_OPTIONS,
-  EMBEDDING_MODEL_OPTIONS,
+  DEFAULT_CHAT_MODELS,
+  DEFAULT_EMBEDDING_MODELS,
+  DEFAULT_PROVIDERS,
+  PROVIDER_TYPES_INFO,
+  RECOMMENDED_MODELS_FOR_APPLY,
+  RECOMMENDED_MODELS_FOR_CHAT,
+  RECOMMENDED_MODELS_FOR_EMBEDDING,
 } from '../constants'
-import SmartCopilotPlugin from '../main'
+import { getEmbeddingModelClient } from '../core/rag/embedding'
+import SmartComposerPlugin from '../main'
 import { findFilesMatchingPatterns } from '../utils/globUtils'
-import { getOllamaModels } from '../utils/ollama'
 
+import { AddChatModelModal } from './AddChatModelModal'
+import { AddEmbeddingModelModal } from './AddEmbeddingModelModal'
+import { AddProviderModal } from './AddProviderModal'
+import { ConfirmModal } from './ConfirmModal'
+import { EditProviderModal } from './EditProviderModal'
 import { EmbeddingDbManageModal } from './EmbeddingDbManageModal'
 import { ExcludedFilesModal } from './ExcludedFilesModal'
 import { IncludedFilesModal } from './IncludedFilesModal'
+import { smartComposerSettingsSchema } from './schema/setting.types'
 
-export class SmartCopilotSettingTab extends PluginSettingTab {
-  plugin: SmartCopilotPlugin
+export class SmartComposerSettingTab extends PluginSettingTab {
+  plugin: SmartComposerPlugin
 
-  constructor(app: App, plugin: SmartCopilotPlugin) {
+  constructor(app: App, plugin: SmartComposerPlugin) {
     super(app, plugin)
     this.plugin = plugin
   }
@@ -25,20 +35,29 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
     const { containerEl } = this
     containerEl.empty()
 
-    this.renderAPIKeysSection(containerEl)
-    this.renderModelSection(containerEl)
+    this.renderProvidersSection(containerEl)
+    this.renderModelsSection(containerEl)
+    this.renderChatSection(containerEl)
     this.renderRAGSection(containerEl)
+    this.renderEtcSection(containerEl)
   }
 
-  renderAPIKeysSection(containerEl: HTMLElement): void {
-    const apiKeysHeading = new Setting(containerEl)
-      .setHeading()
-      .setName('API keys')
-      .setDesc('Enter your API keys for the services you want to use')
+  renderProvidersSection(containerEl: HTMLElement): void {
+    // create heading
+    containerEl.createDiv({
+      text: 'Providers',
+      cls: 'smtcmp-settings-header',
+    })
 
-    apiKeysHeading.descEl.createEl('br')
-
-    apiKeysHeading.descEl.createEl('a', {
+    // create description
+    const descContainer = containerEl.createDiv({
+      cls: 'smtcmp-settings-desc',
+    })
+    descContainer.createEl('span', {
+      text: 'Enter your API keys for the providers you want to use',
+    })
+    descContainer.createEl('br')
+    descContainer.createEl('a', {
       text: 'How to obtain API keys',
       attr: {
         href: 'https://github.com/glowingjade/obsidian-smart-composer/wiki/1.2-Initial-Setup#getting-your-api-key',
@@ -46,57 +65,348 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
       },
     })
 
-    new Setting(containerEl).setName('OpenAI API key').addText((text) =>
-      text
-        .setPlaceholder('Enter your API key')
-        .setValue(this.plugin.settings.openAIApiKey)
-        .onChange(async (value) => {
-          await this.plugin.setSettings({
-            ...this.plugin.settings,
-            openAIApiKey: value,
-          })
-        }),
-    )
+    // create table
+    const table = containerEl.createEl('table', {
+      cls: 'smtcmp-settings-provider-table',
+    })
+    const thead = table.createEl('thead')
+    const headerRow = thead.createEl('tr')
 
-    new Setting(containerEl).setName('Anthropic API key').addText((text) =>
-      text
-        .setPlaceholder('Enter your API key')
-        .setValue(this.plugin.settings.anthropicApiKey)
-        .onChange(async (value) => {
-          await this.plugin.setSettings({
-            ...this.plugin.settings,
-            anthropicApiKey: value,
-          })
-        }),
-    )
+    headerRow.createEl('th', { text: 'ID' })
+    headerRow.createEl('th', { text: 'Type' })
+    headerRow.createEl('th', { text: 'API Key' })
+    headerRow.createEl('th', { text: 'Actions' })
 
-    new Setting(containerEl).setName('Gemini API key').addText((text) =>
-      text
-        .setPlaceholder('Enter your API key')
-        .setValue(this.plugin.settings.geminiApiKey)
-        .onChange(async (value) => {
-          await this.plugin.setSettings({
-            ...this.plugin.settings,
-            geminiApiKey: value,
-          })
-        }),
-    )
+    const tbody = table.createEl('tbody')
 
-    new Setting(containerEl).setName('Groq API key').addText((text) =>
-      text
-        .setPlaceholder('Enter your API key')
-        .setValue(this.plugin.settings.groqApiKey)
-        .onChange(async (value) => {
-          await this.plugin.setSettings({
-            ...this.plugin.settings,
-            groqApiKey: value,
-          })
-        }),
-    )
+    this.plugin.settings.providers.forEach((provider) => {
+      const row = tbody.createEl('tr')
+
+      // provider id cell
+      row.createEl('td', { text: provider.id })
+
+      // provider type cell
+      row.createEl('td', { text: PROVIDER_TYPES_INFO[provider.type].label })
+
+      // api key cell
+      const apiKeyCell = row.createEl('td', {
+        cls: 'smtcmp-settings-provider-table-api-key',
+        text: provider.apiKey ? '••••••••' : 'Set API key',
+      })
+      apiKeyCell.addEventListener('click', () => {
+        new EditProviderModal(this.app, this.plugin, provider, () =>
+          this.display(),
+        ).open()
+      })
+
+      // actions cell
+      const actionsCell = row.createEl('td')
+      const actionsContainer = actionsCell.createEl('div', {
+        cls: 'smtcmp-settings-provider-actions',
+      })
+
+      const settingsButton = actionsContainer.createEl('button')
+      setIcon(settingsButton, 'settings')
+      settingsButton.addEventListener('click', () => {
+        new EditProviderModal(this.app, this.plugin, provider, () =>
+          this.display(),
+        ).open()
+      })
+
+      if (!DEFAULT_PROVIDERS.some((v) => v.id === provider.id)) {
+        // prevent default provider being removed
+        const removeButton = actionsContainer.createEl('button')
+        setIcon(removeButton, 'trash')
+        removeButton.addEventListener('click', async () => {
+          // Get associated models
+          const associatedChatModels = this.plugin.settings.chatModels.filter(
+            (m) => m.providerId === provider.id,
+          )
+          const associatedEmbeddingModels =
+            this.plugin.settings.embeddingModels.filter(
+              (m) => m.providerId === provider.id,
+            )
+
+          const message =
+            `Are you sure you want to delete provider "${provider.id}"?\n\n` +
+            `This will also delete:\n` +
+            `- ${associatedChatModels.length} chat model(s)\n` +
+            `- ${associatedEmbeddingModels.length} embedding model(s)\n\n` +
+            `All embeddings generated using the associated embedding models will also be deleted.`
+
+          new ConfirmModal(this.app, 'Delete Provider', message, async () => {
+            const vectorManager = (
+              await this.plugin.getDbManager()
+            ).getVectorManager()
+            const embeddingStats = await vectorManager.getEmbeddingStats()
+
+            // Clear embeddings for each associated embedding model
+            for (const embeddingModel of associatedEmbeddingModels) {
+              const embeddingStat = embeddingStats.find(
+                (v) => v.model === embeddingModel.id,
+              )
+
+              if (embeddingStat?.rowCount && embeddingStat.rowCount > 0) {
+                // only clear when there's data
+                const embeddingModelClient = getEmbeddingModelClient({
+                  settings: this.plugin.settings,
+                  embeddingModelId: embeddingModel.id,
+                })
+                await vectorManager.clearAllVectors(embeddingModelClient)
+              }
+            }
+
+            await this.plugin.setSettings({
+              ...this.plugin.settings,
+              providers: [...this.plugin.settings.providers].filter(
+                (v) => v.id !== provider.id,
+              ),
+              chatModels: [...this.plugin.settings.chatModels].filter(
+                (v) => v.providerId !== provider.id,
+              ),
+              embeddingModels: [...this.plugin.settings.embeddingModels].filter(
+                (v) => v.providerId !== provider.id,
+              ),
+            })
+            this.display()
+          }).open()
+        })
+      }
+    })
+
+    const tfoot = table.createEl('tfoot')
+    const footerRow = tfoot.createEl('tr')
+    const footerCell = footerRow.createEl('td', {
+      attr: {
+        colspan: 4,
+      },
+    })
+    const addCustomProviderButton = footerCell.createEl('button', {
+      text: 'Add custom provider',
+    })
+    addCustomProviderButton.addEventListener('click', () => {
+      new AddProviderModal(this.app, this.plugin, () => this.display()).open()
+    })
   }
 
-  renderModelSection(containerEl: HTMLElement): void {
-    new Setting(containerEl).setHeading().setName('Model')
+  renderModelsSection(containerEl: HTMLElement): void {
+    containerEl.createDiv({
+      text: 'Models',
+      cls: 'smtcmp-settings-header',
+    })
+
+    this.renderChatModelsSubSection(containerEl)
+    this.renderEmbeddingModelsSubSection(containerEl)
+  }
+
+  renderChatModelsSubSection(containerEl: HTMLElement): void {
+    containerEl.createDiv({
+      text: 'Chat Models',
+      cls: 'smtcmp-settings-sub-header',
+    })
+
+    // create description
+    containerEl.createDiv({
+      text: 'Models used for chat and apply',
+      cls: 'smtcmp-settings-desc',
+    })
+
+    // create table
+    const table = containerEl.createEl('table', {
+      cls: 'smtcmp-settings-model-table',
+    })
+    const thead = table.createEl('thead')
+    const headerRow = thead.createEl('tr')
+
+    headerRow.createEl('th', { text: 'ID' })
+    headerRow.createEl('th', { text: 'Provider ID' })
+    headerRow.createEl('th', { text: 'Model' })
+    headerRow.createEl('th', { text: 'Actions' })
+
+    const tbody = table.createEl('tbody')
+
+    this.plugin.settings.chatModels.forEach((chatModel) => {
+      const row = tbody.createEl('tr')
+
+      // id cell
+      row.createEl('td', { text: chatModel.id })
+
+      // provider id cell
+      row.createEl('td', { text: chatModel.providerId })
+
+      // model cell
+      row.createEl('td', { text: chatModel.model })
+
+      // actions cell
+      const actionsCell = row.createEl('td')
+      const actionsContainer = actionsCell.createEl('div', {
+        cls: 'smtcmp-settings-model-actions',
+      })
+
+      if (!DEFAULT_CHAT_MODELS.some((v) => v.id === chatModel.id)) {
+        // prevent default chat model being removed
+        const removeButton = actionsContainer.createEl('button')
+        setIcon(removeButton, 'trash')
+        removeButton.addEventListener('click', async () => {
+          // Check if model is currently in use
+          if (
+            chatModel.id === this.plugin.settings.chatModelId ||
+            chatModel.id === this.plugin.settings.applyModelId
+          ) {
+            new Notice(
+              'Cannot remove model that is currently selected as Chat Model or Apply Model',
+            )
+            return
+          }
+
+          await this.plugin.setSettings({
+            ...this.plugin.settings,
+            chatModels: [...this.plugin.settings.chatModels].filter(
+              (v) => v.id !== chatModel.id,
+            ),
+          })
+          this.display()
+        })
+      }
+    })
+
+    const tfoot = table.createEl('tfoot')
+    const footerRow = tfoot.createEl('tr')
+    const footerCell = footerRow.createEl('td', {
+      attr: {
+        colspan: 4,
+      },
+    })
+    const addCustomChatModelButton = footerCell.createEl('button', {
+      text: 'Add custom model',
+    })
+    addCustomChatModelButton.addEventListener('click', () => {
+      new AddChatModelModal(this.app, this.plugin, () => this.display()).open()
+    })
+  }
+
+  renderEmbeddingModelsSubSection(containerEl: HTMLElement): void {
+    containerEl.createDiv({
+      text: 'Embedding Models',
+      cls: 'smtcmp-settings-sub-header',
+    })
+
+    // create description
+    containerEl.createDiv({
+      text: 'Models used for generating embeddings for RAG',
+      cls: 'smtcmp-settings-desc',
+    })
+
+    // create table
+    const table = containerEl.createEl('table', {
+      cls: 'smtcmp-settings-model-table',
+    })
+    const thead = table.createEl('thead')
+    const headerRow = thead.createEl('tr')
+
+    headerRow.createEl('th', { text: 'ID' })
+    headerRow.createEl('th', { text: 'Provider ID' })
+    headerRow.createEl('th', { text: 'Model' })
+    headerRow.createEl('th', { text: 'Dimension' })
+    headerRow.createEl('th', { text: 'Actions' })
+
+    const tbody = table.createEl('tbody')
+
+    this.plugin.settings.embeddingModels.forEach((embeddingModel) => {
+      const row = tbody.createEl('tr')
+
+      // id cell
+      row.createEl('td', { text: embeddingModel.id })
+
+      // provider id cell
+      row.createEl('td', { text: embeddingModel.providerId })
+
+      // model cell
+      row.createEl('td', { text: embeddingModel.model })
+
+      // dimension cell
+      row.createEl('td', { text: String(embeddingModel.dimension) })
+
+      // actions cell
+      const actionsCell = row.createEl('td')
+      const actionsContainer = actionsCell.createEl('div', {
+        cls: 'smtcmp-settings-model-actions',
+      })
+
+      if (!DEFAULT_EMBEDDING_MODELS.some((v) => v.id === embeddingModel.id)) {
+        // prevent default embedding model being removed
+        const removeButton = actionsContainer.createEl('button')
+        setIcon(removeButton, 'trash')
+        removeButton.addEventListener('click', async () => {
+          // Check if model is currently in use
+          if (embeddingModel.id === this.plugin.settings.embeddingModelId) {
+            new Notice(
+              'Cannot remove model that is currently selected as Embedding Model',
+            )
+            return
+          }
+
+          const message =
+            `Are you sure you want to delete embedding model "${embeddingModel.id}"?\n\n` +
+            `This will also delete all embeddings generated using this model from the database.`
+
+          new ConfirmModal(
+            this.app,
+            'Delete Embedding Model',
+            message,
+            async () => {
+              const vectorManager = (
+                await this.plugin.getDbManager()
+              ).getVectorManager()
+              const embeddingStats = await vectorManager.getEmbeddingStats()
+              const embeddingStat = embeddingStats.find(
+                (v) => v.model === embeddingModel.id,
+              )
+
+              if (embeddingStat?.rowCount && embeddingStat.rowCount > 0) {
+                // only clear when there's data
+                const embeddingModelClient = getEmbeddingModelClient({
+                  settings: this.plugin.settings,
+                  embeddingModelId: embeddingModel.id,
+                })
+                await vectorManager.clearAllVectors(embeddingModelClient)
+              }
+
+              await this.plugin.setSettings({
+                ...this.plugin.settings,
+                embeddingModels: [
+                  ...this.plugin.settings.embeddingModels,
+                ].filter((v) => v.id !== embeddingModel.id),
+              })
+              this.display()
+            },
+          ).open()
+        })
+      }
+    })
+
+    const tfoot = table.createEl('tfoot')
+    const footerRow = tfoot.createEl('tr')
+    const footerCell = footerRow.createEl('td', {
+      attr: {
+        colspan: 5,
+      },
+    })
+    const addCustomEmbeddingModelButton = footerCell.createEl('button', {
+      text: 'Add custom model',
+    })
+    addCustomEmbeddingModelButton.addEventListener('click', () => {
+      new AddEmbeddingModelModal(this.app, this.plugin, () =>
+        this.display(),
+      ).open()
+    })
+  }
+
+  renderChatSection(containerEl: HTMLElement): void {
+    containerEl.createDiv({
+      text: 'Chat',
+      cls: 'smtcmp-settings-header',
+    })
 
     new Setting(containerEl)
       .setName('Chat model')
@@ -104,10 +414,12 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
       .addDropdown((dropdown) =>
         dropdown
           .addOptions(
-            CHAT_MODEL_OPTIONS.reduce<Record<string, string>>((acc, option) => {
-              acc[option.id] = option.name
-              return acc
-            }, {}),
+            Object.fromEntries(
+              this.plugin.settings.chatModels.map((chatModel) => [
+                chatModel.id,
+                `${chatModel.id}${RECOMMENDED_MODELS_FOR_CHAT.includes(chatModel.id) ? ' (Recommended)' : ''}`,
+              ]),
+            ),
           )
           .setValue(this.plugin.settings.chatModelId)
           .onChange(async (value) => {
@@ -115,29 +427,20 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
               ...this.plugin.settings,
               chatModelId: value,
             })
-            // Force refresh to show/hide Ollama and OpenAI-compatible settings
-            this.display()
           }),
       )
-    if (this.plugin.settings.chatModelId === 'ollama') {
-      this.renderOllamaChatModelSettings(containerEl)
-    }
-    if (this.plugin.settings.chatModelId === 'openai-compatible') {
-      this.renderOpenAICompatibleChatModelSettings(containerEl)
-    }
 
     new Setting(containerEl)
       .setName('Apply model')
-      .setDesc('Choose the model you want to use for apply')
+      .setDesc('Choose the model you want to use for apply feature')
       .addDropdown((dropdown) =>
         dropdown
           .addOptions(
-            APPLY_MODEL_OPTIONS.reduce<Record<string, string>>(
-              (acc, option) => {
-                acc[option.id] = option.name
-                return acc
-              },
-              {},
+            Object.fromEntries(
+              this.plugin.settings.chatModels.map((chatModel) => [
+                chatModel.id,
+                `${chatModel.id}${RECOMMENDED_MODELS_FOR_APPLY.includes(chatModel.id) ? ' (Recommended)' : ''}`,
+              ]),
             ),
           )
           .setValue(this.plugin.settings.applyModelId)
@@ -146,44 +449,8 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
               ...this.plugin.settings,
               applyModelId: value,
             })
-            // Force refresh to show/hide Ollama and OpenAI-compatible settings
-            this.display()
           }),
       )
-    if (this.plugin.settings.applyModelId === 'ollama') {
-      this.renderOllamaApplyModelSettings(containerEl)
-    }
-    if (this.plugin.settings.applyModelId === 'openai-compatible') {
-      this.renderOpenAICompatibleApplyModelSettings(containerEl)
-    }
-
-    new Setting(containerEl)
-      .setName('Embedding model')
-      .setDesc('Choose the model you want to use for embeddings')
-      .addDropdown((dropdown) =>
-        dropdown
-          .addOptions(
-            EMBEDDING_MODEL_OPTIONS.reduce<Record<string, string>>(
-              (acc, option) => {
-                acc[option.id] = option.name
-                return acc
-              },
-              {},
-            ),
-          )
-          .setValue(this.plugin.settings.embeddingModelId)
-          .onChange(async (value) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              embeddingModelId: value,
-            })
-            // Force refresh to show/hide Ollama settings
-            this.display()
-          }),
-      )
-    if (this.plugin.settings.embeddingModelId.startsWith('ollama/')) {
-      this.renderOllamaEmbeddingModelSettings(containerEl)
-    }
 
     new Setting(containerEl)
       .setHeading()
@@ -204,302 +471,33 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
       )
   }
 
-  renderOllamaChatModelSettings(containerEl: HTMLElement): void {
-    const ollamaContainer = containerEl.createDiv(
-      'smtcmp-settings-model-container',
-    )
-    let modelDropdown: DropdownComponent | null = null // Store reference to the dropdown
-
-    // Base URL Setting
-    new Setting(ollamaContainer)
-      .setName('Base URL')
-      .setDesc(
-        'The API endpoint for your Ollama service (e.g., http://127.0.0.1:11434)',
-      )
-      .addText((text) => {
-        text
-          .setPlaceholder('http://127.0.0.1:11434')
-          .setValue(this.plugin.settings.ollamaChatModel.baseUrl || '')
-          .onChange(async (value) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              ollamaChatModel: {
-                ...this.plugin.settings.ollamaChatModel,
-                baseUrl: value,
-              },
-            })
-            if (modelDropdown) {
-              await this.updateOllamaModelOptions({
-                baseUrl: value,
-                dropdown: modelDropdown,
-                onModelChange: async (model: string) => {
-                  await this.plugin.setSettings({
-                    ...this.plugin.settings,
-                    ollamaChatModel: {
-                      ...this.plugin.settings.ollamaChatModel,
-                      model,
-                    },
-                  })
-                },
-              })
-            }
-          })
-      })
-
-    // Model Setting
-    new Setting(ollamaContainer)
-      .setName('Model Name')
-      .setDesc('Select a model from your Ollama instance')
-      .addDropdown(async (dropdown) => {
-        const currentModel = this.plugin.settings.ollamaChatModel.model
-        modelDropdown = dropdown
-          .addOption(currentModel, currentModel)
-          .setValue(currentModel)
-        await this.updateOllamaModelOptions({
-          baseUrl: this.plugin.settings.ollamaChatModel.baseUrl,
-          dropdown,
-          onModelChange: async (model: string) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              ollamaChatModel: {
-                ...this.plugin.settings.ollamaChatModel,
-                model,
-              },
-            })
-          },
-        })
-      })
-  }
-
-  renderOpenAICompatibleChatModelSettings(containerEl: HTMLElement): void {
-    const openAICompatContainer = containerEl.createDiv(
-      'smtcmp-settings-model-container',
-    )
-
-    new Setting(openAICompatContainer)
-      .setName('Base URL')
-      .setDesc(
-        'The API endpoint for your OpenAI-compatible service (e.g., https://api.example.com/v1)',
-      )
-      .addText((text) =>
-        text
-          .setPlaceholder('https://api.example.com/v1')
-          .setValue(
-            this.plugin.settings.openAICompatibleChatModel.baseUrl || '',
-          )
-          .onChange(async (value) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              openAICompatibleChatModel: {
-                ...this.plugin.settings.openAICompatibleChatModel,
-                baseUrl: value,
-              },
-            })
-          }),
-      )
-
-    new Setting(openAICompatContainer)
-      .setName('API Key')
-      .setDesc('Your authentication key for the OpenAI-compatible service')
-      .addText((text) =>
-        text
-          .setPlaceholder('Enter your API key')
-          .setValue(this.plugin.settings.openAICompatibleChatModel.apiKey || '')
-          .onChange(async (value) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              openAICompatibleChatModel: {
-                ...this.plugin.settings.openAICompatibleChatModel,
-                apiKey: value,
-              },
-            })
-          }),
-      )
-
-    new Setting(openAICompatContainer)
-      .setName('Model Name')
-      .setDesc(
-        'The specific model to use with your service (e.g., llama-3.1-70b, mixtral-8x7b)',
-      )
-      .addText((text) =>
-        text
-          .setPlaceholder('llama-3.1-70b')
-          .setValue(this.plugin.settings.openAICompatibleChatModel.model || '')
-          .onChange(async (value) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              openAICompatibleChatModel: {
-                ...this.plugin.settings.openAICompatibleChatModel,
-                model: value,
-              },
-            })
-          }),
-      )
-  }
-
-  renderOllamaApplyModelSettings(containerEl: HTMLElement): void {
-    const ollamaContainer = containerEl.createDiv(
-      'smtcmp-settings-model-container',
-    )
-    let modelDropdown: DropdownComponent | null = null // Store reference to the dropdown
-
-    // Base URL Setting
-    new Setting(ollamaContainer)
-      .setName('Base URL')
-      .setDesc(
-        'The API endpoint for your Ollama service (e.g., http://127.0.0.1:11434)',
-      )
-      .addText((text) => {
-        text
-          .setPlaceholder('http://127.0.0.1:11434')
-          .setValue(this.plugin.settings.ollamaApplyModel.baseUrl || '')
-          .onChange(async (value) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              ollamaApplyModel: {
-                ...this.plugin.settings.ollamaApplyModel,
-                baseUrl: value,
-              },
-            })
-            if (modelDropdown) {
-              await this.updateOllamaModelOptions({
-                baseUrl: value,
-                dropdown: modelDropdown,
-                onModelChange: async (model: string) => {
-                  await this.plugin.setSettings({
-                    ...this.plugin.settings,
-                    ollamaApplyModel: {
-                      ...this.plugin.settings.ollamaApplyModel,
-                      model,
-                    },
-                  })
-                },
-              })
-            }
-          })
-      })
-
-    // Model Setting
-    new Setting(ollamaContainer)
-      .setName('Model Name')
-      .setDesc('Select a model from your Ollama instance')
-      .addDropdown(async (dropdown) => {
-        const currentModel = this.plugin.settings.ollamaApplyModel.model
-        modelDropdown = dropdown
-          .addOption(currentModel, currentModel)
-          .setValue(currentModel)
-        await this.updateOllamaModelOptions({
-          baseUrl: this.plugin.settings.ollamaApplyModel.baseUrl,
-          dropdown,
-          onModelChange: async (model: string) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              ollamaApplyModel: {
-                ...this.plugin.settings.ollamaApplyModel,
-                model,
-              },
-            })
-          },
-        })
-      })
-  }
-
-  renderOpenAICompatibleApplyModelSettings(containerEl: HTMLElement): void {
-    const openAICompatContainer = containerEl.createDiv(
-      'smtcmp-settings-model-container',
-    )
-
-    new Setting(openAICompatContainer)
-      .setName('Base URL')
-      .setDesc(
-        'The API endpoint for your OpenAI-compatible service (e.g., https://api.example.com/v1)',
-      )
-      .addText((text) =>
-        text
-          .setPlaceholder('https://api.example.com/v1')
-          .setValue(
-            this.plugin.settings.openAICompatibleApplyModel.baseUrl || '',
-          )
-          .onChange(async (value) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              openAICompatibleApplyModel: {
-                ...this.plugin.settings.openAICompatibleApplyModel,
-                baseUrl: value,
-              },
-            })
-          }),
-      )
-
-    new Setting(openAICompatContainer)
-      .setName('API Key')
-      .setDesc('Your authentication key for the OpenAI-compatible service')
-      .addText((text) =>
-        text
-          .setPlaceholder('Enter your API key')
-          .setValue(
-            this.plugin.settings.openAICompatibleApplyModel.apiKey || '',
-          )
-          .onChange(async (value) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              openAICompatibleApplyModel: {
-                ...this.plugin.settings.openAICompatibleApplyModel,
-                apiKey: value,
-              },
-            })
-          }),
-      )
-
-    new Setting(openAICompatContainer)
-      .setName('Model Name')
-      .setDesc(
-        'The specific model to use with your service (e.g., llama-3.1-70b, mixtral-8x7b)',
-      )
-      .addText((text) =>
-        text
-          .setPlaceholder('llama-3.1-70b')
-          .setValue(this.plugin.settings.openAICompatibleApplyModel.model || '')
-          .onChange(async (value) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              openAICompatibleApplyModel: {
-                ...this.plugin.settings.openAICompatibleApplyModel,
-                model: value,
-              },
-            })
-          }),
-      )
-  }
-
-  renderOllamaEmbeddingModelSettings(containerEl: HTMLElement): void {
-    const ollamaContainer = containerEl.createDiv(
-      'smtcmp-settings-model-container',
-    )
-
-    new Setting(ollamaContainer)
-      .setName('Base URL')
-      .setDesc(
-        'The API endpoint for your Ollama service (e.g., http://127.0.0.1:11434)',
-      )
-      .addText((text) =>
-        text
-          .setPlaceholder('http://127.0.0.1:11434')
-          .setValue(this.plugin.settings.ollamaEmbeddingModel.baseUrl || '')
-          .onChange(async (value) => {
-            await this.plugin.setSettings({
-              ...this.plugin.settings,
-              ollamaEmbeddingModel: {
-                ...this.plugin.settings.ollamaEmbeddingModel,
-                baseUrl: value,
-              },
-            })
-          }),
-      )
-  }
-
   renderRAGSection(containerEl: HTMLElement): void {
-    new Setting(containerEl).setHeading().setName('RAG')
+    containerEl.createDiv({
+      text: 'RAG',
+      cls: 'smtcmp-settings-header',
+    })
+
+    new Setting(containerEl)
+      .setName('Embedding model')
+      .setDesc('Choose the model you want to use for embeddings')
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOptions(
+            Object.fromEntries(
+              this.plugin.settings.embeddingModels.map((embeddingModel) => [
+                embeddingModel.id,
+                `${embeddingModel.id}${RECOMMENDED_MODELS_FOR_EMBEDDING.includes(embeddingModel.id) ? ' (Recommended)' : ''}`,
+              ]),
+            ),
+          )
+          .setValue(this.plugin.settings.embeddingModelId)
+          .onChange(async (value) => {
+            await this.plugin.setSettings({
+              ...this.plugin.settings,
+              embeddingModelId: value,
+            })
+          }),
+      )
 
     new Setting(containerEl)
       .setName('Include patterns')
@@ -672,51 +670,32 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
       )
   }
 
-  private async updateOllamaModelOptions({
-    baseUrl,
-    dropdown,
-    onModelChange,
-  }: {
-    baseUrl: string
-    dropdown: DropdownComponent
-    onModelChange: (model: string) => Promise<void>
-  }): Promise<void> {
-    const currentValue = dropdown.getValue()
-    dropdown.selectEl.empty()
-
-    try {
-      const models = await getOllamaModels(baseUrl)
-      if (models.length > 0) {
-        const modelOptions = models.reduce<Record<string, string>>(
-          (acc, model) => {
-            acc[model] = model
-            return acc
-          },
-          {},
-        )
-
-        dropdown.addOptions(modelOptions)
-
-        if (models.includes(currentValue)) {
-          dropdown.setValue(currentValue)
-        } else {
-          dropdown.setValue(models[0])
-          await onModelChange(models[0])
-        }
-      } else {
-        dropdown.addOption('', 'No models found - check base URL')
-        dropdown.setValue('')
-        await onModelChange('')
-      }
-    } catch (error) {
-      console.error('Failed to fetch Ollama models:', error)
-      dropdown.addOption('', 'No models found - check base URL')
-      dropdown.setValue('')
-      await onModelChange('')
-    }
-
-    dropdown.onChange(async (value) => {
-      await onModelChange(value)
+  renderEtcSection(containerEl: HTMLElement): void {
+    containerEl.createDiv({
+      text: 'Etc',
+      cls: 'smtcmp-settings-header',
     })
+
+    new Setting(containerEl)
+      .setName('Reset settings')
+      .setDesc('Reset all settings to default values')
+      .addButton((button) =>
+        button
+          .setButtonText('Reset')
+          .setWarning()
+          .onClick(() => {
+            new ConfirmModal(
+              this.app,
+              'Reset settings',
+              'Are you sure you want to reset all settings to default values? This cannot be undone.',
+              async () => {
+                const defaultSettings = smartComposerSettingsSchema.parse({})
+                await this.plugin.setSettings(defaultSettings)
+                new Notice('Settings have been reset to defaults')
+                this.display()
+              },
+            ).open()
+          }),
+      )
   }
 }

@@ -19,13 +19,6 @@ export class LLMBaseUrlNotSetException extends Error {
   }
 }
 
-export class LLMModelNotSetException extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = 'LLMModelNotSetException'
-  }
-}
-
 export class LLMRateLimitExceededException extends Error {
   constructor(message: string) {
     super(message)

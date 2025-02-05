@@ -15,15 +15,14 @@ import { v4 as uuidv4 } from 'uuid'
 import { ApplyViewState } from '../../ApplyView'
 import { APPLY_VIEW_TYPE } from '../../constants'
 import { useApp } from '../../contexts/app-context'
-import { useLLM } from '../../contexts/llm-context'
 import { useRAG } from '../../contexts/rag-context'
 import { useSettings } from '../../contexts/settings-context'
 import {
   LLMAPIKeyInvalidException,
   LLMAPIKeyNotSetException,
   LLMBaseUrlNotSetException,
-  LLMModelNotSetException,
 } from '../../core/llm/exception'
+import { getChatModelClient } from '../../core/llm/manager'
 import { useChatHistory } from '../../hooks/useChatHistory'
 import { ChatMessage, ChatUserMessage } from '../../types/chat'
 import {
@@ -86,8 +85,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     updateConversationTitle,
     chatList,
   } = useChatHistory()
-  const { generateResponse, streamResponse, chatModel, applyModel } = useLLM()
-
   const promptGenerator = useMemo(() => {
     return new PromptGenerator(getRAGEngine, app, settings)
   }, [getRAGEngine, app, settings])
@@ -276,10 +273,16 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
             },
           },
         ])
-        const stream = await streamResponse(
-          chatModel,
+
+        const { providerClient, model } = getChatModelClient({
+          settings,
+          modelId: settings.chatModelId,
+        })
+
+        const stream = await providerClient.streamResponse(
+          model,
           {
-            model: chatModel.model,
+            model: model.model,
             messages: requestMessages,
             stream: true,
           },
@@ -299,7 +302,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
                     metadata: {
                       ...message.metadata,
                       usage: chunk.usage ?? message.metadata?.usage, // Keep existing usage if chunk has no usage data
-                      model: chatModel,
+                      model,
                     },
                   }
                 : message,
@@ -324,8 +327,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       if (
         error instanceof LLMAPIKeyNotSetException ||
         error instanceof LLMAPIKeyInvalidException ||
-        error instanceof LLMBaseUrlNotSetException ||
-        error instanceof LLMModelNotSetException
+        error instanceof LLMBaseUrlNotSetException
       ) {
         openSettingsModalWithError(app, error.message)
       } else {
@@ -358,14 +360,19 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       }
       const activeFileContent = await readTFileContent(activeFile, app.vault)
 
-      const updatedFileContent = await applyChangesToFile(
+      const { providerClient, model } = getChatModelClient({
+        settings,
+        modelId: settings.applyModelId,
+      })
+
+      const updatedFileContent = await applyChangesToFile({
         blockToApply,
-        activeFile,
-        activeFileContent,
+        currentFile: activeFile,
+        currentFileContent: activeFileContent,
         chatMessages,
-        applyModel,
-        generateResponse,
-      )
+        providerClient,
+        model,
+      })
       if (!updatedFileContent) {
         throw new Error('Failed to apply changes')
       }
@@ -384,8 +391,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       if (
         error instanceof LLMAPIKeyNotSetException ||
         error instanceof LLMAPIKeyInvalidException ||
-        error instanceof LLMBaseUrlNotSetException ||
-        error instanceof LLMModelNotSetException
+        error instanceof LLMBaseUrlNotSetException
       ) {
         openSettingsModalWithError(app, error.message)
       } else {

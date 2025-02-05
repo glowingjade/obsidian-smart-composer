@@ -6,7 +6,7 @@
 import OpenAI from 'openai'
 import { FinalRequestOptions } from 'openai/core'
 
-import { OllamaModel } from '../../types/llm/model'
+import { ChatModel } from '../../types/chat-model.types'
 import {
   LLMOptions,
   LLMRequestNonStreaming,
@@ -16,9 +16,9 @@ import {
   LLMResponseNonStreaming,
   LLMResponseStreaming,
 } from '../../types/llm/response'
+import { LLMProvider } from '../../types/provider.types'
 
 import { BaseLLMProvider } from './base'
-import { LLMBaseUrlNotSetException, LLMModelNotSetException } from './exception'
 import { OpenAIMessageAdapter } from './openaiMessageAdapter'
 
 export class NoStainlessOpenAI extends OpenAI {
@@ -45,60 +45,51 @@ export class NoStainlessOpenAI extends OpenAI {
   }
 }
 
-export class OllamaProvider implements BaseLLMProvider {
+export class OllamaProvider extends BaseLLMProvider<
+  Extract<LLMProvider, { type: 'ollama' }>
+> {
   private adapter: OpenAIMessageAdapter
+  private client: NoStainlessOpenAI
 
-  constructor() {
+  constructor(provider: Extract<LLMProvider, { type: 'ollama' }>) {
+    super(provider)
     this.adapter = new OpenAIMessageAdapter()
+    this.client = new NoStainlessOpenAI({
+      baseURL: `${provider.baseUrl ? provider.baseUrl.replace(/\/+$/, '') : 'http://127.0.0.1:11434'}/v1`,
+      apiKey: provider.apiKey ?? '',
+      dangerouslyAllowBrowser: true,
+    })
   }
 
   async generateResponse(
-    model: OllamaModel,
+    model: ChatModel,
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
-    if (!model.baseURL) {
-      throw new LLMBaseUrlNotSetException(
-        'Ollama base URL is missing. Please set it in settings menu.',
-      )
+    if (model.providerType !== 'ollama') {
+      throw new Error('Model is not an Ollama model')
     }
 
-    if (!model.model) {
-      throw new LLMModelNotSetException(
-        'Ollama model is missing. Please set it in settings menu.',
-      )
-    }
-
-    const client = new NoStainlessOpenAI({
-      baseURL: `${model.baseURL}/v1`,
-      apiKey: '',
-      dangerouslyAllowBrowser: true,
-    })
-    return this.adapter.generateResponse(client, request, options)
+    return this.adapter.generateResponse(this.client, request, options)
   }
 
   async streamResponse(
-    model: OllamaModel,
+    model: ChatModel,
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
-    if (!model.baseURL) {
-      throw new LLMBaseUrlNotSetException(
-        'Ollama base URL is missing. Please set it in settings menu.',
-      )
+    if (model.providerType !== 'ollama') {
+      throw new Error('Model is not an Ollama model')
     }
 
-    if (!model.model) {
-      throw new LLMModelNotSetException(
-        'Ollama model is missing. Please set it in settings menu.',
-      )
-    }
+    return this.adapter.streamResponse(this.client, request, options)
+  }
 
-    const client = new NoStainlessOpenAI({
-      baseURL: `${model.baseURL}/v1`,
-      apiKey: '',
-      dangerouslyAllowBrowser: true,
+  async getEmbedding(model: string, text: string): Promise<number[]> {
+    const embedding = await this.client.embeddings.create({
+      model: model,
+      input: text,
     })
-    return this.adapter.streamResponse(client, request, options)
+    return embedding.data[0].embedding
   }
 }

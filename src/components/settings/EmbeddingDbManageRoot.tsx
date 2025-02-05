@@ -5,10 +5,9 @@ import { Loader2, PickaxeIcon, RefreshCw, Trash2 } from 'lucide-react'
 import { Notice } from 'obsidian'
 import { useState } from 'react'
 
-import { EMBEDDING_MODEL_OPTIONS } from '../../constants'
 import { useDatabase } from '../../contexts/database-context'
 import { useSettings } from '../../contexts/settings-context'
-import { getEmbeddingModel } from '../../core/rag/embedding'
+import { getEmbeddingModelClient } from '../../core/rag/embedding'
 import { EmbeddingDbStats } from '../../types/embedding'
 import { IndexProgress } from '../chat-view/QueryProgress'
 
@@ -36,24 +35,20 @@ export default function EmbeddingDbManageRoot({
 
       const statsMap = new Map(dbStats.map((stat) => [stat.model, stat]))
 
-      return EMBEDDING_MODEL_OPTIONS.map((option) => ({
-        model: option.id,
-        rowCount: statsMap.get(option.id)?.rowCount ?? 0,
-        totalDataBytes: statsMap.get(option.id)?.totalDataBytes ?? 0,
+      return settings.embeddingModels.map((embeddingModel) => ({
+        model: embeddingModel.id,
+        rowCount: statsMap.get(embeddingModel.id)?.rowCount ?? 0,
+        totalDataBytes: statsMap.get(embeddingModel.id)?.totalDataBytes ?? 0,
       }))
     },
   })
 
   const handleRebuildIndex = async (modelId: string) => {
     try {
-      const embeddingModel = getEmbeddingModel(
-        modelId,
-        {
-          openAIApiKey: settings.openAIApiKey,
-          geminiApiKey: settings.geminiApiKey,
-        },
-        settings.ollamaEmbeddingModel.baseUrl,
-      )
+      const embeddingModel = getEmbeddingModelClient({
+        settings,
+        embeddingModelId: modelId,
+      })
 
       await (
         await getVectorManager()
@@ -88,14 +83,10 @@ export default function EmbeddingDbManageRoot({
 
   const handleRemoveIndex = async (modelId: string) => {
     try {
-      const embeddingModel = getEmbeddingModel(
-        modelId,
-        {
-          openAIApiKey: settings.openAIApiKey,
-          geminiApiKey: settings.geminiApiKey,
-        },
-        settings.ollamaEmbeddingModel.baseUrl,
-      )
+      const embeddingModel = getEmbeddingModelClient({
+        settings,
+        embeddingModelId: modelId,
+      })
       await (await getVectorManager()).clearAllVectors(embeddingModel)
     } catch (error) {
       console.error(error)

@@ -4,45 +4,39 @@ import { QueryProgressState } from '../../components/chat-view/QueryProgress'
 import { DatabaseManager } from '../../database/DatabaseManager'
 import { VectorManager } from '../../database/modules/vector/VectorManager'
 import { SelectEmbedding } from '../../database/schema'
-import { EmbeddingModel } from '../../types/embedding'
-import { SmartCopilotSettings } from '../../types/settings'
+import { SmartComposerSettings } from '../../settings/schema/setting.types'
+import { EmbeddingModelClient } from '../../types/embedding'
 
-import { getEmbeddingModel } from './embedding'
+import { getEmbeddingModelClient } from './embedding'
 
+// TODO: do we really need this class? It seems like unnecessary abstraction.
 export class RAGEngine {
   private app: App
-  private settings: SmartCopilotSettings
+  private settings: SmartComposerSettings
   private vectorManager: VectorManager
-  private embeddingModel: EmbeddingModel | null = null
+  private embeddingModel: EmbeddingModelClient | null = null
 
   constructor(
     app: App,
-    settings: SmartCopilotSettings,
+    settings: SmartComposerSettings,
     dbManager: DatabaseManager,
   ) {
     this.app = app
     this.settings = settings
     this.vectorManager = dbManager.getVectorManager()
-    this.embeddingModel = getEmbeddingModel(
-      settings.embeddingModelId,
-      {
-        openAIApiKey: settings.openAIApiKey,
-        geminiApiKey: settings.geminiApiKey,
-      },
-      settings.ollamaEmbeddingModel.baseUrl,
-    )
+    this.embeddingModel = getEmbeddingModelClient({
+      settings,
+      embeddingModelId: settings.embeddingModelId,
+    })
   }
 
-  setSettings(settings: SmartCopilotSettings) {
+  // TODO: use addSettingsChangeListener
+  setSettings(settings: SmartComposerSettings) {
     this.settings = settings
-    this.embeddingModel = getEmbeddingModel(
-      settings.embeddingModelId,
-      {
-        openAIApiKey: settings.openAIApiKey,
-        geminiApiKey: settings.geminiApiKey,
-      },
-      settings.ollamaEmbeddingModel.baseUrl,
-    )
+    this.embeddingModel = getEmbeddingModelClient({
+      settings,
+      embeddingModelId: settings.embeddingModelId,
+    })
   }
 
   // TODO: Implement automatic vault re-indexing when settings are changed.

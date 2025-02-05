@@ -37,7 +37,9 @@ export type VectorMetaData = {
 }
 
 // important: dimensions must be less than 2000!
-const supportedDimensionsForIndex = [768, 1024, 1536]
+export const supportedDimensionsForIndex = [
+  128, 256, 384, 512, 768, 1024, 1280, 1536, 1792,
+]
 
 export const embeddingTable = pgTable(
   'embeddings',

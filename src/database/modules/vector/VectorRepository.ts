@@ -16,7 +16,10 @@ import {
 import { PgliteDatabase } from 'drizzle-orm/pglite'
 import { App } from 'obsidian'
 
-import { EmbeddingDbStats, EmbeddingModel } from '../../../types/embedding'
+import {
+  EmbeddingDbStats,
+  EmbeddingModelClient,
+} from '../../../types/embedding'
 import { DatabaseNotInitializedException } from '../../exception'
 import { InsertEmbedding, SelectEmbedding, embeddingTable } from '../../schema'
 
@@ -29,7 +32,9 @@ export class VectorRepository {
     this.db = db
   }
 
-  async getIndexedFilePaths(embeddingModel: EmbeddingModel): Promise<string[]> {
+  async getIndexedFilePaths(
+    embeddingModel: EmbeddingModelClient,
+  ): Promise<string[]> {
     if (!this.db) {
       throw new DatabaseNotInitializedException()
     }
@@ -44,7 +49,7 @@ export class VectorRepository {
 
   async getVectorsByFilePath(
     filePath: string,
-    embeddingModel: EmbeddingModel,
+    embeddingModel: EmbeddingModelClient,
   ): Promise<SelectEmbedding[]> {
     if (!this.db) {
       throw new DatabaseNotInitializedException()
@@ -63,7 +68,7 @@ export class VectorRepository {
 
   async deleteVectorsForSingleFile(
     filePath: string,
-    embeddingModel: EmbeddingModel,
+    embeddingModel: EmbeddingModelClient,
   ): Promise<void> {
     if (!this.db) {
       throw new DatabaseNotInitializedException()
@@ -80,7 +85,7 @@ export class VectorRepository {
 
   async deleteVectorsForMultipleFiles(
     filePaths: string[],
-    embeddingModel: EmbeddingModel,
+    embeddingModel: EmbeddingModelClient,
   ): Promise<void> {
     if (!this.db) {
       throw new DatabaseNotInitializedException()
@@ -95,7 +100,7 @@ export class VectorRepository {
       )
   }
 
-  async clearAllVectors(embeddingModel: EmbeddingModel): Promise<void> {
+  async clearAllVectors(embeddingModel: EmbeddingModelClient): Promise<void> {
     if (!this.db) {
       throw new DatabaseNotInitializedException()
     }
@@ -113,7 +118,7 @@ export class VectorRepository {
 
   async performSimilaritySearch(
     queryVector: number[],
-    embeddingModel: EmbeddingModel,
+    embeddingModel: EmbeddingModelClient,
     options: {
       minSimilarity: number
       limit: number

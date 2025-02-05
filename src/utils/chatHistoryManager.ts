@@ -2,7 +2,8 @@ import { App, normalizePath } from 'obsidian'
 
 import { ChatConversation, ChatConversationMeta } from '../types/chat'
 
-const CURRENT_SCHEMA_VERSION = 2
+const CURRENT_SCHEMA_VERSION = 3
+const SUPPORTED_SCHEMA_VERSION = 2
 const CHAT_HISTORY_DIR = '.smtcmp_chat_histories'
 const CHAT_LIST_FILE = 'chat_list.json'
 
@@ -65,7 +66,8 @@ export class ChatConversationManager {
       const content = await this.app.vault.adapter.read(chatListPath)
       const chatList = JSON.parse(content) as ChatConversationMeta[]
       return chatList.filter(
-        (chat) => chat.schemaVersion === CURRENT_SCHEMA_VERSION,
+        // TODO: should migrate from 2 to 3
+        (chat) => chat.schemaVersion >= SUPPORTED_SCHEMA_VERSION,
       )
     }
     return []

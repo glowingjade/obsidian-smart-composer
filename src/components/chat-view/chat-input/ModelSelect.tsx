@@ -2,7 +2,6 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useState } from 'react'
 
-import { CHAT_MODEL_OPTIONS } from '../../../constants'
 import { useSettings } from '../../../contexts/settings-context'
 
 export function ModelSelect() {
@@ -12,11 +11,7 @@ export function ModelSelect() {
     <DropdownMenu.Root open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenu.Trigger className="smtcmp-chat-input-model-select">
         <div className="smtcmp-chat-input-model-select__model-name">
-          {
-            CHAT_MODEL_OPTIONS.find(
-              (option) => option.id === settings.chatModelId,
-            )?.name
-          }
+          {settings.chatModelId}
         </div>
         <div className="smtcmp-chat-input-model-select__icon">
           {isOpen ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
@@ -26,18 +21,18 @@ export function ModelSelect() {
       <DropdownMenu.Portal>
         <DropdownMenu.Content className="smtcmp-popover">
           <ul>
-            {CHAT_MODEL_OPTIONS.map((option) => (
+            {settings.chatModels.map((chatModelOption) => (
               <DropdownMenu.Item
-                key={option.id}
+                key={chatModelOption.id}
                 onSelect={() => {
                   setSettings({
                     ...settings,
-                    chatModelId: option.id,
+                    chatModelId: chatModelOption.id,
                   })
                 }}
                 asChild
               >
-                <li>{option.name}</li>
+                <li>{chatModelOption.id}</li>
               </DropdownMenu.Item>
             ))}
           </ul>

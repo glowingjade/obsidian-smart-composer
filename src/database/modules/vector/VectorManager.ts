@@ -11,7 +11,10 @@ import {
   LLMRateLimitExceededException,
 } from '../../../core/llm/exception'
 import { InsertEmbedding, SelectEmbedding } from '../../../database/schema'
-import { EmbeddingDbStats, EmbeddingModel } from '../../../types/embedding'
+import {
+  EmbeddingDbStats,
+  EmbeddingModelClient,
+} from '../../../types/embedding'
 import { chunkArray } from '../../../utils/chunk-array'
 import { openSettingsModalWithError } from '../../../utils/openSettingsModal'
 import { DatabaseManager } from '../../DatabaseManager'
@@ -31,7 +34,7 @@ export class VectorManager {
 
   async performSimilaritySearch(
     queryVector: number[],
-    embeddingModel: EmbeddingModel,
+    embeddingModel: EmbeddingModelClient,
     options: {
       minSimilarity: number
       limit: number
@@ -53,7 +56,7 @@ export class VectorManager {
   }
 
   async updateVaultIndex(
-    embeddingModel: EmbeddingModel,
+    embeddingModel: EmbeddingModelClient,
     options: {
       chunkSize: number
       excludePatterns: string[]
@@ -191,13 +194,15 @@ export class VectorManager {
     }
   }
 
-  async clearAllVectors(embeddingModel: EmbeddingModel) {
+  async clearAllVectors(embeddingModel: EmbeddingModelClient) {
     await this.repository.clearAllVectors(embeddingModel)
     await this.dbManager.vacuum()
     await this.dbManager.save()
   }
 
-  private async deleteVectorsForDeletedFiles(embeddingModel: EmbeddingModel) {
+  private async deleteVectorsForDeletedFiles(
+    embeddingModel: EmbeddingModelClient,
+  ) {
     const indexedFilePaths =
       await this.repository.getIndexedFilePaths(embeddingModel)
     for (const filePath of indexedFilePaths) {
@@ -216,7 +221,7 @@ export class VectorManager {
     includePatterns,
     reindexAll,
   }: {
-    embeddingModel: EmbeddingModel
+    embeddingModel: EmbeddingModelClient
     excludePatterns: string[]
     includePatterns: string[]
     reindexAll?: boolean

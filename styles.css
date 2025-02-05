@@ -1123,6 +1123,46 @@ button.smtcmp-chat-input-model-select {
   width: var(--size-4-4);
 }
 
+/* Settings */
+
+.smtcmp-settings-header {
+  color: var(--text-normal);
+  font-size: var(--h1-size);
+  line-height: var(--line-height-tight);
+  font-weight: var(--h1-weight);
+  margin: var(--size-4-8) 0 var(--size-4-2) 0;
+}
+
+.smtcmp-settings-header:first-child {
+  margin-top: 0;
+}
+
+.smtcmp-settings-sub-header {
+  color: var(--text-normal);
+  font-size: var(--h4-size);
+  line-height: var(--line-height-tight);
+  font-weight: var(--h4-weight);
+  margin: var(--size-4-3) 0;
+}
+
+.smtcmp-settings-desc {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  line-height: var(--line-height-tight);
+  margin: var(--size-4-1) 0;
+}
+
+.smtcmp-settings-required::after {
+  color: var(--color-red);
+  content: '*';
+  display: inline-block;
+  font-size: var(--font-ui-medium);
+  font-weight: var(--font-bold);
+  margin-left: var(--size-4-1);
+}
+
+/* Settings: Embedding DB Manage */
+
 .smtcmp-settings-embedding-db-manage-root {
   padding: var(--size-4-2);
 }
@@ -1171,4 +1211,106 @@ button.smtcmp-chat-input-model-select {
   align-items: center;
   gap: var(--size-2-2);
   font-size: var(--font-ui-smaller);
+}
+
+/* Settings: Providers */
+
+.smtcmp-settings-provider-table {
+  margin: var(--size-4-3) 0;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.smtcmp-settings-provider-table th {
+  padding: var(--size-4-1) var(--size-4-1) var(--size-4-2) var(--size-4-1);
+  text-align: left;
+  vertical-align: middle;
+  font-weight: var(--font-medium);
+  color: var(--text-muted);
+}
+
+.smtcmp-settings-provider-table tbody td {
+  height: var(--size-4-10);
+  padding: var(--size-4-1);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.smtcmp-settings-provider-table tfoot td {
+  padding: var(--size-4-1);
+  text-align: right;
+  vertical-align: middle;
+}
+
+.smtcmp-settings-provider-table thead tr {
+  border-bottom: var(--border-width) solid var(--background-modifier-border);
+}
+
+.smtcmp-settings-provider-table tbody tr {
+  border-bottom: var(--border-width) solid var(--background-modifier-border);
+}
+
+.smtcmp-settings-provider-table-api-key {
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.smtcmp-settings-provider-table-api-key:hover {
+  text-decoration: underline;
+}
+
+.smtcmp-settings-provider-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+}
+
+.smtcmp-settings-provider-actions button {
+  padding: var(--size-4-1) var(--size-4-2);
+}
+
+.smtcmp-settings-model-table {
+  margin: var(--size-4-2) 0;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.smtcmp-settings-model-table th {
+  padding: var(--size-4-1) var(--size-4-1) var(--size-4-2) var(--size-4-1);
+  text-align: left;
+  vertical-align: middle;
+  font-weight: var(--font-medium);
+  color: var(--text-muted);
+}
+
+.smtcmp-settings-model-table tbody td {
+  height: var(--size-4-10);
+  padding: var(--size-4-1);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.smtcmp-settings-model-table tfoot td {
+  padding: var(--size-4-1);
+  text-align: right;
+  vertical-align: middle;
+}
+
+.smtcmp-settings-model-table thead tr {
+  border-bottom: var(--border-width) solid var(--background-modifier-border);
+}
+
+.smtcmp-settings-model-table tbody tr {
+  border-bottom: var(--border-width) solid var(--background-modifier-border);
+}
+
+.smtcmp-settings-model-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+}
+
+.smtcmp-settings-model-actions button {
+  padding: var(--size-4-1) var(--size-4-2);
 }
