@@ -103,6 +103,10 @@ export class DeepSeekStudioProvider extends BaseLLMProvider<
    * assistant messages. It merges consecutive messages of the same role.
    * If a merge involves ContentPart[] and/or string representations,
    * both are first normalized into arrays, then merged so that all text parts are combined.
+   *
+   * Note: DeepSeek requires strict alternation between user and assistant messages.
+   * Consecutive messages of the same role must be merged as the API will reject
+   * successive user or assistant messages.
    */
   private formatMessages(messages: RequestMessage[]): RequestMessage[] {
     const formattedMessages: RequestMessage[] = []
