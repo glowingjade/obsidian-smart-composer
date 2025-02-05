@@ -36,18 +36,9 @@ export class SmartComposerSettingTab extends PluginSettingTab {
     const { containerEl } = this
     containerEl.empty()
 
-    /**
-     * Sections
-     * 1. Providers
-     * 2. Models
-     * 3. Chat
-     * 4. RAG
-     */
-
     this.renderProvidersSection(containerEl)
     this.renderModelsSection(containerEl)
     this.renderChatSection(containerEl)
-
     this.renderRAGSection(containerEl)
     this.renderEtcSection(containerEl)
   }
@@ -716,52 +707,4 @@ export class SmartComposerSettingTab extends PluginSettingTab {
           }),
       )
   }
-
-  // private async updateOllamaModelOptions({
-  //   baseUrl,
-  //   dropdown,
-  //   onModelChange,
-  // }: {
-  //   baseUrl: string
-  //   dropdown: DropdownComponent
-  //   onModelChange: (model: string) => Promise<void>
-  // }): Promise<void> {
-  //   const currentValue = dropdown.getValue()
-  //   dropdown.selectEl.empty()
-
-  //   try {
-  //     const models = await getOllamaModels(baseUrl)
-  //     if (models.length > 0) {
-  //       const modelOptions = models.reduce<Record<string, string>>(
-  //         (acc, model) => {
-  //           acc[model] = model
-  //           return acc
-  //         },
-  //         {},
-  //       )
-
-  //       dropdown.addOptions(modelOptions)
-
-  //       if (models.includes(currentValue)) {
-  //         dropdown.setValue(currentValue)
-  //       } else {
-  //         dropdown.setValue(models[0])
-  //         await onModelChange(models[0])
-  //       }
-  //     } else {
-  //       dropdown.addOption('', 'No models found - check base URL')
-  //       dropdown.setValue('')
-  //       await onModelChange('')
-  //     }
-  //   } catch (error) {
-  //     console.error('Failed to fetch Ollama models:', error)
-  //     dropdown.addOption('', 'No models found - check base URL')
-  //     dropdown.setValue('')
-  //     await onModelChange('')
-  //   }
-
-  //   dropdown.onChange(async (value) => {
-  //     await onModelChange(value)
-  //   })
-  // }
 }
