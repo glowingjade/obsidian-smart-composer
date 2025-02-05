@@ -17,7 +17,6 @@ import { AddChatModelModal } from './AddChatModelModal'
 import { AddEmbeddingModelModal } from './AddEmbeddingModelModal'
 import { AddProviderModal } from './AddProviderModal'
 import { ConfirmModal } from './ConfirmModal'
-import { EditChatModelModal } from './EditChatModelModal'
 import { EditProviderModal } from './EditProviderModal'
 import { EmbeddingDbManageModal } from './EmbeddingDbManageModal'
 import { ExcludedFilesModal } from './ExcludedFilesModal'
@@ -242,14 +241,6 @@ export class SmartComposerSettingTab extends PluginSettingTab {
       const actionsCell = row.createEl('td')
       const actionsContainer = actionsCell.createEl('div', {
         cls: 'smtcmp-settings-model-actions',
-      })
-
-      const settingsButton = actionsContainer.createEl('button')
-      setIcon(settingsButton, 'settings')
-      settingsButton.addEventListener('click', () => {
-        new EditChatModelModal(this.app, this.plugin, chatModel, () =>
-          this.display(),
-        ).open()
       })
 
       if (!DEFAULT_CHAT_MODELS.some((v) => v.id === chatModel.id)) {
