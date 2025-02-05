@@ -5,11 +5,11 @@ import {
 } from '../../constants'
 
 import { SETTINGS_SCHEMA_VERSION } from './setting.types'
-import { parseSmartCopilotSettings } from './settings'
+import { parseSmartComposerSettings } from './settings'
 
-describe('parseSmartCopilotSettings', () => {
+describe('parseSmartComposerSettings', () => {
   it('should return default values for empty input', () => {
-    const result = parseSmartCopilotSettings({})
+    const result = parseSmartComposerSettings({})
     expect(result).toEqual({
       version: SETTINGS_SCHEMA_VERSION,
 

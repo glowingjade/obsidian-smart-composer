@@ -11,19 +11,19 @@ import { DatabaseProvider } from './contexts/database-context'
 import { DialogContainerProvider } from './contexts/dialog-container-context'
 import { RAGProvider } from './contexts/rag-context'
 import { SettingsProvider } from './contexts/settings-context'
-import SmartCopilotPlugin from './main'
-import { SmartCopilotSettings } from './settings/schema/setting.types'
+import SmartComposerPlugin from './main'
+import { SmartComposerSettings } from './settings/schema/setting.types'
 import { MentionableBlockData } from './types/mentionable'
 
 export class ChatView extends ItemView {
   private root: Root | null = null
-  private settings: SmartCopilotSettings
+  private settings: SmartComposerSettings
   private initialChatProps?: ChatProps
   private chatRef: React.RefObject<ChatRef> = React.createRef()
 
   constructor(
     leaf: WorkspaceLeaf,
-    private plugin: SmartCopilotPlugin,
+    private plugin: SmartComposerPlugin,
   ) {
     super(leaf)
     this.settings = plugin.settings

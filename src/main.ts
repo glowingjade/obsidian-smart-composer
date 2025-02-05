@@ -6,16 +6,15 @@ import { ChatProps } from './components/chat-view/Chat'
 import { APPLY_VIEW_TYPE, CHAT_VIEW_TYPE } from './constants'
 import { RAGEngine } from './core/rag/ragEngine'
 import { DatabaseManager } from './database/DatabaseManager'
-import { SmartCopilotSettings } from './settings/schema/setting.types'
-import { parseSmartCopilotSettings } from './settings/schema/settings'
-import { SmartCopilotSettingTab } from './settings/SettingTab'
+import { SmartComposerSettings } from './settings/schema/setting.types'
+import { parseSmartComposerSettings } from './settings/schema/settings'
+import { SmartComposerSettingTab } from './settings/SettingTab'
 import { getMentionableBlockData } from './utils/obsidian'
 
-// Remember to rename these classes and interfaces!
-export default class SmartCopilotPlugin extends Plugin {
-  settings: SmartCopilotSettings
+export default class SmartComposerPlugin extends Plugin {
+  settings: SmartComposerSettings
   initialChatProps?: ChatProps // TODO: change this to use view state like ApplyView
-  settingsChangeListeners: ((newSettings: SmartCopilotSettings) => void)[] = []
+  settingsChangeListeners: ((newSettings: SmartComposerSettings) => void)[] = []
   dbManager: DatabaseManager | null = null
   ragEngine: RAGEngine | null = null
   private dbManagerInitPromise: Promise<DatabaseManager> | null = null
@@ -110,7 +109,7 @@ export default class SmartCopilotPlugin extends Plugin {
     })
 
     // This adds a settings tab so the user can configure various aspects of the plugin
-    this.addSettingTab(new SmartCopilotSettingTab(this.app, this))
+    this.addSettingTab(new SmartComposerSettingTab(this.app, this))
   }
 
   onunload() {
@@ -119,12 +118,12 @@ export default class SmartCopilotPlugin extends Plugin {
   }
 
   async loadSettings() {
-    this.settings = parseSmartCopilotSettings(await this.loadData())
+    this.settings = parseSmartComposerSettings(await this.loadData())
     await this.saveData(this.settings) // Save updated settings
   }
 
   // TODO: validate before saving?
-  async setSettings(newSettings: SmartCopilotSettings) {
+  async setSettings(newSettings: SmartComposerSettings) {
     this.settings = newSettings
     await this.saveData(newSettings)
     this.ragEngine?.setSettings(newSettings)
@@ -132,7 +131,7 @@ export default class SmartCopilotPlugin extends Plugin {
   }
 
   addSettingsChangeListener(
-    listener: (newSettings: SmartCopilotSettings) => void,
+    listener: (newSettings: SmartComposerSettings) => void,
   ) {
     this.settingsChangeListeners.push(listener)
     return () => {

@@ -1,4 +1,4 @@
-import { SmartCopilotSettings } from '../../settings/schema/setting.types'
+import { SmartComposerSettings } from '../../settings/schema/setting.types'
 import { EmbeddingModelClient } from '../../types/embedding'
 import { getProviderClient } from '../llm/manager'
 
@@ -6,7 +6,7 @@ export const getEmbeddingModelClient = ({
   settings,
   embeddingModelId,
 }: {
-  settings: SmartCopilotSettings
+  settings: SmartComposerSettings
   embeddingModelId: string
 }): EmbeddingModelClient => {
   const embeddingModel = settings.embeddingModels.find(

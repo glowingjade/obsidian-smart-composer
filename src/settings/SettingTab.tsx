@@ -10,7 +10,7 @@ import {
   RECOMMENDED_MODELS_FOR_EMBEDDING,
 } from '../constants'
 import { getEmbeddingModelClient } from '../core/rag/embedding'
-import SmartCopilotPlugin from '../main'
+import SmartComposerPlugin from '../main'
 import { findFilesMatchingPatterns } from '../utils/globUtils'
 
 import { AddChatModelModal } from './AddChatModelModal'
@@ -22,12 +22,12 @@ import { EditProviderModal } from './EditProviderModal'
 import { EmbeddingDbManageModal } from './EmbeddingDbManageModal'
 import { ExcludedFilesModal } from './ExcludedFilesModal'
 import { IncludedFilesModal } from './IncludedFilesModal'
-import { smartCopilotSettingsSchema } from './schema/setting.types'
+import { smartComposerSettingsSchema } from './schema/setting.types'
 
-export class SmartCopilotSettingTab extends PluginSettingTab {
-  plugin: SmartCopilotPlugin
+export class SmartComposerSettingTab extends PluginSettingTab {
+  plugin: SmartComposerPlugin
 
-  constructor(app: App, plugin: SmartCopilotPlugin) {
+  constructor(app: App, plugin: SmartComposerPlugin) {
     super(app, plugin)
     this.plugin = plugin
   }
@@ -707,7 +707,7 @@ export class SmartCopilotSettingTab extends PluginSettingTab {
               'Reset settings',
               'Are you sure you want to reset all settings to default values? This cannot be undone.',
               async () => {
-                const defaultSettings = smartCopilotSettingsSchema.parse({})
+                const defaultSettings = smartComposerSettingsSchema.parse({})
                 await this.plugin.setSettings(defaultSettings)
                 new Notice('Settings have been reset to defaults')
                 this.display()

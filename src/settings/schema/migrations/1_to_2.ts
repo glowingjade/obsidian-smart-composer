@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { ChatModel } from '../../../types/chat-model.types'
 import { EmbeddingModel } from '../../../types/embedding-model.types'
 import { LLMProvider, LLMProviderType } from '../../../types/provider.types'
-import { SettingMigration, SmartCopilotSettings } from '../setting.types'
+import { SettingMigration, SmartComposerSettings } from '../setting.types'
 
 type NativeLLMModel = {
   provider: 'openai' | 'anthropic' | 'gemini' | 'groq'
@@ -302,7 +302,7 @@ const ragOptionsSchema = z.object({
   excludePatterns: z.array(z.string()).catch([]),
   includePatterns: z.array(z.string()).catch([]),
 })
-const smartCopilotSettingsSchemaV1 = z.object({
+const smartComposerSettingsSchemaV1 = z.object({
   // Version
   version: z.literal(SETTINGS_SCHEMA_VERSION).catch(SETTINGS_SCHEMA_VERSION),
 
@@ -358,7 +358,7 @@ const smartCopilotSettingsSchemaV1 = z.object({
     includePatterns: [],
   }),
 })
-type SmartCopilotSettingsV1 = z.infer<typeof smartCopilotSettingsSchemaV1>
+type SmartComposerSettingsV1 = z.infer<typeof smartComposerSettingsSchemaV1>
 
 /**
  * V2 constants
@@ -556,8 +556,8 @@ export const V2_DEFAULT_EMBEDDING_MODELS: readonly EmbeddingModel[] = [
 ]
 
 export const migrateFrom1To2: SettingMigration['migrate'] = (
-  data: SmartCopilotSettingsV1,
-): SmartCopilotSettings => {
+  data: SmartComposerSettingsV1,
+): SmartComposerSettings => {
   const providers: LLMProvider[] = [...V2_DEFAULT_PROVIDERS]
   const chatModels: ChatModel[] = [...V2_DEFAULT_CHAT_MODELS]
 

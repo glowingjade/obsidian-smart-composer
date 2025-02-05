@@ -1,11 +1,11 @@
 import { App, Modal, Notice, Setting } from 'obsidian'
 
 import { DEFAULT_PROVIDERS } from '../constants'
-import SmartCopilotPlugin from '../main'
+import SmartComposerPlugin from '../main'
 import { ChatModel, chatModelSchema } from '../types/chat-model.types'
 
 export class AddChatModelModal extends Modal {
-  private plugin: SmartCopilotPlugin
+  private plugin: SmartComposerPlugin
   private onSubmit: () => void
   private formData: ChatModel = {
     providerId: DEFAULT_PROVIDERS[0].id,
@@ -15,7 +15,7 @@ export class AddChatModelModal extends Modal {
   }
   private settings: Map<keyof ChatModel, Setting> = new Map()
 
-  constructor(app: App, plugin: SmartCopilotPlugin, onSubmit: () => void) {
+  constructor(app: App, plugin: SmartComposerPlugin, onSubmit: () => void) {
     super(app)
     this.plugin = plugin
     this.onSubmit = onSubmit

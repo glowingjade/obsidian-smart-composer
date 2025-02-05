@@ -21,20 +21,13 @@ const ragOptionsSchema = z.object({
 export const SETTINGS_SCHEMA_VERSION = 2
 
 /**
- * TODO
- * 1. When adding embedding model, show message about its dimension (only some dimensions support indexing, so for models that's not included in supported dimensions, performance could be bad)
- */
-
-/**
  * Settings
  */
 
-// TODO: rename smart copilot to smart composer
-export const smartCopilotSettingsSchema = z.object({
+export const smartComposerSettingsSchema = z.object({
   // Version
   version: z.literal(SETTINGS_SCHEMA_VERSION).catch(SETTINGS_SCHEMA_VERSION),
 
-  // TODO: ensure predefined providers exists
   providers: z.array(llmProviderSchema).catch([...DEFAULT_PROVIDERS]),
 
   chatModels: z.array(chatModelSchema).catch([...DEFAULT_CHAT_MODELS]),
@@ -65,7 +58,7 @@ export const smartCopilotSettingsSchema = z.object({
     includePatterns: [],
   }),
 })
-export type SmartCopilotSettings = z.infer<typeof smartCopilotSettingsSchema>
+export type SmartComposerSettings = z.infer<typeof smartComposerSettingsSchema>
 
 export type SettingMigration = {
   fromVersion: number

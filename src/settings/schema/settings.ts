@@ -1,8 +1,8 @@
 import { SETTING_MIGRATIONS } from './migrations'
 import {
   SETTINGS_SCHEMA_VERSION,
-  SmartCopilotSettings,
-  smartCopilotSettingsSchema,
+  SmartComposerSettings,
+  smartComposerSettingsSchema,
 } from './setting.types'
 
 function migrateSettings(
@@ -27,12 +27,14 @@ function migrateSettings(
   return currentData
 }
 
-export function parseSmartCopilotSettings(data: unknown): SmartCopilotSettings {
+export function parseSmartComposerSettings(
+  data: unknown,
+): SmartComposerSettings {
   try {
     const migratedData = migrateSettings(data as Record<string, unknown>)
-    return smartCopilotSettingsSchema.parse(migratedData)
+    return smartComposerSettingsSchema.parse(migratedData)
   } catch (error) {
     console.warn('Invalid settings provided, using defaults:', error)
-    return smartCopilotSettingsSchema.parse({})
+    return smartComposerSettingsSchema.parse({})
   }
 }

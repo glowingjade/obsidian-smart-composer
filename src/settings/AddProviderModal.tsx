@@ -1,7 +1,7 @@
 import { App, Modal, Notice, Setting } from 'obsidian'
 
 import { PROVIDER_TYPES_INFO } from '../constants'
-import SmartCopilotPlugin from '../main'
+import SmartComposerPlugin from '../main'
 import {
   LLMProvider,
   LLMProviderType,
@@ -9,7 +9,7 @@ import {
 } from '../types/provider.types'
 
 export class AddProviderModal extends Modal {
-  private plugin: SmartCopilotPlugin
+  private plugin: SmartComposerPlugin
   private onSubmit: () => void
   private formData: LLMProvider = {
     type: 'openai-compatible',
@@ -19,7 +19,7 @@ export class AddProviderModal extends Modal {
   }
   private settings: Map<keyof LLMProvider, Setting> = new Map()
 
-  constructor(app: App, plugin: SmartCopilotPlugin, onSubmit: () => void) {
+  constructor(app: App, plugin: SmartComposerPlugin, onSubmit: () => void) {
     super(app)
     this.plugin = plugin
     this.onSubmit = onSubmit

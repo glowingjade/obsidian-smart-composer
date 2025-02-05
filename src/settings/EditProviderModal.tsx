@@ -1,18 +1,18 @@
 import { App, Modal, Notice, Setting } from 'obsidian'
 
 import { PROVIDER_TYPES_INFO } from '../constants'
-import SmartCopilotPlugin from '../main'
+import SmartComposerPlugin from '../main'
 import { LLMProvider, llmProviderSchema } from '../types/provider.types'
 
 export class EditProviderModal extends Modal {
-  private plugin: SmartCopilotPlugin
+  private plugin: SmartComposerPlugin
   private onSubmit: () => void
   private formData: LLMProvider
   private settings: Map<keyof LLMProvider, Setting> = new Map()
 
   constructor(
     app: App,
-    plugin: SmartCopilotPlugin,
+    plugin: SmartComposerPlugin,
     provider: LLMProvider,
     onSubmit: () => void,
   ) {

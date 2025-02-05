@@ -3,7 +3,7 @@ import { App, Modal, Notice, Setting } from 'obsidian'
 import { DEFAULT_PROVIDERS, PROVIDER_TYPES_INFO } from '../constants'
 import { getProviderClient } from '../core/llm/manager'
 import { supportedDimensionsForIndex } from '../database/schema'
-import SmartCopilotPlugin from '../main'
+import SmartComposerPlugin from '../main'
 import {
   EmbeddingModel,
   embeddingModelSchema,
@@ -12,7 +12,7 @@ import {
 import { ConfirmModal } from './ConfirmModal'
 
 export class AddEmbeddingModelModal extends Modal {
-  private plugin: SmartCopilotPlugin
+  private plugin: SmartComposerPlugin
   private onSubmit: () => void
   private formData: Omit<EmbeddingModel, 'dimension'> = {
     providerId: DEFAULT_PROVIDERS[0].id,
@@ -22,7 +22,7 @@ export class AddEmbeddingModelModal extends Modal {
   }
   private settings: Map<keyof EmbeddingModel, Setting> = new Map()
 
-  constructor(app: App, plugin: SmartCopilotPlugin, onSubmit: () => void) {
+  constructor(app: App, plugin: SmartComposerPlugin, onSubmit: () => void) {
     super(app)
     this.plugin = plugin
     this.onSubmit = onSubmit

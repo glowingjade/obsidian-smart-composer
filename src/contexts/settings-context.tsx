@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
-import { SmartCopilotSettings } from '../settings/schema/setting.types'
+import { SmartComposerSettings } from '../settings/schema/setting.types'
 
 type SettingsContextType = {
-  settings: SmartCopilotSettings
-  setSettings: (newSettings: SmartCopilotSettings) => void
+  settings: SmartComposerSettings
+  setSettings: (newSettings: SmartComposerSettings) => void
 }
 
 // Settings context
@@ -19,10 +19,10 @@ export const SettingsProvider = ({
   addSettingsChangeListener,
 }: {
   children: React.ReactNode
-  settings: SmartCopilotSettings
-  setSettings: (newSettings: SmartCopilotSettings) => void
+  settings: SmartComposerSettings
+  setSettings: (newSettings: SmartComposerSettings) => void
   addSettingsChangeListener: (
-    listener: (newSettings: SmartCopilotSettings) => void,
+    listener: (newSettings: SmartComposerSettings) => void,
   ) => () => void
 }) => {
   const [settingsCached, setSettingsCached] = useState(initialSettings)

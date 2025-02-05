@@ -6,12 +6,12 @@ import EmbeddingDbManageRoot from '../components/settings/EmbeddingDbManageRoot'
 import { AppProvider } from '../contexts/app-context'
 import { DatabaseProvider } from '../contexts/database-context'
 import { SettingsProvider } from '../contexts/settings-context'
-import SmartCopilotPlugin from '../main'
+import SmartComposerPlugin from '../main'
 
 export class EmbeddingDbManageModal extends Modal {
-  private plugin: SmartCopilotPlugin
+  private plugin: SmartComposerPlugin
 
-  constructor(app: App, plugin: SmartCopilotPlugin) {
+  constructor(app: App, plugin: SmartComposerPlugin) {
     super(app)
     this.plugin = plugin
   }

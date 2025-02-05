@@ -4,7 +4,7 @@ import { QueryProgressState } from '../../components/chat-view/QueryProgress'
 import { DatabaseManager } from '../../database/DatabaseManager'
 import { VectorManager } from '../../database/modules/vector/VectorManager'
 import { SelectEmbedding } from '../../database/schema'
-import { SmartCopilotSettings } from '../../settings/schema/setting.types'
+import { SmartComposerSettings } from '../../settings/schema/setting.types'
 import { EmbeddingModelClient } from '../../types/embedding'
 
 import { getEmbeddingModelClient } from './embedding'
@@ -12,13 +12,13 @@ import { getEmbeddingModelClient } from './embedding'
 // TODO: do we really need this class? It seems like unnecessary abstraction.
 export class RAGEngine {
   private app: App
-  private settings: SmartCopilotSettings
+  private settings: SmartComposerSettings
   private vectorManager: VectorManager
   private embeddingModel: EmbeddingModelClient | null = null
 
   constructor(
     app: App,
-    settings: SmartCopilotSettings,
+    settings: SmartComposerSettings,
     dbManager: DatabaseManager,
   ) {
     this.app = app
@@ -30,7 +30,7 @@ export class RAGEngine {
     })
   }
 
-  setSettings(settings: SmartCopilotSettings) {
+  setSettings(settings: SmartComposerSettings) {
     this.settings = settings
     this.embeddingModel = getEmbeddingModelClient({
       settings,

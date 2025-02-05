@@ -1,17 +1,17 @@
 import { App, Modal, Notice, Setting } from 'obsidian'
 
-import SmartCopilotPlugin from '../main'
+import SmartComposerPlugin from '../main'
 import { ChatModel, chatModelSchema } from '../types/chat-model.types'
 
 export class EditChatModelModal extends Modal {
-  private plugin: SmartCopilotPlugin
+  private plugin: SmartComposerPlugin
   private onSubmit: () => void
   private formData: ChatModel
   private settings: Map<keyof ChatModel, Setting> = new Map()
 
   constructor(
     app: App,
-    plugin: SmartCopilotPlugin,
+    plugin: SmartComposerPlugin,
     chatModel: ChatModel,
     onSubmit: () => void,
   ) {

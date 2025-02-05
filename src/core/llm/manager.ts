@@ -1,4 +1,4 @@
-import { SmartCopilotSettings } from '../../settings/schema/setting.types'
+import { SmartComposerSettings } from '../../settings/schema/setting.types'
 import { ChatModel } from '../../types/chat-model.types'
 import { LLMProvider } from '../../types/provider.types'
 
@@ -20,7 +20,7 @@ export function getProviderClient({
   settings,
   providerId,
 }: {
-  settings: SmartCopilotSettings
+  settings: SmartComposerSettings
   providerId: string
 }): BaseLLMProvider<LLMProvider> {
   const provider = settings.providers.find((p) => p.id === providerId)
@@ -54,7 +54,7 @@ export function getChatModelClient({
   settings,
   modelId,
 }: {
-  settings: SmartCopilotSettings
+  settings: SmartComposerSettings
   modelId: string
 }): {
   providerClient: BaseLLMProvider<LLMProvider>

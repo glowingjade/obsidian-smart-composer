@@ -4,7 +4,7 @@ import { editorStateToPlainText } from '../components/chat-view/chat-input/utils
 import { QueryProgressState } from '../components/chat-view/QueryProgress'
 import { RAGEngine } from '../core/rag/ragEngine'
 import { SelectEmbedding } from '../database/schema'
-import { SmartCopilotSettings } from '../settings/schema/setting.types'
+import { SmartComposerSettings } from '../settings/schema/setting.types'
 import { ChatMessage, ChatUserMessage } from '../types/chat'
 import { ContentPart, RequestMessage } from '../types/llm/request'
 import {
@@ -27,12 +27,12 @@ import { YoutubeTranscript, isYoutubeUrl } from './youtube-transcript'
 export class PromptGenerator {
   private getRagEngine: () => Promise<RAGEngine>
   private app: App
-  private settings: SmartCopilotSettings
+  private settings: SmartComposerSettings
 
   constructor(
     getRagEngine: () => Promise<RAGEngine>,
     app: App,
-    settings: SmartCopilotSettings,
+    settings: SmartComposerSettings,
   ) {
     this.getRagEngine = getRagEngine
     this.app = app
