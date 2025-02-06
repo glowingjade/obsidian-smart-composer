@@ -128,7 +128,16 @@ export const PROVIDER_TYPES_INFO = {
     requireApiKey: false,
     requireBaseUrl: true,
     supportEmbedding: false,
-    additionalSettings: [],
+    additionalSettings: [
+      {
+        label: 'No Stainless Headers',
+        key: 'noStainless',
+        type: 'toggle',
+        required: false,
+        description:
+          'Enable this if you encounter CORS errors related to Stainless headers (x-stainless-os, etc.)',
+      },
+    ],
   },
 } as const satisfies Record<
   LLMProviderType,
@@ -141,8 +150,9 @@ export const PROVIDER_TYPES_INFO = {
     additionalSettings: {
       label: string
       key: string
-      type: 'text'
+      type: 'text' | 'toggle'
       placeholder?: string
+      description?: string
       required?: boolean
     }[]
   }

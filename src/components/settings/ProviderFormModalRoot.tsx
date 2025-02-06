@@ -8,6 +8,7 @@ import { ObsidianButton } from '../common/ObsidianButton'
 import { ObsidianDropdown } from '../common/ObsidianDropdown'
 import { ObsidianSetting } from '../common/ObsidianSetting'
 import { ObsidianTextInput } from '../common/ObsidianTextInput'
+import { ObsidianToggle } from '../common/ObsidianToggle'
 
 export default function ProviderFormModalRoot({
   plugin,
@@ -158,24 +159,51 @@ export default function ProviderFormModalRoot({
         <ObsidianSetting
           key={setting.key}
           name={setting.label}
+          desc={'description' in setting ? setting.description : undefined}
           required={setting.required}
         >
-          <ObsidianTextInput
-            value={formData.additionalSettings?.[setting.key] ?? ''}
-            placeholder={setting.placeholder}
-            onChange={(value: string) =>
-              setFormData(
-                (prev) =>
-                  ({
-                    ...prev,
-                    additionalSettings: {
-                      ...(prev.additionalSettings ?? {}),
-                      [setting.key]: value,
-                    },
-                  }) as LLMProvider,
-              )
-            }
-          />
+          {setting.type === 'toggle' ? (
+            <ObsidianToggle
+              value={
+                (formData.additionalSettings as Record<string, boolean>)?.[
+                  setting.key
+                ] ?? false
+              }
+              onChange={(value: boolean) =>
+                setFormData(
+                  (prev) =>
+                    ({
+                      ...prev,
+                      additionalSettings: {
+                        ...(prev.additionalSettings ?? {}),
+                        [setting.key]: value,
+                      },
+                    }) as LLMProvider,
+                )
+              }
+            />
+          ) : (
+            <ObsidianTextInput
+              value={
+                (formData.additionalSettings as Record<string, string>)?.[
+                  setting.key
+                ] ?? ''
+              }
+              placeholder={setting.placeholder}
+              onChange={(value: string) =>
+                setFormData(
+                  (prev) =>
+                    ({
+                      ...prev,
+                      additionalSettings: {
+                        ...(prev.additionalSettings ?? {}),
+                        [setting.key]: value,
+                      },
+                    }) as LLMProvider,
+                )
+              }
+            />
+          )}
         </ObsidianSetting>
       ))}
 

@@ -64,6 +64,11 @@ export const llmProviderSchema = z.discriminatedUnion('type', [
         required_error: 'base URL is required',
       })
       .min(1, 'base URL is required'),
+    additionalSettings: z
+      .object({
+        noStainless: z.boolean().optional(),
+      })
+      .optional(),
   }),
 ])
 

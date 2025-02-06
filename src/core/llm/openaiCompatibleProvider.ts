@@ -14,6 +14,7 @@ import { LLMProvider } from '../../types/provider.types'
 
 import { BaseLLMProvider } from './base'
 import { LLMBaseUrlNotSetException } from './exception'
+import { NoStainlessOpenAI } from './NoStainlessOpenAI'
 import { OpenAIMessageAdapter } from './openaiMessageAdapter'
 
 export class OpenAICompatibleProvider extends BaseLLMProvider<
@@ -25,7 +26,9 @@ export class OpenAICompatibleProvider extends BaseLLMProvider<
   constructor(provider: Extract<LLMProvider, { type: 'openai-compatible' }>) {
     super(provider)
     this.adapter = new OpenAIMessageAdapter()
-    this.client = new OpenAI({
+    this.client = new (
+      provider.additionalSettings?.noStainless ? NoStainlessOpenAI : OpenAI
+    )({
       apiKey: provider.apiKey ?? '',
       baseURL: provider.baseUrl ? provider.baseUrl?.replace(/\/+$/, '') : '',
       dangerouslyAllowBrowser: true,
