@@ -12,12 +12,10 @@ import { DialogContainerProvider } from './contexts/dialog-container-context'
 import { RAGProvider } from './contexts/rag-context'
 import { SettingsProvider } from './contexts/settings-context'
 import SmartComposerPlugin from './main'
-import { SmartComposerSettings } from './settings/schema/setting.types'
 import { MentionableBlockData } from './types/mentionable'
 
 export class ChatView extends ItemView {
   private root: Root | null = null
-  private settings: SmartComposerSettings
   private initialChatProps?: ChatProps
   private chatRef: React.RefObject<ChatRef> = React.createRef()
 
@@ -26,7 +24,6 @@ export class ChatView extends ItemView {
     private plugin: SmartComposerPlugin,
   ) {
     super(leaf)
-    this.settings = plugin.settings
     this.initialChatProps = plugin.initialChatProps
   }
 
@@ -72,7 +69,7 @@ export class ChatView extends ItemView {
     this.root.render(
       <AppProvider app={this.app}>
         <SettingsProvider
-          settings={this.settings} // TODO: use plugin.settings
+          settings={this.plugin.settings}
           setSettings={(newSettings) => this.plugin.setSettings(newSettings)}
           addSettingsChangeListener={(listener) =>
             this.plugin.addSettingsChangeListener(listener)
