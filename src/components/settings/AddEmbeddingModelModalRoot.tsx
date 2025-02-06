@@ -17,13 +17,11 @@ import { ObsidianTextInput } from '../common/ObsidianTextInput'
 
 type AddEmbeddingModelModalRootProps = {
   plugin: SmartComposerPlugin
-  onSubmit: () => void
   onClose: () => void
 }
 
 export default function AddEmbeddingModelModalRoot({
   plugin,
-  onSubmit,
   onClose,
 }: AddEmbeddingModelModalRootProps) {
   const [formData, setFormData] = useState<Omit<EmbeddingModel, 'dimension'>>({
@@ -101,7 +99,6 @@ export default function AddEmbeddingModelModalRoot({
         embeddingModels: [...plugin.settings.embeddingModels, embeddingModel],
       })
 
-      onSubmit()
       onClose()
     } catch (error) {
       new Notice(

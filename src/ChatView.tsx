@@ -72,7 +72,7 @@ export class ChatView extends ItemView {
     this.root.render(
       <AppProvider app={this.app}>
         <SettingsProvider
-          settings={this.settings}
+          settings={this.settings} // TODO: use plugin.settings
           setSettings={(newSettings) => this.plugin.setSettings(newSettings)}
           addSettingsChangeListener={(listener) =>
             this.plugin.addSettingsChangeListener(listener)
