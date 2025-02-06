@@ -3,9 +3,6 @@
  * (NoStainlessOpenAI) to work around CORS issues specific to Ollama.
  */
 
-import OpenAI from 'openai'
-import { FinalRequestOptions } from 'openai/core'
-
 import { ChatModel } from '../../types/chat-model.types'
 import {
   LLMOptions,
@@ -19,31 +16,8 @@ import {
 import { LLMProvider } from '../../types/provider.types'
 
 import { BaseLLMProvider } from './base'
+import { NoStainlessOpenAI } from './NoStainlessOpenAI'
 import { OpenAIMessageAdapter } from './openaiMessageAdapter'
-
-export class NoStainlessOpenAI extends OpenAI {
-  defaultHeaders() {
-    return {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    }
-  }
-
-  buildRequest<Req>(
-    options: FinalRequestOptions<Req>,
-    { retryCount = 0 }: { retryCount?: number } = {},
-  ): { req: RequestInit; url: string; timeout: number } {
-    const req = super.buildRequest(options, { retryCount })
-    const headers = req.req.headers as Record<string, string>
-    Object.keys(headers).forEach((k) => {
-      if (k.startsWith('x-stainless')) {
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete headers[k]
-      }
-    })
-    return req
-  }
-}
 
 export class OllamaProvider extends BaseLLMProvider<
   Extract<LLMProvider, { type: 'ollama' }>
