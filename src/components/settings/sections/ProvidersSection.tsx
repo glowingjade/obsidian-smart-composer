@@ -84,61 +84,63 @@ export function ProvidersSection({ app, plugin }: ProvidersSectionProps) {
         </a>
       </div>
 
-      <table className="smtcmp-settings-provider-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Type</th>
-            <th>API Key</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {settings.providers.map((provider) => (
-            <tr key={provider.id}>
-              <td>{provider.id}</td>
-              <td>{PROVIDER_TYPES_INFO[provider.type].label}</td>
-              <td
-                className="smtcmp-settings-provider-table-api-key"
-                onClick={() => {
-                  new EditProviderModal(app, plugin, provider).open()
-                }}
-              >
-                {provider.apiKey ? '••••••••' : 'Set API key'}
-              </td>
-              <td>
-                <div className="smtcmp-settings-provider-actions">
-                  <button
-                    onClick={() => {
-                      new EditProviderModal(app, plugin, provider).open()
-                    }}
-                  >
-                    <Settings size={16} />
-                  </button>
-                  {!DEFAULT_PROVIDERS.some((v) => v.id === provider.id) && (
-                    <button onClick={() => handleDeleteProvider(provider)}>
-                      <Trash2 size={16} />
+      <div className="smtcmp-settings-table-container">
+        <table className="smtcmp-settings-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Type</th>
+              <th>API Key</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {settings.providers.map((provider) => (
+              <tr key={provider.id}>
+                <td>{provider.id}</td>
+                <td>{PROVIDER_TYPES_INFO[provider.type].label}</td>
+                <td
+                  className="smtcmp-settings-table-api-key"
+                  onClick={() => {
+                    new EditProviderModal(app, plugin, provider).open()
+                  }}
+                >
+                  {provider.apiKey ? '••••••••' : 'Set API key'}
+                </td>
+                <td>
+                  <div className="smtcmp-settings-actions">
+                    <button
+                      onClick={() => {
+                        new EditProviderModal(app, plugin, provider).open()
+                      }}
+                    >
+                      <Settings size={16} />
                     </button>
-                  )}
-                </div>
+                    {!DEFAULT_PROVIDERS.some((v) => v.id === provider.id) && (
+                      <button onClick={() => handleDeleteProvider(provider)}>
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colSpan={4}>
+                <button
+                  onClick={() => {
+                    new AddProviderModal(app, plugin).open()
+                  }}
+                >
+                  Add custom provider
+                </button>
               </td>
             </tr>
-          ))}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colSpan={4}>
-              <button
-                onClick={() => {
-                  new AddProviderModal(app, plugin).open()
-                }}
-              >
-                Add custom provider
-              </button>
-            </td>
-          </tr>
-        </tfoot>
-      </table>
+          </tfoot>
+        </table>
+      </div>
     </div>
   )
 }

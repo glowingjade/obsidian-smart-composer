@@ -36,47 +36,53 @@ export function ChatModelsSubSection({
       <div className="smtcmp-settings-sub-header">Chat Models</div>
       <div className="smtcmp-settings-desc">Models used for chat and apply</div>
 
-      <table className="smtcmp-settings-model-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Provider ID</th>
-            <th>Model</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {settings.chatModels.map((chatModel) => (
-            <tr key={chatModel.id}>
-              <td>{chatModel.id}</td>
-              <td>{chatModel.providerId}</td>
-              <td>{chatModel.model}</td>
-              <td>
-                <div className="smtcmp-settings-model-actions">
-                  {!DEFAULT_CHAT_MODELS.some((v) => v.id === chatModel.id) && (
-                    <button onClick={() => handleDeleteChatModel(chatModel.id)}>
-                      <Trash2 size={16} />
-                    </button>
-                  )}
-                </div>
+      <div className="smtcmp-settings-table-container">
+        <table className="smtcmp-settings-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Provider ID</th>
+              <th>Model</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {settings.chatModels.map((chatModel) => (
+              <tr key={chatModel.id}>
+                <td>{chatModel.id}</td>
+                <td>{chatModel.providerId}</td>
+                <td>{chatModel.model}</td>
+                <td>
+                  <div className="smtcmp-settings-actions">
+                    {!DEFAULT_CHAT_MODELS.some(
+                      (v) => v.id === chatModel.id,
+                    ) && (
+                      <button
+                        onClick={() => handleDeleteChatModel(chatModel.id)}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colSpan={4}>
+                <button
+                  onClick={() => {
+                    new AddChatModelModal(app, plugin).open()
+                  }}
+                >
+                  Add custom model
+                </button>
               </td>
             </tr>
-          ))}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colSpan={4}>
-              <button
-                onClick={() => {
-                  new AddChatModelModal(app, plugin).open()
-                }}
-              >
-                Add custom model
-              </button>
-            </td>
-          </tr>
-        </tfoot>
-      </table>
+          </tfoot>
+        </table>
+      </div>
     </div>
   )
 }
