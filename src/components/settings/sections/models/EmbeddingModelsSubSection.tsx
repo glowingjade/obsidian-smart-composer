@@ -61,55 +61,57 @@ export function EmbeddingModelsSubSection({
         Models used for generating embeddings for RAG
       </div>
 
-      <table className="smtcmp-settings-model-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Provider ID</th>
-            <th>Model</th>
-            <th>Dimension</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {settings.embeddingModels.map((embeddingModel) => (
-            <tr key={embeddingModel.id}>
-              <td>{embeddingModel.id}</td>
-              <td>{embeddingModel.providerId}</td>
-              <td>{embeddingModel.model}</td>
-              <td>{embeddingModel.dimension}</td>
-              <td>
-                <div className="smtcmp-settings-model-actions">
-                  {!DEFAULT_EMBEDDING_MODELS.some(
-                    (v) => v.id === embeddingModel.id,
-                  ) && (
-                    <button
-                      onClick={() =>
-                        handleDeleteEmbeddingModel(embeddingModel.id)
-                      }
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  )}
-                </div>
+      <div className="smtcmp-settings-table-container">
+        <table className="smtcmp-settings-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Provider ID</th>
+              <th>Model</th>
+              <th>Dimension</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {settings.embeddingModels.map((embeddingModel) => (
+              <tr key={embeddingModel.id}>
+                <td>{embeddingModel.id}</td>
+                <td>{embeddingModel.providerId}</td>
+                <td>{embeddingModel.model}</td>
+                <td>{embeddingModel.dimension}</td>
+                <td>
+                  <div className="smtcmp-settings-actions">
+                    {!DEFAULT_EMBEDDING_MODELS.some(
+                      (v) => v.id === embeddingModel.id,
+                    ) && (
+                      <button
+                        onClick={() =>
+                          handleDeleteEmbeddingModel(embeddingModel.id)
+                        }
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colSpan={5}>
+                <button
+                  onClick={() => {
+                    new AddEmbeddingModelModal(app, plugin).open()
+                  }}
+                >
+                  Add custom model
+                </button>
               </td>
             </tr>
-          ))}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colSpan={5}>
-              <button
-                onClick={() => {
-                  new AddEmbeddingModelModal(app, plugin).open()
-                }}
-              >
-                Add custom model
-              </button>
-            </td>
-          </tr>
-        </tfoot>
-      </table>
+          </tfoot>
+        </table>
+      </div>
     </div>
   )
 }
