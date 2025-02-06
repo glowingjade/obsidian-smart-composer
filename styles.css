@@ -1135,6 +1135,10 @@ button.smtcmp-chat-input-model-select {
 
 /* Settings */
 
+.smtcmp-settings-support-smart-composer {
+  border-top: none;
+}
+
 .smtcmp-settings-section:not(:first-child) {
   margin-top: var(--size-4-10);
 }
