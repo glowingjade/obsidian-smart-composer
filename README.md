@@ -48,8 +48,6 @@ Now, you can **add website links and images** as additional context for your que
 - Offers document change recommendations
 - Apply suggested changes instantly
 
-Note: The Apply Edit feature is currently slower than desired. We are working on improvements in future updates.
-
 ### Vault Search (RAG)
 
 ![SC4_RAG-ezgif.com-crop-video.gif](https://github.com/user-attachments/assets/91c3ab8d-56d7-43b8-bb4a-1e73615a40ec)
@@ -61,7 +59,17 @@ Note: The Apply Edit feature is currently slower than desired. We are working on
 
 #### Additional Features
 
-- **Custom Model Selection**: Use your own model by setting your API Key (stored locally).
+- **Custom Model Selection**: Use your own model by setting your API Key (stored locally). Supported providers:
+  - OpenAI
+  - Anthropic
+  - Google (Gemini)
+  - Groq
+  - DeepSeek
+  - OpenRouter
+  - Azure OpenAI
+  - Ollama
+  - LM Studio
+  - Any other OpenAI-compatible providers
 - **Local Model Support**: Run open-source LLMs and embedding models locally with [Ollama](https://ollama.ai) for complete privacy and offline usage.
 - **Custom System Prompts**: Define your own system prompts that will be applied to every chat conversation.
 - **Prompt Templates**: Create and reuse templates for common queries by typing `/` in the chat view. Perfect for standardizing repetitive tasks.
@@ -135,7 +143,7 @@ If you're interested in contributing, please refer to our [CONTRIBUTING.md](CONT
 
 These contributors were instrumental in shaping the initial vision, architecture, and design of Smart Composer:
 
-**[@kevin-on](https://github.com/kevin-on)**, **[@realsnoopso](https://github.com/realsnoopso)** ([Twitter](https://twitter.com/RealSnoopSo) · [LinkedIn](https://linkedin.com/in/realsnoopso)), **[@woosukji](https://github.com/woosukji)**
+**[@glowingjade](https://github.com/glowingjade)** ([Twitter](https://x.com/andy_suh_)), **[@kevin-on](https://github.com/kevin-on)**, **[@realsnoopso](https://github.com/realsnoopso)** ([Twitter](https://twitter.com/RealSnoopSo) · [LinkedIn](https://linkedin.com/in/realsnoopso)), **[@woosukji](https://github.com/woosukji)**
 
 ### Additional Contributors
 
