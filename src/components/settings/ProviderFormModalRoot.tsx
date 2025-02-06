@@ -12,12 +12,10 @@ import { ObsidianTextInput } from '../common/ObsidianTextInput'
 export default function ProviderFormModalRoot({
   plugin,
   provider,
-  onSubmit,
   onClose,
 }: {
   plugin: SmartComposerPlugin
   provider: LLMProvider | null // null for new provider
-  onSubmit: () => void
   onClose: () => void
 }) {
   const [formData, setFormData] = useState<LLMProvider>(
@@ -81,7 +79,6 @@ export default function ProviderFormModalRoot({
       })
     }
 
-    onSubmit()
     onClose()
   }
 

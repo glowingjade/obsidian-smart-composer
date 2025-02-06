@@ -6,13 +6,11 @@ import SmartComposerPlugin from '../main'
 
 export class AddChatModelModal extends Modal {
   private plugin: SmartComposerPlugin
-  private onSubmit: () => void
   private root: ReturnType<typeof createRoot> | null = null
 
-  constructor(app: App, plugin: SmartComposerPlugin, onSubmit: () => void) {
+  constructor(app: App, plugin: SmartComposerPlugin) {
     super(app)
     this.plugin = plugin
-    this.onSubmit = onSubmit
   }
 
   onOpen() {
@@ -24,7 +22,6 @@ export class AddChatModelModal extends Modal {
     this.root.render(
       <AddChatModelModalRoot
         plugin={this.plugin}
-        onSubmit={this.onSubmit}
         onClose={() => this.close()}
       />,
     )

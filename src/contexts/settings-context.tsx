@@ -4,7 +4,7 @@ import { SmartComposerSettings } from '../settings/schema/setting.types'
 
 type SettingsContextType = {
   settings: SmartComposerSettings
-  setSettings: (newSettings: SmartComposerSettings) => void
+  setSettings: (newSettings: SmartComposerSettings) => void | Promise<void>
 }
 
 // Settings context
@@ -20,7 +20,7 @@ export const SettingsProvider = ({
 }: {
   children: React.ReactNode
   settings: SmartComposerSettings
-  setSettings: (newSettings: SmartComposerSettings) => void
+  setSettings: (newSettings: SmartComposerSettings) => void | Promise<void>
   addSettingsChangeListener: (
     listener: (newSettings: SmartComposerSettings) => void,
   ) => () => void

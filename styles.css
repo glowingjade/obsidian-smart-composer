@@ -834,11 +834,21 @@ button.smtcmp-chat-input-model-select {
     width: 100%;
   }
 
+  .setting-item-control {
+    padding-bottom: var(--size-4-3);
+  }
+
   textarea {
     width: 100%;
     min-height: 100px;
     resize: none;
   }
+}
+
+/* prevent setting-item:first-child overwriting padding-top and border-top */
+.smtcmp-settings-textarea-header {
+  padding-top: 0.75em !important;
+  border-top: 1px solid var(--background-modifier-border) !important;
 }
 
 .smtcmp-settings-model-container {
@@ -1125,16 +1135,16 @@ button.smtcmp-chat-input-model-select {
 
 /* Settings */
 
+.smtcmp-settings-section:not(:first-child) {
+  margin-top: var(--size-4-10);
+}
+
 .smtcmp-settings-header {
   color: var(--text-normal);
   font-size: var(--h1-size);
   line-height: var(--line-height-tight);
   font-weight: var(--h1-weight);
-  margin: var(--size-4-8) 0 var(--size-4-2) 0;
-}
-
-.smtcmp-settings-header:first-child {
-  margin-top: 0;
+  margin: var(--size-4-2) 0;
 }
 
 .smtcmp-settings-sub-header {

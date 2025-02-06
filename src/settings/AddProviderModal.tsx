@@ -6,13 +6,11 @@ import SmartComposerPlugin from '../main'
 
 export class AddProviderModal extends Modal {
   private plugin: SmartComposerPlugin
-  private onSubmit: () => void
   private root: ReturnType<typeof createRoot> | null = null
 
-  constructor(app: App, plugin: SmartComposerPlugin, onSubmit: () => void) {
+  constructor(app: App, plugin: SmartComposerPlugin) {
     super(app)
     this.plugin = plugin
-    this.onSubmit = onSubmit
   }
 
   onOpen() {
@@ -25,7 +23,6 @@ export class AddProviderModal extends Modal {
       <ProviderFormModalRoot
         plugin={this.plugin}
         provider={null}
-        onSubmit={this.onSubmit}
         onClose={() => this.close()}
       />,
     )

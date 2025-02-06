@@ -7,20 +7,13 @@ import { LLMProvider } from '../types/provider.types'
 
 export class EditProviderModal extends Modal {
   private plugin: SmartComposerPlugin
-  private onSubmit: () => void
   private provider: LLMProvider
   private root: ReturnType<typeof createRoot> | null = null
 
-  constructor(
-    app: App,
-    plugin: SmartComposerPlugin,
-    provider: LLMProvider,
-    onSubmit: () => void,
-  ) {
+  constructor(app: App, plugin: SmartComposerPlugin, provider: LLMProvider) {
     super(app)
     this.plugin = plugin
     this.provider = provider
-    this.onSubmit = onSubmit
   }
 
   onOpen() {
@@ -33,7 +26,6 @@ export class EditProviderModal extends Modal {
       <ProviderFormModalRoot
         plugin={this.plugin}
         provider={this.provider}
-        onSubmit={this.onSubmit}
         onClose={() => this.close()}
       />,
     )

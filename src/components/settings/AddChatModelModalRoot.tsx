@@ -11,13 +11,11 @@ import { ObsidianTextInput } from '../common/ObsidianTextInput'
 
 type AddChatModelModalRootProps = {
   plugin: SmartComposerPlugin
-  onSubmit: () => void
   onClose: () => void
 }
 
 export default function AddChatModelModalRoot({
   plugin,
-  onSubmit,
   onClose,
 }: AddChatModelModalRootProps) {
   const [formData, setFormData] = useState<ChatModel>({
@@ -53,7 +51,6 @@ export default function AddChatModelModalRoot({
       chatModels: [...plugin.settings.chatModels, formData],
     })
 
-    onSubmit()
     onClose()
   }
 
