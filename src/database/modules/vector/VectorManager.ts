@@ -11,6 +11,7 @@ import {
   LLMRateLimitExceededException,
 } from '../../../core/llm/exception'
 import { InsertEmbedding, SelectEmbedding } from '../../../database/schema'
+import { ReportBugModal } from '../../../settings/ReportBugModal'
 import {
   EmbeddingDbStats,
   EmbeddingModelClient,
@@ -139,9 +140,9 @@ export class VectorManager {
     try {
       for (const batchChunk of batchChunks) {
         const embeddingChunks: InsertEmbedding[] = await Promise.all(
-          batchChunk.map(
-            async (chunk) =>
-              await backOff(
+          batchChunk.map(async (chunk) => {
+            try {
+              return await backOff(
                 async () => {
                   const embedding = await embeddingModel.getEmbedding(
                     chunk.content,
@@ -170,8 +171,22 @@ export class VectorManager {
                   timeMultiple: 1.5,
                   jitter: 'full',
                 },
-              ),
-          ),
+              )
+            } catch (error) {
+              new ReportBugModal(
+                this.app,
+                'Error: chunk embedding failed',
+                `Please report this issue to the developer.
+
+Error details:
+- File: ${chunk.path}
+- Metadata: ${JSON.stringify(chunk.metadata)}
+- Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+              ).open()
+
+              throw error
+            }
+          }),
         )
 
         await this.repository.insertVectors(embeddingChunks)
