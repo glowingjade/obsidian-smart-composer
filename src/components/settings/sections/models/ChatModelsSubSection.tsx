@@ -12,6 +12,8 @@ type ChatModelsSubSectionProps = {
   plugin: SmartComposerPlugin
 }
 
+const isEnabled = (enable: boolean | undefined | null) => enable ?? true
+
 export function ChatModelsSubSection({
   app,
   plugin,
@@ -36,7 +38,7 @@ export function ChatModelsSubSection({
     await setSettings({
       ...settings,
       chatModels: [...settings.chatModels].map((v) =>
-        v.id === modelId ? { ...v, enable: !(v.enable ?? true) } : v,
+        v.id === modelId ? { ...v, enable: !isEnabled(v.enable) } : v,
       ),
     })
   }
@@ -66,13 +68,13 @@ export function ChatModelsSubSection({
                 <td>
                   <div
                     className={clsx('checkbox-container', {
-                      'is-enabled': chatModel.enable ?? true,
+                      'is-enabled': isEnabled(chatModel.enable),
                     })}
                     onClick={() => handleToggleEnableChatModel(chatModel.id)}
                   >
                     <input
                       type="checkbox"
-                      checked={chatModel.enable ?? true}
+                      checked={isEnabled(chatModel.enable)}
                     />
                   </div>
                 </td>
