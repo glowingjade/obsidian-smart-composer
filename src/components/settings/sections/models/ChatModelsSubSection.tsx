@@ -1,6 +1,6 @@
-import clsx from 'clsx'
 import { Trash2 } from 'lucide-react'
 import { App, Notice } from 'obsidian'
+import { ObsidianToggle } from 'src/components/common/ObsidianToggle'
 
 import { DEFAULT_CHAT_MODELS } from '../../../../constants'
 import { useSettings } from '../../../../contexts/settings-context'
@@ -34,11 +34,14 @@ export function ChatModelsSubSection({
     })
   }
 
-  const handleToggleEnableChatModel = async (modelId: string) => {
+  const handleToggleEnableChatModel = async (
+    modelId: string,
+    value: boolean,
+  ) => {
     await setSettings({
       ...settings,
       chatModels: [...settings.chatModels].map((v) =>
-        v.id === modelId ? { ...v, enable: !isEnabled(v.enable) } : v,
+        v.id === modelId ? { ...v, enable: value } : v,
       ),
     })
   }
@@ -73,17 +76,12 @@ export function ChatModelsSubSection({
                 <td>{chatModel.providerId}</td>
                 <td>{chatModel.model}</td>
                 <td>
-                  <div
-                    className={clsx('checkbox-container', {
-                      'is-enabled': isEnabled(chatModel.enable),
-                    })}
-                    onClick={() => handleToggleEnableChatModel(chatModel.id)}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isEnabled(chatModel.enable)}
-                    />
-                  </div>
+                  <ObsidianToggle
+                    value={isEnabled(chatModel.enable)}
+                    onChange={(value) =>
+                      handleToggleEnableChatModel(chatModel.id, value)
+                    }
+                  />
                 </td>
                 <td>
                   <div className="smtcmp-settings-actions">
