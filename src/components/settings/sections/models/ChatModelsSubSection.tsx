@@ -38,6 +38,16 @@ export function ChatModelsSubSection({
     modelId: string,
     value: boolean,
   ) => {
+    if (
+      !value &&
+      (modelId === settings.chatModelId || modelId === settings.applyModelId)
+    ) {
+      new Notice(
+        'Cannot disable model that is currently selected as Chat Model or Apply Model',
+      )
+      return false
+    }
+
     await setSettings({
       ...settings,
       chatModels: [...settings.chatModels].map((v) =>
