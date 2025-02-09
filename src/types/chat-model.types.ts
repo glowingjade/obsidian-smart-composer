@@ -16,6 +16,7 @@ const baseChatModelSchema = z.object({
       required_error: 'model is required',
     })
     .min(1, 'model is required'),
+  enable: z.boolean().default(true).optional(),
 })
 
 export const chatModelSchema = z.discriminatedUnion('providerType', [
