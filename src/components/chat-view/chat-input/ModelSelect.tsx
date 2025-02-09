@@ -21,20 +21,22 @@ export function ModelSelect() {
       <DropdownMenu.Portal>
         <DropdownMenu.Content className="smtcmp-popover">
           <ul>
-            {settings.chatModels.map((chatModelOption) => (
-              <DropdownMenu.Item
-                key={chatModelOption.id}
-                onSelect={() => {
-                  setSettings({
-                    ...settings,
-                    chatModelId: chatModelOption.id,
-                  })
-                }}
-                asChild
-              >
-                <li>{chatModelOption.id}</li>
-              </DropdownMenu.Item>
-            ))}
+            {settings.chatModels
+              .filter(({ enable }) => enable ?? true)
+              .map((chatModelOption) => (
+                <DropdownMenu.Item
+                  key={chatModelOption.id}
+                  onSelect={() => {
+                    setSettings({
+                      ...settings,
+                      chatModelId: chatModelOption.id,
+                    })
+                  }}
+                  asChild
+                >
+                  <li>{chatModelOption.id}</li>
+                </DropdownMenu.Item>
+              ))}
           </ul>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>

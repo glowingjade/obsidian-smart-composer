@@ -21,10 +21,12 @@ export function ChatSection() {
         <ObsidianDropdown
           value={settings.chatModelId}
           options={Object.fromEntries(
-            settings.chatModels.map((chatModel) => [
-              chatModel.id,
-              `${chatModel.id}${RECOMMENDED_MODELS_FOR_CHAT.includes(chatModel.id) ? ' (Recommended)' : ''}`,
-            ]),
+            settings.chatModels
+              .filter(({ enable }) => enable ?? true)
+              .map((chatModel) => [
+                chatModel.id,
+                `${chatModel.id}${RECOMMENDED_MODELS_FOR_CHAT.includes(chatModel.id) ? ' (Recommended)' : ''}`,
+              ]),
           )}
           onChange={async (value) => {
             await setSettings({
@@ -42,10 +44,12 @@ export function ChatSection() {
         <ObsidianDropdown
           value={settings.applyModelId}
           options={Object.fromEntries(
-            settings.chatModels.map((chatModel) => [
-              chatModel.id,
-              `${chatModel.id}${RECOMMENDED_MODELS_FOR_APPLY.includes(chatModel.id) ? ' (Recommended)' : ''}`,
-            ]),
+            settings.chatModels
+              .filter(({ enable }) => enable ?? true)
+              .map((chatModel) => [
+                chatModel.id,
+                `${chatModel.id}${RECOMMENDED_MODELS_FOR_APPLY.includes(chatModel.id) ? ' (Recommended)' : ''}`,
+              ]),
           )}
           onChange={async (value) => {
             await setSettings({

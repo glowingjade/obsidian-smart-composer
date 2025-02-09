@@ -86,6 +86,12 @@ export function ProvidersSection({ app, plugin }: ProvidersSectionProps) {
 
       <div className="smtcmp-settings-table-container">
         <table className="smtcmp-settings-table">
+          <colgroup>
+            <col />
+            <col />
+            <col />
+            <col width={60} />
+          </colgroup>
           <thead>
             <tr>
               <th>ID</th>
