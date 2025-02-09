@@ -45,7 +45,15 @@ export function ChatModelsSubSection({
       new Notice(
         'Cannot disable model that is currently selected as Chat Model or Apply Model',
       )
-      return false
+
+      // to trigger re-render
+      await setSettings({
+        ...settings,
+        chatModels: [...settings.chatModels].map((v) =>
+          v.id === modelId ? { ...v, enable: true } : v,
+        ),
+      })
+      return
     }
 
     await setSettings({
