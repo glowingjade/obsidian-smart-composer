@@ -50,6 +50,13 @@ export function ChatModelsSubSection({
 
       <div className="smtcmp-settings-table-container">
         <table className="smtcmp-settings-table">
+          <colgroup>
+            <col />
+            <col />
+            <col />
+            <col width={60} />
+            <col width={60} />
+          </colgroup>
           <thead>
             <tr>
               <th>ID</th>
@@ -96,7 +103,7 @@ export function ChatModelsSubSection({
           </tbody>
           <tfoot>
             <tr>
-              <td colSpan={4}>
+              <td colSpan={5}>
                 <button
                   onClick={() => {
                     new AddChatModelModal(app, plugin).open()
