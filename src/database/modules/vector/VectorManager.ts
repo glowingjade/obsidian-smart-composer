@@ -158,6 +158,17 @@ Error details:
             try {
               return await backOff(
                 async () => {
+                  if (chunk.content.length === 0) {
+                    throw new Error(
+                      `Chunk content is empty in file: ${chunk.path}`,
+                    )
+                  }
+                  if (chunk.content.includes('\x00')) {
+                    throw new Error(
+                      `Chunk content contains null bytes in file: ${chunk.path}`,
+                    )
+                  }
+
                   const embedding = await embeddingModel.getEmbedding(
                     chunk.content,
                   )
