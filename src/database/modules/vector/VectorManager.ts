@@ -109,8 +109,12 @@ export class VectorManager {
         filesToIndex.map(async (file) => {
           try {
             const fileContent = await this.app.vault.cachedRead(file)
+            // Remove null bytes from the content
+            // eslint-disable-next-line no-control-regex
+            const sanitizedContent = fileContent.replace(/\x00/g, '')
+
             const fileDocuments = await textSplitter.createDocuments([
-              fileContent,
+              sanitizedContent,
             ])
             return fileDocuments.map(
               (chunk): Omit<InsertEmbedding, 'model' | 'dimension'> => {
@@ -158,6 +162,18 @@ Error details:
             try {
               return await backOff(
                 async () => {
+                  if (chunk.content.length === 0) {
+                    throw new Error(
+                      `Chunk content is empty in file: ${chunk.path}`,
+                    )
+                  }
+                  if (chunk.content.includes('\x00')) {
+                    // this should never happen because we remove null bytes from the content
+                    throw new Error(
+                      `Chunk content contains null bytes in file: ${chunk.path}`,
+                    )
+                  }
+
                   const embedding = await embeddingModel.getEmbedding(
                     chunk.content,
                   )
