@@ -107,23 +107,37 @@ export class VectorManager {
     const contentChunks = (
       await Promise.all(
         filesToIndex.map(async (file) => {
-          const fileContent = await this.app.vault.cachedRead(file)
-          const fileDocuments = await textSplitter.createDocuments([
-            fileContent,
-          ])
-          return fileDocuments.map(
-            (chunk): Omit<InsertEmbedding, 'model' | 'dimension'> => {
-              return {
-                path: file.path,
-                mtime: file.stat.mtime,
-                content: chunk.pageContent,
-                metadata: {
-                  startLine: chunk.metadata.loc.lines.from as number,
-                  endLine: chunk.metadata.loc.lines.to as number,
-                },
-              }
-            },
-          )
+          try {
+            const fileContent = await this.app.vault.cachedRead(file)
+            const fileDocuments = await textSplitter.createDocuments([
+              fileContent,
+            ])
+            return fileDocuments.map(
+              (chunk): Omit<InsertEmbedding, 'model' | 'dimension'> => {
+                return {
+                  path: file.path,
+                  mtime: file.stat.mtime,
+                  content: chunk.pageContent,
+                  metadata: {
+                    startLine: chunk.metadata.loc.lines.from as number,
+                    endLine: chunk.metadata.loc.lines.to as number,
+                  },
+                }
+              },
+            )
+          } catch (error) {
+            new ReportBugModal(
+              this.app,
+              'Error: chunk embedding failed',
+              `Please report this issue to the developer.
+
+Error details:
+- File: ${file.path}
+- Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            ).open()
+
+            throw error
+          }
         }),
       )
     ).flat()
