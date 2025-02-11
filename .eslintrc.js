@@ -35,6 +35,15 @@ const config = {
     '@typescript-eslint/no-floating-promises': 'off',
     '@typescript-eslint/no-unnecessary-condition': 'off',
     '@typescript-eslint/no-misused-promises': 'off',
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+      },
+    ],
+
     'react/react-in-jsx-scope': 'off',
 
     'import/no-unresolved': 'off',

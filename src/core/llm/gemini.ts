@@ -6,7 +6,7 @@ import {
   GoogleGenerativeAI,
 } from '@google/generative-ai'
 
-import { LLMModel } from '../../types/llm/model'
+import { ChatModel } from '../../types/chat-model.types'
 import {
   LLMOptions,
   LLMRequestNonStreaming,
@@ -17,12 +17,14 @@ import {
   LLMResponseNonStreaming,
   LLMResponseStreaming,
 } from '../../types/llm/response'
+import { LLMProvider } from '../../types/provider.types'
 import { parseImageDataUrl } from '../../utils/image'
 
 import { BaseLLMProvider } from './base'
 import {
   LLMAPIKeyInvalidException,
   LLMAPIKeyNotSetException,
+  LLMRateLimitExceededException,
 } from './exception'
 
 /**
@@ -32,23 +34,34 @@ import {
  * preventing its use in Obsidian. Consider switching to this endpoint in the future once these
  * issues are resolved.
  */
-export class GeminiProvider implements BaseLLMProvider {
+export class GeminiProvider extends BaseLLMProvider<
+  Extract<LLMProvider, { type: 'gemini' }>
+> {
   private client: GoogleGenerativeAI
   private apiKey: string
 
-  constructor(apiKey: string) {
-    this.apiKey = apiKey
-    this.client = new GoogleGenerativeAI(apiKey)
+  constructor(provider: Extract<LLMProvider, { type: 'gemini' }>) {
+    super(provider)
+    if (provider.baseUrl) {
+      throw new Error('Gemini does not support custom base URL')
+    }
+
+    this.client = new GoogleGenerativeAI(provider.apiKey ?? '')
+    this.apiKey = provider.apiKey ?? ''
   }
 
   async generateResponse(
-    model: LLMModel,
+    model: ChatModel,
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
+    if (model.providerType !== 'gemini') {
+      throw new Error('Model is not a Gemini model')
+    }
+
     if (!this.apiKey) {
       throw new LLMAPIKeyNotSetException(
-        `Gemini API key is missing. Please set it in settings menu.`,
+        `Provider ${this.provider.id} API key is missing. Please set it in settings menu.`,
       )
     }
 
@@ -96,7 +109,7 @@ export class GeminiProvider implements BaseLLMProvider {
 
       if (isInvalidApiKey) {
         throw new LLMAPIKeyInvalidException(
-          `Gemini API key is invalid. Please update it in settings menu.`,
+          `Provider ${this.provider.id} API key is invalid. Please update it in settings menu.`,
         )
       }
 
@@ -105,13 +118,17 @@ export class GeminiProvider implements BaseLLMProvider {
   }
 
   async streamResponse(
-    model: LLMModel,
+    model: ChatModel,
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
+    if (model.providerType !== 'gemini') {
+      throw new Error('Model is not a Gemini model')
+    }
+
     if (!this.apiKey) {
       throw new LLMAPIKeyNotSetException(
-        `Gemini API key is missing. Please set it in settings menu.`,
+        `Provider ${this.provider.id} API key is missing. Please set it in settings menu.`,
       )
     }
 
@@ -286,6 +303,31 @@ export class GeminiProvider implements BaseLLMProvider {
           ', ',
         )}`,
       )
+    }
+  }
+
+  async getEmbedding(model: string, text: string): Promise<number[]> {
+    if (!this.apiKey) {
+      throw new LLMAPIKeyNotSetException(
+        `Provider ${this.provider.id} API key is missing. Please set it in settings menu.`,
+      )
+    }
+
+    try {
+      const response = await this.client
+        .getGenerativeModel({ model: model })
+        .embedContent(text)
+      return response.embedding.values
+    } catch (error) {
+      if (
+        error.status === 429 &&
+        error.message.includes('RATE_LIMIT_EXCEEDED')
+      ) {
+        throw new LLMRateLimitExceededException(
+          'Gemini API rate limit exceeded. Please try again later.',
+        )
+      }
+      throw error
     }
   }
 }

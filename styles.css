@@ -834,11 +834,21 @@ button.smtcmp-chat-input-model-select {
     width: 100%;
   }
 
+  .setting-item-control {
+    padding-bottom: var(--size-4-3);
+  }
+
   textarea {
     width: 100%;
     min-height: 100px;
     resize: none;
   }
+}
+
+/* prevent setting-item:first-child overwriting padding-top and border-top */
+.smtcmp-settings-textarea-header {
+  padding-top: 0.75em !important;
+  border-top: 1px solid var(--background-modifier-border) !important;
 }
 
 .smtcmp-settings-model-container {
@@ -1123,6 +1133,50 @@ button.smtcmp-chat-input-model-select {
   width: var(--size-4-4);
 }
 
+/* Settings */
+
+.smtcmp-settings-support-smart-composer {
+  border-top: none;
+}
+
+.smtcmp-settings-section:not(:first-child) {
+  margin-top: var(--size-4-10);
+}
+
+.smtcmp-settings-header {
+  color: var(--text-normal);
+  font-size: var(--h1-size);
+  line-height: var(--line-height-tight);
+  font-weight: var(--h1-weight);
+  margin: var(--size-4-2) 0;
+}
+
+.smtcmp-settings-sub-header {
+  color: var(--text-normal);
+  font-size: var(--h4-size);
+  line-height: var(--line-height-tight);
+  font-weight: var(--h4-weight);
+  margin: var(--size-4-3) 0;
+}
+
+.smtcmp-settings-desc {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  line-height: var(--line-height-tight);
+  margin: var(--size-4-1) 0;
+}
+
+.smtcmp-settings-required::after {
+  color: var(--color-red);
+  content: '*';
+  display: inline-block;
+  font-size: var(--font-ui-medium);
+  font-weight: var(--font-bold);
+  margin-left: var(--size-4-1);
+}
+
+/* Settings: Embedding DB Manage */
+
 .smtcmp-settings-embedding-db-manage-root {
   padding: var(--size-4-2);
 }
@@ -1171,4 +1225,65 @@ button.smtcmp-chat-input-model-select {
   align-items: center;
   gap: var(--size-2-2);
   font-size: var(--font-ui-smaller);
+}
+
+/* Settings: tables */
+
+.smtcmp-settings-table-container {
+  overflow-x: auto;
+}
+
+.smtcmp-settings-table {
+  margin: var(--size-4-3) 0;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.smtcmp-settings-table th {
+  padding: var(--size-4-1) var(--size-4-1) var(--size-4-2) var(--size-4-1);
+  text-align: left;
+  vertical-align: middle;
+  font-weight: var(--font-medium);
+  color: var(--text-muted);
+}
+
+.smtcmp-settings-table tbody td {
+  height: var(--size-4-10);
+  padding: var(--size-4-1);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.smtcmp-settings-table tfoot td {
+  padding: var(--size-4-1);
+  text-align: right;
+  vertical-align: middle;
+}
+
+.smtcmp-settings-table thead tr {
+  border-bottom: var(--border-width) solid var(--background-modifier-border);
+}
+
+.smtcmp-settings-table tbody tr {
+  border-bottom: var(--border-width) solid var(--background-modifier-border);
+}
+
+.smtcmp-settings-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+}
+
+.smtcmp-settings-actions button {
+  padding: var(--size-4-1) var(--size-4-2);
+}
+
+.smtcmp-settings-table-api-key {
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.smtcmp-settings-table-api-key:hover {
+  text-decoration: underline;
 }

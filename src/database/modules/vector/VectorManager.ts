@@ -11,7 +11,11 @@ import {
   LLMRateLimitExceededException,
 } from '../../../core/llm/exception'
 import { InsertEmbedding, SelectEmbedding } from '../../../database/schema'
-import { EmbeddingDbStats, EmbeddingModel } from '../../../types/embedding'
+import { ReportBugModal } from '../../../settings/ReportBugModal'
+import {
+  EmbeddingDbStats,
+  EmbeddingModelClient,
+} from '../../../types/embedding'
 import { chunkArray } from '../../../utils/chunk-array'
 import { openSettingsModalWithError } from '../../../utils/openSettingsModal'
 import { DatabaseManager } from '../../DatabaseManager'
@@ -31,7 +35,7 @@ export class VectorManager {
 
   async performSimilaritySearch(
     queryVector: number[],
-    embeddingModel: EmbeddingModel,
+    embeddingModel: EmbeddingModelClient,
     options: {
       minSimilarity: number
       limit: number
@@ -53,7 +57,7 @@ export class VectorManager {
   }
 
   async updateVaultIndex(
-    embeddingModel: EmbeddingModel,
+    embeddingModel: EmbeddingModelClient,
     options: {
       chunkSize: number
       excludePatterns: string[]
@@ -103,23 +107,41 @@ export class VectorManager {
     const contentChunks = (
       await Promise.all(
         filesToIndex.map(async (file) => {
-          const fileContent = await this.app.vault.cachedRead(file)
-          const fileDocuments = await textSplitter.createDocuments([
-            fileContent,
-          ])
-          return fileDocuments.map(
-            (chunk): Omit<InsertEmbedding, 'model' | 'dimension'> => {
-              return {
-                path: file.path,
-                mtime: file.stat.mtime,
-                content: chunk.pageContent,
-                metadata: {
-                  startLine: chunk.metadata.loc.lines.from as number,
-                  endLine: chunk.metadata.loc.lines.to as number,
-                },
-              }
-            },
-          )
+          try {
+            const fileContent = await this.app.vault.cachedRead(file)
+            // Remove null bytes from the content
+            // eslint-disable-next-line no-control-regex
+            const sanitizedContent = fileContent.replace(/\x00/g, '')
+
+            const fileDocuments = await textSplitter.createDocuments([
+              sanitizedContent,
+            ])
+            return fileDocuments.map(
+              (chunk): Omit<InsertEmbedding, 'model' | 'dimension'> => {
+                return {
+                  path: file.path,
+                  mtime: file.stat.mtime,
+                  content: chunk.pageContent,
+                  metadata: {
+                    startLine: chunk.metadata.loc.lines.from as number,
+                    endLine: chunk.metadata.loc.lines.to as number,
+                  },
+                }
+              },
+            )
+          } catch (error) {
+            new ReportBugModal(
+              this.app,
+              'Error: chunk embedding failed',
+              `Please report this issue to the developer.
+
+Error details:
+- File: ${file.path}
+- Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            ).open()
+
+            throw error
+          }
         }),
       )
     ).flat()
@@ -136,10 +158,22 @@ export class VectorManager {
     try {
       for (const batchChunk of batchChunks) {
         const embeddingChunks: InsertEmbedding[] = await Promise.all(
-          batchChunk.map(
-            async (chunk) =>
-              await backOff(
+          batchChunk.map(async (chunk) => {
+            try {
+              return await backOff(
                 async () => {
+                  if (chunk.content.length === 0) {
+                    throw new Error(
+                      `Chunk content is empty in file: ${chunk.path}`,
+                    )
+                  }
+                  if (chunk.content.includes('\x00')) {
+                    // this should never happen because we remove null bytes from the content
+                    throw new Error(
+                      `Chunk content contains null bytes in file: ${chunk.path}`,
+                    )
+                  }
+
                   const embedding = await embeddingModel.getEmbedding(
                     chunk.content,
                   )
@@ -167,8 +201,22 @@ export class VectorManager {
                   timeMultiple: 1.5,
                   jitter: 'full',
                 },
-              ),
-          ),
+              )
+            } catch (error) {
+              new ReportBugModal(
+                this.app,
+                'Error: chunk embedding failed',
+                `Please report this issue to the developer.
+
+Error details:
+- File: ${chunk.path}
+- Metadata: ${JSON.stringify(chunk.metadata)}
+- Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+              ).open()
+
+              throw error
+            }
+          }),
         )
 
         await this.repository.insertVectors(embeddingChunks)
@@ -191,13 +239,15 @@ export class VectorManager {
     }
   }
 
-  async clearAllVectors(embeddingModel: EmbeddingModel) {
+  async clearAllVectors(embeddingModel: EmbeddingModelClient) {
     await this.repository.clearAllVectors(embeddingModel)
     await this.dbManager.vacuum()
     await this.dbManager.save()
   }
 
-  private async deleteVectorsForDeletedFiles(embeddingModel: EmbeddingModel) {
+  private async deleteVectorsForDeletedFiles(
+    embeddingModel: EmbeddingModelClient,
+  ) {
     const indexedFilePaths =
       await this.repository.getIndexedFilePaths(embeddingModel)
     for (const filePath of indexedFilePaths) {
@@ -216,7 +266,7 @@ export class VectorManager {
     includePatterns,
     reindexAll,
   }: {
-    embeddingModel: EmbeddingModel
+    embeddingModel: EmbeddingModelClient
     excludePatterns: string[]
     includePatterns: string[]
     reindexAll?: boolean

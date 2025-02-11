@@ -1,0 +1,322 @@
+{
+  "id": "e9ab50a7-d627-43bb-ae5c-a8c5c09b37b6",
+  "prevId": "2c32e6c0-5482-4d73-8594-32fc62a7c72f",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.embeddings": {
+      "name": "embeddings",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "path": {
+          "name": "path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mtime": {
+          "name": "mtime",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "model": {
+          "name": "model",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dimension": {
+          "name": "dimension",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "embedding": {
+          "name": "embedding",
+          "type": "vector",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "embeddings_path_index": {
+          "name": "embeddings_path_index",
+          "columns": [
+            {
+              "expression": "path",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "embeddings_model_index": {
+          "name": "embeddings_model_index",
+          "columns": [
+            {
+              "expression": "model",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "embeddings_dimension_index": {
+          "name": "embeddings_dimension_index",
+          "columns": [
+            {
+              "expression": "dimension",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "embeddings_embedding_128_index": {
+          "name": "embeddings_embedding_128_index",
+          "columns": [
+            {
+              "expression": "(embedding::vector(128)) vector_cosine_ops",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "dimension = 128",
+          "concurrently": false,
+          "method": "hnsw",
+          "with": {}
+        },
+        "embeddings_embedding_256_index": {
+          "name": "embeddings_embedding_256_index",
+          "columns": [
+            {
+              "expression": "(embedding::vector(256)) vector_cosine_ops",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "dimension = 256",
+          "concurrently": false,
+          "method": "hnsw",
+          "with": {}
+        },
+        "embeddings_embedding_384_index": {
+          "name": "embeddings_embedding_384_index",
+          "columns": [
+            {
+              "expression": "(embedding::vector(384)) vector_cosine_ops",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "dimension = 384",
+          "concurrently": false,
+          "method": "hnsw",
+          "with": {}
+        },
+        "embeddings_embedding_512_index": {
+          "name": "embeddings_embedding_512_index",
+          "columns": [
+            {
+              "expression": "(embedding::vector(512)) vector_cosine_ops",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "dimension = 512",
+          "concurrently": false,
+          "method": "hnsw",
+          "with": {}
+        },
+        "embeddings_embedding_768_index": {
+          "name": "embeddings_embedding_768_index",
+          "columns": [
+            {
+              "expression": "(embedding::vector(768)) vector_cosine_ops",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "dimension = 768",
+          "concurrently": false,
+          "method": "hnsw",
+          "with": {}
+        },
+        "embeddings_embedding_1024_index": {
+          "name": "embeddings_embedding_1024_index",
+          "columns": [
+            {
+              "expression": "(embedding::vector(1024)) vector_cosine_ops",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "dimension = 1024",
+          "concurrently": false,
+          "method": "hnsw",
+          "with": {}
+        },
+        "embeddings_embedding_1280_index": {
+          "name": "embeddings_embedding_1280_index",
+          "columns": [
+            {
+              "expression": "(embedding::vector(1280)) vector_cosine_ops",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "dimension = 1280",
+          "concurrently": false,
+          "method": "hnsw",
+          "with": {}
+        },
+        "embeddings_embedding_1536_index": {
+          "name": "embeddings_embedding_1536_index",
+          "columns": [
+            {
+              "expression": "(embedding::vector(1536)) vector_cosine_ops",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "dimension = 1536",
+          "concurrently": false,
+          "method": "hnsw",
+          "with": {}
+        },
+        "embeddings_embedding_1792_index": {
+          "name": "embeddings_embedding_1792_index",
+          "columns": [
+            {
+              "expression": "(embedding::vector(1792)) vector_cosine_ops",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "dimension = 1792",
+          "concurrently": false,
+          "method": "hnsw",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.template": {
+      "name": "template",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "template_name_unique": {
+          "name": "template_name_unique",
+          "nullsNotDistinct": false,
+          "columns": ["name"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

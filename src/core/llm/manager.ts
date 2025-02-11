@@ -1,130 +1,93 @@
-import { LLMModel } from '../../types/llm/model'
-import {
-  LLMOptions,
-  LLMRequestNonStreaming,
-  LLMRequestStreaming,
-} from '../../types/llm/request'
-import {
-  LLMResponseNonStreaming,
-  LLMResponseStreaming,
-} from '../../types/llm/response'
+import { SmartComposerSettings } from '../../settings/schema/setting.types'
+import { ChatModel } from '../../types/chat-model.types'
+import { LLMProvider } from '../../types/provider.types'
 
 import { AnthropicProvider } from './anthropic'
+import { AzureOpenAIProvider } from './azureOpenaiProvider'
+import { BaseLLMProvider } from './base'
+import { DeepSeekStudioProvider } from './deepseekStudioProvider'
 import { GeminiProvider } from './gemini'
 import { GroqProvider } from './groq'
+import { LmStudioProvider } from './lmStudioProvider'
 import { OllamaProvider } from './ollama'
 import { OpenAIAuthenticatedProvider } from './openai'
 import { OpenAICompatibleProvider } from './openaiCompatibleProvider'
+import { OpenRouterProvider } from './openRouterProvider'
 
-export type LLMManagerInterface = {
-  generateResponse(
-    model: LLMModel,
-    request: LLMRequestNonStreaming,
-    options?: LLMOptions,
-  ): Promise<LLMResponseNonStreaming>
-  streamResponse(
-    model: LLMModel,
-    request: LLMRequestStreaming,
-    options?: LLMOptions,
-  ): Promise<AsyncIterable<LLMResponseStreaming>>
-}
+/*
+ * OpenAI, OpenAI-compatible, and Anthropic providers include token usage statistics
+ * in the final chunk of the stream (following OpenAI's behavior).
+ * Groq and Ollama currently do not support usage statistics for streaming responses.
+ */
 
-class LLMManager implements LLMManagerInterface {
-  private openaiProvider: OpenAIAuthenticatedProvider
-  private anthropicProvider: AnthropicProvider
-  private geminiProvider: GeminiProvider
-  private groqProvider: GroqProvider
-  private ollamaProvider: OllamaProvider
-  private openaiCompatibleProvider: OpenAICompatibleProvider
-
-  constructor(apiKeys: {
-    openai?: string
-    anthropic?: string
-    gemini?: string
-    groq?: string
-  }) {
-    this.openaiProvider = new OpenAIAuthenticatedProvider(apiKeys.openai ?? '')
-    this.anthropicProvider = new AnthropicProvider(apiKeys.anthropic ?? '')
-    this.geminiProvider = new GeminiProvider(apiKeys.gemini ?? '')
-    this.groqProvider = new GroqProvider(apiKeys.groq ?? '')
-    this.ollamaProvider = new OllamaProvider()
-    this.openaiCompatibleProvider = new OpenAICompatibleProvider()
+export function getProviderClient({
+  settings,
+  providerId,
+}: {
+  settings: SmartComposerSettings
+  providerId: string
+}): BaseLLMProvider<LLMProvider> {
+  const provider = settings.providers.find((p) => p.id === providerId)
+  if (!provider) {
+    throw new Error(`Provider ${providerId} not found`)
   }
 
-  async generateResponse(
-    model: LLMModel,
-    request: LLMRequestNonStreaming,
-    options?: LLMOptions,
-  ): Promise<LLMResponseNonStreaming> {
-    switch (model.provider) {
-      case 'openai':
-        return await this.openaiProvider.generateResponse(
-          model,
-          request,
-          options,
-        )
-      case 'anthropic':
-        return await this.anthropicProvider.generateResponse(
-          model,
-          request,
-          options,
-        )
-      case 'gemini':
-        return await this.geminiProvider.generateResponse(
-          model,
-          request,
-          options,
-        )
-      case 'groq':
-        return await this.groqProvider.generateResponse(model, request, options)
-      case 'ollama':
-        return await this.ollamaProvider.generateResponse(
-          model,
-          request,
-          options,
-        )
-      case 'openai-compatible':
-        return await this.openaiCompatibleProvider.generateResponse(
-          model,
-          request,
-          options,
-        )
+  switch (provider.type) {
+    case 'openai': {
+      return new OpenAIAuthenticatedProvider(provider)
     }
-  }
-
-  async streamResponse(
-    model: LLMModel,
-    request: LLMRequestStreaming,
-    options?: LLMOptions,
-  ): Promise<AsyncIterable<LLMResponseStreaming>> {
-    /*
-     * OpenAI, OpenAI-compatible, and Anthropic providers include token usage statistics
-     * in the final chunk of the stream (following OpenAI's behavior).
-     * Groq and Ollama currently do not support usage statistics for streaming responses.
-     */
-    switch (model.provider) {
-      case 'openai':
-        return await this.openaiProvider.streamResponse(model, request, options)
-      case 'anthropic':
-        return await this.anthropicProvider.streamResponse(
-          model,
-          request,
-          options,
-        )
-      case 'gemini':
-        return await this.geminiProvider.streamResponse(model, request, options)
-      case 'groq':
-        return await this.groqProvider.streamResponse(model, request, options)
-      case 'ollama':
-        return await this.ollamaProvider.streamResponse(model, request, options)
-      case 'openai-compatible':
-        return await this.openaiCompatibleProvider.streamResponse(
-          model,
-          request,
-          options,
-        )
+    case 'anthropic': {
+      return new AnthropicProvider(provider)
+    }
+    case 'gemini': {
+      return new GeminiProvider(provider)
+    }
+    case 'groq': {
+      return new GroqProvider(provider)
+    }
+    case 'openrouter': {
+      return new OpenRouterProvider(provider)
+    }
+    case 'ollama': {
+      return new OllamaProvider(provider)
+    }
+    case 'lm-studio': {
+      return new LmStudioProvider(provider)
+    }
+    case 'deepseek': {
+      return new DeepSeekStudioProvider(provider)
+    }
+    case 'azure-openai': {
+      return new AzureOpenAIProvider(provider)
+    }
+    case 'openai-compatible': {
+      return new OpenAICompatibleProvider(provider)
     }
   }
 }
 
-export default LLMManager
+export function getChatModelClient({
+  settings,
+  modelId,
+}: {
+  settings: SmartComposerSettings
+  modelId: string
+}): {
+  providerClient: BaseLLMProvider<LLMProvider>
+  model: ChatModel
+} {
+  const chatModel = settings.chatModels.find((model) => model.id === modelId)
+  if (!chatModel) {
+    throw new Error(`Chat model ${modelId} not found`)
+  }
+
+  const providerClient = getProviderClient({
+    settings,
+    providerId: chatModel.providerId,
+  })
+
+  return {
+    providerClient,
+    model: chatModel,
+  }
+}

@@ -2,7 +2,7 @@ import { SerializedEditorState } from 'lexical'
 
 import { SelectEmbedding } from '../database/schema'
 
-import { LLMModel } from './llm/model'
+import { ChatModel } from './chat-model.types'
 import { ContentPart } from './llm/request'
 import { ResponseUsage } from './llm/response'
 import { Mentionable, SerializedMentionable } from './mentionable'
@@ -23,7 +23,7 @@ export type ChatAssistantMessage = {
   id: string
   metadata?: {
     usage?: ResponseUsage
-    model?: LLMModel
+    model?: ChatModel // TODO: migrate legacy data to new model type
   }
 }
 export type ChatMessage = ChatUserMessage | ChatAssistantMessage
@@ -44,7 +44,7 @@ export type SerializedChatAssistantMessage = {
   id: string
   metadata?: {
     usage?: ResponseUsage
-    model?: LLMModel
+    model?: ChatModel // TODO: migrate legacy data to new model type
   }
 }
 export type SerializedChatMessage =

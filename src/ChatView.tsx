@@ -9,25 +9,21 @@ import { AppProvider } from './contexts/app-context'
 import { DarkModeProvider } from './contexts/dark-mode-context'
 import { DatabaseProvider } from './contexts/database-context'
 import { DialogContainerProvider } from './contexts/dialog-container-context'
-import { LLMProvider } from './contexts/llm-context'
 import { RAGProvider } from './contexts/rag-context'
 import { SettingsProvider } from './contexts/settings-context'
-import SmartCopilotPlugin from './main'
+import SmartComposerPlugin from './main'
 import { MentionableBlockData } from './types/mentionable'
-import { SmartCopilotSettings } from './types/settings'
 
 export class ChatView extends ItemView {
   private root: Root | null = null
-  private settings: SmartCopilotSettings
   private initialChatProps?: ChatProps
   private chatRef: React.RefObject<ChatRef> = React.createRef()
 
   constructor(
     leaf: WorkspaceLeaf,
-    private plugin: SmartCopilotPlugin,
+    private plugin: SmartComposerPlugin,
   ) {
     super(leaf)
-    this.settings = plugin.settings
     this.initialChatProps = plugin.initialChatProps
   }
 
@@ -73,30 +69,28 @@ export class ChatView extends ItemView {
     this.root.render(
       <AppProvider app={this.app}>
         <SettingsProvider
-          settings={this.settings}
+          settings={this.plugin.settings}
           setSettings={(newSettings) => this.plugin.setSettings(newSettings)}
           addSettingsChangeListener={(listener) =>
             this.plugin.addSettingsChangeListener(listener)
           }
         >
           <DarkModeProvider>
-            <LLMProvider>
-              <DatabaseProvider
-                getDatabaseManager={() => this.plugin.getDbManager()}
-              >
-                <RAGProvider getRAGEngine={() => this.plugin.getRAGEngine()}>
-                  <QueryClientProvider client={queryClient}>
-                    <React.StrictMode>
-                      <DialogContainerProvider
-                        container={this.containerEl.children[1] as HTMLElement}
-                      >
-                        <Chat ref={this.chatRef} {...this.initialChatProps} />
-                      </DialogContainerProvider>
-                    </React.StrictMode>
-                  </QueryClientProvider>
-                </RAGProvider>
-              </DatabaseProvider>
-            </LLMProvider>
+            <DatabaseProvider
+              getDatabaseManager={() => this.plugin.getDbManager()}
+            >
+              <RAGProvider getRAGEngine={() => this.plugin.getRAGEngine()}>
+                <QueryClientProvider client={queryClient}>
+                  <React.StrictMode>
+                    <DialogContainerProvider
+                      container={this.containerEl.children[1] as HTMLElement}
+                    >
+                      <Chat ref={this.chatRef} {...this.initialChatProps} />
+                    </DialogContainerProvider>
+                  </React.StrictMode>
+                </QueryClientProvider>
+              </RAGProvider>
+            </DatabaseProvider>
           </DarkModeProvider>
         </SettingsProvider>
       </AppProvider>,
