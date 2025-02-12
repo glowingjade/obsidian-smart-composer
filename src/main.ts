@@ -3,9 +3,11 @@ import { Editor, MarkdownView, Notice, Plugin } from 'obsidian'
 import { ApplyView } from './ApplyView'
 import { ChatView } from './ChatView'
 import { ChatProps } from './components/chat-view/Chat'
+import { InstallerUpdateRequiredModal } from './components/modals/InstallerUpdateRequiredModal'
 import { APPLY_VIEW_TYPE, CHAT_VIEW_TYPE } from './constants'
 import { RAGEngine } from './core/rag/ragEngine'
 import { DatabaseManager } from './database/DatabaseManager'
+import { PGLiteAbortedException } from './database/exception'
 import {
   SmartComposerSettings,
   smartComposerSettingsSchema,
@@ -214,8 +216,16 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
 
     if (!this.dbManagerInitPromise) {
       this.dbManagerInitPromise = (async () => {
-        this.dbManager = await DatabaseManager.create(this.app)
-        return this.dbManager
+        try {
+          this.dbManager = await DatabaseManager.create(this.app)
+          return this.dbManager
+        } catch (error) {
+          this.dbManagerInitPromise = null
+          if (error instanceof PGLiteAbortedException) {
+            new InstallerUpdateRequiredModal(this.app).open()
+          }
+          throw error
+        }
       })()
     }
 
@@ -230,13 +240,17 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
 
     if (!this.ragEngineInitPromise) {
       this.ragEngineInitPromise = (async () => {
-        const dbManager = await this.getDbManager()
-        this.ragEngine = new RAGEngine(this.app, this.settings, dbManager)
-        return this.ragEngine
+        try {
+          const dbManager = await this.getDbManager()
+          this.ragEngine = new RAGEngine(this.app, this.settings, dbManager)
+          return this.ragEngine
+        } catch (error) {
+          this.ragEngineInitPromise = null
+          throw error
+        }
       })()
     }
 
-    // if initialization is running, wait for it to complete instead of creating a new initialization promise
     return this.ragEngineInitPromise
   }
 }

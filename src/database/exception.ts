@@ -18,3 +18,10 @@ export class DuplicateTemplateException extends DatabaseException {
     this.name = 'DuplicateTemplateException'
   }
 }
+
+export class PGLiteAbortedException extends DatabaseException {
+  constructor(message = 'PGLite aborted during runtime') {
+    super(message)
+    this.name = 'PGLiteAbortedException'
+  }
+}
