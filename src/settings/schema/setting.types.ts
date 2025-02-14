@@ -18,7 +18,7 @@ const ragOptionsSchema = z.object({
   includePatterns: z.array(z.string()).catch([]),
 })
 
-export const SETTINGS_SCHEMA_VERSION = 2
+export const SETTINGS_SCHEMA_VERSION = 3
 
 /**
  * Settings
