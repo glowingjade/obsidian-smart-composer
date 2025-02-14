@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 import { ChatModel } from '../../../types/chat-model.types'
 import { EmbeddingModel } from '../../../types/embedding-model.types'
-import { LLMProvider, LLMProviderType } from '../../../types/provider.types'
+import { LLMProvider } from '../../../types/provider.types'
 import { SettingMigration } from '../setting.types'
 
 type NativeLLMModel = {
