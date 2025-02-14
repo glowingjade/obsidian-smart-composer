@@ -9,6 +9,7 @@ import { DeepSeekStudioProvider } from './deepseekStudioProvider'
 import { GeminiProvider } from './gemini'
 import { GroqProvider } from './groq'
 import { LmStudioProvider } from './lmStudioProvider'
+import { MorphProvider } from './morphProvider'
 import { OllamaProvider } from './ollama'
 import { OpenAIAuthenticatedProvider } from './openai'
 import { OpenAICompatibleProvider } from './openaiCompatibleProvider'
@@ -56,6 +57,9 @@ export function getProviderClient({
     }
     case 'deepseek': {
       return new DeepSeekStudioProvider(provider)
+    }
+    case 'morph': {
+      return new MorphProvider(provider)
     }
     case 'azure-openai': {
       return new AzureOpenAIProvider(provider)

@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { ChatModel } from '../../../types/chat-model.types'
 import { EmbeddingModel } from '../../../types/embedding-model.types'
 import { LLMProvider, LLMProviderType } from '../../../types/provider.types'
-import { SettingMigration, SmartComposerSettings } from '../setting.types'
+import { SettingMigration } from '../setting.types'
 
 type NativeLLMModel = {
   provider: 'openai' | 'anthropic' | 'gemini' | 'groq'
@@ -425,15 +425,7 @@ export const V2_PROVIDER_TYPES_INFO = {
     requireBaseUrl: true,
     supportEmbedding: false,
   },
-} as const satisfies Record<
-  LLMProviderType,
-  {
-    label: string
-    defaultProviderId: string | null
-    requireBaseUrl: boolean
-    supportEmbedding: boolean
-  }
->
+} as const
 
 export const V2_DEFAULT_PROVIDERS: readonly LLMProvider[] = [
   {
@@ -585,7 +577,7 @@ export const V2_DEFAULT_EMBEDDING_MODELS: readonly EmbeddingModel[] = [
 
 export const migrateFrom1To2: SettingMigration['migrate'] = (
   data: SmartComposerSettingsV1,
-): SmartComposerSettings => {
+) => {
   const providers: LLMProvider[] = [...V2_DEFAULT_PROVIDERS]
   const chatModels: ChatModel[] = [...V2_DEFAULT_CHAT_MODELS]
 

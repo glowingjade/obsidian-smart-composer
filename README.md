@@ -69,6 +69,7 @@ Now, you can **add website links and images** as additional context for your que
   - Azure OpenAI
   - Ollama
   - LM Studio
+  - MorphLLM
   - Any other OpenAI-compatible providers
 - **Local Model Support**: Run open-source LLMs and embedding models locally with [Ollama](https://ollama.ai) for complete privacy and offline usage.
 - **Custom System Prompts**: Define your own system prompts that will be applied to every chat conversation.

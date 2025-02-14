@@ -85,7 +85,7 @@ export const PROVIDER_TYPES_INFO = {
   },
   'lm-studio': {
     label: 'LM Studio',
-    defaultProviderId: null,
+    defaultProviderId: 'lm-studio',
     requireApiKey: false,
     requireBaseUrl: false,
     supportEmbedding: true,
@@ -93,7 +93,15 @@ export const PROVIDER_TYPES_INFO = {
   },
   deepseek: {
     label: 'DeepSeek',
-    defaultProviderId: null,
+    defaultProviderId: 'deepseek',
+    requireApiKey: true,
+    requireBaseUrl: false,
+    supportEmbedding: false,
+    additionalSettings: [],
+  },
+  morph: {
+    label: 'Morph',
+    defaultProviderId: 'morph',
     requireApiKey: true,
     requireBaseUrl: false,
     supportEmbedding: false,
@@ -188,6 +196,18 @@ export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
     type: 'ollama',
     id: PROVIDER_TYPES_INFO.ollama.defaultProviderId,
   },
+  {
+    type: 'lm-studio',
+    id: PROVIDER_TYPES_INFO['lm-studio'].defaultProviderId,
+  },
+  {
+    type: 'deepseek',
+    id: PROVIDER_TYPES_INFO.deepseek.defaultProviderId,
+  },
+  {
+    type: 'morph',
+    id: PROVIDER_TYPES_INFO.morph.defaultProviderId,
+  },
 ]
 
 /**
@@ -256,6 +276,24 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
     id: 'gemini-1.5-flash',
     model: 'gemini-1.5-flash',
+  },
+  {
+    providerType: 'deepseek',
+    providerId: PROVIDER_TYPES_INFO.deepseek.defaultProviderId,
+    id: 'deepseek-chat',
+    model: 'deepseek-chat',
+  },
+  {
+    providerType: 'deepseek',
+    providerId: PROVIDER_TYPES_INFO.deepseek.defaultProviderId,
+    id: 'deepseek-reasoner',
+    model: 'deepseek-reasoner',
+  },
+  {
+    providerType: 'morph',
+    providerId: PROVIDER_TYPES_INFO.morph.defaultProviderId,
+    id: 'morph-v0',
+    model: 'morph-v0',
   },
 ]
 

@@ -7,6 +7,13 @@ export const baseLlmProviderSchema = z.object({
   additionalSettings: z.record(z.string(), z.string()).optional(),
 })
 
+/**
+ * When adding a new provider, make sure to update these files:
+ * - src/constants.ts
+ * - src/types/chat-model.types.ts
+ * - src/types/embedding-model.types.ts
+ * - src/core/llm/manager.ts
+ */
 export const llmProviderSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('openai'),
@@ -38,6 +45,10 @@ export const llmProviderSchema = z.discriminatedUnion('type', [
   }),
   z.object({
     type: z.literal('deepseek'),
+    ...baseLlmProviderSchema.shape,
+  }),
+  z.object({
+    type: z.literal('morph'),
     ...baseLlmProviderSchema.shape,
   }),
   z.object({
