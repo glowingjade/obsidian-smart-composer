@@ -140,4 +140,4 @@ For maintainers with repository write access, deployments are handled through gi
 
 1. Create and push a new tag: `git tag <version-number> && git push origin <version-number>`
 
-Github workflow will automatically build, release and bump version in versions.json, manifest.json and package.json
+Github workflow will automatically build, release and create a pull request to bump versions in versions.json, manifest.json and package.json. The pull request needs to be manually reviewed and merged by a maintainer.
