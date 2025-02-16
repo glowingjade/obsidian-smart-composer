@@ -135,7 +135,7 @@ export const PROVIDER_TYPES_INFO = {
     defaultProviderId: null, // no default provider for this type
     requireApiKey: false,
     requireBaseUrl: true,
-    supportEmbedding: false,
+    supportEmbedding: true,
     additionalSettings: [
       {
         label: 'No Stainless Headers',
