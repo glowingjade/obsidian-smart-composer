@@ -48,7 +48,7 @@ export function RAGSection({ app, plugin }: RAGSectionProps) {
 
       <ObsidianSetting
         name="Include patterns"
-        desc="If any patterns are specified, ONLY files matching at least one pattern will be included in indexing. One pattern per line. Uses glob patterns (e.g., 'notes/*', '*.md'). Leave empty to include all files not excluded by exclude patterns. After changing this, use the command 'Rebuild entire vault index' to apply changes."
+        desc="Specify glob patterns to include files in indexing (one per line). Example: use 'notes/**' for all files in the notes folder. Leave empty to include all files. Requires 'Rebuild entire vault index' after changes."
       >
         <ObsidianButton
           text="Test patterns"
@@ -84,7 +84,7 @@ export function RAGSection({ app, plugin }: RAGSectionProps) {
 
       <ObsidianSetting
         name="Exclude patterns"
-        desc="Files matching ANY of these patterns will be excluded from indexing. One pattern per line. Uses glob patterns (e.g., 'private/*', '*.tmp'). Leave empty to exclude nothing. After changing this, use the command 'Rebuild entire vault index' to apply changes."
+        desc="Specify glob patterns to exclude files from indexing (one per line). Example: use 'notes/**' for all files in the notes folder. Leave empty to exclude nothing. Requires 'Rebuild entire vault index' after changes."
       >
         <ObsidianButton
           text="Test patterns"
