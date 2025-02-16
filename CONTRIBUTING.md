@@ -133,3 +133,11 @@ A memory leak has been identified when reloading the plugin. This may not be cri
 ## License
 
 This project is licensed under the [MIT License](LICENSE). By contributing to this project, you agree that your contributions will be licensed under the MIT License. Please make sure you understand and comply with the terms of this license before submitting any contributions.
+
+## Deployment (Maintainers Only)
+
+For maintainers with repository write access, deployments are handled through git tags. To deploy a new version:
+
+1. Create and push a new tag: `git tag <version-number> && git push origin <version-number>`
+
+Github workflow will automatically build, release and bump version in versions.json, manifest.json and package.json

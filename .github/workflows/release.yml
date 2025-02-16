@@ -27,7 +27,26 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           tag="${GITHUB_REF#refs/tags/}"
-
           gh release create "$tag" \
             --title="$tag" \
             main.js manifest.json styles.css
+
+      - name: Set Tag variable
+        run: |
+          echo "TAG=${{ github.ref_name }}" >> $GITHUB_ENV
+
+      - name: Bump version
+        run: npm run version $TAG
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: 'version bump: ${{ env.TAG }}'
+          title: 'Version bump: ${{ env.TAG }}'
+          body: |
+            Automated version bump after release ${{ env.TAG }}
+
+            This PR was automatically created by the release workflow.
+          branch: 'version-bump/${{ env.TAG }}'
+          base: 'main'
+          delete-branch: true
