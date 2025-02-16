@@ -71,9 +71,11 @@ export class OpenAICompatibleProvider extends BaseLLMProvider<
     return this.adapter.streamResponse(this.client, request, options)
   }
 
-  async getEmbedding(_model: string, _text: string): Promise<number[]> {
-    throw new Error(
-      `Provider ${this.provider.id} does not support embeddings. Please use a different provider.`,
-    )
+  async getEmbedding(model: string, text: string): Promise<number[]> {
+    const embedding = await this.client.embeddings.create({
+      model: model,
+      input: text,
+    })
+    return embedding.data[0].embedding
   }
 }
