@@ -17,6 +17,13 @@ jobs:
         with:
           node-version: '18.x'
 
+      - name: Set Tag variable
+        run: |
+          echo "TAG=${{ github.ref_name }}" >> $GITHUB_ENV
+
+      - name: Bump version
+        run: npm run version $TAG
+
       - name: Build plugin
         run: |
           npm install
@@ -30,13 +37,6 @@ jobs:
           gh release create "$tag" \
             --title="$tag" \
             main.js manifest.json styles.css
-
-      - name: Set Tag variable
-        run: |
-          echo "TAG=${{ github.ref_name }}" >> $GITHUB_ENV
-
-      - name: Bump version
-        run: npm run version $TAG
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
