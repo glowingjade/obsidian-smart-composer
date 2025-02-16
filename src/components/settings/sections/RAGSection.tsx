@@ -170,6 +170,12 @@ export function RAGSection({ app, plugin }: RAGSectionProps) {
           value={String(settings.ragOptions.minSimilarity)}
           placeholder="0.0"
           onChange={async (value) => {
+            // Allow decimal point and numbers only
+            if (!/^[0-9.]*$/.test(value)) return
+
+            // Ignore typing decimal point to prevent interference with the input
+            if (value === '.' || value.endsWith('.')) return
+
             const minSimilarity = parseFloat(value)
             if (!isNaN(minSimilarity)) {
               await setSettings({
