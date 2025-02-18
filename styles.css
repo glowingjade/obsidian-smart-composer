@@ -80,6 +80,7 @@
     font-size: var(--code-size);
     background-color: var(--code-background);
     vertical-align: baseline;
+	text-wrap: wrap;
   }
 
   table {
