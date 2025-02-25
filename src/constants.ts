@@ -18,6 +18,7 @@ export const OPENAI_PRICES: Record<string, ModelPricing> = {
 
 export const ANTHROPIC_PRICES: Record<string, ModelPricing> = {
   'claude-3-5-sonnet-latest': { input: 3, output: 15 },
+  'claude-3-7-sonnet-latest': { input: 3, output: 15 },
   'claude-3-5-haiku-latest': { input: 1, output: 5 },
 }
 
@@ -219,8 +220,8 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
   {
     providerType: 'anthropic',
     providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
-    id: 'claude-3.5-sonnet',
-    model: 'claude-3-5-sonnet-latest',
+    id: 'claude-3.7-sonnet',
+    model: 'claude-3-7-sonnet-latest',
   },
   {
     providerType: 'openai',
@@ -348,7 +349,7 @@ export const DEFAULT_EMBEDDING_MODELS: readonly EmbeddingModel[] = [
 ]
 
 // use ids
-export const RECOMMENDED_MODELS_FOR_CHAT = ['claude-3.5-sonnet', 'gpt-4o']
+export const RECOMMENDED_MODELS_FOR_CHAT = ['claude-3.7-sonnet', 'gpt-4o']
 export const RECOMMENDED_MODELS_FOR_APPLY = ['gpt-4o-mini']
 export const RECOMMENDED_MODELS_FOR_EMBEDDING = [
   'openai/text-embedding-3-small',
