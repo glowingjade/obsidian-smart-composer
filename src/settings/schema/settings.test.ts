@@ -18,7 +18,7 @@ describe('parseSmartComposerSettings', () => {
       chatModels: [...DEFAULT_CHAT_MODELS],
       embeddingModels: [...DEFAULT_EMBEDDING_MODELS],
 
-      chatModelId: 'claude-3.5-sonnet',
+      chatModelId: 'claude-3.7-sonnet',
       applyModelId: 'gpt-4o-mini',
       embeddingModelId: 'openai/text-embedding-3-small',
 
