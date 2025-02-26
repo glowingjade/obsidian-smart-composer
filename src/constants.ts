@@ -224,6 +224,12 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     model: 'claude-3-7-sonnet-latest',
   },
   {
+    providerType: 'anthropic',
+    providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
+    id: 'claude-3.5-sonnet',
+    model: 'claude-3-5-sonnet-latest',
+  },
+  {
     providerType: 'openai',
     providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
     id: 'gpt-4o',

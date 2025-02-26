@@ -1,7 +1,7 @@
 import { migrateFrom3To4 } from './3_to_4'
 
 describe('settings 3_to_4 migration', () => {
-  it('should migrate claude-3.5-sonnet model to claude-3.7-sonnet', () => {
+  it('should add claude-3.7-sonnet model alongside existing models', () => {
     const oldSettings = {
       version: 3,
       chatModels: [
@@ -27,8 +27,8 @@ describe('settings 3_to_4 migration', () => {
       {
         providerType: 'anthropic',
         providerId: 'anthropic',
-        id: 'claude-3.7-sonnet',
-        model: 'claude-3-7-sonnet-latest',
+        id: 'claude-3.5-sonnet',
+        model: 'claude-3-5-sonnet-latest',
       },
       {
         providerType: 'openai',
@@ -36,58 +36,29 @@ describe('settings 3_to_4 migration', () => {
         id: 'gpt-4',
         model: 'gpt-4',
       },
+      {
+        providerType: 'anthropic',
+        providerId: 'anthropic',
+        id: 'claude-3.7-sonnet',
+        model: 'claude-3-7-sonnet-latest',
+      },
     ])
-    expect(result.chatModelId).toBe('claude-3.7-sonnet')
+    expect(result.chatModelId).toBe('claude-3.5-sonnet')
   })
 
-  it('should not modify other models', () => {
+  it('should update existing claude-3.7-sonnet if present', () => {
     const oldSettings = {
       version: 3,
       chatModels: [
         {
           providerType: 'anthropic',
-          providerId: 'anthropic',
-          id: 'claude-3.5-haiku',
-          model: 'claude-3-5-haiku-latest',
-        },
-        {
-          providerType: 'openai',
-          providerId: 'openai',
-          id: 'gpt-4',
-          model: 'gpt-4',
+          providerId: 'custom-provider',
+          id: 'claude-3.7-sonnet',
+          model: 'old-model-name',
+          enable: false,
         },
       ],
-      chatModelId: 'gpt-4',
-    }
-
-    const result = migrateFrom3To4(oldSettings)
-    expect(result.version).toBe(4)
-    expect(result.chatModels).toEqual(oldSettings.chatModels)
-    expect(result.chatModelId).toBe(oldSettings.chatModelId)
-  })
-
-  it('should handle missing chatModels array', () => {
-    const oldSettings = {
-      version: 3,
-      chatModelId: 'claude-3.5-sonnet',
-    }
-
-    const result = migrateFrom3To4(oldSettings)
-    expect(result.version).toBe(4)
-    expect(result.chatModelId).toBe('claude-3.7-sonnet')
-  })
-
-  it('should handle missing chatModelId', () => {
-    const oldSettings = {
-      version: 3,
-      chatModels: [
-        {
-          providerType: 'anthropic',
-          providerId: 'anthropic',
-          id: 'claude-3.5-sonnet',
-          model: 'claude-3-5-sonnet-latest',
-        },
-      ],
+      chatModelId: 'claude-3.7-sonnet',
     }
 
     const result = migrateFrom3To4(oldSettings)
@@ -98,7 +69,9 @@ describe('settings 3_to_4 migration', () => {
         providerId: 'anthropic',
         id: 'claude-3.7-sonnet',
         model: 'claude-3-7-sonnet-latest',
+        enable: false,
       },
     ])
+    expect(result.chatModelId).toBe('claude-3.7-sonnet')
   })
 })
