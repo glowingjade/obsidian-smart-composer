@@ -11,23 +11,25 @@ export const migrateFrom3To4: SettingMigration['migrate'] = (data) => {
       newData.chatModels.map((model) => [model.id, model]),
     )
 
-    const newModel = {
+    let newModel = {
       providerType: 'anthropic',
       providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
       id: 'claude-3.7-sonnet',
       model: 'claude-3-7-sonnet-latest',
     }
 
-    // Add new model, overriding if ID exists
+    // override existing model with same id
     const existingModel = existingModelsMap.get(newModel.id)
     if (existingModel) {
-      // Override the model while keeping any custom settings
-      Object.assign(existingModel, newModel)
-    } else {
-      // Add new model
-      newData.chatModels.push(newModel)
+      // keep the existing model settings
+      newModel = Object.assign(existingModel, newModel)
+      // Remove the existing model from the array
+      newData.chatModels = newData.chatModels.filter(
+        (model) => model.id !== newModel.id,
+      )
     }
+    // Add the new model at index 0 of the array
+    ;(newData.chatModels as unknown[]).splice(0, 0, newModel)
   }
-
   return newData
 }

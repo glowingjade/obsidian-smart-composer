@@ -27,6 +27,12 @@ describe('settings 3_to_4 migration', () => {
       {
         providerType: 'anthropic',
         providerId: 'anthropic',
+        id: 'claude-3.7-sonnet',
+        model: 'claude-3-7-sonnet-latest',
+      },
+      {
+        providerType: 'anthropic',
+        providerId: 'anthropic',
         id: 'claude-3.5-sonnet',
         model: 'claude-3-5-sonnet-latest',
       },
@@ -35,12 +41,6 @@ describe('settings 3_to_4 migration', () => {
         providerId: 'openai',
         id: 'gpt-4',
         model: 'gpt-4',
-      },
-      {
-        providerType: 'anthropic',
-        providerId: 'anthropic',
-        id: 'claude-3.7-sonnet',
-        model: 'claude-3-7-sonnet-latest',
       },
     ])
     expect(result.chatModelId).toBe('claude-3.5-sonnet')
