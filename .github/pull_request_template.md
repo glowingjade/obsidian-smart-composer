@@ -8,3 +8,5 @@ Note: If your changes include UI modifications, please include screenshots to he
 - [ ] I have reviewed the [guidelines for contributing](../CONTRIBUTING.md) to this repository.
 - [ ] I have performed a self-review of my code
 - [ ] I have performed a code linting check and type check (by running `npm run lint:check` and `npm run type:check`)
+- [ ] I have run the test suite (by running `npm run test`)
+- [ ] I have tested the functionality manually
