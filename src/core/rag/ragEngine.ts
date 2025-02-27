@@ -1,7 +1,6 @@
 import { App } from 'obsidian'
 
 import { QueryProgressState } from '../../components/chat-view/QueryProgress'
-import { DatabaseManager } from '../../database/DatabaseManager'
 import { VectorManager } from '../../database/modules/vector/VectorManager'
 import { SelectEmbedding } from '../../database/schema'
 import { SmartComposerSettings } from '../../settings/schema/setting.types'
@@ -13,21 +12,26 @@ import { getEmbeddingModelClient } from './embedding'
 export class RAGEngine {
   private app: App
   private settings: SmartComposerSettings
-  private vectorManager: VectorManager
+  private vectorManager: VectorManager | null = null
   private embeddingModel: EmbeddingModelClient | null = null
 
   constructor(
     app: App,
     settings: SmartComposerSettings,
-    dbManager: DatabaseManager,
+    vectorManager: VectorManager,
   ) {
     this.app = app
     this.settings = settings
-    this.vectorManager = dbManager.getVectorManager()
+    this.vectorManager = vectorManager
     this.embeddingModel = getEmbeddingModelClient({
       settings,
       embeddingModelId: settings.embeddingModelId,
     })
+  }
+
+  cleanup() {
+    this.embeddingModel = null
+    this.vectorManager = null
   }
 
   // TODO: use addSettingsChangeListener
@@ -50,7 +54,7 @@ export class RAGEngine {
     if (!this.embeddingModel) {
       throw new Error('Embedding model is not set')
     }
-    await this.vectorManager.updateVaultIndex(
+    await this.vectorManager?.updateVaultIndex(
       this.embeddingModel,
       {
         chunkSize: this.settings.ragOptions.chunkSize,
@@ -93,15 +97,16 @@ export class RAGEngine {
     onQueryProgressChange?.({
       type: 'querying',
     })
-    const queryResult = await this.vectorManager.performSimilaritySearch(
-      queryEmbedding,
-      this.embeddingModel,
-      {
-        minSimilarity: this.settings.ragOptions.minSimilarity,
-        limit: this.settings.ragOptions.limit,
-        scope,
-      },
-    )
+    const queryResult =
+      (await this.vectorManager?.performSimilaritySearch(
+        queryEmbedding,
+        this.embeddingModel,
+        {
+          minSimilarity: this.settings.ragOptions.minSimilarity,
+          limit: this.settings.ragOptions.limit,
+          scope,
+        },
+      )) ?? []
     onQueryProgressChange?.({
       type: 'querying-done',
       queryResult,

@@ -24,6 +24,7 @@ export default class SmartComposerPlugin extends Plugin {
   ragEngine: RAGEngine | null = null
   private dbManagerInitPromise: Promise<DatabaseManager> | null = null
   private ragEngineInitPromise: Promise<RAGEngine> | null = null
+  private timeoutIds: ReturnType<typeof setTimeout>[] = [] // Use ReturnType instead of number
 
   async onload() {
     await this.loadSettings()
@@ -75,7 +76,7 @@ export default class SmartComposerPlugin extends Plugin {
           console.error(error)
           notice.setMessage('Rebuilding vault index failed')
         } finally {
-          setTimeout(() => {
+          this.registerTimeout(() => {
             notice.hide()
           }, 1000)
         }
@@ -106,7 +107,7 @@ export default class SmartComposerPlugin extends Plugin {
           console.error(error)
           notice.setMessage('Vault index update failed')
         } finally {
-          setTimeout(() => {
+          this.registerTimeout(() => {
             notice.hide()
           }, 1000)
         }
@@ -118,6 +119,19 @@ export default class SmartComposerPlugin extends Plugin {
   }
 
   onunload() {
+    // clear all timers
+    this.timeoutIds.forEach((id) => clearTimeout(id))
+    this.timeoutIds = []
+
+    // RagEngine cleanup
+    this.ragEngine?.cleanup()
+    this.ragEngine = null
+
+    // Promise cleanup
+    this.dbManagerInitPromise = null
+    this.ragEngineInitPromise = null
+
+    // DatabaseManager cleanup
     this.dbManager?.cleanup()
     this.dbManager = null
   }
@@ -242,7 +256,11 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
       this.ragEngineInitPromise = (async () => {
         try {
           const dbManager = await this.getDbManager()
-          this.ragEngine = new RAGEngine(this.app, this.settings, dbManager)
+          this.ragEngine = new RAGEngine(
+            this.app,
+            this.settings,
+            dbManager.getVectorManager(),
+          )
           return this.ragEngine
         } catch (error) {
           this.ragEngineInitPromise = null
@@ -252,5 +270,10 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
     }
 
     return this.ragEngineInitPromise
+  }
+
+  private registerTimeout(callback: () => void, timeout: number): void {
+    const timeoutId = setTimeout(callback, timeout)
+    this.timeoutIds.push(timeoutId)
   }
 }

@@ -1,7 +1,7 @@
+import { PgliteDatabase } from 'drizzle-orm/pglite'
 import fuzzysort from 'fuzzysort'
 import { App } from 'obsidian'
 
-import { DatabaseManager } from '../../DatabaseManager'
 import { DuplicateTemplateException } from '../../exception'
 import { InsertTemplate, SelectTemplate } from '../../schema'
 
@@ -10,12 +10,32 @@ import { TemplateRepository } from './TemplateRepository'
 export class TemplateManager {
   private app: App
   private repository: TemplateRepository
-  private dbManager: DatabaseManager
+  private saveCallback: (() => Promise<void>) | null = null
+  private vacuumCallback: (() => Promise<void>) | null = null
 
-  constructor(app: App, dbManager: DatabaseManager) {
+  private async requestSave() {
+    if (this.saveCallback) {
+      await this.saveCallback()
+    }
+  }
+
+  private async requestVacuum() {
+    if (this.vacuumCallback) {
+      await this.vacuumCallback()
+    }
+  }
+
+  constructor(app: App, db: PgliteDatabase) {
     this.app = app
-    this.dbManager = dbManager
-    this.repository = new TemplateRepository(app, dbManager.getDb())
+    this.repository = new TemplateRepository(app, db)
+  }
+
+  setSaveCallback(callback: () => Promise<void>) {
+    this.saveCallback = callback
+  }
+
+  setVacuumCallback(callback: () => Promise<void>) {
+    this.vacuumCallback = callback
   }
 
   async createTemplate(template: InsertTemplate): Promise<SelectTemplate> {
@@ -24,7 +44,7 @@ export class TemplateManager {
       throw new DuplicateTemplateException(template.name)
     }
     const created = await this.repository.create(template)
-    await this.dbManager.save()
+    await this.requestSave()
     return created
   }
 
@@ -45,7 +65,7 @@ export class TemplateManager {
 
   async deleteTemplate(id: string): Promise<boolean> {
     const deleted = await this.repository.delete(id)
-    await this.dbManager.save()
+    await this.requestSave()
     return deleted
   }
 }
