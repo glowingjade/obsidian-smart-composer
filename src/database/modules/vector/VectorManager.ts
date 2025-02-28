@@ -1,3 +1,4 @@
+import { PgliteDatabase } from 'drizzle-orm/pglite'
 import { backOff } from 'exponential-backoff'
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter'
 import { minimatch } from 'minimatch'
@@ -18,19 +19,38 @@ import {
 } from '../../../types/embedding'
 import { chunkArray } from '../../../utils/chunk-array'
 import { openSettingsModalWithError } from '../../../utils/openSettingsModal'
-import { DatabaseManager } from '../../DatabaseManager'
 
 import { VectorRepository } from './VectorRepository'
 
 export class VectorManager {
   private app: App
   private repository: VectorRepository
-  private dbManager: DatabaseManager
+  private saveCallback: (() => Promise<void>) | null = null
+  private vacuumCallback: (() => Promise<void>) | null = null
 
-  constructor(app: App, dbManager: DatabaseManager) {
+  private async requestSave() {
+    if (this.saveCallback) {
+      await this.saveCallback()
+    }
+  }
+
+  private async requestVacuum() {
+    if (this.vacuumCallback) {
+      await this.vacuumCallback()
+    }
+  }
+
+  constructor(app: App, db: PgliteDatabase) {
     this.app = app
-    this.dbManager = dbManager
-    this.repository = new VectorRepository(app, dbManager.getDb())
+    this.repository = new VectorRepository(app, db)
+  }
+
+  setSaveCallback(callback: () => Promise<void>) {
+    this.saveCallback = callback
+  }
+
+  setVacuumCallback(callback: () => Promise<void>) {
+    this.vacuumCallback = callback
   }
 
   async performSimilaritySearch(
@@ -235,14 +255,14 @@ Error details:
         throw error
       }
     } finally {
-      await this.dbManager.save()
+      await this.requestSave()
     }
   }
 
   async clearAllVectors(embeddingModel: EmbeddingModelClient) {
     await this.repository.clearAllVectors(embeddingModel)
-    await this.dbManager.vacuum()
-    await this.dbManager.save()
+    await this.requestVacuum()
+    await this.requestSave()
   }
 
   private async deleteVectorsForDeletedFiles(

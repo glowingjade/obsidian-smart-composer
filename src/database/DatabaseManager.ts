@@ -14,8 +14,14 @@ export class DatabaseManager {
   private dbPath: string
   private pgClient: PGlite | null = null
   private db: PgliteDatabase | null = null
-  private vectorManager: VectorManager
-  private templateManager: TemplateManager
+  // WeakMap to prevent circular references
+  private static managers = new WeakMap<
+    DatabaseManager,
+    {
+      templateManager?: TemplateManager
+      vectorManager?: VectorManager
+    }
+  >()
 
   constructor(app: App, dbPath: string) {
     this.app = app
@@ -31,8 +37,24 @@ export class DatabaseManager {
     await dbManager.migrateDatabase()
     await dbManager.save()
 
-    dbManager.vectorManager = new VectorManager(app, dbManager)
-    dbManager.templateManager = new TemplateManager(app, dbManager)
+    // WeakMap setup
+    const managers = {
+      vectorManager: new VectorManager(app, dbManager.db),
+      templateManager: new TemplateManager(app, dbManager.db),
+    }
+
+    // save, vacuum callback setup
+    const saveCallback = dbManager.save.bind(dbManager) as () => Promise<void>
+    const vacuumCallback = dbManager.vacuum.bind(
+      dbManager,
+    ) as () => Promise<void>
+
+    managers.vectorManager.setSaveCallback(saveCallback)
+    managers.vectorManager.setVacuumCallback(vacuumCallback)
+    managers.templateManager.setSaveCallback(saveCallback)
+    managers.templateManager.setVacuumCallback(vacuumCallback)
+
+    DatabaseManager.managers.set(dbManager, managers)
 
     console.log('Smart composer database initialized.', dbManager)
 
@@ -43,12 +65,30 @@ export class DatabaseManager {
     return this.db
   }
 
-  getVectorManager() {
-    return this.vectorManager
+  getVectorManager(): VectorManager {
+    const managers = DatabaseManager.managers.get(this) ?? {}
+    if (!managers.vectorManager) {
+      if (this.db) {
+        managers.vectorManager = new VectorManager(this.app, this.db)
+        DatabaseManager.managers.set(this, managers)
+      } else {
+        throw new Error('Database is not initialized')
+      }
+    }
+    return managers.vectorManager
   }
 
-  getTemplateManager() {
-    return this.templateManager
+  getTemplateManager(): TemplateManager {
+    const managers = DatabaseManager.managers.get(this) ?? {}
+    if (!managers.templateManager) {
+      if (this.db) {
+        managers.templateManager = new TemplateManager(this.app, this.db)
+        DatabaseManager.managers.set(this, managers)
+      } else {
+        throw new Error('Database is not initialized')
+      }
+    }
+    return managers.templateManager
   }
 
   // vacuum the database to release unused space
@@ -155,9 +195,13 @@ export class DatabaseManager {
   }
 
   async cleanup() {
-    this.pgClient?.close()
-    this.db = null
+    // save before cleanup
+    await this.save()
+    // WeakMap cleanup
+    DatabaseManager.managers.delete(this)
+    await this.pgClient?.close()
     this.pgClient = null
+    this.db = null
   }
 
   // TODO: This function is a temporary workaround chosen due to the difficulty of bundling postgres.wasm and postgres.data from node_modules into a single JS file. The ultimate goal is to bundle everything into one JS file in the future.
