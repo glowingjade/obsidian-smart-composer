@@ -2,7 +2,7 @@ import * as Popover from '@radix-ui/react-popover'
 import { Pencil, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { ChatConversationMeta } from '../../types/chat'
+import { ChatConversationMetadata } from '../../database/json/chat/types'
 
 function TitleInput({
   title,
@@ -115,7 +115,7 @@ export function ChatListDropdown({
   className,
   children,
 }: {
-  chatList: ChatConversationMeta[]
+  chatList: ChatConversationMetadata[]
   currentConversationId: string
   onSelect: (conversationId: string) => Promise<void>
   onDelete: (conversationId: string) => Promise<void>

@@ -8,7 +8,7 @@ import { APPLY_VIEW_TYPE, CHAT_VIEW_TYPE } from './constants'
 import { RAGEngine } from './core/rag/ragEngine'
 import { DatabaseManager } from './database/DatabaseManager'
 import { PGLiteAbortedException } from './database/exception'
-import { migrateTemplatesFromDrizzleToJson } from './database/json/template/migrations/drizzleToJsonMigration'
+import { migrateTemplatesFromDrizzleToJson } from './database/json/migrations/drizzleToJsonMigration'
 import {
   SmartComposerSettings,
   smartComposerSettingsSchema,

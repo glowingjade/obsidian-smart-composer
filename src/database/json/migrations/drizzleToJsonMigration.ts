@@ -1,8 +1,8 @@
 import { App } from 'obsidian'
 
-import { DatabaseManager } from '../../../DatabaseManager'
+import { DatabaseManager } from '../../DatabaseManager'
 import { DuplicateTemplateException } from '../exception'
-import { TemplateManager } from '../TemplateManager'
+import { TemplateManager } from '../template/TemplateManager'
 
 export async function migrateTemplatesFromDrizzleToJson(
   app: App,
