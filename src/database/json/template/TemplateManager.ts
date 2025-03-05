@@ -4,8 +4,8 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { AbstractJsonRepository } from '../base'
 import { ROOT_DIR, TEMPLATE_DIR } from '../constants'
-
 import { DuplicateTemplateException } from '../exception'
+
 import { TEMPLATE_SCHEMA_VERSION, Template, TemplateMetadata } from './types'
 
 export class TemplateManager extends AbstractJsonRepository<

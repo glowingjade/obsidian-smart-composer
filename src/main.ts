@@ -8,8 +8,7 @@ import { APPLY_VIEW_TYPE, CHAT_VIEW_TYPE } from './constants'
 import { RAGEngine } from './core/rag/ragEngine'
 import { DatabaseManager } from './database/DatabaseManager'
 import { PGLiteAbortedException } from './database/exception'
-import { migrateTemplatesFromDrizzleToJson } from './database/json/migrations/drizzleToJsonMigration'
-import { migrateChatHistoryToJsonDb } from './database/json/migrations/migrateChatHistory'
+import { migrateToJsonDatabase } from './database/json/migrateToJsonDatabase'
 import {
   SmartComposerSettings,
   smartComposerSettingsSchema,
@@ -283,7 +282,6 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
 
   private async migrateToJsonStorage() {
     const dbManager = await this.getDbManager()
-    await migrateTemplatesFromDrizzleToJson(this.app, dbManager)
-    await migrateChatHistoryToJsonDb(this.app)
+    await migrateToJsonDatabase(this.app, dbManager)
   }
 }
