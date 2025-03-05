@@ -26,15 +26,16 @@ export class TemplateManager extends AbstractJsonRepository<
   }
 
   protected parseFileName(fileName: string): TemplateMetadata | null {
-    const match = fileName.match(/^v(\d+)_(.+)_([0-9a-f-]+)\.json$/)
+    const match = fileName.match(
+      new RegExp(`^v${TEMPLATE_SCHEMA_VERSION}_(.+)_([0-9a-f-]+)\\.json$`),
+    )
     if (!match) return null
 
-    const schemaVersion = parseInt(match[1], 10)
-    const encodedName = match[2]
-    const id = match[3]
+    const encodedName = match[1]
+    const id = match[2]
     const name = decodeURIComponent(encodedName)
 
-    return { id, name, schemaVersion }
+    return { id, name, schemaVersion: TEMPLATE_SCHEMA_VERSION }
   }
 
   public async createTemplate(
