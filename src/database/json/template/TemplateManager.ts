@@ -2,12 +2,13 @@ import fuzzysort from 'fuzzysort'
 import { App } from 'obsidian'
 import { v4 as uuidv4 } from 'uuid'
 
-import { AbstractJsonTable } from '../base'
+import { AbstractJsonRepository } from '../base'
 import { ROOT_DIR, TEMPLATE_DIR } from '../constants'
 
+import { DuplicateTemplateException } from './exception'
 import { TEMPLATE_SCHEMA_VERSION, Template, TemplateMetadata } from './types'
 
-export class TemplateManager extends AbstractJsonTable<
+export class TemplateManager extends AbstractJsonRepository<
   Template,
   TemplateMetadata
 > {
@@ -39,12 +40,16 @@ export class TemplateManager extends AbstractJsonTable<
       'id' | 'createdAt' | 'updatedAt' | 'schemaVersion'
     >,
   ): Promise<Template> {
-    const now = new Date()
+    const existingTemplate = await this.findByName(template.name)
+    if (existingTemplate) {
+      throw new DuplicateTemplateException(template.name)
+    }
+
     const newTemplate: Template = {
       id: uuidv4(),
       ...template,
-      createdAt: now,
-      updatedAt: now,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
       schemaVersion: TEMPLATE_SCHEMA_VERSION,
     }
 
@@ -79,10 +84,17 @@ export class TemplateManager extends AbstractJsonTable<
     const template = await this.findById(id)
     if (!template) return null
 
+    if (updates.name && updates.name !== template.name) {
+      const existingTemplate = await this.findByName(updates.name)
+      if (existingTemplate) {
+        throw new DuplicateTemplateException(updates.name)
+      }
+    }
+
     const updatedTemplate: Template = {
       ...template,
       ...updates,
-      updatedAt: new Date(),
+      updatedAt: Date.now(),
     }
 
     await this.update(template, updatedTemplate)

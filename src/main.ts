@@ -8,6 +8,7 @@ import { APPLY_VIEW_TYPE, CHAT_VIEW_TYPE } from './constants'
 import { RAGEngine } from './core/rag/ragEngine'
 import { DatabaseManager } from './database/DatabaseManager'
 import { PGLiteAbortedException } from './database/exception'
+import { migrateTemplatesFromDrizzleToJson } from './database/json/template/migrations/drizzleToJsonMigration'
 import {
   SmartComposerSettings,
   smartComposerSettingsSchema,
@@ -116,6 +117,8 @@ export default class SmartComposerPlugin extends Plugin {
 
     // This adds a settings tab so the user can configure various aspects of the plugin
     this.addSettingTab(new SmartComposerSettingTab(this.app, this))
+
+    void this.migrateToJsonStorage()
   }
 
   onunload() {
@@ -275,5 +278,10 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
   private registerTimeout(callback: () => void, timeout: number): void {
     const timeoutId = setTimeout(callback, timeout)
     this.timeoutIds.push(timeoutId)
+  }
+
+  private async migrateToJsonStorage() {
+    const dbManager = await this.getDbManager()
+    await migrateTemplatesFromDrizzleToJson(this.app, dbManager)
   }
 }

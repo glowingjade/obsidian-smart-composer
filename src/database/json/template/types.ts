@@ -6,8 +6,8 @@ export type Template = {
   id: string
   name: string
   content: { nodes: SerializedLexicalNode[] }
-  createdAt: Date
-  updatedAt: Date
+  createdAt: number
+  updatedAt: number
   schemaVersion: number
 }
 

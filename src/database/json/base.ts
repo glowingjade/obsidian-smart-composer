@@ -2,7 +2,7 @@ import * as path from 'path'
 
 import { App, normalizePath } from 'obsidian'
 
-export abstract class AbstractJsonTable<T, M> {
+export abstract class AbstractJsonRepository<T, M> {
   protected dataDir: string
   protected app: App
 
