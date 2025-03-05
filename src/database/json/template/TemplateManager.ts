@@ -4,7 +4,10 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { AbstractJsonRepository } from '../base'
 import { ROOT_DIR, TEMPLATE_DIR } from '../constants'
-import { DuplicateTemplateException } from '../exception'
+import {
+  DuplicateTemplateException,
+  EmptyTemplateNameException,
+} from '../exception'
 
 import { TEMPLATE_SCHEMA_VERSION, Template, TemplateMetadata } from './types'
 
@@ -23,7 +26,7 @@ export class TemplateManager extends AbstractJsonRepository<
   }
 
   protected parseFileName(fileName: string): TemplateMetadata | null {
-    const match = fileName.match(/^v(\d+)_(.+)_([^_]+)\.json$/)
+    const match = fileName.match(/^v(\d+)_(.+)_([0-9a-f-]+)\.json$/)
     if (!match) return null
 
     const schemaVersion = parseInt(match[1], 10)
@@ -40,6 +43,10 @@ export class TemplateManager extends AbstractJsonRepository<
       'id' | 'createdAt' | 'updatedAt' | 'schemaVersion'
     >,
   ): Promise<Template> {
+    if (template.name !== undefined && template.name.length === 0) {
+      throw new EmptyTemplateNameException()
+    }
+
     const existingTemplate = await this.findByName(template.name)
     if (existingTemplate) {
       throw new DuplicateTemplateException(template.name)
@@ -81,6 +88,10 @@ export class TemplateManager extends AbstractJsonRepository<
       Omit<Template, 'id' | 'createdAt' | 'updatedAt' | 'schemaVersion'>
     >,
   ): Promise<Template | null> {
+    if (updates.name !== undefined && updates.name.length === 0) {
+      throw new EmptyTemplateNameException()
+    }
+
     const template = await this.findById(id)
     if (!template) return null
 

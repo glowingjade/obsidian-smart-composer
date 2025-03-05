@@ -5,6 +5,13 @@ export class DuplicateTemplateException extends Error {
   }
 }
 
+export class EmptyTemplateNameException extends Error {
+  constructor() {
+    super('Template name cannot be empty')
+    this.name = 'EmptyTemplateNameException'
+  }
+}
+
 export class EmptyChatTitleException extends Error {
   constructor() {
     super('Chat title cannot be empty')
