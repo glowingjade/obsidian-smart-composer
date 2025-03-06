@@ -216,10 +216,11 @@ Error details:
                   }
                 },
                 {
-                  numOfAttempts: 5,
-                  startingDelay: 1000,
-                  timeMultiple: 1.5,
+                  numOfAttempts: 8,
+                  startingDelay: 2000,
+                  timeMultiple: 2,
                   jitter: 'full',
+                  maxDelay: 60000,
                 },
               )
             } catch (error) {
