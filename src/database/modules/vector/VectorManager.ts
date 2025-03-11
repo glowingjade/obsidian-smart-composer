@@ -230,7 +230,10 @@ Error details:
                   timeMultiple: 2,
                   maxDelay: 60000,
                   retry: (error) => {
-                    if (error instanceof LLMRateLimitExceededException) {
+                    if (
+                      error instanceof LLMRateLimitExceededException ||
+                      error.status === 429
+                    ) {
                       updateProgress?.({
                         completedChunks,
                         totalChunks: contentChunks.length,
