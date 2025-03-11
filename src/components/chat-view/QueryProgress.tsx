@@ -25,6 +25,7 @@ export type IndexProgress = {
   completedChunks: number
   totalChunks: number
   totalFiles: number
+  waitingForRateLimit?: boolean
 }
 
 // TODO: Update style
@@ -53,6 +54,11 @@ export default function QueryProgress({
             <DotLoader />
           </p>
           <p className="smtcmp-query-progress-detail">{`${state.indexProgress.completedChunks}/${state.indexProgress.totalChunks} chunks indexed`}</p>
+          {state.indexProgress.waitingForRateLimit && (
+            <p className="smtcmp-query-progress-detail">
+              Waiting for rate limit to reset...
+            </p>
+          )}
         </div>
       )
     case 'querying':

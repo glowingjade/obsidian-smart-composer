@@ -67,7 +67,11 @@ export default class SmartComposerPlugin extends Plugin {
                 const { completedChunks, totalChunks } =
                   queryProgress.indexProgress
                 notice.setMessage(
-                  `Indexing chunks: ${completedChunks} / ${totalChunks}`,
+                  `Indexing chunks: ${completedChunks} / ${totalChunks}${
+                    queryProgress.indexProgress.waitingForRateLimit
+                      ? '\n(waiting for rate limit to reset)'
+                      : ''
+                  }`,
                 )
               }
             },
@@ -98,7 +102,11 @@ export default class SmartComposerPlugin extends Plugin {
                 const { completedChunks, totalChunks } =
                   queryProgress.indexProgress
                 notice.setMessage(
-                  `Indexing chunks: ${completedChunks} / ${totalChunks}`,
+                  `Indexing chunks: ${completedChunks} / ${totalChunks}${
+                    queryProgress.indexProgress.waitingForRateLimit
+                      ? '\n(waiting for rate limit to reset)'
+                      : ''
+                  }`,
                 )
               }
             },

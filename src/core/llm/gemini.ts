@@ -319,10 +319,7 @@ export class GeminiProvider extends BaseLLMProvider<
         .embedContent(text)
       return response.embedding.values
     } catch (error) {
-      if (
-        error.status === 429 &&
-        error.message.includes('RATE_LIMIT_EXCEEDED')
-      ) {
+      if (error.status === 429) {
         throw new LLMRateLimitExceededException(
           'Gemini API rate limit exceeded. Please try again later.',
         )

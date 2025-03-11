@@ -2,7 +2,7 @@ import { PgliteDatabase } from 'drizzle-orm/pglite'
 import { backOff } from 'exponential-backoff'
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter'
 import { minimatch } from 'minimatch'
-import { App, Notice, TFile } from 'obsidian'
+import { App, TFile } from 'obsidian'
 
 import { IndexProgress } from '../../../components/chat-view/QueryProgress'
 import {
@@ -11,7 +11,11 @@ import {
   LLMBaseUrlNotSetException,
   LLMRateLimitExceededException,
 } from '../../../core/llm/exception'
-import { InsertEmbedding, SelectEmbedding } from '../../../database/schema'
+import {
+  InsertEmbedding,
+  SelectEmbedding,
+  VectorMetaData,
+} from '../../../database/schema'
 import { ReportBugModal } from '../../../settings/ReportBugModal'
 import {
   EmbeddingDbStats,
@@ -174,10 +178,15 @@ Error details:
 
     let completedChunks = 0
     const batchChunks = chunkArray(contentChunks, 100)
+    const failedChunks: {
+      path: string
+      metadata: VectorMetaData
+      error: string
+    }[] = []
 
     try {
       for (const batchChunk of batchChunks) {
-        const embeddingChunks: InsertEmbedding[] = await Promise.all(
+        const embeddingChunks: (InsertEmbedding | null)[] = await Promise.all(
           batchChunk.map(async (chunk) => {
             try {
               return await backOff(
@@ -216,30 +225,49 @@ Error details:
                   }
                 },
                 {
-                  numOfAttempts: 5,
-                  startingDelay: 1000,
-                  timeMultiple: 1.5,
-                  jitter: 'full',
+                  numOfAttempts: 8,
+                  startingDelay: 2000,
+                  timeMultiple: 2,
+                  maxDelay: 60000,
+                  retry: (error) => {
+                    if (
+                      error instanceof LLMRateLimitExceededException ||
+                      error.status === 429
+                    ) {
+                      updateProgress?.({
+                        completedChunks,
+                        totalChunks: contentChunks.length,
+                        totalFiles: filesToIndex.length,
+                        waitingForRateLimit: true,
+                      })
+                      return true
+                    }
+                    return false
+                  },
                 },
               )
             } catch (error) {
-              new ReportBugModal(
-                this.app,
-                'Error: chunk embedding failed',
-                `Please report this issue to the developer.
+              failedChunks.push({
+                path: chunk.path,
+                metadata: chunk.metadata,
+                error: error instanceof Error ? error.message : 'Unknown error',
+              })
 
-Error details:
-- File: ${chunk.path}
-- Metadata: ${JSON.stringify(chunk.metadata)}
-- Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-              ).open()
-
-              throw error
+              return null
             }
           }),
         )
 
-        await this.repository.insertVectors(embeddingChunks)
+        const validEmbeddingChunks = embeddingChunks.filter(
+          (chunk) => chunk !== null,
+        )
+        // If all chunks in this batch failed, stop processing
+        if (validEmbeddingChunks.length === 0 && batchChunk.length > 0) {
+          throw new Error(
+            'All chunks in batch failed to embed. Stopping indexing process.',
+          )
+        }
+        await this.repository.insertVectors(validEmbeddingChunks)
       }
     } catch (error) {
       if (
@@ -248,11 +276,19 @@ Error details:
         error instanceof LLMBaseUrlNotSetException
       ) {
         openSettingsModalWithError(this.app, (error as Error).message)
-      } else if (error instanceof LLMRateLimitExceededException) {
-        new Notice(error.message)
       } else {
-        console.error('Error embedding chunks:', error)
-        throw error
+        const errorDetails = failedChunks
+          .map((chunk) => `- File: ${chunk.path}\n  Error: ${chunk.error}`)
+          .join('\n')
+
+        new ReportBugModal(
+          this.app,
+          'Error: embedding failed',
+          `The indexing process was interrupted because several files couldn't be processed.
+Please report this issue to the developer if it persists.`,
+          `[Error log]
+${errorDetails}`,
+        ).open()
       }
     } finally {
       await this.requestSave()
