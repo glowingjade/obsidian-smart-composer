@@ -5,18 +5,36 @@ export class ReportBugModal extends Modal {
     app: App,
     private title: string,
     private message: string,
+    private log?: string,
   ) {
     super(app)
   }
 
   onOpen() {
+    this.modalEl.style.minWidth = '60vw'
+
     this.titleEl.setText(this.title)
 
-    this.message.split('\n').forEach((line) => {
-      this.contentEl.createEl('p', {
-        text: line,
-      })
-    })
+    const messageContainer = this.contentEl.createDiv()
+    messageContainer.style.maxHeight = '50vh'
+    messageContainer.style.display = 'flex'
+    messageContainer.style.flexDirection = 'column'
+
+    const messageEl = messageContainer.createDiv()
+    messageEl.style.whiteSpace = 'pre-line'
+    messageEl.setText(this.message)
+
+    if (this.log) {
+      const logEl = messageContainer.createEl('pre')
+      logEl.style.whiteSpace = 'pre-wrap'
+      logEl.style.wordBreak = 'break-word'
+      logEl.style.marginTop = '1rem'
+      logEl.style.flexGrow = '1'
+      logEl.style.overflowY = 'auto'
+      logEl.style.userSelect = 'text'
+      logEl.style.cursor = 'text'
+      logEl.setText(this.log)
+    }
 
     new Setting(this.contentEl)
       .addButton((btn) =>

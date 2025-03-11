@@ -25,6 +25,7 @@ export type IndexProgress = {
   completedChunks: number
   totalChunks: number
   totalFiles: number
+  waitingForRateLimit?: boolean
 }
 
 // TODO: Update style
