@@ -291,13 +291,25 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
   private async migrateToJsonStorage() {
     try {
       const dbManager = await this.getDbManager()
-      await migrateToJsonDatabase(this.app, dbManager)
-      console.log('Migration to JSON storage completed successfully')
+      await migrateToJsonDatabase(this.app, dbManager, async () => {
+        await this.reloadChatView()
+        console.log('Migration to JSON storage completed successfully')
+      })
     } catch (error) {
       console.error('Failed to migrate to JSON storage:', error)
       new Notice(
         'Failed to migrate to JSON storage. Please check the console for details.',
       )
     }
+  }
+
+  private async reloadChatView() {
+    const leaves = this.app.workspace.getLeavesOfType(CHAT_VIEW_TYPE)
+    if (leaves.length === 0 || !(leaves[0].view instanceof ChatView)) {
+      return
+    }
+    new Notice('Reloading "smart-composer" due to migration', 1000)
+    leaves[0].detach()
+    await this.activateChatView()
   }
 }

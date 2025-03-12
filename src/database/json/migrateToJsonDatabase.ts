@@ -1,11 +1,25 @@
-import { App } from 'obsidian'
+import { App, normalizePath } from 'obsidian'
 
 import { ChatConversationManager } from '../../utils/chatHistoryManager'
 import { DatabaseManager } from '../DatabaseManager'
 import { DuplicateTemplateException } from '../exception'
 
 import { ChatManager } from './chat/ChatManager'
+import { INITIAL_MIGRATION_MARKER, ROOT_DIR } from './constants'
 import { TemplateManager } from './template/TemplateManager'
+
+async function hasMigrationCompleted(app: App): Promise<boolean> {
+  const markerPath = normalizePath(`${ROOT_DIR}/${INITIAL_MIGRATION_MARKER}`)
+  return await app.vault.adapter.exists(markerPath)
+}
+
+async function markMigrationCompleted(app: App): Promise<void> {
+  const markerPath = normalizePath(`${ROOT_DIR}/${INITIAL_MIGRATION_MARKER}`)
+  await app.vault.adapter.write(
+    markerPath,
+    `Migration completed on ${new Date().toISOString()}`,
+  )
+}
 
 async function transferChatHistoryFromLegacy(app: App): Promise<void> {
   const oldChatManager = new ChatConversationManager(app)
@@ -90,7 +104,14 @@ async function transferTemplatesFromDrizzle(
 export async function migrateToJsonDatabase(
   app: App,
   dbManager: DatabaseManager,
+  onMigrationComplete?: () => void,
 ): Promise<void> {
+  if (await hasMigrationCompleted(app)) {
+    return
+  }
+
   await transferChatHistoryFromLegacy(app)
   await transferTemplatesFromDrizzle(app, dbManager)
+  await markMigrationCompleted(app)
+  onMigrationComplete?.()
 }
