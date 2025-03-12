@@ -9,9 +9,8 @@ import { Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-import { useApp } from '../../../../../contexts/app-context'
-import { TemplateManager } from '../../../../../database/json/template/TemplateManager'
 import { Template } from '../../../../../database/json/template/types'
+import { useTemplateManager } from '../../../../../hooks/useJsonManagers'
 import { MenuOption } from '../shared/LexicalMenu'
 import {
   LexicalTypeaheadMenuPlugin,
@@ -75,8 +74,7 @@ function TemplateMenuItem({
 
 export default function TemplatePlugin() {
   const [editor] = useLexicalComposerContext()
-  const app = useApp()
-  const templateManager = useMemo(() => new TemplateManager(app), [app])
+  const templateManager = useTemplateManager()
 
   const [queryString, setQueryString] = useState<string | null>(null)
   const [searchResults, setSearchResults] = useState<Template[]>([])

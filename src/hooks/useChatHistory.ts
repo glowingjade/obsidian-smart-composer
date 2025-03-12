@@ -5,7 +5,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { editorStateToPlainText } from '../components/chat-view/chat-input/utils/editor-state-to-plain-text'
 import { useApp } from '../contexts/app-context'
-import { ChatManager } from '../database/json/chat/ChatManager'
 import { ChatConversationMetadata } from '../database/json/chat/types'
 import { ChatMessage, SerializedChatMessage } from '../types/chat'
 import { Mentionable } from '../types/mentionable'
@@ -13,6 +12,8 @@ import {
   deserializeMentionable,
   serializeMentionable,
 } from '../utils/mentionable'
+
+import { useChatManager } from './useJsonManagers'
 
 type UseChatHistory = {
   createOrUpdateConversation: (
@@ -27,7 +28,7 @@ type UseChatHistory = {
 
 export function useChatHistory(): UseChatHistory {
   const app = useApp()
-  const chatManager = useMemo(() => new ChatManager(app), [app])
+  const chatManager = useChatManager()
   const [chatList, setChatList] = useState<ChatConversationMetadata[]>([])
 
   const fetchChatList = useCallback(async () => {
