@@ -7,9 +7,9 @@ import { X } from 'lucide-react'
 import { Notice } from 'obsidian'
 import { useRef, useState } from 'react'
 
-import { useDatabase } from '../../contexts/database-context'
 import { useDialogContainer } from '../../contexts/dialog-container-context'
 import { DuplicateTemplateException } from '../../database/exception'
+import { useTemplateManager } from '../../hooks/useJsonManagers'
 
 import LexicalContentEditable from './chat-input/LexicalContentEditable'
 
@@ -25,8 +25,8 @@ export default function CreateTemplateDialogContent({
   selectedSerializedNodes?: BaseSerializedNode[] | null
   onClose: () => void
 }) {
+  const templateManager = useTemplateManager()
   const container = useDialogContainer()
-  const { getTemplateManager } = useDatabase()
 
   const [templateName, setTemplateName] = useState('')
   const editorRef = useRef<LexicalEditor | null>(null)
@@ -58,12 +58,11 @@ export default function CreateTemplateDialogContent({
         return
       }
 
-      await (
-        await getTemplateManager()
-      ).createTemplate({
+      await templateManager.createTemplate({
         name: templateName,
         content: { nodes },
       })
+
       new Notice(`Template created: ${templateName}`)
       setTemplateName('')
       onClose()

@@ -9,8 +9,8 @@ import { Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-import { useDatabase } from '../../../../../contexts/database-context'
-import { SelectTemplate } from '../../../../../database/schema'
+import { Template } from '../../../../../database/json/template/types'
+import { useTemplateManager } from '../../../../../hooks/useJsonManagers'
 import { MenuOption } from '../shared/LexicalMenu'
 import {
   LexicalTypeaheadMenuPlugin,
@@ -19,9 +19,9 @@ import {
 
 class TemplateTypeaheadOption extends MenuOption {
   name: string
-  template: SelectTemplate
+  template: Template
 
-  constructor(name: string, template: SelectTemplate) {
+  constructor(name: string, template: Template) {
     super(name)
     this.name = name
     this.template = template
@@ -74,17 +74,15 @@ function TemplateMenuItem({
 
 export default function TemplatePlugin() {
   const [editor] = useLexicalComposerContext()
-  const { getTemplateManager } = useDatabase()
+  const templateManager = useTemplateManager()
 
   const [queryString, setQueryString] = useState<string | null>(null)
-  const [searchResults, setSearchResults] = useState<SelectTemplate[]>([])
+  const [searchResults, setSearchResults] = useState<Template[]>([])
 
   useEffect(() => {
     if (queryString == null) return
-    getTemplateManager().then((templateManager) =>
-      templateManager.searchTemplates(queryString).then(setSearchResults),
-    )
-  }, [queryString, getTemplateManager])
+    templateManager.searchTemplates(queryString).then(setSearchResults)
+  }, [queryString, templateManager])
 
   const options = useMemo(
     () =>
@@ -122,15 +120,14 @@ export default function TemplatePlugin() {
 
   const handleDelete = useCallback(
     async (option: TemplateTypeaheadOption) => {
-      await (await getTemplateManager()).deleteTemplate(option.template.id)
+      await templateManager.deleteTemplate(option.template.id)
       if (queryString !== null) {
-        const updatedResults = await (
-          await getTemplateManager()
-        ).searchTemplates(queryString)
+        const updatedResults =
+          await templateManager.searchTemplates(queryString)
         setSearchResults(updatedResults)
       }
     },
-    [getTemplateManager, queryString],
+    [templateManager, queryString],
   )
 
   return (

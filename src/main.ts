@@ -8,6 +8,7 @@ import { APPLY_VIEW_TYPE, CHAT_VIEW_TYPE } from './constants'
 import { RAGEngine } from './core/rag/ragEngine'
 import { DatabaseManager } from './database/DatabaseManager'
 import { PGLiteAbortedException } from './database/exception'
+import { migrateToJsonDatabase } from './database/json/migrateToJsonDatabase'
 import {
   SmartComposerSettings,
   smartComposerSettingsSchema,
@@ -124,6 +125,8 @@ export default class SmartComposerPlugin extends Plugin {
 
     // This adds a settings tab so the user can configure various aspects of the plugin
     this.addSettingTab(new SmartComposerSettingTab(this.app, this))
+
+    void this.migrateToJsonStorage()
   }
 
   onunload() {
@@ -283,5 +286,30 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
   private registerTimeout(callback: () => void, timeout: number): void {
     const timeoutId = setTimeout(callback, timeout)
     this.timeoutIds.push(timeoutId)
+  }
+
+  private async migrateToJsonStorage() {
+    try {
+      const dbManager = await this.getDbManager()
+      await migrateToJsonDatabase(this.app, dbManager, async () => {
+        await this.reloadChatView()
+        console.log('Migration to JSON storage completed successfully')
+      })
+    } catch (error) {
+      console.error('Failed to migrate to JSON storage:', error)
+      new Notice(
+        'Failed to migrate to JSON storage. Please check the console for details.',
+      )
+    }
+  }
+
+  private async reloadChatView() {
+    const leaves = this.app.workspace.getLeavesOfType(CHAT_VIEW_TYPE)
+    if (leaves.length === 0 || !(leaves[0].view instanceof ChatView)) {
+      return
+    }
+    new Notice('Reloading "smart-composer" due to migration', 1000)
+    leaves[0].detach()
+    await this.activateChatView()
   }
 }

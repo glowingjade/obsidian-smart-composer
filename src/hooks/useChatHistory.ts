@@ -5,17 +5,15 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { editorStateToPlainText } from '../components/chat-view/chat-input/utils/editor-state-to-plain-text'
 import { useApp } from '../contexts/app-context'
-import {
-  ChatConversationMeta,
-  ChatMessage,
-  SerializedChatMessage,
-} from '../types/chat'
+import { ChatConversationMetadata } from '../database/json/chat/types'
+import { ChatMessage, SerializedChatMessage } from '../types/chat'
 import { Mentionable } from '../types/mentionable'
-import { ChatConversationManager } from '../utils/chatHistoryManager'
 import {
   deserializeMentionable,
   serializeMentionable,
 } from '../utils/mentionable'
+
+import { useChatManager } from './useJsonManagers'
 
 type UseChatHistory = {
   createOrUpdateConversation: (
@@ -25,21 +23,18 @@ type UseChatHistory = {
   deleteConversation: (id: string) => Promise<void>
   getChatMessagesById: (id: string) => Promise<ChatMessage[] | null>
   updateConversationTitle: (id: string, title: string) => Promise<void>
-  chatList: ChatConversationMeta[]
+  chatList: ChatConversationMetadata[]
 }
 
 export function useChatHistory(): UseChatHistory {
   const app = useApp()
-  const chatConversationManager = useMemo(
-    () => new ChatConversationManager(app),
-    [app],
-  )
-  const [chatList, setChatList] = useState<ChatConversationMeta[]>([])
+  const chatManager = useChatManager()
+  const [chatList, setChatList] = useState<ChatConversationMetadata[]>([])
 
   const fetchChatList = useCallback(async () => {
-    const list = await chatConversationManager.getChatList()
+    const list = await chatManager.listChats()
     setChatList(list)
-  }, [chatConversationManager])
+  }, [chatManager])
 
   useEffect(() => {
     void fetchChatList()
@@ -51,25 +46,20 @@ export function useChatHistory(): UseChatHistory {
       debounce(
         async (id: string, messages: ChatMessage[]): Promise<void> => {
           const serializedMessages = messages.map(serializeChatMessage)
-          const existingConversation =
-            await chatConversationManager.findChatConversation(id)
+          const existingConversation = await chatManager.findById(id)
 
           if (existingConversation) {
             if (isEqual(existingConversation.messages, serializedMessages)) {
               return
             }
-            await chatConversationManager.saveChatConversation({
-              ...existingConversation,
+            await chatManager.updateChat(existingConversation.id, {
               messages: serializedMessages,
-              updatedAt: Date.now(),
             })
           } else {
-            const newConversation =
-              await chatConversationManager.createChatConversation(id)
             const firstUserMessage = messages.find((v) => v.role === 'user')
 
-            await chatConversationManager.saveChatConversation({
-              ...newConversation,
+            await chatManager.createChat({
+              id,
               title: firstUserMessage?.content
                 ? editorStateToPlainText(firstUserMessage.content).substring(
                     0,
@@ -77,7 +67,6 @@ export function useChatHistory(): UseChatHistory {
                   )
                 : 'New chat',
               messages: serializedMessages,
-              updatedAt: Date.now(),
             })
           }
 
@@ -88,21 +77,20 @@ export function useChatHistory(): UseChatHistory {
           maxWait: 1000,
         },
       ),
-    [chatConversationManager, fetchChatList],
+    [chatManager, fetchChatList],
   )
 
   const deleteConversation = useCallback(
     async (id: string): Promise<void> => {
-      await chatConversationManager.deleteChatConversation(id)
+      await chatManager.deleteChat(id)
       await fetchChatList()
     },
-    [chatConversationManager, fetchChatList],
+    [chatManager, fetchChatList],
   )
 
   const getChatMessagesById = useCallback(
     async (id: string): Promise<ChatMessage[] | null> => {
-      const conversation =
-        await chatConversationManager.findChatConversation(id)
+      const conversation = await chatManager.findById(id)
       if (!conversation) {
         return null
       }
@@ -110,23 +98,24 @@ export function useChatHistory(): UseChatHistory {
         deserializeChatMessage(message, app),
       )
     },
-    [chatConversationManager, app],
+    [chatManager, app],
   )
 
   const updateConversationTitle = useCallback(
     async (id: string, title: string): Promise<void> => {
-      const conversation =
-        await chatConversationManager.findChatConversation(id)
+      if (title.length === 0) {
+        throw new Error('Chat title cannot be empty')
+      }
+      const conversation = await chatManager.findById(id)
       if (!conversation) {
         throw new Error('Conversation not found')
       }
-      await chatConversationManager.saveChatConversation({
-        ...conversation,
+      await chatManager.updateChat(conversation.id, {
         title,
       })
       await fetchChatList()
     },
-    [chatConversationManager, fetchChatList],
+    [chatManager, fetchChatList],
   )
 
   return {
