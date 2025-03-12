@@ -289,7 +289,15 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
   }
 
   private async migrateToJsonStorage() {
-    const dbManager = await this.getDbManager()
-    await migrateToJsonDatabase(this.app, dbManager)
+    try {
+      const dbManager = await this.getDbManager()
+      await migrateToJsonDatabase(this.app, dbManager)
+      console.log('Migration to JSON storage completed successfully')
+    } catch (error) {
+      console.error('Failed to migrate to JSON storage:', error)
+      new Notice(
+        'Failed to migrate to JSON storage. Please check the console for details.',
+      )
+    }
   }
 }

@@ -63,10 +63,18 @@ describe('TemplateManager', () => {
         schemaVersion: TEMPLATE_SCHEMA_VERSION,
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const fileName = (templateManager as any).generateFileName(template)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const metadata = (templateManager as any).parseFileName(fileName)
+      const fileName = (
+        templateManager as unknown as {
+          generateFileName: (template: Template) => string
+        }
+      ).generateFileName(template)
+      const metadata = (
+        templateManager as unknown as {
+          parseFileName: (
+            fileName: string,
+          ) => { id: string; name: string; schemaVersion: number } | null
+        }
+      ).parseFileName(fileName)
 
       expect(metadata).not.toBeNull()
       if (metadata) {

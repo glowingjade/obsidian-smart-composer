@@ -33,6 +33,11 @@ async function transferChatHistoryFromLegacy(app: App): Promise<void> {
         updatedAt: oldChat.updatedAt,
       })
 
+      const verifyChat = await newChatManager.findById(oldChat.id)
+      if (!verifyChat) {
+        throw new Error(`Failed to verify migration of chat ${oldChat.id}`)
+      }
+
       await oldChatManager.deleteChatConversation(oldChat.id)
     } catch (error) {
       console.error(`Error migrating chat ${chatMeta.id}:`, error)
@@ -53,10 +58,22 @@ async function transferTemplatesFromDrizzle(
 
   for (const template of templates) {
     try {
+      if (await jsonTemplateManager.findByName(template.name)) {
+        // Template already exists, skip
+        continue
+      }
       await jsonTemplateManager.createTemplate({
         name: template.name,
         content: template.content,
       })
+
+      const verifyTemplate = await jsonTemplateManager.findByName(template.name)
+      if (!verifyTemplate) {
+        throw new Error(
+          `Failed to verify migration of template ${template.name}`,
+        )
+      }
+
       await drizzleTemplateManager.deleteTemplate(template.id)
     } catch (error) {
       if (error instanceof DuplicateTemplateException) {
