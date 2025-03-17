@@ -5,6 +5,7 @@ import {
   LLMOptions,
   LLMRequestNonStreaming,
   LLMRequestStreaming,
+  RequestMessage,
 } from '../../types/llm/request'
 import {
   LLMResponseNonStreaming,
@@ -35,6 +36,26 @@ export class OpenAICompatibleProvider extends BaseLLMProvider<
     })
   }
 
+  private normalizeMessages(messages: RequestMessage[]): RequestMessage[] {
+    const normalized: RequestMessage[] = []
+
+    for (let i = 0; i < messages.length; i++) {
+      normalized.push(messages[i])
+
+      // Check if current and next messages are both from user
+      if (
+        i < messages.length - 1 &&
+        messages[i].role === 'user' &&
+        messages[i + 1].role === 'user'
+      ) {
+        // Insert an empty assistant message in between
+        normalized.push({ role: 'assistant', content: '' } as RequestMessage)
+      }
+    }
+
+    return normalized
+  }
+
   async generateResponse(
     model: ChatModel,
     request: LLMRequestNonStreaming,
@@ -50,6 +71,8 @@ export class OpenAICompatibleProvider extends BaseLLMProvider<
       )
     }
 
+    // Normalize messages to alternate between user and assistant
+    request.messages = this.normalizeMessages(request.messages)
     return this.adapter.generateResponse(this.client, request, options)
   }
 
@@ -68,6 +91,8 @@ export class OpenAICompatibleProvider extends BaseLLMProvider<
       )
     }
 
+    // Normalize messages to alternate between user and assistant
+    request.messages = this.normalizeMessages(request.messages)
     return this.adapter.streamResponse(this.client, request, options)
   }
 
