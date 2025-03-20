@@ -3,7 +3,7 @@ import { COMMAND_PRIORITY_LOW, PASTE_COMMAND, PasteCommandType } from 'lexical'
 import { useEffect } from 'react'
 
 import { MentionableImage } from '../../../../../types/mentionable'
-import { fileToMentionableImage } from '../../../../../utils/image'
+import { fileToMentionableImage } from '../../../../../utils/llm/image'
 
 export default function ImagePastePlugin({
   onCreateImageMentionables,

@@ -1,12 +1,12 @@
 import { App, TFile, htmlToMarkdown, requestUrl } from 'obsidian'
 
-import { editorStateToPlainText } from '../components/chat-view/chat-input/utils/editor-state-to-plain-text'
-import { QueryProgressState } from '../components/chat-view/QueryProgress'
-import { RAGEngine } from '../core/rag/ragEngine'
-import { SelectEmbedding } from '../database/schema'
-import { SmartComposerSettings } from '../settings/schema/setting.types'
-import { ChatMessage, ChatUserMessage } from '../types/chat'
-import { ContentPart, RequestMessage } from '../types/llm/request'
+import { editorStateToPlainText } from '../../components/chat-view/chat-input/utils/editor-state-to-plain-text'
+import { QueryProgressState } from '../../components/chat-view/QueryProgress'
+import { RAGEngine } from '../../core/rag/ragEngine'
+import { SelectEmbedding } from '../../database/schema'
+import { SmartComposerSettings } from '../../settings/schema/setting.types'
+import { ChatMessage, ChatUserMessage } from '../../types/chat'
+import { ContentPart, RequestMessage } from '../../types/llm/request'
 import {
   MentionableBlock,
   MentionableFile,
@@ -14,14 +14,14 @@ import {
   MentionableImage,
   MentionableUrl,
   MentionableVault,
-} from '../types/mentionable'
-
+} from '../../types/mentionable'
+import { tokenCount } from '../llm/token'
 import {
   getNestedFiles,
   readMultipleTFiles,
   readTFileContent,
-} from './obsidian'
-import { tokenCount } from './token'
+} from '../obsidian'
+
 import { YoutubeTranscript, isYoutubeUrl } from './youtube-transcript'
 
 export class PromptGenerator {

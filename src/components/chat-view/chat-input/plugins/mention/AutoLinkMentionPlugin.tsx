@@ -14,7 +14,7 @@ import { Mentionable, MentionableUrl } from '../../../../../types/mentionable'
 import {
   getMentionableName,
   serializeMentionable,
-} from '../../../../../utils/mentionable'
+} from '../../../../../utils/chat/mentionable'
 
 import { $createMentionNode } from './MentionNode'
 

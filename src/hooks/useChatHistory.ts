@@ -11,7 +11,7 @@ import { Mentionable } from '../types/mentionable'
 import {
   deserializeMentionable,
   serializeMentionable,
-} from '../utils/mentionable'
+} from '../utils/chat/mentionable'
 
 import { useChatManager } from './useJsonManagers'
 

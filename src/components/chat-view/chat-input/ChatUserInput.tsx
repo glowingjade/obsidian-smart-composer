@@ -17,12 +17,12 @@ import {
   MentionableImage,
   SerializedMentionable,
 } from '../../../types/mentionable'
-import { fileToMentionableImage } from '../../../utils/image'
 import {
   deserializeMentionable,
   getMentionableKey,
   serializeMentionable,
-} from '../../../utils/mentionable'
+} from '../../../utils/chat/mentionable'
+import { fileToMentionableImage } from '../../../utils/llm/image'
 import { openMarkdownFile, readTFileContent } from '../../../utils/obsidian'
 import { MemoizedSyntaxHighlighterWrapper } from '../SyntaxHighlighterWrapper'
 

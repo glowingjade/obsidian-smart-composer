@@ -21,7 +21,7 @@ import {
   EmbeddingDbStats,
   EmbeddingModelClient,
 } from '../../../types/embedding'
-import { chunkArray } from '../../../utils/chunk-array'
+import { chunkArray } from '../../../utils/common/chunk-array'
 import { openSettingsModalWithError } from '../../../utils/openSettingsModal'
 
 import { VectorRepository } from './VectorRepository'

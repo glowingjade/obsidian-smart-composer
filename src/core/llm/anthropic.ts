@@ -19,7 +19,7 @@ import {
   ResponseUsage,
 } from '../../types/llm/response'
 import { LLMProvider } from '../../types/provider.types'
-import { parseImageDataUrl } from '../../utils/image'
+import { parseImageDataUrl } from '../../utils/llm/image'
 
 import { BaseLLMProvider } from './base'
 import {

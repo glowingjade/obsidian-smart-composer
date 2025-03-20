@@ -1,12 +1,12 @@
 import { TFile } from 'obsidian'
 
-import { editorStateToPlainText } from '../components/chat-view/chat-input/utils/editor-state-to-plain-text'
-import { BaseLLMProvider } from '../core/llm/base'
-import { ChatMessage, ChatUserMessage } from '../types/chat'
-import { ChatModel } from '../types/chat-model.types'
-import { RequestMessage } from '../types/llm/request'
-import { MentionableBlock, MentionableFile } from '../types/mentionable'
-import { LLMProvider } from '../types/provider.types'
+import { editorStateToPlainText } from '../../components/chat-view/chat-input/utils/editor-state-to-plain-text'
+import { BaseLLMProvider } from '../../core/llm/base'
+import { ChatMessage, ChatUserMessage } from '../../types/chat'
+import { ChatModel } from '../../types/chat-model.types'
+import { RequestMessage } from '../../types/llm/request'
+import { MentionableBlock, MentionableFile } from '../../types/mentionable'
+import { LLMProvider } from '../../types/provider.types'
 
 const systemPrompt = `You are an intelligent assistant helping a user apply changes to a markdown file.
 

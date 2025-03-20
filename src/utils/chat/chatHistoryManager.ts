@@ -1,6 +1,14 @@
+/**
+ * LEGACY CHAT MANAGER
+ * This implementation has been deprecated and replaced by the JSON database implementation
+ * in src/database/json/chat/ChatManager.ts
+ *
+ * This file is kept for backward compatibility and migration purposes.
+ */
+
 import { App, normalizePath } from 'obsidian'
 
-import { ChatConversation, ChatConversationMeta } from '../types/chat'
+import { ChatConversation, ChatConversationMeta } from '../../types/chat'
 
 const CURRENT_SCHEMA_VERSION = 3
 const SUPPORTED_SCHEMA_VERSION = 2

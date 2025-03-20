@@ -7,7 +7,7 @@ import React, {
   useState,
 } from 'react'
 
-import { classNames } from '../../utils/classnames'
+import { classNames } from '../../utils/common/classnames'
 
 type SettingContextValue = {
   setting: Setting | null

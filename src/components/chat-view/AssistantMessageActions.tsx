@@ -3,7 +3,7 @@ import { Check, CopyIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import { ChatAssistantMessage } from '../../types/chat'
-import { calculateLLMCost } from '../../utils/price-calculator'
+import { calculateLLMCost } from '../../utils/llm/price-calculator'
 
 import LLMResponseInfoPopover from './LLMResponseInfoPopover'
 

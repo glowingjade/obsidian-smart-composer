@@ -1,6 +1,6 @@
 import { App, normalizePath } from 'obsidian'
 
-import { ChatConversationManager } from '../../utils/chatHistoryManager'
+import { ChatConversationManager } from '../../utils/chat/chatHistoryManager'
 import { DatabaseManager } from '../DatabaseManager'
 import { DuplicateTemplateException } from '../exception'
 

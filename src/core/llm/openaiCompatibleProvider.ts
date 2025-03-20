@@ -11,6 +11,7 @@ import {
   LLMResponseStreaming,
 } from '../../types/llm/response'
 import { LLMProvider } from '../../types/provider.types'
+import { formatMessages } from '../../utils/llm/request'
 
 import { BaseLLMProvider } from './base'
 import { LLMBaseUrlNotSetException } from './exception'
@@ -50,7 +51,11 @@ export class OpenAICompatibleProvider extends BaseLLMProvider<
       )
     }
 
-    return this.adapter.generateResponse(this.client, request, options)
+    const formattedRequest = {
+      ...request,
+      messages: formatMessages(request.messages),
+    }
+    return this.adapter.generateResponse(this.client, formattedRequest, options)
   }
 
   async streamResponse(
@@ -68,7 +73,11 @@ export class OpenAICompatibleProvider extends BaseLLMProvider<
       )
     }
 
-    return this.adapter.streamResponse(this.client, request, options)
+    const formattedRequest = {
+      ...request,
+      messages: formatMessages(request.messages),
+    }
+    return this.adapter.streamResponse(this.client, formattedRequest, options)
   }
 
   async getEmbedding(model: string, text: string): Promise<number[]> {
