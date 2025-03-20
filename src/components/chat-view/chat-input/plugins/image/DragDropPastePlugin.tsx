@@ -4,7 +4,7 @@ import { COMMAND_PRIORITY_LOW } from 'lexical'
 import { useEffect } from 'react'
 
 import { MentionableImage } from '../../../../../types/mentionable'
-import { fileToMentionableImage } from '../../../../../utils/image'
+import { fileToMentionableImage } from '../../../../../utils/llm/image'
 
 export default function DragDropPaste({
   onCreateImageMentionables,

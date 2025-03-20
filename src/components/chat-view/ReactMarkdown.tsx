@@ -4,7 +4,7 @@ import Markdown from 'react-markdown'
 import {
   ParsedSmtcmpBlock,
   parsesmtcmpBlocks,
-} from '../../utils/parse-smtcmp-block'
+} from '../../utils/chat/parse-smtcmp-block'
 
 import MarkdownCodeComponent from './MarkdownCodeComponent'
 import MarkdownReferenceBlock from './MarkdownReferenceBlock'

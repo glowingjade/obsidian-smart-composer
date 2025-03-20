@@ -1,4 +1,4 @@
-import { MentionableImage } from '../types/mentionable'
+import { MentionableImage } from '../../types/mentionable'
 
 export function parseImageDataUrl(dataUrl: string): {
   mimeType: string

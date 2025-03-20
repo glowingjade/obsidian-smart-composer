@@ -1,6 +1,6 @@
 import { App } from 'obsidian'
 
-import { Mentionable, SerializedMentionable } from '../types/mentionable'
+import { Mentionable, SerializedMentionable } from '../../types/mentionable'
 
 export const serializeMentionable = (
   mentionable: Mentionable,

@@ -30,14 +30,14 @@ import {
   MentionableBlockData,
   MentionableCurrentFile,
 } from '../../types/mentionable'
-import { applyChangesToFile } from '../../utils/apply'
+import { applyChangesToFile } from '../../utils/chat/apply'
 import {
   getMentionableKey,
   serializeMentionable,
-} from '../../utils/mentionable'
+} from '../../utils/chat/mentionable'
+import { PromptGenerator } from '../../utils/chat/promptGenerator'
 import { readTFileContent } from '../../utils/obsidian'
 import { openSettingsModalWithError } from '../../utils/openSettingsModal'
-import { PromptGenerator } from '../../utils/promptGenerator'
 
 import AssistantMessageActions from './AssistantMessageActions'
 import ChatUserInput, { ChatUserInputRef } from './chat-input/ChatUserInput'

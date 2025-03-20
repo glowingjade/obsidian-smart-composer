@@ -13,11 +13,11 @@ import { useCallback, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { Mentionable } from '../../../../../types/mentionable'
-import { SearchableMentionable } from '../../../../../utils/fuzzy-search'
 import {
   getMentionableName,
   serializeMentionable,
-} from '../../../../../utils/mentionable'
+} from '../../../../../utils/chat/mentionable'
+import { SearchableMentionable } from '../../../../../utils/fuzzy-search'
 import { getMentionableIcon } from '../../utils/get-metionable-icon'
 import { MenuOption, MenuTextMatch } from '../shared/LexicalMenu'
 import {
