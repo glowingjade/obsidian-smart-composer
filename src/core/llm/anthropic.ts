@@ -88,6 +88,7 @@ export class AnthropicProvider extends BaseLLMProvider<
       if (error instanceof Anthropic.AuthenticationError) {
         throw new LLMAPIKeyInvalidException(
           `Provider ${this.provider.id} API key is invalid. Please update it in settings menu.`,
+          error,
         )
       }
 
@@ -186,6 +187,7 @@ export class AnthropicProvider extends BaseLLMProvider<
       if (error instanceof Anthropic.AuthenticationError) {
         throw new LLMAPIKeyInvalidException(
           `Provider ${this.provider.id} API key is invalid. Please update it in settings menu.`,
+          error,
         )
       }
 

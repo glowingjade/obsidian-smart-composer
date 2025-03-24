@@ -1287,3 +1287,31 @@ button.smtcmp-chat-input-model-select {
 .smtcmp-settings-table-api-key:hover {
   text-decoration: underline;
 }
+
+.smtcmp-error-modal {
+  min-width: 60vw;
+}
+
+.smtcmp-error-modal-content {
+  max-height: 50vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.smtcmp-error-modal-message {
+  white-space: pre-line;
+}
+
+.smtcmp-error-modal-log {
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin-top: 1rem;
+  flex-grow: 1;
+  overflow-y: auto;
+  user-select: text;
+  cursor: text;
+}
+
+.smtcmp-error-modal-buttons {
+  margin-top: 1rem;
+}

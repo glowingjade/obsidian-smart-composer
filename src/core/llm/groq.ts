@@ -76,6 +76,7 @@ export class GroqProvider extends BaseLLMProvider<
       if (error instanceof Groq.AuthenticationError) {
         throw new LLMAPIKeyInvalidException(
           `Provider ${this.provider.id} API key is invalid. Please update it in settings menu.`,
+          error,
         )
       }
       throw error
@@ -126,6 +127,7 @@ export class GroqProvider extends BaseLLMProvider<
       if (error instanceof Groq.AuthenticationError) {
         throw new LLMAPIKeyInvalidException(
           `Provider ${this.provider.id} API key is invalid. Please update it in settings menu.`,
+          error,
         )
       }
       throw error

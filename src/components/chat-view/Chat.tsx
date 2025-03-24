@@ -37,7 +37,7 @@ import {
 } from '../../utils/chat/mentionable'
 import { PromptGenerator } from '../../utils/chat/promptGenerator'
 import { readTFileContent } from '../../utils/obsidian'
-import { openSettingsModalWithError } from '../../utils/openSettingsModal'
+import { ErrorModal } from '../modals/ErrorModal'
 
 import AssistantMessageActions from './AssistantMessageActions'
 import ChatUserInput, { ChatUserInputRef } from './chat-input/ChatUserInput'
@@ -329,7 +329,9 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         error instanceof LLMAPIKeyInvalidException ||
         error instanceof LLMBaseUrlNotSetException
       ) {
-        openSettingsModalWithError(app, error.message)
+        new ErrorModal(app, 'Error', error.message, error.rawError?.message, {
+          showSettingsButton: true,
+        }).open()
       } else {
         new Notice(error.message)
         console.error('Failed to generate response', error)
@@ -393,7 +395,9 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         error instanceof LLMAPIKeyInvalidException ||
         error instanceof LLMBaseUrlNotSetException
       ) {
-        openSettingsModalWithError(app, error.message)
+        new ErrorModal(app, 'Error', error.message, error.rawError?.message, {
+          showSettingsButton: true,
+        }).open()
       } else {
         new Notice(error.message)
         console.error('Failed to apply changes', error)
