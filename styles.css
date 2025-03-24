@@ -1296,6 +1296,7 @@ button.smtcmp-chat-input-model-select {
   max-height: 50vh;
   display: flex;
   flex-direction: column;
+  user-select: text;
 }
 
 .smtcmp-error-modal-message {
@@ -1310,6 +1311,7 @@ button.smtcmp-chat-input-model-select {
   overflow-y: auto;
   user-select: text;
   cursor: text;
+  font-size: var(--font-ui-small);
 }
 
 .smtcmp-error-modal-buttons {
