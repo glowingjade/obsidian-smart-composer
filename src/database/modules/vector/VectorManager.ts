@@ -5,6 +5,7 @@ import { minimatch } from 'minimatch'
 import { App, TFile } from 'obsidian'
 
 import { IndexProgress } from '../../../components/chat-view/QueryProgress'
+import { ErrorModal } from '../../../components/modals/ErrorModal'
 import {
   LLMAPIKeyInvalidException,
   LLMAPIKeyNotSetException,
@@ -16,13 +17,11 @@ import {
   SelectEmbedding,
   VectorMetaData,
 } from '../../../database/schema'
-import { ReportBugModal } from '../../../settings/ReportBugModal'
 import {
   EmbeddingDbStats,
   EmbeddingModelClient,
 } from '../../../types/embedding'
 import { chunkArray } from '../../../utils/common/chunk-array'
-import { openSettingsModalWithError } from '../../../utils/openSettingsModal'
 
 import { VectorRepository } from './VectorRepository'
 
@@ -128,6 +127,7 @@ export class VectorManager {
       },
     )
 
+    const failedFiles: { path: string; error: string }[] = []
     const contentChunks = (
       await Promise.all(
         filesToIndex.map(async (file) => {
@@ -154,21 +154,37 @@ export class VectorManager {
               },
             )
           } catch (error) {
-            new ReportBugModal(
-              this.app,
-              'Error: chunk embedding failed',
-              `Please report this issue to the developer.
-
-Error details:
-- File: ${file.path}
-- Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            ).open()
-
-            throw error
+            failedFiles.push({
+              path: file.path,
+              error: error instanceof Error ? error.message : 'Unknown error',
+            })
+            return [] // Return empty array for failed files
           }
         }),
       )
     ).flat()
+
+    if (failedFiles.length > 0) {
+      const errorDetails =
+        `Failed to process ${failedFiles.length} file(s):\n\n` +
+        failedFiles
+          .map(({ path, error }) => `File: ${path}\nError: ${error}`)
+          .join('\n\n')
+
+      new ErrorModal(
+        this.app,
+        'Error: chunk embedding failed',
+        `Some files failed to process. Please report this issue to the developer if it persists.`,
+        `[Error Log]\n\n${errorDetails}`,
+        {
+          showReportBugButton: true,
+        },
+      ).open()
+    }
+
+    if (contentChunks.length === 0) {
+      throw new Error('All files failed to process. Stopping indexing process.')
+    }
 
     updateProgress?.({
       completedChunks: 0,
@@ -275,19 +291,25 @@ Error details:
         error instanceof LLMAPIKeyInvalidException ||
         error instanceof LLMBaseUrlNotSetException
       ) {
-        openSettingsModalWithError(this.app, (error as Error).message)
+        new ErrorModal(this.app, 'Error', (error as Error).message, undefined, {
+          showSettingsButton: true,
+        }).open()
       } else {
-        const errorDetails = failedChunks
-          .map((chunk) => `- File: ${chunk.path}\n  Error: ${chunk.error}`)
-          .join('\n')
+        const errorDetails =
+          `Failed to process ${failedChunks.length} file(s):\n\n` +
+          failedChunks
+            .map((chunk) => `File: ${chunk.path}\nError: ${chunk.error}`)
+            .join('\n\n')
 
-        new ReportBugModal(
+        new ErrorModal(
           this.app,
           'Error: embedding failed',
           `The indexing process was interrupted because several files couldn't be processed.
 Please report this issue to the developer if it persists.`,
-          `[Error log]
-${errorDetails}`,
+          `[Error Log]\n\n${errorDetails}`,
+          {
+            showReportBugButton: true,
+          },
         ).open()
       }
     } finally {

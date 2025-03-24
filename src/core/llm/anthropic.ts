@@ -86,8 +86,37 @@ export class AnthropicProvider extends BaseLLMProvider<
       return AnthropicProvider.parseNonStreamingResponse(response)
     } catch (error) {
       if (error instanceof Anthropic.AuthenticationError) {
+        // Anthropic's CORS Policy Change (March 2025)
+        // Issue: https://github.com/glowingjade/obsidian-smart-composer/issues/286
+        //
+        // Anthropic recently changed their CORS policy for new individual accounts:
+        // - New individual accounts now have CORS restrictions by default
+        // - The error occurs even with valid API keys and anthropic-dangerous-direct-browser-access: true
+        // - The error message contains "CORS requests are not allowed for this Organization"
+        //
+        // Solution: Users need to create an organization in their Anthropic account
+        if (
+          error.message.includes(
+            'CORS requests are not allowed for this Organization',
+          )
+        ) {
+          throw new LLMAPIKeyInvalidException(
+            `Provider ${this.provider.id} is experiencing a CORS issue. This is a known issue with new individual Anthropic accounts.
+
+To resolve this issue:
+
+1. Go to https://console.anthropic.com/settings/organization
+2. Create a new organization
+3. Your API key should work properly after creating an organization
+
+For more information, please refer to the following issue:
+https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
+            error,
+          )
+        }
         throw new LLMAPIKeyInvalidException(
           `Provider ${this.provider.id} API key is invalid. Please update it in settings menu.`,
+          error,
         )
       }
 
@@ -184,8 +213,37 @@ export class AnthropicProvider extends BaseLLMProvider<
       return streamResponse()
     } catch (error) {
       if (error instanceof Anthropic.AuthenticationError) {
+        // Anthropic's CORS Policy Change (March 2025)
+        // Issue: https://github.com/glowingjade/obsidian-smart-composer/issues/286
+        //
+        // Anthropic recently changed their CORS policy for new individual accounts:
+        // - New individual accounts now have CORS restrictions by default
+        // - The error occurs even with valid API keys and anthropic-dangerous-direct-browser-access: true
+        // - The error message contains "CORS requests are not allowed for this Organization"
+        //
+        // Solution: Users need to create an organization in their Anthropic account
+        if (
+          error.message.includes(
+            'CORS requests are not allowed for this Organization',
+          )
+        ) {
+          throw new LLMAPIKeyInvalidException(
+            `Provider ${this.provider.id} is experiencing a CORS issue. This is a known issue with new individual Anthropic accounts.
+
+To resolve this issue:
+
+1. Go to https://console.anthropic.com/settings/organization
+2. Create a new organization
+3. Your API key should work properly after creating an organization
+
+For more information, please refer to the following issue:
+https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
+            error,
+          )
+        }
         throw new LLMAPIKeyInvalidException(
           `Provider ${this.provider.id} API key is invalid. Please update it in settings menu.`,
+          error,
         )
       }
 

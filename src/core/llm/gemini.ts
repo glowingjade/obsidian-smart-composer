@@ -110,6 +110,7 @@ export class GeminiProvider extends BaseLLMProvider<
       if (isInvalidApiKey) {
         throw new LLMAPIKeyInvalidException(
           `Provider ${this.provider.id} API key is invalid. Please update it in settings menu.`,
+          error as Error,
         )
       }
 
@@ -173,6 +174,7 @@ export class GeminiProvider extends BaseLLMProvider<
       if (isInvalidApiKey) {
         throw new LLMAPIKeyInvalidException(
           `Gemini API key is invalid. Please update it in settings menu.`,
+          error as Error,
         )
       }
 

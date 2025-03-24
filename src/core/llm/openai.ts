@@ -87,6 +87,7 @@ export class OpenAIAuthenticatedProvider extends BaseLLMProvider<
       if (error instanceof OpenAI.AuthenticationError) {
         throw new LLMAPIKeyInvalidException(
           'OpenAI API key is invalid. Please update it in settings menu.',
+          error,
         )
       }
       throw error
@@ -148,6 +149,7 @@ export class OpenAIAuthenticatedProvider extends BaseLLMProvider<
       if (error instanceof OpenAI.AuthenticationError) {
         throw new LLMAPIKeyInvalidException(
           'OpenAI API key is invalid. Please update it in settings menu.',
+          error,
         )
       }
       throw error
