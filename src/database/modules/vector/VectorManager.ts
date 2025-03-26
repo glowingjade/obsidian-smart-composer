@@ -32,8 +32,22 @@ export class VectorManager {
   private vacuumCallback: (() => Promise<void>) | null = null
 
   private async requestSave() {
-    if (this.saveCallback) {
-      await this.saveCallback()
+    try {
+      if (this.saveCallback) {
+        await this.saveCallback()
+      } else {
+        throw new Error('No save callback set')
+      }
+    } catch (error) {
+      new ErrorModal(
+        this.app,
+        'Error: save failed',
+        'Failed to save the vector database changes. Please report this issue to the developer.',
+        error instanceof Error ? error.message : 'Unknown error',
+        {
+          showReportBugButton: true,
+        },
+      ).open()
     }
   }
 
