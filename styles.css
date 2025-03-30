@@ -1317,3 +1317,40 @@ button.smtcmp-chat-input-model-select {
 .smtcmp-error-modal-buttons {
   margin-top: 1rem;
 }
+
+.smtcmp-assistant-message-reasoning {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--size-4-1);
+  border-left: 2px solid var(--background-modifier-border);
+  padding-left: var(--size-4-1);
+}
+
+.smtcmp-assistant-message-reasoning-content {
+  color: var(--text-muted);
+  padding-left: var(--size-4-1);
+}
+
+.smtcmp-assistant-message-reasoning-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* border-left: 1px solid var(--background-modifier-border); */
+  gap: var(--size-4-1);
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+  background-color: transparent;
+  cursor: pointer;
+  border-radius: var(--radius-s);
+  padding: var(--size-2-3) var(--size-4-1);
+  user-select: none;
+
+  &:hover {
+    background-color: var(--background-modifier-hover);
+  }
+}
+
+.smtcmp-assistant-message-reasoning-toggle-icon {
+  width: var(--size-4-4);
+  height: var(--size-4-4);
+}

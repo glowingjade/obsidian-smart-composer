@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import Markdown from 'react-markdown'
 
+import { ChatMessage } from '../../types/chat'
 import {
   ParsedSmtcmpBlock,
   parsesmtcmpBlocks,
@@ -9,7 +10,7 @@ import {
 import MarkdownCodeComponent from './MarkdownCodeComponent'
 import MarkdownReferenceBlock from './MarkdownReferenceBlock'
 
-function ReactMarkdown({
+const ReactMarkdown = React.memo(function ReactMarkdown({
   onApply,
   isApplying,
   children,
@@ -51,6 +52,31 @@ function ReactMarkdown({
       )}
     </>
   )
-}
+})
 
-export default React.memo(ReactMarkdown)
+export function ReactMarkdownItem({
+  index,
+  chatMessages,
+  handleApply,
+  isApplying,
+  children,
+}: {
+  index: number
+  chatMessages: ChatMessage[]
+  handleApply: (blockToApply: string, chatMessages: ChatMessage[]) => void
+  isApplying: boolean
+  children: string
+}) {
+  const onApply = useCallback(
+    (blockToApply: string) => {
+      handleApply(blockToApply, chatMessages.slice(0, index + 1))
+    },
+    [handleApply, chatMessages, index],
+  )
+
+  return (
+    <ReactMarkdown onApply={onApply} isApplying={isApplying}>
+      {children}
+    </ReactMarkdown>
+  )
+}

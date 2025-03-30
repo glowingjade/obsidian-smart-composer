@@ -142,6 +142,7 @@ const serializeChatMessage = (message: ChatMessage): SerializedChatMessage => {
       return {
         role: 'assistant',
         content: message.content,
+        reasoning: message.reasoning,
         id: message.id,
         metadata: message.metadata,
       }
@@ -169,6 +170,7 @@ const deserializeChatMessage = (
       return {
         role: 'assistant',
         content: message.content,
+        reasoning: message.reasoning,
         id: message.id,
         metadata: message.metadata,
       }
