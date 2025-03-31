@@ -60,8 +60,8 @@ function ClaudeThinkingSettingsModalRoot({
 }) {
   const [budgetTokens, setBudgetTokens] = useState(
     model.providerType === 'anthropic'
-      ? (model.thinking?.budget_tokens ?? 0).toString()
-      : '0',
+      ? (model.thinking?.budget_tokens ?? 8192).toString()
+      : '8192',
   )
 
   const handleSubmit = async () => {

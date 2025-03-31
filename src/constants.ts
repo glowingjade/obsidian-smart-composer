@@ -226,17 +226,17 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
   {
     providerType: 'anthropic',
     providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
-    id: 'claude-3.5-sonnet',
-    model: 'claude-3-5-sonnet-latest',
-  },
-  {
-    providerType: 'anthropic',
-    providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
     id: 'claude-3.7-sonnet-thinking',
     model: 'claude-3-7-sonnet-latest',
     thinking: {
       budget_tokens: 8192,
     },
+  },
+  {
+    providerType: 'anthropic',
+    providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
+    id: 'claude-3.5-sonnet',
+    model: 'claude-3-5-sonnet-latest',
   },
   {
     providerType: 'openai',

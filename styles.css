@@ -1335,7 +1335,6 @@ button.smtcmp-chat-input-model-select {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  /* border-left: 1px solid var(--background-modifier-border); */
   gap: var(--size-4-1);
   font-size: var(--font-ui-small);
   color: var(--text-muted);
