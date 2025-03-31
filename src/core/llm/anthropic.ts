@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import {
+  Base64ImageSource,
   ImageBlockParam,
   MessageParam,
   MessageStreamEvent,
@@ -73,8 +74,18 @@ export class AnthropicProvider extends BaseLLMProvider<
             .filter((m) => !AnthropicProvider.isMessageEmpty(m))
             .map((m) => AnthropicProvider.parseRequestMessage(m)),
           system: systemMessage,
+          thinking: model.thinking
+            ? {
+                type: 'enabled',
+                budget_tokens: model.thinking.budget_tokens,
+              }
+            : undefined,
           max_tokens:
-            request.max_tokens ?? AnthropicProvider.DEFAULT_MAX_TOKENS,
+            request.max_tokens ??
+            (model.thinking
+              ? model.thinking?.budget_tokens +
+                AnthropicProvider.DEFAULT_MAX_TOKENS
+              : AnthropicProvider.DEFAULT_MAX_TOKENS),
           temperature: request.temperature,
           top_p: request.top_p,
         },
@@ -152,8 +163,18 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
             .filter((m) => !AnthropicProvider.isMessageEmpty(m))
             .map((m) => AnthropicProvider.parseRequestMessage(m)),
           system: systemMessage,
+          thinking: model.thinking
+            ? {
+                type: 'enabled',
+                budget_tokens: model.thinking.budget_tokens,
+              }
+            : undefined,
           max_tokens:
-            request.max_tokens ?? AnthropicProvider.DEFAULT_MAX_TOKENS,
+            request.max_tokens ??
+            (model.thinking
+              ? model.thinking?.budget_tokens +
+                AnthropicProvider.DEFAULT_MAX_TOKENS
+              : AnthropicProvider.DEFAULT_MAX_TOKENS),
           temperature: request.temperature,
           top_p: request.top_p,
           stream: true,
@@ -271,8 +292,7 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
                 type: 'image',
                 source: {
                   data: base64Data,
-                  media_type:
-                    mimeType as ImageBlockParam['source']['media_type'],
+                  media_type: mimeType as Base64ImageSource['media_type'],
                   type: 'base64',
                 },
               }
@@ -295,13 +315,25 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
     if (response.content[0].type === 'tool_use') {
       throw new Error('Unsupported content type: tool_use')
     }
+    const textContent = response.content
+      .filter((c) => c.type === 'text')
+      .map((c) => c.text)
+      .join('')
+
+    const reasoningContent =
+      response.content
+        .filter((c) => c.type === 'thinking')
+        .map((c) => c.thinking)
+        .join('') || undefined
+
     return {
       id: response.id,
       choices: [
         {
           finish_reason: response.stop_reason,
           message: {
-            content: response.content[0].text,
+            content: textContent,
+            reasoning: reasoningContent,
             role: response.role,
           },
         },
@@ -334,7 +366,12 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
         {
           finish_reason: null,
           delta: {
-            content: chunk.delta.text,
+            content:
+              chunk.delta.type === 'text_delta' ? chunk.delta.text : undefined,
+            reasoning:
+              chunk.delta.type === 'thinking_delta'
+                ? chunk.delta.thinking
+                : undefined,
           },
         },
       ],

@@ -40,11 +40,12 @@ import { readTFileContent } from '../../utils/obsidian'
 import { ErrorModal } from '../modals/ErrorModal'
 
 import AssistantMessageActions from './AssistantMessageActions'
+import AssistantMessageReasoning from './AssistantMessageReasoning'
 import ChatUserInput, { ChatUserInputRef } from './chat-input/ChatUserInput'
 import { editorStateToPlainText } from './chat-input/utils/editor-state-to-plain-text'
 import { ChatListDropdown } from './ChatListDropdown'
 import QueryProgress, { QueryProgressState } from './QueryProgress'
-import ReactMarkdown from './ReactMarkdown'
+import { ReactMarkdownItem } from './ReactMarkdown'
 import SimilaritySearchResults from './SimilaritySearchResults'
 
 // Add an empty line here
@@ -292,6 +293,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         )
 
         for await (const chunk of stream) {
+          const reasoning = chunk.choices[0]?.delta?.reasoning
           const content = chunk.choices[0]?.delta?.content ?? ''
           setChatMessages((prevChatHistory) =>
             prevChatHistory.map((message) =>
@@ -299,6 +301,9 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
                 ? {
                     ...message,
                     content: message.content + content,
+                    reasoning: reasoning
+                      ? (message.reasoning ?? '') + reasoning
+                      : message.reasoning,
                     metadata: {
                       ...message.metadata,
                       usage: chunk.usage ?? message.metadata?.usage, // Keep existing usage if chunk has no usage data
@@ -637,7 +642,11 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
               )}
             </div>
           ) : (
+            // message.role === 'assistant'
             <div key={message.id} className="smtcmp-chat-messages-assistant">
+              {message.reasoning && (
+                <AssistantMessageReasoning reasoning={message.reasoning} />
+              )}
               <ReactMarkdownItem
                 index={index}
                 chatMessages={chatMessages}
@@ -694,33 +703,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     </div>
   )
 })
-
-function ReactMarkdownItem({
-  index,
-  chatMessages,
-  handleApply,
-  isApplying,
-  children,
-}: {
-  index: number
-  chatMessages: ChatMessage[]
-  handleApply: (blockToApply: string, chatMessages: ChatMessage[]) => void
-  isApplying: boolean
-  children: string
-}) {
-  const onApply = useCallback(
-    (blockToApply: string) => {
-      handleApply(blockToApply, chatMessages.slice(0, index + 1))
-    },
-    [handleApply, chatMessages, index],
-  )
-
-  return (
-    <ReactMarkdown onApply={onApply} isApplying={isApplying}>
-      {children}
-    </ReactMarkdown>
-  )
-}
 
 Chat.displayName = 'Chat'
 

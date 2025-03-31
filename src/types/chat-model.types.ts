@@ -28,6 +28,11 @@ export const chatModelSchema = z.discriminatedUnion('providerType', [
   z.object({
     providerType: z.literal('anthropic'),
     ...baseChatModelSchema.shape,
+    thinking: z
+      .object({
+        budget_tokens: z.number(),
+      })
+      .optional(),
   }),
   z.object({
     providerType: z.literal('gemini'),

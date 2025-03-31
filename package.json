@@ -45,7 +45,7 @@
     "typescript": "^5.6.2"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.27.3",
+    "@anthropic-ai/sdk": "^0.39.0",
     "@electric-sql/pglite": "0.2.12",
     "@google/generative-ai": "^0.21.0",
     "@lexical/clipboard": "^0.17.1",
