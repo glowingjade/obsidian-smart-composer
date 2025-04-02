@@ -1,10 +1,10 @@
-import { Change, diffLines } from 'diff'
 import { CheckIcon, X } from 'lucide-react'
 import { getIcon } from 'obsidian'
 import { useState } from 'react'
 
 import { ApplyViewState } from '../../ApplyView'
 import { useApp } from '../../contexts/app-context'
+import { DiffBlock, createDiffBlocks } from '../../utils/chat/diff'
 
 export default function ApplyViewRoot({
   state,
@@ -15,19 +15,23 @@ export default function ApplyViewRoot({
 }) {
   const acceptIcon = getIcon('check')
   const rejectIcon = getIcon('x')
-  const excludeIcon = getIcon('x')
 
   const app = useApp()
 
-  const [diff, setDiff] = useState<Change[]>(
-    diffLines(state.originalContent, state.newContent),
+  const [diff, setDiff] = useState<DiffBlock[]>(
+    createDiffBlocks(state.originalContent, state.newContent),
   )
 
   const handleAccept = async () => {
     const newContent = diff
-      .filter((change) => !change.removed)
-      .map((change) => change.value)
-      .join('')
+      .map((diffBlock) => {
+        if (diffBlock.type === 'modified') {
+          return diffBlock.modifiedValue
+        } else {
+          return diffBlock.value
+        }
+      })
+      .join('\n')
     await app.vault.modify(state.file, newContent)
     close()
   }
@@ -36,31 +40,61 @@ export default function ApplyViewRoot({
     close()
   }
 
-  const excludeDiffLine = (index: number) => {
+  const rejectDiffBlock = (index: number) => {
     setDiff((prevDiff) => {
-      const newDiff = [...prevDiff]
-      const change = newDiff[index]
-      if (change.added) {
-        // Remove the entry if it's an added line
-        return newDiff.filter((_, i) => i !== index)
-      } else if (change.removed) {
-        change.removed = false
+      const currentBlock = prevDiff[index]
+
+      if (currentBlock.type === 'unchanged') {
+        // Should not happen
+        return prevDiff
       }
-      return newDiff
+
+      if (!currentBlock.originalValue) {
+        return [...prevDiff.slice(0, index), ...prevDiff.slice(index + 1)]
+      }
+
+      const newBlock: DiffBlock =
+        currentBlock.type === 'modified'
+          ? {
+              type: 'unchanged',
+              value: currentBlock.originalValue,
+            }
+          : currentBlock
+
+      return [
+        ...prevDiff.slice(0, index),
+        newBlock,
+        ...prevDiff.slice(index + 1),
+      ]
     })
   }
 
-  const acceptDiffLine = (index: number) => {
+  const acceptDiffBlock = (index: number) => {
     setDiff((prevDiff) => {
-      const newDiff = [...prevDiff]
-      const change = newDiff[index]
-      if (change.added) {
-        change.added = false
-      } else if (change.removed) {
-        // Remove the entry if it's a removed line
-        return newDiff.filter((_, i) => i !== index)
+      const currentBlock = prevDiff[index]
+
+      if (currentBlock.type === 'unchanged') {
+        // Should not happen
+        return prevDiff
       }
-      return newDiff
+
+      if (!currentBlock.modifiedValue) {
+        return [...prevDiff.slice(0, index), ...prevDiff.slice(index + 1)]
+      }
+
+      const newBlock: DiffBlock =
+        currentBlock.type === 'modified'
+          ? {
+              type: 'unchanged',
+              value: currentBlock.modifiedValue,
+            }
+          : currentBlock
+
+      return [
+        ...prevDiff.slice(0, index),
+        newBlock,
+        ...prevDiff.slice(index + 1),
+      ]
     })
   }
 
@@ -106,31 +140,13 @@ export default function ApplyViewRoot({
                     : ''}
                 </div>
 
-                {diff.map((part, index) => (
-                  <div
+                {diff.map((block, index) => (
+                  <DiffBlockView
                     key={index}
-                    className={`smtcmp-diff-line ${part.added ? 'added' : part.removed ? 'removed' : ''}`}
-                  >
-                    <div style={{ width: '100%' }}>{part.value}</div>
-                    {(part.added || part.removed) && (
-                      <div className="smtcmp-diff-line-actions">
-                        <button
-                          aria-label="Accept line"
-                          onClick={() => acceptDiffLine(index)}
-                          className="smtcmp-accept"
-                        >
-                          {acceptIcon && 'Y'}
-                        </button>
-                        <button
-                          aria-label="Exclude line"
-                          onClick={() => excludeDiffLine(index)}
-                          className="smtcmp-exclude"
-                        >
-                          {excludeIcon && 'N'}
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                    block={block}
+                    onAccept={() => acceptDiffBlock(index)}
+                    onReject={() => rejectDiffBlock(index)}
+                  />
                 ))}
               </div>
             </div>
@@ -139,4 +155,56 @@ export default function ApplyViewRoot({
       </div>
     </div>
   )
+}
+
+function DiffBlockView({
+  block,
+  onAccept,
+  onReject,
+}: {
+  block: DiffBlock
+  onAccept: () => void
+  onReject: () => void
+}) {
+  const acceptIcon = getIcon('check')
+  const rejectIcon = getIcon('x')
+
+  if (block.type === 'unchanged') {
+    return (
+      <div className={`smtcmp-diff-line`}>
+        <div style={{ width: '100%' }}>{block.value}</div>
+      </div>
+    )
+  } else if (block.type === 'modified') {
+    return (
+      <div className="smtcmp-diff-line-container">
+        {block.originalValue && block.originalValue.length > 0 && (
+          <div className={`smtcmp-diff-line removed`}>
+            <div style={{ width: '100%' }}>{block.originalValue}</div>
+          </div>
+        )}
+        {block.modifiedValue && block.modifiedValue.length > 0 && (
+          <div className={`smtcmp-diff-line added`}>
+            <div style={{ width: '100%' }}>{block.modifiedValue}</div>
+          </div>
+        )}
+        <div className="smtcmp-diff-line-actions">
+          <button
+            aria-label="Accept block"
+            onClick={onAccept}
+            className="smtcmp-accept"
+          >
+            {acceptIcon && 'Y'}
+          </button>
+          <button
+            aria-label="Reject block"
+            onClick={onReject}
+            className="smtcmp-exclude"
+          >
+            {rejectIcon && 'N'}
+          </button>
+        </div>
+      </div>
+    )
+  }
 }

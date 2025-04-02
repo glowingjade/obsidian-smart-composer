@@ -17,7 +17,6 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@types/diff": "^5.2.3",
     "@types/jest": "^29.5.13",
     "@types/lodash.debounce": "^4.0.9",
     "@types/lodash.isequal": "^4.5.8",
@@ -57,7 +56,6 @@
     "@tanstack/react-query": "^5.56.2",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
-    "diff": "^7.0.0",
     "drizzle-orm": "^0.39.0",
     "exponential-backoff": "^3.1.1",
     "fuzzysort": "^3.1.0",
@@ -77,6 +75,7 @@
     "react-syntax-highlighter": "^15.5.0",
     "remark-gfm": "^4.0.0",
     "uuid": "^10.0.0",
+    "vscode-diff": "^2.1.1",
     "zod": "^3.23.8"
   }
 }

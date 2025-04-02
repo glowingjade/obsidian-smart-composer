@@ -682,10 +682,18 @@ input[type='text'].smtcmp-chat-list-dropdown-item-title-input {
     padding: 0 var(--size-4-3);
   }
 
+  .smtcmp-diff-line-container {
+    position: relative;
+  }
+
   .smtcmp-diff-line-actions {
+    position: absolute;
+    right: 0;
+    top: 0;
+    transform: translateY(-100%);
     display: flex;
     gap: 0;
-    border-radius: 0 0 var(--radius-s) var(--radius-s);
+    border-radius: var(--radius-s) var(--radius-s) 0 0;
     overflow: hidden;
 
     button {
