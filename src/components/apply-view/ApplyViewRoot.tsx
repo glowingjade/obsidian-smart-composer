@@ -1,6 +1,13 @@
-import { CheckIcon, X } from 'lucide-react'
+import { CheckIcon, ChevronDown, ChevronUp, X } from 'lucide-react'
 import { getIcon } from 'obsidian'
-import { useState } from 'react'
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 import { ApplyViewState } from '../../ApplyView'
 import { useApp } from '../../contexts/app-context'
@@ -15,12 +22,46 @@ export default function ApplyViewRoot({
 }) {
   const acceptIcon = getIcon('check')
   const rejectIcon = getIcon('x')
+  const [currentDiffIndex, setCurrentDiffIndex] = useState(0)
+  const diffBlockRefs = useRef<(HTMLDivElement | null)[]>([])
+  const scrollerRef = useRef<HTMLDivElement>(null)
 
   const app = useApp()
 
   const [diff, setDiff] = useState<DiffBlock[]>(
     createDiffBlocks(state.originalContent, state.newContent),
   )
+  const modifiedBlockIndices = useMemo(
+    () =>
+      diff.reduce<number[]>((acc, block, index) => {
+        if (block.type !== 'unchanged') {
+          acc.push(index)
+        }
+        return acc
+      }, []),
+    [diff],
+  )
+
+  const scrollToDiffBlock = useCallback(
+    (index: number) => {
+      if (index >= 0 && index < modifiedBlockIndices.length) {
+        const element = diffBlockRefs.current[modifiedBlockIndices[index]]
+        if (element) {
+          element.scrollIntoView({ block: 'start' })
+          setCurrentDiffIndex(index)
+        }
+      }
+    },
+    [modifiedBlockIndices],
+  )
+
+  const handlePrevDiff = useCallback(() => {
+    scrollToDiffBlock(currentDiffIndex - 1)
+  }, [currentDiffIndex, scrollToDiffBlock])
+
+  const handleNextDiff = useCallback(() => {
+    scrollToDiffBlock(currentDiffIndex + 1)
+  }, [currentDiffIndex, scrollToDiffBlock])
 
   const handleAccept = async () => {
     const newContent = diff
@@ -42,28 +83,28 @@ export default function ApplyViewRoot({
 
   const rejectDiffBlock = (index: number) => {
     setDiff((prevDiff) => {
-      const currentBlock = prevDiff[index]
+      const currentPart = prevDiff[index]
 
-      if (currentBlock.type === 'unchanged') {
+      if (currentPart.type === 'unchanged') {
         // Should not happen
         return prevDiff
       }
 
-      if (!currentBlock.originalValue) {
+      if (!currentPart.originalValue) {
         return [...prevDiff.slice(0, index), ...prevDiff.slice(index + 1)]
       }
 
-      const newBlock: DiffBlock =
-        currentBlock.type === 'modified'
+      const newPart: DiffBlock =
+        currentPart.type === 'modified'
           ? {
               type: 'unchanged',
-              value: currentBlock.originalValue,
+              value: currentPart.originalValue,
             }
-          : currentBlock
+          : currentPart
 
       return [
         ...prevDiff.slice(0, index),
-        newBlock,
+        newPart,
         ...prevDiff.slice(index + 1),
       ]
     })
@@ -71,46 +112,109 @@ export default function ApplyViewRoot({
 
   const acceptDiffBlock = (index: number) => {
     setDiff((prevDiff) => {
-      const currentBlock = prevDiff[index]
+      const currentPart = prevDiff[index]
 
-      if (currentBlock.type === 'unchanged') {
+      if (currentPart.type === 'unchanged') {
         // Should not happen
         return prevDiff
       }
 
-      if (!currentBlock.modifiedValue) {
+      if (!currentPart.modifiedValue) {
         return [...prevDiff.slice(0, index), ...prevDiff.slice(index + 1)]
       }
 
-      const newBlock: DiffBlock =
-        currentBlock.type === 'modified'
+      const newPart: DiffBlock =
+        currentPart.type === 'modified'
           ? {
               type: 'unchanged',
-              value: currentBlock.modifiedValue,
+              value: currentPart.modifiedValue,
             }
-          : currentBlock
+          : currentPart
 
       return [
         ...prevDiff.slice(0, index),
-        newBlock,
+        newPart,
         ...prevDiff.slice(index + 1),
       ]
     })
   }
 
+  const updateCurrentDiffFromScroll = useCallback(() => {
+    const scroller = scrollerRef.current
+    if (!scroller) return
+
+    const scrollerRect = scroller.getBoundingClientRect()
+    const scrollerTop = scrollerRect.top
+    const visibleThreshold = 10 // pixels from top to consider element "visible"
+
+    // Find the first visible diff block
+    for (let i = 0; i < modifiedBlockIndices.length; i++) {
+      const element = diffBlockRefs.current[modifiedBlockIndices[i]]
+      if (!element) continue
+
+      const rect = element.getBoundingClientRect()
+      const relativeTop = rect.top - scrollerTop
+
+      // If element is visible (slightly below the top of the viewport)
+      if (relativeTop >= -visibleThreshold) {
+        setCurrentDiffIndex(i)
+        break
+      }
+    }
+  }, [modifiedBlockIndices])
+
+  useEffect(() => {
+    const scroller = scrollerRef.current
+    if (!scroller) return
+
+    const handleScroll = () => {
+      updateCurrentDiffFromScroll()
+    }
+
+    scroller.addEventListener('scroll', handleScroll)
+    return () => scroller.removeEventListener('scroll', handleScroll)
+  }, [updateCurrentDiffFromScroll])
+
+  useEffect(() => {
+    if (modifiedBlockIndices.length > 0) {
+      scrollToDiffBlock(0)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
     <div id="smtcmp-apply-view">
       <div className="view-header">
-        <div className="view-header-left">
-          <div className="view-header-nav-buttons"></div>
-        </div>
         <div className="view-header-title-container mod-at-start">
           <div className="view-header-title">
             Applying: {state?.file?.name ?? ''}
           </div>
           <div className="view-actions">
+            <div className="smtcmp-diff-navigation">
+              <button
+                className="clickable-icon"
+                onClick={handlePrevDiff}
+                disabled={currentDiffIndex <= 0}
+                aria-label="Previous diff"
+              >
+                <ChevronUp size={14} />
+              </button>
+              <span>
+                {modifiedBlockIndices.length > 0
+                  ? `${currentDiffIndex + 1} of ${modifiedBlockIndices.length}`
+                  : '0 of 0'}
+              </span>
+              <button
+                className="clickable-icon"
+                onClick={handleNextDiff}
+                disabled={currentDiffIndex >= modifiedBlockIndices.length - 1}
+                aria-label="Next diff"
+              >
+                <ChevronDown size={14} />
+              </button>
+            </div>
             <button
-              className="clickable-icon view-action smtcmp-approve-button"
+              className="clickable-icon view-action"
               aria-label="Accept changes"
               onClick={handleAccept}
             >
@@ -118,7 +222,7 @@ export default function ApplyViewRoot({
               Accept
             </button>
             <button
-              className="clickable-icon view-action smtcmp-reject-button"
+              className="clickable-icon view-action"
               aria-label="Reject changes"
               onClick={handleReject}
             >
@@ -132,7 +236,7 @@ export default function ApplyViewRoot({
       <div className="view-content">
         <div className="markdown-source-view cm-s-obsidian mod-cm6 node-insert-event is-readable-line-width is-live-preview is-folding show-properties">
           <div className="cm-editor">
-            <div className="cm-scroller">
+            <div className="cm-scroller" ref={scrollerRef}>
               <div className="cm-sizer">
                 <div className="smtcmp-inline-title">
                   {state?.file?.name
@@ -146,6 +250,9 @@ export default function ApplyViewRoot({
                     block={block}
                     onAccept={() => acceptDiffBlock(index)}
                     onReject={() => rejectDiffBlock(index)}
+                    ref={(el) => {
+                      diffBlockRefs.current[index] = el
+                    }}
                   />
                 ))}
               </div>
@@ -157,38 +264,37 @@ export default function ApplyViewRoot({
   )
 }
 
-function DiffBlockView({
-  block,
-  onAccept,
-  onReject,
-}: {
-  block: DiffBlock
-  onAccept: () => void
-  onReject: () => void
-}) {
+const DiffBlockView = forwardRef<
+  HTMLDivElement,
+  {
+    block: DiffBlock
+    onAccept: () => void
+    onReject: () => void
+  }
+>(({ block: part, onAccept, onReject }, ref) => {
   const acceptIcon = getIcon('check')
   const rejectIcon = getIcon('x')
 
-  if (block.type === 'unchanged') {
+  if (part.type === 'unchanged') {
     return (
-      <div className={`smtcmp-diff-line`}>
-        <div style={{ width: '100%' }}>{block.value}</div>
+      <div className="smtcmp-diff-block">
+        <div style={{ width: '100%' }}>{part.value}</div>
       </div>
     )
-  } else if (block.type === 'modified') {
+  } else if (part.type === 'modified') {
     return (
-      <div className="smtcmp-diff-line-container">
-        {block.originalValue && block.originalValue.length > 0 && (
-          <div className={`smtcmp-diff-line removed`}>
-            <div style={{ width: '100%' }}>{block.originalValue}</div>
+      <div className="smtcmp-diff-block-container" ref={ref}>
+        {part.originalValue && part.originalValue.length > 0 && (
+          <div className="smtcmp-diff-block removed">
+            <div style={{ width: '100%' }}>{part.originalValue}</div>
           </div>
         )}
-        {block.modifiedValue && block.modifiedValue.length > 0 && (
-          <div className={`smtcmp-diff-line added`}>
-            <div style={{ width: '100%' }}>{block.modifiedValue}</div>
+        {part.modifiedValue && part.modifiedValue.length > 0 && (
+          <div className="smtcmp-diff-block added">
+            <div style={{ width: '100%' }}>{part.modifiedValue}</div>
           </div>
         )}
-        <div className="smtcmp-diff-line-actions">
+        <div className="smtcmp-diff-block-actions">
           <button
             aria-label="Accept block"
             onClick={onAccept}
@@ -207,4 +313,6 @@ function DiffBlockView({
       </div>
     )
   }
-}
+})
+
+DiffBlockView.displayName = 'DiffBlockView'

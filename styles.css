@@ -609,26 +609,10 @@ input[type='text'].smtcmp-chat-list-dropdown-item-title-input {
 }
 
 #smtcmp-apply-view {
-  height: 100%;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
   font-family: var(--font-interface);
-
-  .smtcmp-diff-line {
-    white-space: pre-wrap;
-    word-break: break-word;
-    display: flex;
-    align-items: start;
-    gap: var(--size-4-1);
-    color: var(--text-normal);
-    line-height: var(--line-height-normal);
-  }
-
-  .smtcmp-diff-line.added {
-    background-color: rgba(var(--color-green-rgb), 0.2);
-  }
-
-  .smtcmp-diff-line.removed {
-    background-color: rgba(var(--color-red-rgb), 0.2);
-  }
 
   .view-content {
     padding: 0;
@@ -682,11 +666,45 @@ input[type='text'].smtcmp-chat-list-dropdown-item-title-input {
     padding: 0 var(--size-4-3);
   }
 
-  .smtcmp-diff-line-container {
-    position: relative;
+  .view-header-title-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
   }
 
-  .smtcmp-diff-line-actions {
+  .view-actions {
+    button {
+      color: var(--text-normal);
+      font-weight: var(--font-medium);
+      gap: 2px;
+    }
+  }
+
+  .smtcmp-diff-block {
+    white-space: pre-wrap;
+    word-break: break-word;
+    display: flex;
+    align-items: start;
+    gap: var(--size-4-1);
+    color: var(--text-normal);
+    line-height: var(--line-height-normal);
+  }
+
+  .smtcmp-diff-block.added {
+    background-color: rgba(var(--color-green-rgb), 0.2);
+  }
+
+  .smtcmp-diff-block.removed {
+    background-color: rgba(var(--color-red-rgb), 0.2);
+  }
+
+  .smtcmp-diff-block-container {
+    position: relative;
+    scroll-margin-top: var(--size-4-5);
+  }
+
+  .smtcmp-diff-block-actions {
     position: absolute;
     right: 0;
     top: 0;
@@ -716,19 +734,9 @@ input[type='text'].smtcmp-chat-list-dropdown-item-title-input {
     box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.1);
   }
 
-  .view-header-title-container {
+  .smtcmp-diff-navigation {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    flex: 1;
-  }
-
-  .view-actions {
-    button {
-      color: var(--text-normal);
-      font-weight: var(--font-medium);
-      gap: 2px;
-    }
   }
 }
 
