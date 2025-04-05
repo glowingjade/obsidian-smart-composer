@@ -121,7 +121,9 @@ export class PromptGenerator {
           }
         }
       }),
-      ...(shouldUseRAG && this.settings.assistantLevel !== AssistantLevel.Simple ? [this.getRagInstructionMessage()] : []),
+      ...(shouldUseRAG && this.settings.assistantLevel !== AssistantLevel.Simple
+        ? [this.getRagInstructionMessage()]
+        : []),
     ]
 
     return {
@@ -212,12 +214,13 @@ export class PromptGenerator {
       filePrompt = `## Potentially Relevant Snippets from the current vault
 ${similaritySearchResults
   .map(({ path, content, metadata }) => {
-    const newContent = this.settings.assistantLevel === AssistantLevel.Simple
-      ? content
-      : this.addLineNumbersToContent({
-          content,
-          startLine: metadata.startLine,
-        })
+    const newContent =
+      this.settings.assistantLevel === AssistantLevel.Simple
+        ? content
+        : this.addLineNumbersToContent({
+            content,
+            startLine: metadata.startLine,
+          })
     return `\`\`\`${path}\n${newContent}\n\`\`\`\n`
   })
   .join('')}\n`
@@ -284,14 +287,16 @@ ${await this.getWebsiteContent(url)}
   }
 
   private getSystemMessage(shouldUseRAG: boolean): RequestMessage {
-    const systemPrompt = `You are an intelligent assistant to help answer any questions that the user has${this.settings.assistantLevel >= AssistantLevel.WithReferencingAndEdit ?`, particularly about editing and organizing markdown files in Obsidian` : ''}.
+    const systemPrompt = `You are an intelligent assistant to help answer any questions that the user has${this.settings.assistantLevel >= AssistantLevel.WithReferencingAndEdit ? `, particularly about editing and organizing markdown files in Obsidian` : ''}.
 
 1. Please keep your response as concise as possible. Avoid being verbose.
 
 2. Do not lie or make up facts.
 
 3. Format your response in markdown.
-${this.settings.assistantLevel >= AssistantLevel.WithReferencing ?`
+${
+  this.settings.assistantLevel >= AssistantLevel.WithReferencing
+    ? `
 4. Respond in the same language as the user's message.
 
 5. When writing out new markdown blocks, also wrap them with <smtcmp_block> tags. For example:
@@ -306,7 +311,11 @@ ${this.settings.assistantLevel >= AssistantLevel.WithReferencing ?`
 {{ content }}
 ...
 </smtcmp_block>
-` : ''}${this.settings.assistantLevel >= AssistantLevel.WithReferencingAndEdit ?`
+`
+    : ''
+}${
+      this.settings.assistantLevel >= AssistantLevel.WithReferencingAndEdit
+        ? `
 7. When the user is asking for edits to their markdown, please provide a simplified version of the markdown block emphasizing only the changes. Use comments to show where unchanged content has been skipped. Wrap the markdown block with <smtcmp_block> tags. Add filename and language attributes to the <smtcmp_block> tags. For example:
 <smtcmp_block filename="path/to/file.md" language="markdown">
 <!-- ... existing content ... -->
@@ -316,14 +325,18 @@ ${this.settings.assistantLevel >= AssistantLevel.WithReferencing ?`
 <!-- ... existing content ... -->
 </smtcmp_block>
 The user has full access to the file, so they prefer seeing only the changes in the markdown. Often this will mean that the start/end of the file will be skipped, but that's okay! Rewrite the entire file only if specifically requested. Always provide a brief explanation of the updates, except when the user specifically asks for just the content.
-` : ''}`
+`
+        : ''
+    }`
 
-    const systemPromptRAG = `You are an intelligent assistant to help answer any questions that the user has${this.settings.assistantLevel >= AssistantLevel.WithReferencingAndEdit ?`, particularly about editing and organizing markdown files in Obsidian` : ''}. You will be given your conversation history with them and potentially relevant blocks of markdown content from the current vault.
+    const systemPromptRAG = `You are an intelligent assistant to help answer any questions that the user has${this.settings.assistantLevel >= AssistantLevel.WithReferencingAndEdit ? `, particularly about editing and organizing markdown files in Obsidian` : ''}. You will be given your conversation history with them and potentially relevant blocks of markdown content from the current vault.
       
 1. Do not lie or make up facts.
 
 2. Format your response in markdown.
-${this.settings.assistantLevel >= AssistantLevel.WithReferencing ?`
+${
+  this.settings.assistantLevel >= AssistantLevel.WithReferencing
+    ? `
 3. Respond in the same language as the user's message.
 
 4. When referencing markdown blocks in your answer, keep the following guidelines in mind:
@@ -341,7 +354,9 @@ ${this.settings.assistantLevel >= AssistantLevel.WithReferencing ?`
   </smtcmp_block>
 
   d. When referencing a markdown block the user gives you, only add the startLine and endLine attributes to the <smtcmp_block> tags. Write related content outside of the <smtcmp_block> tags. The content inside the <smtcmp_block> tags will be ignored and replaced with the actual content of the markdown block. For example:
-  <smtcmp_block filename="path/to/file.md" language="markdown" startLine="2" endLine="30"></smtcmp_block>` : ''}`
+  <smtcmp_block filename="path/to/file.md" language="markdown" startLine="2" endLine="30"></smtcmp_block>`
+    : ''
+}`
 
     return {
       role: 'system',
