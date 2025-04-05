@@ -149,7 +149,7 @@ function CurrentFileBadge({
         )}
         <span>{mentionable.file.name}</span>
       </div>
-      <div className="smtcmp-chat-user-input-file-badge-name-block-suffix">
+      <div className="smtcmp-chat-user-input-file-badge-name-suffix">
         {' (Current File)'}
       </div>
     </BadgeBase>
@@ -170,16 +170,16 @@ function BlockBadge({
   const Icon = getMentionableIcon(mentionable)
   return (
     <BadgeBase onDelete={onDelete} onClick={onClick} isFocused={isFocused}>
-      <div className="smtcmp-chat-user-input-file-badge-name-block-name">
+      <div className="smtcmp-chat-user-input-file-badge-name">
         {Icon && (
           <Icon
             size={10}
-            className="smtcmp-chat-user-input-file-badge-name-block-name-icon"
+            className="smtcmp-chat-user-input-file-badge-name-icon"
           />
         )}
         <span>{mentionable.file.name}</span>
       </div>
-      <div className="smtcmp-chat-user-input-file-badge-name-block-suffix">
+      <div className="smtcmp-chat-user-input-file-badge-name-suffix">
         {` (${mentionable.startLine}:${mentionable.endLine})`}
       </div>
     </BadgeBase>
