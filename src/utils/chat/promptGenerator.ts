@@ -216,7 +216,7 @@ export class PromptGenerator {
 ${similaritySearchResults
   .map(({ path, content, metadata }) => {
     const newContent =
-      this.settings.assistantLevel === AssistantLevel.Simple
+      this.settings.assistantLevel >= AssistantLevel.WithReferencing
         ? content
         : this.addLineNumbersToContent({
             content,
