@@ -68,7 +68,6 @@ const config = {
         },
       },
     ],
-    'no-inner-declarations': 'off',
   },
   ignorePatterns: ['.eslintrc.js'],
 }

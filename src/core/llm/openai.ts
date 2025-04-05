@@ -1,4 +1,5 @@
 import OpenAI from 'openai'
+import { ReasoningEffort } from 'openai/resources/shared'
 
 import { ChatModel } from '../../types/chat-model.types'
 import {
@@ -55,7 +56,10 @@ export class OpenAIAuthenticatedProvider extends BaseLLMProvider<
     try {
       const response = await this.adapter.generateResponse(
         this.client,
-        request,
+        {
+          ...request,
+          reasoning_effort: model.reasoning_effort as ReasoningEffort,
+        },
         options,
       )
 
@@ -103,47 +107,20 @@ export class OpenAIAuthenticatedProvider extends BaseLLMProvider<
       throw new Error('Model is not an OpenAI model')
     }
 
-    // Check if the model explicitly does not support streaming
-    if (model.streamingDisabled) {
-      // For non-streaming models, fall back to generateResponse
-      const nonStreamingResponse = await this.generateResponse(
-        model,
-        { ...request, stream: false },
-        options,
-      )
-
-      // Create an async generator to convert the non-streaming response to a stream
-      async function* generateStream(): AsyncGenerator<LLMResponseStreaming> {
-        yield {
-          id: nonStreamingResponse.id,
-          choices: [
-            {
-              finish_reason: nonStreamingResponse.choices[0].finish_reason,
-              delta: {
-                content: nonStreamingResponse.choices[0].message.content,
-                role: 'assistant',
-              },
-            },
-          ],
-          created: nonStreamingResponse.created,
-          model: nonStreamingResponse.model,
-          object: 'chat.completion.chunk',
-          system_fingerprint: nonStreamingResponse.system_fingerprint,
-          usage: nonStreamingResponse.usage,
-        }
-      }
-
-      return generateStream()
-    }
-
     if (!this.client.apiKey) {
       throw new LLMAPIKeyNotSetException(
         `Provider ${this.provider.id} API key is missing. Please set it in settings menu.`,
       )
     }
     try {
-      // The adapter.streamResponse already returns AsyncIterable<LLMResponseStreaming>
-      return await this.adapter.streamResponse(this.client, request, options)
+      return await this.adapter.streamResponse(
+        this.client,
+        {
+          ...request,
+          reasoning_effort: model.reasoning_effort as ReasoningEffort,
+        },
+        options,
+      )
     } catch (error) {
       console.error('Error in streamResponse:', error)
       if (error instanceof OpenAI.AuthenticationError) {

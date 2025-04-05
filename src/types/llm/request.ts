@@ -1,7 +1,7 @@
 // These types are based on the OpenRouter API specification
 // https://openrouter.ai/docs/requests
 
-import { ChatCompletionCreateParams } from 'openai/resources'
+import { ChatCompletionCreateParams, ReasoningEffort } from 'openai/resources'
 
 export type LLMRequestBase = {
   messages: RequestMessage[]
@@ -19,6 +19,9 @@ export type LLMRequestBase = {
 
   // Only available for OpenAI
   prediction?: ChatCompletionCreateParams['prediction']
+
+  // Only available for OpenAI reasoning models
+  reasoning_effort?: ReasoningEffort
 }
 
 export type LLMRequestNonStreaming = LLMRequestBase & {

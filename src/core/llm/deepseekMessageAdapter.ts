@@ -2,22 +2,25 @@ import OpenAI from 'openai'
 import {
   ChatCompletion,
   ChatCompletionChunk,
-  ChatCompletionContentPart,
-  ChatCompletionMessageParam,
 } from 'openai/resources/chat/completions'
 
 import {
   LLMOptions,
   LLMRequestNonStreaming,
   LLMRequestStreaming,
-  RequestMessage,
 } from '../../types/llm/request'
 import {
   LLMResponseNonStreaming,
   LLMResponseStreaming,
 } from '../../types/llm/response'
 
-export class OpenAIMessageAdapter {
+import { OpenAIMessageAdapter } from './openaiMessageAdapter'
+
+/**
+ * Adapter for DeepSeek's API that extends OpenAIMessageAdapter to handle the additional
+ * 'reasoning_content' field in DeepSeek's response format while maintaining OpenAI compatibility.
+ */
+export class DeepSeekMessageAdapter extends OpenAIMessageAdapter {
   async generateResponse(
     client: OpenAI,
     request: LLMRequestNonStreaming,
@@ -26,14 +29,9 @@ export class OpenAIMessageAdapter {
     const response = await client.chat.completions.create(
       {
         model: request.model,
-        reasoning_effort: request.reasoning_effort,
         messages: request.messages.map((m) =>
-          OpenAIMessageAdapter.parseRequestMessage(m),
+          DeepSeekMessageAdapter.parseRequestMessage(m),
         ),
-        // TODO: max_tokens is deprecated in the OpenAI API, with max_completion_tokens being the
-        // recommended replacement. Reasoning models do not support max_tokens at all.
-        // However, many OpenAI-compatible APIs still only support max_tokens.
-        // Consider implementing a solution that works with both OpenAI and compatible APIs.
         max_tokens: request.max_tokens,
         temperature: request.temperature,
         top_p: request.top_p,
@@ -46,7 +44,7 @@ export class OpenAIMessageAdapter {
         signal: options?.signal,
       },
     )
-    return OpenAIMessageAdapter.parseNonStreamingResponse(response)
+    return DeepSeekMessageAdapter.parseNonStreamingResponse(response)
   }
 
   async streamResponse(
@@ -57,14 +55,9 @@ export class OpenAIMessageAdapter {
     const stream = await client.chat.completions.create(
       {
         model: request.model,
-        reasoning_effort: request.reasoning_effort,
         messages: request.messages.map((m) =>
-          OpenAIMessageAdapter.parseRequestMessage(m),
+          DeepSeekMessageAdapter.parseRequestMessage(m),
         ),
-        // TODO: max_tokens is deprecated in the OpenAI API, with max_completion_tokens being the
-        // recommended replacement. Reasoning models do not support max_tokens at all.
-        // However, many OpenAI-compatible APIs still only support max_tokens.
-        // Consider implementing a solution that works with both OpenAI and compatible APIs.
         max_tokens: request.max_tokens,
         temperature: request.temperature,
         top_p: request.top_p,
@@ -88,39 +81,7 @@ export class OpenAIMessageAdapter {
     stream: AsyncIterable<ChatCompletionChunk>,
   ): AsyncIterable<LLMResponseStreaming> {
     for await (const chunk of stream) {
-      yield OpenAIMessageAdapter.parseStreamingResponseChunk(chunk)
-    }
-  }
-
-  static parseRequestMessage(
-    message: RequestMessage,
-  ): ChatCompletionMessageParam {
-    switch (message.role) {
-      case 'user': {
-        const content = Array.isArray(message.content)
-          ? message.content.map((part): ChatCompletionContentPart => {
-              switch (part.type) {
-                case 'text':
-                  return { type: 'text', text: part.text }
-                case 'image_url':
-                  return { type: 'image_url', image_url: part.image_url }
-              }
-            })
-          : message.content
-        return { role: 'user', content }
-      }
-      case 'assistant': {
-        if (Array.isArray(message.content)) {
-          throw new Error('Assistant message should be a string')
-        }
-        return { role: 'assistant', content: message.content }
-      }
-      case 'system': {
-        if (Array.isArray(message.content)) {
-          throw new Error('System message should be a string')
-        }
-        return { role: 'system', content: message.content }
-      }
+      yield DeepSeekMessageAdapter.parseStreamingResponseChunk(chunk)
     }
   }
 
@@ -133,6 +94,9 @@ export class OpenAIMessageAdapter {
         finish_reason: choice.finish_reason,
         message: {
           content: choice.message.content,
+          reasoning: (
+            choice.message as unknown as { reasoning_content?: string }
+          ).reasoning_content,
           role: choice.message.role,
         },
       })),
@@ -153,6 +117,8 @@ export class OpenAIMessageAdapter {
         finish_reason: choice.finish_reason ?? null,
         delta: {
           content: choice.delta.content ?? null,
+          reasoning: (choice.delta as unknown as { reasoning_content?: string })
+            .reasoning_content,
           role: choice.delta.role,
         },
       })),

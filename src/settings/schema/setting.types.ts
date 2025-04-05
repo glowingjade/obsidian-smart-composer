@@ -9,6 +9,8 @@ import { chatModelSchema } from '../../types/chat-model.types'
 import { embeddingModelSchema } from '../../types/embedding-model.types'
 import { llmProviderSchema } from '../../types/provider.types'
 
+import { SETTINGS_SCHEMA_VERSION } from './migrations'
+
 const ragOptionsSchema = z.object({
   chunkSize: z.number().catch(1000),
   thresholdTokens: z.number().catch(8192),
@@ -17,8 +19,6 @@ const ragOptionsSchema = z.object({
   excludePatterns: z.array(z.string()).catch([]),
   includePatterns: z.array(z.string()).catch([]),
 })
-
-export const SETTINGS_SCHEMA_VERSION = 5
 
 /**
  * Settings

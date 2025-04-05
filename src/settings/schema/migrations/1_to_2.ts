@@ -508,6 +508,7 @@ export const V2_DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: V2_PROVIDER_TYPES_INFO.openai.defaultProviderId,
     id: 'o1',
     model: 'o1',
+    // @ts-expect-error: streamingDisabled is deprecated
     streamingDisabled: true, // currently, o1 API doesn't support streaming
   },
   {

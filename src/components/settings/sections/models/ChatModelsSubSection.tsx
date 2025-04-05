@@ -2,11 +2,15 @@ import { Settings, Trash2 } from 'lucide-react'
 import { App, Notice } from 'obsidian'
 import { ObsidianToggle } from 'src/components/common/ObsidianToggle'
 
-import { DEFAULT_CHAT_MODELS, PROVIDER_TYPES_INFO } from '../../../../constants'
+import { DEFAULT_CHAT_MODELS } from '../../../../constants'
 import { useSettings } from '../../../../contexts/settings-context'
 import SmartComposerPlugin from '../../../../main'
 import { AddChatModelModal } from '../../../../settings/AddChatModelModal'
-import { ClaudeThinkingSettingsModal } from '../../ClaudeThinkingSettingsModalRoot'
+
+import {
+  ChatModelSettingsModal,
+  hasChatModelSettings,
+} from './ChatModelSettings'
 
 type ChatModelsSubSectionProps = {
   app: App
@@ -104,26 +108,19 @@ export function ChatModelsSubSection({
                 </td>
                 <td>
                   <div className="smtcmp-settings-actions">
-                    {/**
-                     * TODO: This is a temporary implementation specific to the thinking model.
-                     * Future work should implement a configurable settings system for all models.
-                     */}
-                    {chatModel.providerType === 'anthropic' &&
-                      chatModel.providerId ===
-                        PROVIDER_TYPES_INFO.anthropic.defaultProviderId &&
-                      chatModel.id === 'claude-3.7-sonnet-thinking' && (
-                        <button
-                          onClick={() => {
-                            new ClaudeThinkingSettingsModal(
-                              app,
-                              plugin,
-                              chatModel,
-                            ).open()
-                          }}
-                        >
-                          <Settings size={16} />
-                        </button>
-                      )}
+                    {hasChatModelSettings(chatModel) && (
+                      <button
+                        onClick={() => {
+                          new ChatModelSettingsModal(
+                            chatModel,
+                            app,
+                            plugin,
+                          ).open()
+                        }}
+                      >
+                        <Settings size={16} />
+                      </button>
+                    )}
                     {!DEFAULT_CHAT_MODELS.some(
                       (v) => v.id === chatModel.id,
                     ) && (

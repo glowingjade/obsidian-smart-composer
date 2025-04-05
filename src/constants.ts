@@ -239,6 +239,12 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     model: 'claude-3-5-sonnet-latest',
   },
   {
+    providerType: 'anthropic',
+    providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
+    id: 'claude-3.5-haiku',
+    model: 'claude-3-5-haiku-latest',
+  },
+  {
     providerType: 'openai',
     providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
     id: 'gpt-4o',
@@ -249,6 +255,20 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
     id: 'gpt-4o-mini',
     model: 'gpt-4o-mini',
+  },
+  {
+    providerType: 'openai',
+    providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
+    id: 'o3-mini',
+    model: 'o3-mini',
+    reasoning_effort: 'medium',
+  },
+  {
+    providerType: 'openai',
+    providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
+    id: 'o1',
+    model: 'o1',
+    reasoning_effort: 'medium',
   },
   {
     providerType: 'gemini',
@@ -273,19 +293,6 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
     id: 'gemini-exp-1206',
     model: 'gemini-exp-1206',
-  },
-  {
-    providerType: 'openai',
-    providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
-    id: 'o1',
-    model: 'o1',
-    streamingDisabled: true, // currently, o1 API doesn't support streaming
-  },
-  {
-    providerType: 'anthropic',
-    providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
-    id: 'claude-3.5-haiku',
-    model: 'claude-3-5-haiku-latest',
   },
   {
     providerType: 'gemini',

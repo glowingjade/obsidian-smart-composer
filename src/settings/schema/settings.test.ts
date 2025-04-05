@@ -4,7 +4,7 @@ import {
   DEFAULT_PROVIDERS,
 } from '../../constants'
 
-import { SETTINGS_SCHEMA_VERSION } from './setting.types'
+import { SETTINGS_SCHEMA_VERSION } from './migrations'
 import { parseSmartComposerSettings } from './settings'
 
 describe('parseSmartComposerSettings', () => {
