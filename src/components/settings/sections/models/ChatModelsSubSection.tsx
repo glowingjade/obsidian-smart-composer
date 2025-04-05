@@ -10,7 +10,7 @@ import { AddChatModelModal } from '../../../../settings/AddChatModelModal'
 import {
   ChatModelSettingsModal,
   hasChatModelSettings,
-} from './chatModelSettings'
+} from './ChatModelSettings'
 
 type ChatModelsSubSectionProps = {
   app: App
