@@ -121,7 +121,8 @@ export class PromptGenerator {
           }
         }
       }),
-      ...(shouldUseRAG && this.settings.assistantLevel !== AssistantLevel.Simple
+      ...(shouldUseRAG &&
+      this.settings.assistantLevel >= AssistantLevel.WithReferencing
         ? [this.getRagInstructionMessage()]
         : []),
     ]
