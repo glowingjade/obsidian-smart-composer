@@ -47,7 +47,7 @@ export const smartComposerSettingsSchema = z.object({
   embeddingModelId: z.string().catch(DEFAULT_EMBEDDING_MODELS[0].id), // model for embedding
 
   // Assistant Level
-  assistantLevel: z.number().catch(AssistantLevel.WithReferencingAndEdit),
+  assistantLevel: z.nativeEnum(AssistantLevel).catch(AssistantLevel.WithReferencingAndEdit),
 
   // System Prompt
   systemPrompt: z.string().catch(''),
