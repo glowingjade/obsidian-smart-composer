@@ -47,6 +47,7 @@ import { ChatListDropdown } from './ChatListDropdown'
 import QueryProgress, { QueryProgressState } from './QueryProgress'
 import { ReactMarkdownItem } from './ReactMarkdown'
 import SimilaritySearchResults from './SimilaritySearchResults'
+import { useAutoScroll } from './useAutoScroll'
 
 // Add an empty line here
 const getNewInputMessage = (app: App): ChatUserMessage => {
@@ -121,11 +122,14 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     type: 'idle',
   })
 
-  const preventAutoScrollRef = useRef(false)
-  const lastProgrammaticScrollRef = useRef<number>(0)
   const activeStreamAbortControllersRef = useRef<AbortController[]>([])
   const chatUserInputRefs = useRef<Map<string, ChatUserInputRef>>(new Map())
   const chatMessagesRef = useRef<HTMLDivElement>(null)
+
+  const { autoScrollToBottom, forceScrollToBottom } = useAutoScroll({
+    scrollContainerRef: chatMessagesRef,
+  })
+
   const registerChatUserInputRef = (
     id: string,
     ref: ChatUserInputRef | null,
@@ -134,37 +138,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       chatUserInputRefs.current.set(id, ref)
     } else {
       chatUserInputRefs.current.delete(id)
-    }
-  }
-
-  useEffect(() => {
-    const scrollContainer = chatMessagesRef.current
-    if (!scrollContainer) return
-
-    const handleScroll = () => {
-      // If the scroll event happened very close to our programmatic scroll, ignore it
-      if (Date.now() - lastProgrammaticScrollRef.current < 50) {
-        return
-      }
-
-      preventAutoScrollRef.current =
-        scrollContainer.scrollHeight -
-          scrollContainer.scrollTop -
-          scrollContainer.clientHeight >
-        20
-    }
-
-    scrollContainer.addEventListener('scroll', handleScroll)
-    return () => scrollContainer.removeEventListener('scroll', handleScroll)
-  }, [chatMessages])
-
-  const handleScrollToBottom = () => {
-    if (chatMessagesRef.current) {
-      const scrollContainer = chatMessagesRef.current
-      if (scrollContainer.scrollTop !== scrollContainer.scrollHeight) {
-        lastProgrammaticScrollRef.current = Date.now()
-        scrollContainer.scrollTop = scrollContainer.scrollHeight
-      }
     }
   }
 
@@ -248,6 +221,10 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         },
       ])
 
+      requestAnimationFrame(() => {
+        forceScrollToBottom()
+      })
+
       try {
         const abortController = new AbortController()
         activeStreamAbortControllersRef.current.push(abortController)
@@ -313,9 +290,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
                 : message,
             ),
           )
-          if (!preventAutoScrollRef.current) {
-            handleScrollToBottom()
-          }
+          autoScrollToBottom()
         }
       } catch (error) {
         if (error.name === 'AbortError') {
@@ -684,8 +659,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
             useVaultSearch,
           )
           setInputMessage(getNewInputMessage(app))
-          preventAutoScrollRef.current = false
-          handleScrollToBottom()
         }}
         onFocus={() => {
           setFocusedMessageId(inputMessage.id)
