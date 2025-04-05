@@ -217,11 +217,11 @@ ${similaritySearchResults
   .map(({ path, content, metadata }) => {
     const newContent =
       this.settings.assistantLevel >= AssistantLevel.WithReferencing
-        ? content
-        : this.addLineNumbersToContent({
+        ? this.addLineNumbersToContent({
             content,
             startLine: metadata.startLine,
           })
+        : content
     return `\`\`\`${path}\n${newContent}\n\`\`\`\n`
   })
   .join('')}\n`
