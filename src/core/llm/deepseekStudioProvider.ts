@@ -14,18 +14,18 @@ import { LLMProvider } from '../../types/provider.types'
 import { formatMessages } from '../../utils/llm/request'
 
 import { BaseLLMProvider } from './base'
-import { OpenAIMessageAdapter } from './openaiMessageAdapter'
+import { DeepSeekMessageAdapter } from './deepseekMessageAdapter'
 
 // deepseek doesn't support image
 export class DeepSeekStudioProvider extends BaseLLMProvider<
   Extract<LLMProvider, { type: 'deepseek' }>
 > {
-  private adapter: OpenAIMessageAdapter
+  private adapter: DeepSeekMessageAdapter
   private client: OpenAI
 
   constructor(provider: Extract<LLMProvider, { type: 'deepseek' }>) {
     super(provider)
-    this.adapter = new OpenAIMessageAdapter()
+    this.adapter = new DeepSeekMessageAdapter()
     this.client = new OpenAI({
       apiKey: provider.apiKey ?? '',
       baseURL: provider.baseUrl
