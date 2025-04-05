@@ -295,10 +295,14 @@ ${await this.getWebsiteContent(url)}
 
 3. Format your response in markdown.
 ${
+  this.settings.assistantLevel >= AssistantLevel.Simple
+    ? `
+4. Respond in the same language as the user's message.`
+    : ''
+}
+${
   this.settings.assistantLevel >= AssistantLevel.WithReferencing
     ? `
-4. Respond in the same language as the user's message.
-
 5. When writing out new markdown blocks, also wrap them with <smtcmp_block> tags. For example:
 <smtcmp_block language="markdown">
 {{ content }}
@@ -335,10 +339,14 @@ The user has full access to the file, so they prefer seeing only the changes in 
 
 2. Format your response in markdown.
 ${
+  this.settings.assistantLevel >= AssistantLevel.Simple
+    ? `
+3. Respond in the same language as the user's message.`
+    : ''
+}
+${
   this.settings.assistantLevel >= AssistantLevel.WithReferencing
     ? `
-3. Respond in the same language as the user's message.
-
 4. When referencing markdown blocks in your answer, keep the following guidelines in mind:
 
   a. Never include line numbers in the output markdown.
