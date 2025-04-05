@@ -329,7 +329,7 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   white-space: nowrap;
 }
 
-.smtcmp-chat-user-input-file-badge-name-block-suffix {
+.smtcmp-chat-user-input-file-badge-name-suffix {
   color: var(--text-faint);
   flex-grow: 0;
 }
