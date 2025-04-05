@@ -1,6 +1,5 @@
-import { SETTING_MIGRATIONS } from './migrations'
+import { SETTINGS_SCHEMA_VERSION, SETTING_MIGRATIONS } from './migrations'
 import {
-  SETTINGS_SCHEMA_VERSION,
   SmartComposerSettings,
   smartComposerSettingsSchema,
 } from './setting.types'
