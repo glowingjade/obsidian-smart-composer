@@ -30,6 +30,10 @@ export class OpenAIMessageAdapter {
         messages: request.messages.map((m) =>
           OpenAIMessageAdapter.parseRequestMessage(m),
         ),
+        // TODO: max_tokens is deprecated in the OpenAI API, with max_completion_tokens being the
+        // recommended replacement. Reasoning models do not support max_tokens at all.
+        // However, many OpenAI-compatible APIs still only support max_tokens.
+        // Consider implementing a solution that works with both OpenAI and compatible APIs.
         max_tokens: request.max_tokens,
         temperature: request.temperature,
         top_p: request.top_p,
@@ -57,7 +61,11 @@ export class OpenAIMessageAdapter {
         messages: request.messages.map((m) =>
           OpenAIMessageAdapter.parseRequestMessage(m),
         ),
-        max_completion_tokens: request.max_tokens,
+        // TODO: max_tokens is deprecated in the OpenAI API, with max_completion_tokens being the
+        // recommended replacement. Reasoning models do not support max_tokens at all.
+        // However, many OpenAI-compatible APIs still only support max_tokens.
+        // Consider implementing a solution that works with both OpenAI and compatible APIs.
+        max_tokens: request.max_tokens,
         temperature: request.temperature,
         top_p: request.top_p,
         frequency_penalty: request.frequency_penalty,

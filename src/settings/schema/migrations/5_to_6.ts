@@ -69,13 +69,8 @@ export const migrateFrom5To6: SettingMigration['migrate'] = (data) => {
         return (model as { id: string }).id === 'o1'
       },
     )
-    if (o1Index !== -1) {
-      // Add the new model after the model with id 'o1'
-      ;(newData.chatModels as unknown[]).splice(o1Index + 1, 0, newModel)
-    } else {
-      // Add the new model at index 0 of the array
-      ;(newData.chatModels as unknown[]).splice(0, 0, newModel)
-    }
+    const insertIndex = o1Index !== -1 ? o1Index + 1 : 0
+    ;(newData.chatModels as unknown[]).splice(insertIndex, 0, newModel)
   }
 
   return newData
