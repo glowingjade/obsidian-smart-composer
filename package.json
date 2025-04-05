@@ -67,7 +67,7 @@
     "lodash.isequal": "^4.5.0",
     "lucide-react": "^0.447.0",
     "minimatch": "^10.0.1",
-    "openai": "^4.73.0",
+    "openai": "^4.91.1",
     "parse5": "^7.1.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

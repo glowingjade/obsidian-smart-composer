@@ -23,7 +23,7 @@ export const chatModelSchema = z.discriminatedUnion('providerType', [
   z.object({
     providerType: z.literal('openai'),
     ...baseChatModelSchema.shape,
-    streamingDisabled: z.boolean().optional(),
+    reasoning_effort: z.string().optional(),
   }),
   z.object({
     providerType: z.literal('anthropic'),

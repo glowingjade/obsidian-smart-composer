@@ -26,6 +26,7 @@ export class OpenAIMessageAdapter {
     const response = await client.chat.completions.create(
       {
         model: request.model,
+        reasoning_effort: request.reasoning_effort,
         messages: request.messages.map((m) =>
           OpenAIMessageAdapter.parseRequestMessage(m),
         ),
@@ -52,6 +53,7 @@ export class OpenAIMessageAdapter {
     const stream = await client.chat.completions.create(
       {
         model: request.model,
+        reasoning_effort: request.reasoning_effort,
         messages: request.messages.map((m) =>
           OpenAIMessageAdapter.parseRequestMessage(m),
         ),
