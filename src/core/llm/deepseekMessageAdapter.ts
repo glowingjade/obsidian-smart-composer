@@ -58,7 +58,7 @@ export class DeepSeekMessageAdapter extends OpenAIMessageAdapter {
         messages: request.messages.map((m) =>
           DeepSeekMessageAdapter.parseRequestMessage(m),
         ),
-        max_completion_tokens: request.max_tokens,
+        max_tokens: request.max_tokens,
         temperature: request.temperature,
         top_p: request.top_p,
         frequency_penalty: request.frequency_penalty,
@@ -74,14 +74,15 @@ export class DeepSeekMessageAdapter extends OpenAIMessageAdapter {
       },
     )
 
-    // eslint-disable-next-line no-inner-declarations
-    async function* streamResponse(): AsyncIterable<LLMResponseStreaming> {
-      for await (const chunk of stream) {
-        yield DeepSeekMessageAdapter.parseStreamingResponseChunk(chunk)
-      }
-    }
+    return this.streamResponseGenerator(stream)
+  }
 
-    return streamResponse()
+  protected async *streamResponseGenerator(
+    stream: AsyncIterable<ChatCompletionChunk>,
+  ): AsyncIterable<LLMResponseStreaming> {
+    for await (const chunk of stream) {
+      yield DeepSeekMessageAdapter.parseStreamingResponseChunk(chunk)
+    }
   }
 
   static parseNonStreamingResponse(
@@ -94,7 +95,7 @@ export class DeepSeekMessageAdapter extends OpenAIMessageAdapter {
         message: {
           content: choice.message.content,
           reasoning: (
-            choice.message as unknown as { reasoning_content: string }
+            choice.message as unknown as { reasoning_content?: string }
           ).reasoning_content,
           role: choice.message.role,
         },
@@ -116,7 +117,7 @@ export class DeepSeekMessageAdapter extends OpenAIMessageAdapter {
         finish_reason: choice.finish_reason ?? null,
         delta: {
           content: choice.delta.content ?? null,
-          reasoning: (choice.delta as unknown as { reasoning_content: string })
+          reasoning: (choice.delta as unknown as { reasoning_content?: string })
             .reasoning_content,
           role: choice.delta.role,
         },

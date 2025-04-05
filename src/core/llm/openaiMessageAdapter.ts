@@ -73,14 +73,15 @@ export class OpenAIMessageAdapter {
       },
     )
 
-    // eslint-disable-next-line no-inner-declarations
-    async function* streamResponse(): AsyncIterable<LLMResponseStreaming> {
-      for await (const chunk of stream) {
-        yield OpenAIMessageAdapter.parseStreamingResponseChunk(chunk)
-      }
-    }
+    return this.streamResponseGenerator(stream)
+  }
 
-    return streamResponse()
+  protected async *streamResponseGenerator(
+    stream: AsyncIterable<ChatCompletionChunk>,
+  ): AsyncIterable<LLMResponseStreaming> {
+    for await (const chunk of stream) {
+      yield OpenAIMessageAdapter.parseStreamingResponseChunk(chunk)
+    }
   }
 
   static parseRequestMessage(

@@ -115,14 +115,7 @@ export class GroqProvider extends BaseLLMProvider<
         },
       )
 
-      // eslint-disable-next-line no-inner-declarations
-      async function* streamResponse(): AsyncIterable<LLMResponseStreaming> {
-        for await (const chunk of stream) {
-          yield GroqProvider.parseStreamingResponseChunk(chunk)
-        }
-      }
-
-      return streamResponse()
+      return this.streamResponseGenerator(stream)
     } catch (error) {
       if (error instanceof Groq.AuthenticationError) {
         throw new LLMAPIKeyInvalidException(
@@ -138,6 +131,14 @@ export class GroqProvider extends BaseLLMProvider<
     throw new Error(
       `Provider ${this.provider.id} does not support embeddings. Please use a different provider.`,
     )
+  }
+
+  private async *streamResponseGenerator(
+    stream: AsyncIterable<ChatCompletionChunk>,
+  ): AsyncIterable<LLMResponseStreaming> {
+    for await (const chunk of stream) {
+      yield GroqProvider.parseStreamingResponseChunk(chunk)
+    }
   }
 
   static parseRequestMessage(

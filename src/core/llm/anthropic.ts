@@ -184,54 +184,7 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
         },
       )
 
-      // eslint-disable-next-line no-inner-declarations
-      async function* streamResponse(): AsyncIterable<LLMResponseStreaming> {
-        let messageId = ''
-        let model = ''
-        let usage: ResponseUsage = {
-          prompt_tokens: 0,
-          completion_tokens: 0,
-          total_tokens: 0,
-        }
-
-        for await (const chunk of stream) {
-          if (chunk.type === 'message_start') {
-            messageId = chunk.message.id
-            model = chunk.message.model
-            usage = {
-              prompt_tokens: chunk.message.usage.input_tokens,
-              completion_tokens: chunk.message.usage.output_tokens,
-              total_tokens:
-                chunk.message.usage.input_tokens +
-                chunk.message.usage.output_tokens,
-            }
-          } else if (chunk.type === 'content_block_delta') {
-            yield AnthropicProvider.parseStreamingResponseChunk(
-              chunk,
-              messageId,
-              model,
-            )
-          } else if (chunk.type === 'message_delta') {
-            usage = {
-              prompt_tokens: usage.prompt_tokens,
-              completion_tokens:
-                usage.completion_tokens + chunk.usage.output_tokens,
-              total_tokens: usage.total_tokens + chunk.usage.output_tokens,
-            }
-          }
-        }
-
-        // After the stream is complete, yield the final usage
-        yield {
-          id: messageId,
-          choices: [],
-          object: 'chat.completion.chunk',
-          model: model,
-          usage: usage,
-        }
-      }
-
-      return streamResponse()
+      return this.streamResponseGenerator(stream)
     } catch (error) {
       if (error instanceof Anthropic.AuthenticationError) {
         // Anthropic's CORS Policy Change (March 2025)
@@ -269,6 +222,54 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
       }
 
       throw error
+    }
+  }
+
+  private async *streamResponseGenerator(
+    stream: AsyncIterable<MessageStreamEvent>,
+  ): AsyncIterable<LLMResponseStreaming> {
+    let messageId = ''
+    let model = ''
+    let usage: ResponseUsage = {
+      prompt_tokens: 0,
+      completion_tokens: 0,
+      total_tokens: 0,
+    }
+
+    for await (const chunk of stream) {
+      if (chunk.type === 'message_start') {
+        messageId = chunk.message.id
+        model = chunk.message.model
+        usage = {
+          prompt_tokens: chunk.message.usage.input_tokens,
+          completion_tokens: chunk.message.usage.output_tokens,
+          total_tokens:
+            chunk.message.usage.input_tokens +
+            chunk.message.usage.output_tokens,
+        }
+      } else if (chunk.type === 'content_block_delta') {
+        yield AnthropicProvider.parseStreamingResponseChunk(
+          chunk,
+          messageId,
+          model,
+        )
+      } else if (chunk.type === 'message_delta') {
+        usage = {
+          prompt_tokens: usage.prompt_tokens,
+          completion_tokens:
+            usage.completion_tokens + chunk.usage.output_tokens,
+          total_tokens: usage.total_tokens + chunk.usage.output_tokens,
+        }
+      }
+    }
+
+    // After the stream is complete, yield the final usage
+    yield {
+      id: messageId,
+      choices: [],
+      object: 'chat.completion.chunk',
+      model: model,
+      usage: usage,
     }
   }
 
