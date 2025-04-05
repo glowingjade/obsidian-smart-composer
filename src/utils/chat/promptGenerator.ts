@@ -5,6 +5,7 @@ import { QueryProgressState } from '../../components/chat-view/QueryProgress'
 import { RAGEngine } from '../../core/rag/ragEngine'
 import { SelectEmbedding } from '../../database/schema'
 import { SmartComposerSettings } from '../../settings/schema/setting.types'
+import { AssistantLevel } from '../../types/assistant-level.types'
 import { ChatMessage, ChatUserMessage } from '../../types/chat'
 import { ContentPart, RequestMessage } from '../../types/llm/request'
 import {
@@ -120,7 +121,7 @@ export class PromptGenerator {
           }
         }
       }),
-      ...(shouldUseRAG ? [this.getRagInstructionMessage()] : []),
+      ...(shouldUseRAG && this.settings.assistantLevel !== AssistantLevel.Simple ? [this.getRagInstructionMessage()] : []),
     ]
 
     return {
@@ -211,11 +212,13 @@ export class PromptGenerator {
       filePrompt = `## Potentially Relevant Snippets from the current vault
 ${similaritySearchResults
   .map(({ path, content, metadata }) => {
-    const contentWithLineNumbers = this.addLineNumbersToContent({
-      content,
-      startLine: metadata.startLine,
-    })
-    return `\`\`\`${path}\n${contentWithLineNumbers}\n\`\`\`\n`
+    const newContent = this.settings.assistantLevel === AssistantLevel.Simple
+      ? content
+      : this.addLineNumbersToContent({
+          content,
+          startLine: metadata.startLine,
+        })
+    return `\`\`\`${path}\n${newContent}\n\`\`\`\n`
   })
   .join('')}\n`
     } else {
@@ -281,11 +284,30 @@ ${await this.getWebsiteContent(url)}
   }
 
   private getSystemMessage(shouldUseRAG: boolean): RequestMessage {
-    const systemPrompt = `You are an intelligent assistant to help answer any questions that the user has, particularly about editing and organizing markdown files in Obsidian.
+    const systemPrompt = `You are an intelligent assistant to help answer any questions that the user has${this.settings.assistantLevel >= AssistantLevel.WithReferencingAndEdit ?`, particularly about editing and organizing markdown files in Obsidian` : ''}.
 
 1. Please keep your response as concise as possible. Avoid being verbose.
 
-2. When the user is asking for edits to their markdown, please provide a simplified version of the markdown block emphasizing only the changes. Use comments to show where unchanged content has been skipped. Wrap the markdown block with <smtcmp_block> tags. Add filename and language attributes to the <smtcmp_block> tags. For example:
+2. Do not lie or make up facts.
+
+3. Format your response in markdown.
+${this.settings.assistantLevel >= AssistantLevel.WithReferencing ?`
+4. Respond in the same language as the user's message.
+
+5. When writing out new markdown blocks, also wrap them with <smtcmp_block> tags. For example:
+<smtcmp_block language="markdown">
+{{ content }}
+</smtcmp_block>
+
+6. When providing markdown blocks for an existing file, add the filename and language attributes to the <smtcmp_block> tags. Restate the relevant section or heading, so the user knows which part of the file you are editing. For example:
+<smtcmp_block filename="path/to/file.md" language="markdown">
+## Section Title
+...
+{{ content }}
+...
+</smtcmp_block>
+` : ''}${this.settings.assistantLevel >= AssistantLevel.WithReferencingAndEdit ?`
+7. When the user is asking for edits to their markdown, please provide a simplified version of the markdown block emphasizing only the changes. Use comments to show where unchanged content has been skipped. Wrap the markdown block with <smtcmp_block> tags. Add filename and language attributes to the <smtcmp_block> tags. For example:
 <smtcmp_block filename="path/to/file.md" language="markdown">
 <!-- ... existing content ... -->
 {{ edit_1 }}
@@ -294,33 +316,15 @@ ${await this.getWebsiteContent(url)}
 <!-- ... existing content ... -->
 </smtcmp_block>
 The user has full access to the file, so they prefer seeing only the changes in the markdown. Often this will mean that the start/end of the file will be skipped, but that's okay! Rewrite the entire file only if specifically requested. Always provide a brief explanation of the updates, except when the user specifically asks for just the content.
+` : ''}`
 
-3. Do not lie or make up facts.
-
-4. Respond in the same language as the user's message.
-
-5. Format your response in markdown.
-
-6. When writing out new markdown blocks, also wrap them with <smtcmp_block> tags. For example:
-<smtcmp_block language="markdown">
-{{ content }}
-</smtcmp_block>
-
-7. When providing markdown blocks for an existing file, add the filename and language attributes to the <smtcmp_block> tags. Restate the relevant section or heading, so the user knows which part of the file you are editing. For example:
-<smtcmp_block filename="path/to/file.md" language="markdown">
-## Section Title
-...
-{{ content }}
-...
-</smtcmp_block>`
-
-    const systemPromptRAG = `You are an intelligent assistant to help answer any questions that the user has, particularly about editing and organizing markdown files in Obsidian. You will be given your conversation history with them and potentially relevant blocks of markdown content from the current vault.
+    const systemPromptRAG = `You are an intelligent assistant to help answer any questions that the user has${this.settings.assistantLevel >= AssistantLevel.WithReferencingAndEdit ?`, particularly about editing and organizing markdown files in Obsidian` : ''}. You will be given your conversation history with them and potentially relevant blocks of markdown content from the current vault.
       
 1. Do not lie or make up facts.
 
-2. Respond in the same language as the user's message.
-
-3. Format your response in markdown.
+2. Format your response in markdown.
+${this.settings.assistantLevel >= AssistantLevel.WithReferencing ?`
+3. Respond in the same language as the user's message.
 
 4. When referencing markdown blocks in your answer, keep the following guidelines in mind:
 
@@ -337,7 +341,7 @@ The user has full access to the file, so they prefer seeing only the changes in 
   </smtcmp_block>
 
   d. When referencing a markdown block the user gives you, only add the startLine and endLine attributes to the <smtcmp_block> tags. Write related content outside of the <smtcmp_block> tags. The content inside the <smtcmp_block> tags will be ignored and replaced with the actual content of the markdown block. For example:
-  <smtcmp_block filename="path/to/file.md" language="markdown" startLine="2" endLine="30"></smtcmp_block>`
+  <smtcmp_block filename="path/to/file.md" language="markdown" startLine="2" endLine="30"></smtcmp_block>` : ''}`
 
     return {
       role: 'system',
