@@ -1,6 +1,6 @@
 import { parseFragment } from 'parse5'
 
-export type ParsedSmtcmpBlock =
+export type ParsedTagContent =
   | { type: 'string'; content: string }
   | {
       type: 'smtcmp_block'
@@ -10,9 +10,16 @@ export type ParsedSmtcmpBlock =
       startLine?: number
       endLine?: number
     }
+  | {
+      type: 'think'
+      content: string
+    }
 
-export function parsesmtcmpBlocks(input: string): ParsedSmtcmpBlock[] {
-  const parsedResult: ParsedSmtcmpBlock[] = []
+/**
+ * Parses text containing <smtcmp_block> and <think> tags into structured content
+ */
+export function parseTagContents(input: string): ParsedTagContent[] {
+  const parsedResult: ParsedTagContent[] = []
   const fragment = parseFragment(input, {
     sourceCodeLocationInfo: true,
   })
@@ -67,6 +74,34 @@ export function parsesmtcmpBlocks(input: string): ParsedSmtcmpBlock[] {
           filename,
           startLine: startLine ? parseInt(startLine) : undefined,
           endLine: endLine ? parseInt(endLine) : undefined,
+        })
+      }
+      lastEndOffset = endOffset
+    } else if (node.nodeName === 'think') {
+      if (!node.sourceCodeLocation) {
+        throw new Error('sourceCodeLocation is undefined')
+      }
+      const startOffset = node.sourceCodeLocation.startOffset
+      const endOffset = node.sourceCodeLocation.endOffset
+      if (startOffset > lastEndOffset) {
+        parsedResult.push({
+          type: 'string',
+          content: input.slice(lastEndOffset, startOffset),
+        })
+      }
+
+      const children = node.childNodes
+      if (children.length > 0) {
+        const innerContentStartOffset =
+          children[0].sourceCodeLocation?.startOffset
+        const innerContentEndOffset =
+          children[children.length - 1].sourceCodeLocation?.endOffset
+        if (!innerContentStartOffset || !innerContentEndOffset) {
+          throw new Error('sourceCodeLocation is undefined')
+        }
+        parsedResult.push({
+          type: 'think',
+          content: input.slice(innerContentStartOffset, innerContentEndOffset),
         })
       }
       lastEndOffset = endOffset
