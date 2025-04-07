@@ -39,7 +39,9 @@ import { PromptGenerator } from '../../utils/chat/promptGenerator'
 import { readTFileContent } from '../../utils/obsidian'
 import { ErrorModal } from '../modals/ErrorModal'
 
+import { AnnotationManager } from './AnnotationManager'
 import AssistantMessageActions from './AssistantMessageActions'
+import AssistantMessageAnnotations from './AssistantMessageAnnotations'
 import AssistantMessageReasoning from './AssistantMessageReasoning'
 import ChatUserInput, { ChatUserInputRef } from './chat-input/ChatUserInput'
 import { editorStateToPlainText } from './chat-input/utils/editor-state-to-plain-text'
@@ -269,9 +271,22 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           },
         )
 
+        const annotationManager = new AnnotationManager()
+
         for await (const chunk of stream) {
-          const reasoning = chunk.choices[0]?.delta?.reasoning
           const content = chunk.choices[0]?.delta?.content ?? ''
+          const reasoning = chunk.choices[0]?.delta?.reasoning
+          const annotations = chunk.choices[0]?.delta?.annotations
+
+          if (annotations) {
+            // For annotations with empty titles, fetch the title of the URL and update the chat messages
+            await annotationManager.fetchUrlTitles(
+              annotations,
+              setChatMessages,
+              responseMessageId,
+            )
+          }
+
           setChatMessages((prevChatHistory) =>
             prevChatHistory.map((message) =>
               message.role === 'assistant' && message.id === responseMessageId
@@ -281,9 +296,13 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
                     reasoning: reasoning
                       ? (message.reasoning ?? '') + reasoning
                       : message.reasoning,
+                    annotations: AnnotationManager.mergeAnnotations(
+                      message.annotations,
+                      annotations,
+                    ),
                     metadata: {
                       ...message.metadata,
-                      usage: chunk.usage ?? message.metadata?.usage, // Keep existing usage if chunk has no usage data
+                      usage: chunk.usage ?? message.metadata?.usage,
                       model,
                     },
                   }
@@ -621,6 +640,11 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
             <div key={message.id} className="smtcmp-chat-messages-assistant">
               {message.reasoning && (
                 <AssistantMessageReasoning reasoning={message.reasoning} />
+              )}
+              {message.annotations && (
+                <AssistantMessageAnnotations
+                  annotations={message.annotations}
+                />
               )}
               <ReactMarkdownItem
                 index={index}

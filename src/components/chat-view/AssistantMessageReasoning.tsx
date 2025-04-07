@@ -35,20 +35,20 @@ export default function AssistantMessageReasoning({
   }
 
   return (
-    <div className="smtcmp-assistant-message-reasoning">
+    <div className="smtcmp-assistant-message-metadata">
       <div
-        className="smtcmp-assistant-message-reasoning-toggle"
+        className="smtcmp-assistant-message-metadata-toggle"
         onClick={handleToggle}
       >
         <span>Reasoning {showLoader && <DotLoader />}</span>
         {isExpanded ? (
-          <ChevronUp className="smtcmp-assistant-message-reasoning-toggle-icon" />
+          <ChevronUp className="smtcmp-assistant-message-metadata-toggle-icon" />
         ) : (
-          <ChevronDown className="smtcmp-assistant-message-reasoning-toggle-icon" />
+          <ChevronDown className="smtcmp-assistant-message-metadata-toggle-icon" />
         )}
       </div>
       {isExpanded && (
-        <div className="smtcmp-assistant-message-reasoning-content">
+        <div className="smtcmp-assistant-message-metadata-content">
           <Markdown className="smtcmp-markdown">{reasoning}</Markdown>
         </div>
       )}
