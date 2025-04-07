@@ -14,6 +14,9 @@ type ModelPricing = {
 export const OPENAI_PRICES: Record<string, ModelPricing> = {
   'gpt-4o': { input: 2.5, output: 10 },
   'gpt-4o-mini': { input: 0.15, output: 0.6 },
+  o1: { input: 15, output: 60 },
+  'o3-mini': { input: 1.1, output: 4.4 },
+  'o1-mini': { input: 1.1, output: 4.4 },
 }
 
 export const ANTHROPIC_PRICES: Record<string, ModelPricing> = {
@@ -273,14 +276,14 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
   {
     providerType: 'gemini',
     providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
-    id: 'gemini-1.5-pro',
-    model: 'gemini-1.5-pro',
+    id: 'gemini-2.5-pro',
+    model: 'gemini-2.5-pro-preview-03-25',
   },
   {
     providerType: 'gemini',
     providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
     id: 'gemini-2.0-flash',
-    model: 'gemini-2.0-flash-exp',
+    model: 'gemini-2.0-flash',
   },
   {
     providerType: 'gemini',
@@ -291,8 +294,14 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
   {
     providerType: 'gemini',
     providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
-    id: 'gemini-exp-1206',
-    model: 'gemini-exp-1206',
+    id: 'gemini-2.0-flash-lite',
+    model: 'gemini-2.0-flash-lite',
+  },
+  {
+    providerType: 'gemini',
+    providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
+    id: 'gemini-1.5-pro',
+    model: 'gemini-1.5-pro',
   },
   {
     providerType: 'gemini',

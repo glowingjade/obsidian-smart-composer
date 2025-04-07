@@ -28,6 +28,12 @@ import {
 } from './exception'
 
 /**
+ * TODO: Consider future migration from '@google/generative-ai' to '@google/genai' (https://github.com/googleapis/js-genai)
+ * - Current '@google/generative-ai' library will not support newest models and features
+ * - Not migrating yet as '@google/genai' is still in preview status
+ */
+
+/**
  * Note on OpenAI Compatibility API:
  * Gemini provides an OpenAI-compatible endpoint (https://ai.google.dev/gemini-api/docs/openai)
  * which allows using the OpenAI SDK with Gemini models. However, there are currently CORS issues

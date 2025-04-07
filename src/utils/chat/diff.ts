@@ -22,7 +22,7 @@ export function createDiffBlocks(
   const blocks: DiffBlock[] = []
 
   const advOptions: ILinesDiffComputerOptions = {
-    ignoreTrimWhitespace: true,
+    ignoreTrimWhitespace: false,
     computeMoves: true,
     maxComputationTimeMs: 0,
   }

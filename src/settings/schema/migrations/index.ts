@@ -6,8 +6,9 @@ import { migrateFrom2To3 } from './2_to_3'
 import { migrateFrom3To4 } from './3_to_4'
 import { migrateFrom4To5 } from './4_to_5'
 import { migrateFrom5To6 } from './5_to_6'
+import { migrateFrom6To7 } from './6_to_7'
 
-export const SETTINGS_SCHEMA_VERSION = 6
+export const SETTINGS_SCHEMA_VERSION = 7
 
 export const SETTING_MIGRATIONS: SettingMigration[] = [
   {
@@ -39,5 +40,10 @@ export const SETTING_MIGRATIONS: SettingMigration[] = [
     fromVersion: 5,
     toVersion: 6,
     migrate: migrateFrom5To6,
+  },
+  {
+    fromVersion: 6,
+    toVersion: 7,
+    migrate: migrateFrom6To7,
   },
 ]
