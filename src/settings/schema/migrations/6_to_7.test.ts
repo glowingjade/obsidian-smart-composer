@@ -1,6 +1,152 @@
-import { DEFAULT_CHAT_MODELS_V7, migrateFrom6To7 } from './6_to_7'
+import {
+  DEFAULT_CHAT_MODELS_V7,
+  DEFAULT_PROVIDERS_V7,
+  migrateFrom6To7,
+} from './6_to_7'
 
 describe('Migration from v6 to v7', () => {
+  it('should use default providers if providers is not present', () => {
+    const oldSettings = {
+      version: 6,
+    }
+    const result = migrateFrom6To7(oldSettings)
+    expect(result.providers).toEqual(DEFAULT_PROVIDERS_V7)
+  })
+
+  it('should reorder default providers', () => {
+    const oldSettings = {
+      version: 6,
+      providers: [
+        {
+          type: 'openai',
+          id: 'openai',
+          apiKey: 'openai-api-key',
+        },
+        {
+          type: 'anthropic',
+          id: 'anthropic',
+          apiKey: 'anthropic-api-key',
+        },
+        {
+          type: 'gemini',
+          id: 'gemini',
+          apiKey: 'gemini-api-key',
+        },
+        {
+          type: 'groq',
+          id: 'groq',
+          apiKey: 'groq-api-key',
+        },
+        {
+          type: 'deepseek',
+          id: 'deepseek',
+          apiKey: 'deepseek-api-key',
+        },
+      ],
+    }
+    const result = migrateFrom6To7(oldSettings)
+    expect(result.providers).toEqual([
+      {
+        type: 'openai',
+        id: 'openai',
+        apiKey: 'openai-api-key',
+      },
+      {
+        type: 'anthropic',
+        id: 'anthropic',
+        apiKey: 'anthropic-api-key',
+      },
+      {
+        type: 'gemini',
+        id: 'gemini',
+        apiKey: 'gemini-api-key',
+      },
+      {
+        type: 'deepseek',
+        id: 'deepseek',
+        apiKey: 'deepseek-api-key',
+      },
+      {
+        type: 'perplexity',
+        id: 'perplexity',
+      },
+      {
+        type: 'groq',
+        id: 'groq',
+        apiKey: 'groq-api-key',
+      },
+      {
+        type: 'openrouter',
+        id: 'openrouter',
+      },
+      {
+        type: 'ollama',
+        id: 'ollama',
+      },
+      {
+        type: 'lm-studio',
+        id: 'lm-studio',
+      },
+      {
+        type: 'morph',
+        id: 'morph',
+      },
+    ])
+  })
+
+  it('should add default providers and preserve custom providers', () => {
+    const oldSettings = {
+      version: 6,
+      providers: [
+        ...DEFAULT_PROVIDERS_V7.filter(
+          (provider) => provider.id !== 'perplexity',
+        ),
+        {
+          type: 'openai-compatible',
+          id: 'cohere',
+          baseUrl: 'https://api.cohere.ai',
+          apiKey: 'cohere-api-key',
+          additionalSettings: {
+            noStainless: true,
+          },
+        },
+      ],
+    }
+    const result = migrateFrom6To7(oldSettings)
+    expect(result.providers).toEqual([
+      ...DEFAULT_PROVIDERS_V7,
+      {
+        type: 'openai-compatible',
+        id: 'cohere',
+        baseUrl: 'https://api.cohere.ai',
+        apiKey: 'cohere-api-key',
+        additionalSettings: {
+          noStainless: true,
+        },
+      },
+    ])
+  })
+
+  it('should remove provider with id "perplexity"', () => {
+    const oldSettings = {
+      version: 6,
+      providers: [
+        {
+          type: 'openai',
+          id: 'openai',
+        },
+        {
+          type: 'openai-compatible',
+          id: 'perplexity',
+          baseUrl: 'https://api.perplexity.ai',
+          apiKey: 'perplexity-api-key',
+        },
+      ],
+    }
+    const result = migrateFrom6To7(oldSettings)
+    expect(result.providers).toEqual(DEFAULT_PROVIDERS_V7)
+  })
+
   it('should use default models if chatModels is not present', () => {
     const oldSettings = {
       version: 6,

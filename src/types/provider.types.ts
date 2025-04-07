@@ -28,6 +28,14 @@ export const llmProviderSchema = z.discriminatedUnion('type', [
     ...baseLlmProviderSchema.shape,
   }),
   z.object({
+    type: z.literal('deepseek'),
+    ...baseLlmProviderSchema.shape,
+  }),
+  z.object({
+    type: z.literal('perplexity'),
+    ...baseLlmProviderSchema.shape,
+  }),
+  z.object({
     type: z.literal('groq'),
     ...baseLlmProviderSchema.shape,
   }),
@@ -41,14 +49,6 @@ export const llmProviderSchema = z.discriminatedUnion('type', [
   }),
   z.object({
     type: z.literal('lm-studio'),
-    ...baseLlmProviderSchema.shape,
-  }),
-  z.object({
-    type: z.literal('deepseek'),
-    ...baseLlmProviderSchema.shape,
-  }),
-  z.object({
-    type: z.literal('perplexity'),
     ...baseLlmProviderSchema.shape,
   }),
   z.object({

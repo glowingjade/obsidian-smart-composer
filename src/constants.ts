@@ -197,6 +197,14 @@ export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
     id: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
   },
   {
+    type: 'deepseek',
+    id: PROVIDER_TYPES_INFO.deepseek.defaultProviderId,
+  },
+  {
+    type: 'perplexity',
+    id: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
+  },
+  {
     type: 'groq',
     id: PROVIDER_TYPES_INFO.groq.defaultProviderId,
   },
@@ -211,10 +219,6 @@ export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
   {
     type: 'lm-studio',
     id: PROVIDER_TYPES_INFO['lm-studio'].defaultProviderId,
-  },
-  {
-    type: 'deepseek',
-    id: PROVIDER_TYPES_INFO.deepseek.defaultProviderId,
   },
   {
     type: 'morph',
@@ -328,6 +332,36 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: PROVIDER_TYPES_INFO.deepseek.defaultProviderId,
     id: 'deepseek-reasoner',
     model: 'deepseek-reasoner',
+  },
+  {
+    providerType: 'perplexity',
+    providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
+    id: 'sonar',
+    model: 'sonar',
+  },
+  {
+    providerType: 'perplexity',
+    providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
+    id: 'sonar-pro',
+    model: 'sonar',
+  },
+  {
+    providerType: 'perplexity',
+    providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
+    id: 'sonar-deep-research',
+    model: 'sonar-deep-research',
+  },
+  {
+    providerType: 'perplexity',
+    providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
+    id: 'sonar-reasoning',
+    model: 'sonar',
+  },
+  {
+    providerType: 'perplexity',
+    providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
+    id: 'sonar-reasoning-pro',
+    model: 'sonar',
   },
   {
     providerType: 'morph',
