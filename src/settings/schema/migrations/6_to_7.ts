@@ -7,7 +7,7 @@ import { SettingMigration } from '../setting.types'
  * - Sort default models by provider type
  */
 
-export const DEFAULT_CHAT_MODELS_V6: {
+export const DEFAULT_CHAT_MODELS_V7: {
   id: string
   providerType: string
   providerId: string
@@ -134,11 +134,11 @@ export const migrateFrom6To7: SettingMigration['migrate'] = (data) => {
   if (!('chatModels' in newData && Array.isArray(newData.chatModels))) {
     return {
       ...newData,
-      chatModels: DEFAULT_CHAT_MODELS_V6,
+      chatModels: DEFAULT_CHAT_MODELS_V7,
     }
   }
 
-  const defaultChatModels = DEFAULT_CHAT_MODELS_V6.map((model) => {
+  const defaultChatModels = DEFAULT_CHAT_MODELS_V7.map((model) => {
     const existingModel = (newData.chatModels as unknown[]).find(
       (m: unknown) => {
         return (m as { id: string }).id === model.id

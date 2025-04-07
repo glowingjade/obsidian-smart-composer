@@ -1,4 +1,4 @@
-import { DEFAULT_CHAT_MODELS_V6, migrateFrom6To7 } from './6_to_7'
+import { DEFAULT_CHAT_MODELS_V7, migrateFrom6To7 } from './6_to_7'
 
 describe('Migration from v6 to v7', () => {
   it('should use default models if chatModels is not present', () => {
@@ -7,7 +7,7 @@ describe('Migration from v6 to v7', () => {
     }
     const result = migrateFrom6To7(oldSettings)
     expect(result.version).toBe(7)
-    expect(result.chatModels).toEqual(DEFAULT_CHAT_MODELS_V6)
+    expect(result.chatModels).toEqual(DEFAULT_CHAT_MODELS_V7)
   })
 
   it('should add default models and preserve custom models', () => {
@@ -31,7 +31,7 @@ describe('Migration from v6 to v7', () => {
     }
     const result = migrateFrom6To7(oldSettings)
     expect(result.chatModels).toEqual([
-      ...DEFAULT_CHAT_MODELS_V6,
+      ...DEFAULT_CHAT_MODELS_V7,
       {
         providerType: 'openai-compatible',
         providerId: 'perplexity',
@@ -86,7 +86,7 @@ describe('Migration from v6 to v7', () => {
 
     const result = migrateFrom6To7(oldSettings)
     expect(result.chatModels).toEqual([
-      ...DEFAULT_CHAT_MODELS_V6.map((model) => {
+      ...DEFAULT_CHAT_MODELS_V7.map((model) => {
         if (model.id === 'gpt-4o' || model.id === 'deepseek-chat') {
           return {
             ...model,
