@@ -103,6 +103,14 @@ export const PROVIDER_TYPES_INFO = {
     supportEmbedding: false,
     additionalSettings: [],
   },
+  perplexity: {
+    label: 'Perplexity',
+    defaultProviderId: 'perplexity',
+    requireApiKey: true,
+    requireBaseUrl: false,
+    supportEmbedding: false,
+    additionalSettings: [],
+  },
   morph: {
     label: 'Morph',
     defaultProviderId: 'morph',

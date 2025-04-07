@@ -14,6 +14,7 @@ import { OllamaProvider } from './ollama'
 import { OpenAIAuthenticatedProvider } from './openai'
 import { OpenAICompatibleProvider } from './openaiCompatibleProvider'
 import { OpenRouterProvider } from './openRouterProvider'
+import { PerplexityProvider } from './perplexityProvider'
 
 /*
  * OpenAI, OpenAI-compatible, and Anthropic providers include token usage statistics
@@ -57,6 +58,9 @@ export function getProviderClient({
     }
     case 'deepseek': {
       return new DeepSeekStudioProvider(provider)
+    }
+    case 'perplexity': {
+      return new PerplexityProvider(provider)
     }
     case 'morph': {
       return new MorphProvider(provider)

@@ -48,6 +48,10 @@ export const llmProviderSchema = z.discriminatedUnion('type', [
     ...baseLlmProviderSchema.shape,
   }),
   z.object({
+    type: z.literal('perplexity'),
+    ...baseLlmProviderSchema.shape,
+  }),
+  z.object({
     type: z.literal('morph'),
     ...baseLlmProviderSchema.shape,
   }),
