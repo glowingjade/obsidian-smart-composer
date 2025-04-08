@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client'
 import SmartComposerPlugin from '../../../../main'
 import { ChatModel, chatModelSchema } from '../../../../types/chat-model.types'
 import { ObsidianButton } from '../../../common/ObsidianButton'
+import { ObsidianDropdown } from '../../../common/ObsidianDropdown'
 import { ObsidianSetting } from '../../../common/ObsidianSetting'
 import { ObsidianTextInput } from '../../../common/ObsidianTextInput'
 
@@ -25,7 +26,7 @@ const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
   {
     check: (model) =>
       model.providerType === 'openai' &&
-      ['o1', 'o1-mini', 'o3-mini'].includes(model.model ?? ''),
+      ['o1', 'o1-mini', 'o3-mini'].includes(model.model),
 
     SettingsComponent: (props: SettingsComponentProps) => {
       const { model, plugin, onClose } = props
@@ -57,11 +58,15 @@ const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
         <>
           <ObsidianSetting
             name="Reasoning Effort"
-            desc={`Controls how much thinking the model does before responding. Must be one of "low", "medium", or "high".`}
+            desc={`Controls how much thinking the model does before responding. Default is "medium".`}
           >
-            <ObsidianTextInput
+            <ObsidianDropdown
               value={reasoningEffort}
-              placeholder="low, medium, or high"
+              options={{
+                low: 'low',
+                medium: 'medium',
+                high: 'high',
+              }}
               onChange={(value: string) => setReasoningEffort(value)}
             />
           </ObsidianSetting>
@@ -133,6 +138,75 @@ const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
               value={budgetTokens}
               placeholder="Number of tokens"
               onChange={(value: string) => setBudgetTokens(value)}
+            />
+          </ObsidianSetting>
+
+          <ObsidianSetting>
+            <ObsidianButton text="Save" onClick={handleSubmit} cta />
+            <ObsidianButton text="Cancel" onClick={onClose} />
+          </ObsidianSetting>
+        </>
+      )
+    },
+  },
+
+  // Perplexity settings
+  {
+    check: (model) =>
+      model.providerType === 'perplexity' &&
+      [
+        'sonar',
+        'sonar-pro',
+        'sonar-deep-research',
+        'sonar-reasoning',
+        'sonar-reasoning-pro',
+      ].includes(model.model),
+
+    SettingsComponent: (props: SettingsComponentProps) => {
+      const { model, plugin, onClose } = props
+      const typedModel = model as ChatModel & { providerType: 'perplexity' }
+      const [searchContextSize, setSearchContextSize] = useState(
+        typedModel.web_search_options?.search_context_size ?? 'low',
+      )
+
+      const handleSubmit = async () => {
+        if (!['low', 'medium', 'high'].includes(searchContextSize)) {
+          new Notice(
+            'Search context size must be one of "low", "medium", "high"',
+          )
+          return
+        }
+
+        const updatedModel = {
+          ...typedModel,
+          web_search_options: {
+            ...typedModel.web_search_options,
+            search_context_size: searchContextSize,
+          },
+        }
+        await plugin.setSettings({
+          ...plugin.settings,
+          chatModels: plugin.settings.chatModels.map((m) =>
+            m.id === model.id ? updatedModel : m,
+          ),
+        })
+        onClose()
+      }
+
+      return (
+        <>
+          <ObsidianSetting
+            name="Search Context Size"
+            desc={`Determines how much search context is retrieved for the model. Choose "low" for minimal context and lower costs, "medium" for a balanced approach, or "high" for maximum context at higher cost. Default is "low".`}
+          >
+            <ObsidianDropdown
+              value={searchContextSize}
+              options={{
+                low: 'low',
+                medium: 'medium',
+                high: 'high',
+              }}
+              onChange={(value: string) => setSearchContextSize(value)}
             />
           </ObsidianSetting>
 

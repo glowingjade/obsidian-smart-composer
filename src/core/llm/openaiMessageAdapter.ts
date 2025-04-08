@@ -27,6 +27,7 @@ export class OpenAIMessageAdapter {
       {
         model: request.model,
         reasoning_effort: request.reasoning_effort,
+        web_search_options: request.web_search_options,
         messages: request.messages.map((m) => this.parseRequestMessage(m)),
         // TODO: max_tokens is deprecated in the OpenAI API, with max_completion_tokens being the
         // recommended replacement. Reasoning models do not support max_tokens at all.
@@ -56,6 +57,7 @@ export class OpenAIMessageAdapter {
       {
         model: request.model,
         reasoning_effort: request.reasoning_effort,
+        web_search_options: request.web_search_options,
         messages: request.messages.map((m) => this.parseRequestMessage(m)),
         // TODO: max_tokens is deprecated in the OpenAI API, with max_completion_tokens being the
         // recommended replacement. Reasoning models do not support max_tokens at all.

@@ -45,6 +45,8 @@ export class PerplexityProvider extends BaseLLMProvider<
     const formattedRequest = {
       ...request,
       messages: formatMessages(request.messages),
+      web_search_options:
+        model.web_search_options as LLMRequestNonStreaming['web_search_options'],
     }
 
     return this.adapter.generateResponse(this.client, formattedRequest, options)
@@ -62,6 +64,8 @@ export class PerplexityProvider extends BaseLLMProvider<
     const formattedRequest = {
       ...request,
       messages: formatMessages(request.messages),
+      web_search_options:
+        model.web_search_options as LLMRequestStreaming['web_search_options'],
     }
 
     return this.adapter.streamResponse(this.client, formattedRequest, options)

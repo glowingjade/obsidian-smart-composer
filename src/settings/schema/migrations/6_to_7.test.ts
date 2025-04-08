@@ -168,9 +168,9 @@ describe('Migration from v6 to v7', () => {
         },
         {
           providerType: 'openai-compatible',
-          providerId: 'perplexity',
-          id: 'perplexity-sonar',
-          model: 'sonar',
+          providerId: 'cohere',
+          id: 'cohere-model',
+          model: 'cohere-model',
           enable: false,
         },
       ],
@@ -180,9 +180,9 @@ describe('Migration from v6 to v7', () => {
       ...DEFAULT_CHAT_MODELS_V7,
       {
         providerType: 'openai-compatible',
-        providerId: 'perplexity',
-        id: 'perplexity-sonar',
-        model: 'sonar',
+        providerId: 'cohere',
+        id: 'cohere-model',
+        model: 'cohere-model',
         enable: false,
       },
     ])

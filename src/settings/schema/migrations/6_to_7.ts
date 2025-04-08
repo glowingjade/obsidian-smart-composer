@@ -64,6 +64,9 @@ export const DEFAULT_CHAT_MODELS_V7: {
   thinking?: {
     budget_tokens: number
   }
+  web_search_options?: {
+    search_context_size?: string
+  }
   enable?: boolean
 }[] = [
   {
@@ -172,30 +175,45 @@ export const DEFAULT_CHAT_MODELS_V7: {
     providerId: 'perplexity',
     id: 'sonar',
     model: 'sonar',
+    web_search_options: {
+      search_context_size: 'low',
+    },
   },
   {
     providerType: 'perplexity',
     providerId: 'perplexity',
     id: 'sonar-pro',
     model: 'sonar',
+    web_search_options: {
+      search_context_size: 'low',
+    },
   },
   {
     providerType: 'perplexity',
     providerId: 'perplexity',
     id: 'sonar-deep-research',
     model: 'sonar-deep-research',
+    web_search_options: {
+      search_context_size: 'low',
+    },
   },
   {
     providerType: 'perplexity',
     providerId: 'perplexity',
     id: 'sonar-reasoning',
     model: 'sonar',
+    web_search_options: {
+      search_context_size: 'low',
+    },
   },
   {
     providerType: 'perplexity',
     providerId: 'perplexity',
     id: 'sonar-reasoning-pro',
     model: 'sonar',
+    web_search_options: {
+      search_context_size: 'low',
+    },
   },
   {
     providerType: 'morph',

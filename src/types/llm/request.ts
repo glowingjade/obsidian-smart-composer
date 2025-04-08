@@ -22,6 +22,9 @@ export type LLMRequestBase = {
 
   // Only available for OpenAI reasoning models
   reasoning_effort?: ReasoningEffort
+
+  // Only available for OpenAI search models and Perplexity
+  web_search_options?: ChatCompletionCreateParams.WebSearchOptions
 }
 
 export type LLMRequestNonStreaming = LLMRequestBase & {

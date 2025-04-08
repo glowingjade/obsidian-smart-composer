@@ -338,30 +338,45 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
     id: 'sonar',
     model: 'sonar',
+    web_search_options: {
+      search_context_size: 'low',
+    },
   },
   {
     providerType: 'perplexity',
     providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
     id: 'sonar-pro',
     model: 'sonar',
+    web_search_options: {
+      search_context_size: 'low',
+    },
   },
   {
     providerType: 'perplexity',
     providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
     id: 'sonar-deep-research',
     model: 'sonar-deep-research',
+    web_search_options: {
+      search_context_size: 'low',
+    },
   },
   {
     providerType: 'perplexity',
     providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
     id: 'sonar-reasoning',
     model: 'sonar',
+    web_search_options: {
+      search_context_size: 'low',
+    },
   },
   {
     providerType: 'perplexity',
     providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
     id: 'sonar-reasoning-pro',
     model: 'sonar',
+    web_search_options: {
+      search_context_size: 'low',
+    },
   },
   {
     providerType: 'morph',
