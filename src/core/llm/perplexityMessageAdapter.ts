@@ -16,12 +16,21 @@ import { OpenAIMessageAdapter } from './openaiMessageAdapter'
  * citations field in Perplexity's response format.
  * @see https://docs.perplexity.ai/guides/models/sonar
  */
+
+type PerplexityChatCompletion = ChatCompletion & {
+  citations?: string[] // an array of URLs
+}
+
+type PerplexityChatCompletionChunk = ChatCompletionChunk & {
+  citations?: string[] // an array of URLs
+}
+
 export class PerplexityMessageAdapter extends OpenAIMessageAdapter {
   protected parseNonStreamingResponse(
     response: ChatCompletion,
   ): LLMResponseNonStreaming {
     const annotations: Annotation[] | undefined = (
-      response as unknown as { citations?: string[] }
+      response as unknown as PerplexityChatCompletion
     ).citations?.map((url) => ({
       type: 'url_citation',
       url_citation: { url },
@@ -33,9 +42,6 @@ export class PerplexityMessageAdapter extends OpenAIMessageAdapter {
         finish_reason: choice.finish_reason,
         message: {
           content: choice.message.content,
-          reasoning: (
-            choice.message as unknown as { reasoning_content?: string }
-          ).reasoning_content,
           role: choice.message.role,
           annotations: annotations,
         },
@@ -52,7 +58,7 @@ export class PerplexityMessageAdapter extends OpenAIMessageAdapter {
     chunk: ChatCompletionChunk,
   ): LLMResponseStreaming {
     const annotations: Annotation[] | undefined = (
-      chunk as unknown as { citations?: string[] }
+      chunk as unknown as PerplexityChatCompletionChunk
     ).citations?.map((url) => ({
       type: 'url_citation',
       url_citation: { url },
@@ -64,8 +70,6 @@ export class PerplexityMessageAdapter extends OpenAIMessageAdapter {
         finish_reason: choice.finish_reason ?? null,
         delta: {
           content: choice.delta.content ?? null,
-          reasoning: (choice.delta as unknown as { reasoning_content?: string })
-            .reasoning_content,
           role: choice.delta.role,
           annotations: annotations,
         },
