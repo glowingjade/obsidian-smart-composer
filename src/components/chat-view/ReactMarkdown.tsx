@@ -3,10 +3,11 @@ import Markdown from 'react-markdown'
 
 import { ChatMessage } from '../../types/chat'
 import {
-  ParsedSmtcmpBlock,
-  parsesmtcmpBlocks,
-} from '../../utils/chat/parse-smtcmp-block'
+  ParsedTagContent,
+  parseTagContents,
+} from '../../utils/chat/parse-tag-content'
 
+import AssistantMessageReasoning from './AssistantMessageReasoning'
 import MarkdownCodeComponent from './MarkdownCodeComponent'
 import MarkdownReferenceBlock from './MarkdownReferenceBlock'
 
@@ -19,8 +20,8 @@ const ReactMarkdown = React.memo(function ReactMarkdown({
   children: string
   isApplying: boolean
 }) {
-  const blocks: ParsedSmtcmpBlock[] = useMemo(
-    () => parsesmtcmpBlocks(children),
+  const blocks: ParsedTagContent[] = useMemo(
+    () => parseTagContents(children),
     [children],
   )
 
@@ -31,6 +32,8 @@ const ReactMarkdown = React.memo(function ReactMarkdown({
           <Markdown key={index} className="smtcmp-markdown">
             {block.content}
           </Markdown>
+        ) : block.type === 'think' ? (
+          <AssistantMessageReasoning key={index} reasoning={block.content} />
         ) : block.startLine && block.endLine && block.filename ? (
           <MarkdownReferenceBlock
             key={index}

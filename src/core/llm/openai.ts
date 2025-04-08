@@ -30,7 +30,7 @@ export class OpenAIAuthenticatedProvider extends BaseLLMProvider<
   constructor(provider: Extract<LLMProvider, { type: 'openai' }>) {
     super(provider)
     this.client = new OpenAI({
-      apiKey: provider.apiKey,
+      apiKey: provider.apiKey ?? '',
       baseURL: provider.baseUrl
         ? provider.baseUrl.replace(/\/+$/, '')
         : undefined, // use default

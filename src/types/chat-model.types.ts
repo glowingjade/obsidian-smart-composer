@@ -59,6 +59,15 @@ export const chatModelSchema = z.discriminatedUnion('providerType', [
     ...baseChatModelSchema.shape,
   }),
   z.object({
+    providerType: z.literal('perplexity'),
+    ...baseChatModelSchema.shape,
+    web_search_options: z
+      .object({
+        search_context_size: z.string(),
+      })
+      .optional(),
+  }),
+  z.object({
     providerType: z.literal('morph'),
     ...baseChatModelSchema.shape,
   }),

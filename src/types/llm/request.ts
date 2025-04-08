@@ -1,5 +1,5 @@
 // These types are based on the OpenRouter API specification
-// https://openrouter.ai/docs/requests
+// https://openrouter.ai/docs/api-reference/overview#requests
 
 import { ChatCompletionCreateParams, ReasoningEffort } from 'openai/resources'
 
@@ -7,7 +7,7 @@ export type LLMRequestBase = {
   messages: RequestMessage[]
   model: string
 
-  // LLM Parameters (https://openrouter.ai/docs/parameters)
+  // LLM Parameters (https://openrouter.ai/docs/api-reference/parameters)
   max_tokens?: number // Range: [1, context_length)
   temperature?: number // Range: [0, 2]
   top_p?: number // Range: (0, 1]
@@ -22,6 +22,9 @@ export type LLMRequestBase = {
 
   // Only available for OpenAI reasoning models
   reasoning_effort?: ReasoningEffort
+
+  // Only available for OpenAI search models and Perplexity
+  web_search_options?: ChatCompletionCreateParams.WebSearchOptions
 }
 
 export type LLMRequestNonStreaming = LLMRequestBase & {
