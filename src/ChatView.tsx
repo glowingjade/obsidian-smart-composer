@@ -6,6 +6,7 @@ import { Root, createRoot } from 'react-dom/client'
 import Chat, { ChatProps, ChatRef } from './components/chat-view/Chat'
 import { CHAT_VIEW_TYPE } from './constants'
 import { AppProvider } from './contexts/app-context'
+import { ChatViewProvider } from './contexts/chat-view-context'
 import { DarkModeProvider } from './contexts/dark-mode-context'
 import { DatabaseProvider } from './contexts/database-context'
 import { DialogContainerProvider } from './contexts/dialog-container-context'
@@ -67,33 +68,35 @@ export class ChatView extends ItemView {
     })
 
     this.root.render(
-      <AppProvider app={this.app}>
-        <SettingsProvider
-          settings={this.plugin.settings}
-          setSettings={(newSettings) => this.plugin.setSettings(newSettings)}
-          addSettingsChangeListener={(listener) =>
-            this.plugin.addSettingsChangeListener(listener)
-          }
-        >
-          <DarkModeProvider>
-            <DatabaseProvider
-              getDatabaseManager={() => this.plugin.getDbManager()}
-            >
-              <RAGProvider getRAGEngine={() => this.plugin.getRAGEngine()}>
-                <QueryClientProvider client={queryClient}>
-                  <React.StrictMode>
-                    <DialogContainerProvider
-                      container={this.containerEl.children[1] as HTMLElement}
-                    >
-                      <Chat ref={this.chatRef} {...this.initialChatProps} />
-                    </DialogContainerProvider>
-                  </React.StrictMode>
-                </QueryClientProvider>
-              </RAGProvider>
-            </DatabaseProvider>
-          </DarkModeProvider>
-        </SettingsProvider>
-      </AppProvider>,
+      <ChatViewProvider chatView={this}>
+        <AppProvider app={this.app}>
+          <SettingsProvider
+            settings={this.plugin.settings}
+            setSettings={(newSettings) => this.plugin.setSettings(newSettings)}
+            addSettingsChangeListener={(listener) =>
+              this.plugin.addSettingsChangeListener(listener)
+            }
+          >
+            <DarkModeProvider>
+              <DatabaseProvider
+                getDatabaseManager={() => this.plugin.getDbManager()}
+              >
+                <RAGProvider getRAGEngine={() => this.plugin.getRAGEngine()}>
+                  <QueryClientProvider client={queryClient}>
+                    <React.StrictMode>
+                      <DialogContainerProvider
+                        container={this.containerEl.children[1] as HTMLElement}
+                      >
+                        <Chat ref={this.chatRef} {...this.initialChatProps} />
+                      </DialogContainerProvider>
+                    </React.StrictMode>
+                  </QueryClientProvider>
+                </RAGProvider>
+              </DatabaseProvider>
+            </DarkModeProvider>
+          </SettingsProvider>
+        </AppProvider>
+      </ChatViewProvider>,
     )
   }
 

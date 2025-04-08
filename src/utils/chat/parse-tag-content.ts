@@ -113,5 +113,23 @@ export function parseTagContents(input: string): ParsedTagContent[] {
       content: input.slice(lastEndOffset),
     })
   }
+
+  /**
+   * Remove a single leading/trailing newline from each block's content.
+   *
+   * Example input:
+   * hello world
+   * <smtcmp_block>
+   * some content
+   * </smtcmp_block>
+   *
+   * Becomes:
+   * { type: 'string', content: 'hello world' }
+   * { type: 'smtcmp_block', content: 'some content' }
+   */
+  parsedResult.forEach((block) => {
+    block.content = block.content.replace(/^\n|\n$/g, '')
+  })
+
   return parsedResult
 }
