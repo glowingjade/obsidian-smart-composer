@@ -5,7 +5,11 @@ import { QueryProgressState } from '../../components/chat-view/QueryProgress'
 import { RAGEngine } from '../../core/rag/ragEngine'
 import { SelectEmbedding } from '../../database/schema'
 import { SmartComposerSettings } from '../../settings/schema/setting.types'
-import { ChatMessage, ChatUserMessage } from '../../types/chat'
+import {
+  ChatAssistantMessage,
+  ChatMessage,
+  ChatUserMessage,
+} from '../../types/chat'
 import { ContentPart, RequestMessage } from '../../types/llm/request'
 import {
   MentionableBlock,
@@ -116,7 +120,7 @@ export class PromptGenerator {
         } else {
           return {
             role: 'assistant',
-            content: message.content,
+            content: this.formatAssistantMessage({ message }),
           }
         }
       }),
@@ -127,6 +131,26 @@ export class PromptGenerator {
       requestMessages,
       compiledMessages,
     }
+  }
+
+  private formatAssistantMessage({
+    message,
+  }: {
+    message: ChatAssistantMessage
+  }): string {
+    if (message.annotations && message.annotations.length > 0) {
+      const citationContent = `Citations:
+${message.annotations
+  .map((annotation, index) => {
+    if (annotation.type === 'url_citation') {
+      const { url, title } = annotation.url_citation
+      return `[${index + 1}] ${title ? `${title}: ` : ''}${url}`
+    }
+  })
+  .join('\n')}`
+      return `${message.content}\n\n${citationContent}`
+    }
+    return message.content
   }
 
   private async compileUserMessagePrompt({
