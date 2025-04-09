@@ -35,8 +35,6 @@ export default function ObsidianMarkdown({ content }: ObsidianMarkdownProps) {
         containerRef.current,
         app.workspace.getActiveFile()?.path ?? '',
       )
-
-      setupFrontmatterDisplay(containerRef.current)
     }
   }, [app, content, chatView])
 
@@ -85,25 +83,4 @@ function setupMarkdownLinks(
       })
     }
   })
-}
-
-/**
- * Shows the frontmatter section rendered by MarkdownRenderer.render(),
- * which is hidden by default.
- */
-function setupFrontmatterDisplay(containerEl: HTMLElement) {
-  const frontmatterEl = containerEl.querySelector('.frontmatter')
-  if (!frontmatterEl || !(frontmatterEl instanceof HTMLElement)) {
-    return
-  }
-  // Show frontmatter section that is hidden by default
-  frontmatterEl.style.display = 'block'
-  frontmatterEl.style.backgroundColor = 'transparent'
-  frontmatterEl.classList.add('cm-hmd-frontmatter')
-
-  // Hide the copy code button
-  const copyCodeButton = frontmatterEl.querySelector('.copy-code-button')
-  if (copyCodeButton && copyCodeButton instanceof HTMLElement) {
-    copyCodeButton.style.display = 'none'
-  }
 }
