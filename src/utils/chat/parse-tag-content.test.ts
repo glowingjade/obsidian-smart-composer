@@ -23,11 +23,10 @@ print("Hello, world!")
 Some text after`
 
     const expected: ParsedTagContent[] = [
-      { type: 'string', content: 'Some text before\n' },
+      { type: 'string', content: 'Some text before' },
       {
         type: 'smtcmp_block',
-        content: `
-# Example Markdown
+        content: `# Example Markdown
 
 This is a sample markdown content for testing purposes.
 
@@ -41,12 +40,11 @@ This is a sample markdown content for testing purposes.
 ### Code Block
 \`\`\`python
 print("Hello, world!")
-\`\`\`
-`,
+\`\`\``,
         language: 'markdown',
         filename: 'example.md',
       },
-      { type: 'string', content: '\nSome text after' },
+      { type: 'string', content: 'Some text after' },
     ]
 
     const result = parseTagContents(input)
@@ -59,14 +57,14 @@ print("Hello, world!")
     `
 
     const expected: ParsedTagContent[] = [
-      { type: 'string', content: '\n      ' },
+      { type: 'string', content: '      ' },
       {
         type: 'smtcmp_block',
         content: '',
         language: 'python',
         filename: undefined,
       },
-      { type: 'string', content: '\n    ' },
+      { type: 'string', content: '    ' },
     ]
 
     const result = parseTagContents(input)
@@ -101,32 +99,28 @@ print("Hello, world!")
 End`
 
     const expected: ParsedTagContent[] = [
-      { type: 'string', content: 'Start\n' },
+      { type: 'string', content: 'Start' },
       {
         type: 'smtcmp_block',
-        content: `
-def greet(name):
-    print(f"Hello, {name}!")
-`,
+        content: `def greet(name):
+    print(f"Hello, {name}!")`,
         language: 'python',
         filename: 'script.py',
       },
-      { type: 'string', content: '\nMiddle\n' },
+      { type: 'string', content: 'Middle' },
       {
         type: 'smtcmp_block',
-        content: `
-# Using tildes for code blocks
+        content: `# Using tildes for code blocks
 
 Did you know that you can use tildes for code blocks?
 
 ~~~python
 print("Hello, world!")
-~~~
-`,
+~~~`,
         language: 'markdown',
         filename: 'example.md',
       },
-      { type: 'string', content: '\nEnd' },
+      { type: 'string', content: 'End' },
     ]
 
     const result = parseTagContents(input)
@@ -140,11 +134,10 @@ print("Hello, world!")
 
 Some text after without closing tag`
     const expected: ParsedTagContent[] = [
-      { type: 'string', content: 'Start\n' },
+      { type: 'string', content: 'Start' },
       {
         type: 'smtcmp_block',
-        content: `
-# Unfinished smtcmp_block
+        content: `# Unfinished smtcmp_block
 
 Some text after without closing tag`,
         language: 'markdown',
@@ -179,9 +172,9 @@ describe('parseThink', () => {
 <think>Thinking...</think>
 End`
     const expected: ParsedTagContent[] = [
-      { type: 'string', content: 'Start\n' },
+      { type: 'string', content: 'Start' },
       { type: 'think', content: 'Thinking...' },
-      { type: 'string', content: '\nEnd' },
+      { type: 'string', content: 'End' },
     ]
 
     const result = parseTagContents(input)
@@ -193,7 +186,7 @@ End`
 <think>Thinking...
 Some text after without closing tag`
     const expected: ParsedTagContent[] = [
-      { type: 'string', content: 'Start\n' },
+      { type: 'string', content: 'Start' },
       {
         type: 'think',
         content: 'Thinking...\nSome text after without closing tag',
@@ -211,11 +204,11 @@ Some text after
 <think>Second thought</think>
 End`
     const expected: ParsedTagContent[] = [
-      { type: 'string', content: 'Start\n' },
+      { type: 'string', content: 'Start' },
       { type: 'think', content: 'First thought' },
-      { type: 'string', content: '\nSome text after\n' },
+      { type: 'string', content: 'Some text after' },
       { type: 'think', content: 'Second thought' },
-      { type: 'string', content: '\nEnd' },
+      { type: 'string', content: 'End' },
     ]
 
     const result = parseTagContents(input)
@@ -243,13 +236,12 @@ This is a sample markdown content for testing purposes.
 End`
 
     const expected: ParsedTagContent[] = [
-      { type: 'string', content: 'Start\n' },
+      { type: 'string', content: 'Start' },
       { type: 'think', content: 'Thinking...' },
-      { type: 'string', content: '\n\n' },
+      { type: 'string', content: '' },
       {
         type: 'smtcmp_block',
-        content: `
-# Example Markdown
+        content: `# Example Markdown
 
 This is a sample markdown content for testing purposes.
 
@@ -258,14 +250,13 @@ This is a sample markdown content for testing purposes.
 - Lists
 - **Bold text**
 - *Italic text*
-- [Links](https://example.com)
-`,
+- [Links](https://example.com)`,
         language: 'markdown',
         filename: 'example.md',
         startLine: undefined,
         endLine: undefined,
       },
-      { type: 'string', content: '\nEnd' },
+      { type: 'string', content: 'End' },
     ]
 
     const result = parseTagContents(input)
@@ -281,11 +272,11 @@ This is a sample markdown content for testing purposes.
 This is a sample markdown content for testing purposes.
 
 ## Features
-</smtcmp_block> 
+</smtcmp_block>
 </think>
 End`
     const expected: ParsedTagContent[] = [
-      { type: 'string', content: 'Start\n' },
+      { type: 'string', content: 'Start' },
       {
         type: 'think',
         content: `Thinking...
@@ -295,10 +286,9 @@ End`
 This is a sample markdown content for testing purposes.
 
 ## Features
-</smtcmp_block> 
-`,
+</smtcmp_block>`,
       },
-      { type: 'string', content: '\nEnd' },
+      { type: 'string', content: 'End' },
     ]
 
     const result = parseTagContents(input)

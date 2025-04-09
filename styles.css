@@ -563,6 +563,11 @@ input[type='text'].smtcmp-chat-list-dropdown-item-title-input {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .smtcmp-code-block-header-button {
@@ -606,6 +611,23 @@ input[type='text'].smtcmp-chat-list-dropdown-item-title-input {
 
 .smtcmp-code-block-content {
   margin: 0;
+}
+
+.smtcmp-code-block-obsidian-markdown {
+  padding: 8px;
+  font-size: 0.9em;
+
+  /* Show frontmatter which is hidden by default */
+  .frontmatter {
+    display: block !important;
+    background-color: transparent;
+    font-size: var(--font-smaller);
+  }
+
+  /* Hide copy code buttons */
+  .copy-code-button {
+    display: none !important;
+  }
 }
 
 #smtcmp-apply-view {
