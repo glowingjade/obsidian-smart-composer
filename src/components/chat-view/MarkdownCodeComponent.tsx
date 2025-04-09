@@ -47,17 +47,17 @@ export default function MarkdownCodeComponent({
   }
 
   return (
-    <div className={`smtcmp-code-block ${filename ? 'has-filename' : ''}`}>
-      <div className={'smtcmp-code-block-header'}>
+    <div className="smtcmp-code-block">
+      <div className="smtcmp-code-block-header">
         {filename && (
           <div
-            className={'smtcmp-code-block-header-filename'}
+            className="smtcmp-code-block-header-filename"
             onClick={handleOpenFile}
           >
             {filename}
           </div>
         )}
-        <div className={'smtcmp-code-block-header-button'}>
+        <div className="smtcmp-code-block-header-button">
           <button
             onClick={() => {
               setIsPreviewMode(!isPreviewMode)
