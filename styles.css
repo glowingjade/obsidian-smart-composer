@@ -391,13 +391,7 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   overflow-y: scroll;
 }
 
-.smtcmp-popover ul::-webkit-scrollbar {
-  display: none;
-}
-
 .smtcmp-popover ul {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
   padding: var(--size-4-1) 0;
 }
 
@@ -529,32 +523,14 @@ input[type='text'].smtcmp-chat-list-dropdown-item-title-input {
 }
 
 .smtcmp-code-block-header {
-  display: none;
   justify-content: space-between;
   align-items: center;
   font-size: var(--font-smallest);
-  padding: 0 var(--size-4-1) 0 0;
-}
-
-.smtcmp-code-block:hover .smtcmp-code-block-header {
-  position: absolute;
-  top: calc(var(--size-4-3) * -1);
-  right: var(--size-4-1);
-  display: flex;
-}
-
-.smtcmp-code-block.has-filename .smtcmp-code-block-header {
   display: flex;
   border-bottom: 1px solid var(--background-modifier-border);
   background-color: var(--background-primary);
   border-radius: var(--radius-s) var(--radius-s) 0 0;
   height: calc(var(--size-4-8) - var(--size-4-1));
-}
-
-.smtcmp-code-block.has-filename:hover .smtcmp-code-block-header {
-  position: inherit;
-  top: 0;
-  left: 0;
 }
 
 .smtcmp-code-block-header-filename {
@@ -571,42 +547,29 @@ input[type='text'].smtcmp-chat-list-dropdown-item-title-input {
 }
 
 .smtcmp-code-block-header-button {
-  display: flex;
-  gap: var(--size-4-1);
-  right: 0;
-  font-family: var(--font-interface);
-  padding: 0;
-  font-size: var(--font-small);
-  font-weight: var(--font-medium);
-  color: var(--text-muted);
-}
-
-.smtcmp-code-block.has-filename .smtcmp-code-block-header-button {
-  gap: 0;
-  overflow: hidden;
+  margin-left: auto;
   min-width: fit-content;
   height: 100%;
+  display: flex;
+  gap: 0;
+  overflow: hidden;
 }
 
-.smtcmp-code-block.has-filename .smtcmp-code-block-header-button button {
+.smtcmp-code-block-header-button button {
+  height: 100%;
+  padding: 0 var(--size-4-2);
+  display: flex;
+  gap: var(--size-4-1);
   box-shadow: none;
   border: 0;
-  padding: 0 var(--size-4-2);
   border-radius: 0;
-  background-color: var(--background-primary);
-  font-size: var(--font-medium);
-  height: 100%;
+  font-size: var(--font-small);
+  background-color: inherit;
   cursor: pointer;
 
   &:hover {
     background-color: var(--background-modifier-hover);
   }
-}
-
-.smtcmp-code-block-header-button button {
-  display: flex;
-  gap: var(--size-4-1);
-  font-size: var(--font-ui-smaller);
 }
 
 .smtcmp-code-block-content {
