@@ -12,6 +12,7 @@ import { LLMProvider } from '../../types/provider.types'
 import { formatMessages } from '../../utils/llm/request'
 
 import { BaseLLMProvider } from './base'
+import { LLMAPIKeyNotSetException } from './exception'
 import { NoStainlessOpenAI } from './NoStainlessOpenAI'
 import { PerplexityMessageAdapter } from './perplexityMessageAdapter'
 
@@ -41,6 +42,11 @@ export class PerplexityProvider extends BaseLLMProvider<
     if (model.providerType !== 'perplexity') {
       throw new Error('Model is not a Perplexity model')
     }
+    if (!this.client.apiKey) {
+      throw new LLMAPIKeyNotSetException(
+        `Provider ${this.provider.id} API key is missing. Please set it in settings menu.`,
+      )
+    }
 
     const formattedRequest = {
       ...request,
@@ -59,6 +65,11 @@ export class PerplexityProvider extends BaseLLMProvider<
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
     if (model.providerType !== 'perplexity') {
       throw new Error('Model is not a Perplexity model')
+    }
+    if (!this.client.apiKey) {
+      throw new LLMAPIKeyNotSetException(
+        `Provider ${this.provider.id} API key is missing. Please set it in settings menu.`,
+      )
     }
 
     const formattedRequest = {
