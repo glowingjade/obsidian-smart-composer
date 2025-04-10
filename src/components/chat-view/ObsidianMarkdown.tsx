@@ -6,15 +6,20 @@ import { useChatView } from '../../contexts/chat-view-context'
 
 type ObsidianMarkdownProps = {
   content: string
+  scale?: 'xs' | 'sm' | 'base'
 }
 
 /**
  * Renders Obsidian Markdown content using the Obsidian MarkdownRenderer.
  *
  * @param content - The Obsidian Markdown content to render.
+ * @param scale - The scale of the markdown content.
  * @returns A React component that renders the Obsidian Markdown content.
  */
-export default function ObsidianMarkdown({ content }: ObsidianMarkdownProps) {
+export default function ObsidianMarkdown({
+  content,
+  scale = 'base',
+}: ObsidianMarkdownProps) {
   const app = useApp()
   const chatView = useChatView()
   const containerRef = useRef<HTMLDivElement>(null)
@@ -42,7 +47,12 @@ export default function ObsidianMarkdown({ content }: ObsidianMarkdownProps) {
     renderMarkdown()
   }, [renderMarkdown])
 
-  return <div ref={containerRef} />
+  return (
+    <div
+      ref={containerRef}
+      className={`markdown-rendered smtcmp-markdown-rendered smtcmp-scale-${scale}`}
+    />
+  )
 }
 
 /**

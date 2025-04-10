@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import Markdown from 'react-markdown'
+
+import ObsidianMarkdown from './ObsidianMarkdown'
 
 export default function AssistantMessageReasoning({
   reasoning,
@@ -49,7 +50,7 @@ export default function AssistantMessageReasoning({
       </div>
       {isExpanded && (
         <div className="smtcmp-assistant-message-metadata-content">
-          <Markdown className="smtcmp-markdown">{reasoning}</Markdown>
+          <ObsidianMarkdown content={reasoning} scale="xs" />
         </div>
       )}
     </div>

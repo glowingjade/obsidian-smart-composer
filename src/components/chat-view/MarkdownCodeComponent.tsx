@@ -105,7 +105,7 @@ export default function MarkdownCodeComponent({
       </div>
       {isPreviewMode ? (
         <div className="smtcmp-code-block-obsidian-markdown">
-          <ObsidianMarkdown content={String(children)} />
+          <ObsidianMarkdown content={String(children)} scale="sm" />
         </div>
       ) : (
         <MemoizedSyntaxHighlighterWrapper

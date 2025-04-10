@@ -76,7 +76,7 @@ export default function MarkdownReferenceBlock({
         </div>
         {isPreviewMode ? (
           <div className="smtcmp-code-block-obsidian-markdown">
-            <ObsidianMarkdown content={blockContent} />
+            <ObsidianMarkdown content={blockContent} scale="sm" />
           </div>
         ) : (
           <MemoizedSyntaxHighlighterWrapper
