@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo } from 'react'
-import Markdown from 'react-markdown'
 
 import { ChatMessage } from '../../types/chat'
 import {
@@ -10,6 +9,7 @@ import {
 import AssistantMessageReasoning from './AssistantMessageReasoning'
 import MarkdownCodeComponent from './MarkdownCodeComponent'
 import MarkdownReferenceBlock from './MarkdownReferenceBlock'
+import ObsidianMarkdown from './ObsidianMarkdown'
 
 const ReactMarkdown = React.memo(function ReactMarkdown({
   onApply,
@@ -29,9 +29,9 @@ const ReactMarkdown = React.memo(function ReactMarkdown({
     <>
       {blocks.map((block, index) =>
         block.type === 'string' ? (
-          <Markdown key={index} className="smtcmp-markdown">
-            {block.content}
-          </Markdown>
+          <div key={index}>
+            <ObsidianMarkdown content={block.content} scale="sm" />
+          </div>
         ) : block.type === 'think' ? (
           <AssistantMessageReasoning key={index} reasoning={block.content} />
         ) : block.startLine && block.endLine && block.filename ? (
