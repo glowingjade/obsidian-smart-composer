@@ -15,6 +15,7 @@ import { formatMessages } from '../../utils/llm/request'
 
 import { BaseLLMProvider } from './base'
 import { DeepSeekMessageAdapter } from './deepseekMessageAdapter'
+import { LLMAPIKeyNotSetException } from './exception'
 
 // deepseek doesn't support image
 export class DeepSeekStudioProvider extends BaseLLMProvider<
@@ -43,6 +44,11 @@ export class DeepSeekStudioProvider extends BaseLLMProvider<
     if (model.providerType !== 'deepseek') {
       throw new Error('Model is not a DeepSeek model')
     }
+    if (!this.client.apiKey) {
+      throw new LLMAPIKeyNotSetException(
+        `Provider ${this.provider.id} API key is missing. Please set it in settings menu.`,
+      )
+    }
 
     const formattedRequest = {
       ...request,
@@ -59,6 +65,11 @@ export class DeepSeekStudioProvider extends BaseLLMProvider<
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
     if (model.providerType !== 'deepseek') {
       throw new Error('Model is not a DeepSeek model')
+    }
+    if (!this.client.apiKey) {
+      throw new LLMAPIKeyNotSetException(
+        `Provider ${this.provider.id} API key is missing. Please set it in settings menu.`,
+      )
     }
 
     const formattedRequest = {
