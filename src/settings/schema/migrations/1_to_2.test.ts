@@ -1,3 +1,5 @@
+import { PromptLevel } from '../../../types/prompt-level.types'
+
 import {
   V2_DEFAULT_CHAT_MODELS,
   V2_DEFAULT_EMBEDDING_MODELS,
@@ -102,12 +104,14 @@ describe('settings 1_to_2 migration', () => {
           providerId: 'ollama',
           id: 'ollama/custom-ollama-model',
           model: 'custom-ollama-model',
+          promptLevel: PromptLevel.Simple,
         },
         {
           providerType: 'openai-compatible',
           providerId: 'custom-1',
           id: 'custom-1/custom-openai-compatible-model',
           model: 'custom-openai-compatible-model',
+          promptLevel: PromptLevel.Default,
         },
       ],
 
@@ -253,12 +257,14 @@ describe('settings 1_to_2 migration', () => {
           providerId: 'ollama',
           id: 'ollama/ollama-chat',
           model: 'ollama-chat',
+          promptLevel: PromptLevel.Simple,
         },
         {
           providerType: 'ollama',
           providerId: 'ollama-1',
           id: 'ollama-1/ollama-apply',
           model: 'ollama-apply',
+          promptLevel: PromptLevel.Simple,
         },
       ],
 
@@ -342,12 +348,14 @@ describe('settings 1_to_2 migration', () => {
           providerId: 'ollama-1',
           id: 'ollama-1/ollama-chat',
           model: 'ollama-chat',
+          promptLevel: PromptLevel.Simple,
         },
         {
           providerType: 'ollama',
           providerId: 'ollama-2',
           id: 'ollama-2/ollama-apply',
           model: 'ollama-apply',
+          promptLevel: PromptLevel.Simple,
         },
       ],
 
@@ -441,12 +449,14 @@ describe('settings 1_to_2 migration', () => {
           providerId: 'custom-1',
           id: 'custom-1/custom-chat-model',
           model: 'custom-chat-model',
+          promptLevel: PromptLevel.Default,
         },
         {
           providerType: 'openai-compatible',
           providerId: 'custom-2',
           id: 'custom-2/custom-apply-model',
           model: 'custom-apply-model',
+          promptLevel: PromptLevel.Default,
         },
       ],
 

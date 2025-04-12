@@ -1,5 +1,6 @@
 import { ChatModel } from './types/chat-model.types'
 import { EmbeddingModel } from './types/embedding-model.types'
+import { PromptLevel } from './types/prompt-level.types'
 import { LLMProvider, LLMProviderType } from './types/provider.types'
 
 export const CHAT_VIEW_TYPE = 'smtcmp-chat-view'
@@ -237,12 +238,14 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
     id: 'claude-3.7-sonnet',
     model: 'claude-3-7-sonnet-latest',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'anthropic',
     providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
     id: 'claude-3.7-sonnet-thinking',
     model: 'claude-3-7-sonnet-latest',
+    promptLevel: PromptLevel.Default,
     thinking: {
       budget_tokens: 8192,
     },
@@ -252,30 +255,35 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
     id: 'claude-3.5-sonnet',
     model: 'claude-3-5-sonnet-latest',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'anthropic',
     providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
     id: 'claude-3.5-haiku',
     model: 'claude-3-5-haiku-latest',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'openai',
     providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
     id: 'gpt-4o',
     model: 'gpt-4o',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'openai',
     providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
     id: 'gpt-4o-mini',
     model: 'gpt-4o-mini',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'openai',
     providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
     id: 'o3-mini',
     model: 'o3-mini',
+    promptLevel: PromptLevel.Default,
     reasoning_effort: 'medium',
   },
   {
@@ -283,6 +291,7 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
     id: 'o1',
     model: 'o1',
+    promptLevel: PromptLevel.Default,
     reasoning_effort: 'medium',
   },
   {
@@ -290,54 +299,63 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
     id: 'gemini-2.5-pro',
     model: 'gemini-2.5-pro-preview-03-25',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'gemini',
     providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
     id: 'gemini-2.0-flash',
     model: 'gemini-2.0-flash',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'gemini',
     providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
     id: 'gemini-2.0-flash-thinking',
     model: 'gemini-2.0-flash-thinking-exp',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'gemini',
     providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
     id: 'gemini-2.0-flash-lite',
     model: 'gemini-2.0-flash-lite',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'gemini',
     providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
     id: 'gemini-1.5-pro',
     model: 'gemini-1.5-pro',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'gemini',
     providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
     id: 'gemini-1.5-flash',
     model: 'gemini-1.5-flash',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'deepseek',
     providerId: PROVIDER_TYPES_INFO.deepseek.defaultProviderId,
     id: 'deepseek-chat',
     model: 'deepseek-chat',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'deepseek',
     providerId: PROVIDER_TYPES_INFO.deepseek.defaultProviderId,
     id: 'deepseek-reasoner',
     model: 'deepseek-reasoner',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'perplexity',
     providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
     id: 'sonar',
     model: 'sonar',
+    promptLevel: PromptLevel.Default,
     web_search_options: {
       search_context_size: 'low',
     },
@@ -347,6 +365,7 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
     id: 'sonar-pro',
     model: 'sonar',
+    promptLevel: PromptLevel.Default,
     web_search_options: {
       search_context_size: 'low',
     },
@@ -356,6 +375,7 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
     id: 'sonar-deep-research',
     model: 'sonar-deep-research',
+    promptLevel: PromptLevel.Default,
     web_search_options: {
       search_context_size: 'low',
     },
@@ -365,6 +385,7 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
     id: 'sonar-reasoning',
     model: 'sonar',
+    promptLevel: PromptLevel.Default,
     web_search_options: {
       search_context_size: 'low',
     },
@@ -374,6 +395,7 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
     id: 'sonar-reasoning-pro',
     model: 'sonar',
+    promptLevel: PromptLevel.Default,
     web_search_options: {
       search_context_size: 'low',
     },
@@ -383,6 +405,7 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: PROVIDER_TYPES_INFO.morph.defaultProviderId,
     id: 'morph-v0',
     model: 'morph-v0',
+    promptLevel: PromptLevel.Default,
   },
 ]
 

@@ -5,7 +5,6 @@ import {
   DEFAULT_EMBEDDING_MODELS,
   DEFAULT_PROVIDERS,
 } from '../../constants'
-import { AssistantLevel } from '../../types/assistant-level.types'
 import { chatModelSchema } from '../../types/chat-model.types'
 import { embeddingModelSchema } from '../../types/embedding-model.types'
 import { llmProviderSchema } from '../../types/provider.types'
@@ -45,9 +44,6 @@ export const smartComposerSettingsSchema = z.object({
         DEFAULT_CHAT_MODELS[0].id,
     ), // model for apply feature
   embeddingModelId: z.string().catch(DEFAULT_EMBEDDING_MODELS[0].id), // model for embedding
-
-  // Assistant Level
-  assistantLevel: z.nativeEnum(AssistantLevel).catch(AssistantLevel.WithReferencingAndEdit),
 
   // System Prompt
   systemPrompt: z.string().catch(''),

@@ -5,7 +5,6 @@ import { QueryProgressState } from '../../components/chat-view/QueryProgress'
 import { RAGEngine } from '../../core/rag/ragEngine'
 import { SelectEmbedding } from '../../database/schema'
 import { SmartComposerSettings } from '../../settings/schema/setting.types'
-import { AssistantLevel } from '../../types/assistant-level.types'
 import {
   ChatAssistantMessage,
   ChatMessage,
@@ -20,6 +19,7 @@ import {
   MentionableUrl,
   MentionableVault,
 } from '../../types/mentionable'
+import { PromptLevel } from '../../types/prompt-level.types'
 import { tokenCount } from '../llm/token'
 import {
   getNestedFiles,
@@ -125,8 +125,7 @@ export class PromptGenerator {
           }
         }
       }),
-      ...(shouldUseRAG &&
-      this.settings.assistantLevel >= AssistantLevel.WithReferencing
+      ...(shouldUseRAG && this.getModelPromptLevel() == PromptLevel.Default
         ? [this.getRagInstructionMessage()]
         : []),
     ]
@@ -240,7 +239,7 @@ ${message.annotations
 ${similaritySearchResults
   .map(({ path, content, metadata }) => {
     const newContent =
-      this.settings.assistantLevel >= AssistantLevel.WithReferencing
+      this.getModelPromptLevel() == PromptLevel.Default
         ? this.addLineNumbersToContent({
             content,
             startLine: metadata.startLine,
@@ -312,22 +311,20 @@ ${await this.getWebsiteContent(url)}
   }
 
   private getSystemMessage(shouldUseRAG: boolean): RequestMessage {
-    const systemPrompt = `You are an intelligent assistant to help answer any questions that the user has${this.settings.assistantLevel >= AssistantLevel.WithReferencingAndEdit ? `, particularly about editing and organizing markdown files in Obsidian` : ''}.
+    const modelPromptLevel = this.getModelPromptLevel()
+    const systemPrompt = `You are an intelligent assistant to help answer any questions that the user has${modelPromptLevel == PromptLevel.Default ? `, particularly about editing and organizing markdown files in Obsidian` : ''}.
 
 1. Please keep your response as concise as possible. Avoid being verbose.
 
 2. Do not lie or make up facts.
 
 3. Format your response in markdown.
+
 ${
-  this.settings.assistantLevel >= AssistantLevel.Simple
+  modelPromptLevel == PromptLevel.Default
     ? `
-4. Respond in the same language as the user's message.`
-    : ''
-}
-${
-  this.settings.assistantLevel >= AssistantLevel.WithReferencing
-    ? `
+4. Respond in the same language as the user's message.
+
 5. When writing out new markdown blocks, also wrap them with <smtcmp_block> tags. For example:
 <smtcmp_block language="markdown">
 {{ content }}
@@ -340,11 +337,7 @@ ${
 {{ content }}
 ...
 </smtcmp_block>
-`
-    : ''
-}${
-      this.settings.assistantLevel >= AssistantLevel.WithReferencingAndEdit
-        ? `
+
 7. When the user is asking for edits to their markdown, please provide a simplified version of the markdown block emphasizing only the changes. Use comments to show where unchanged content has been skipped. Wrap the markdown block with <smtcmp_block> tags. Add filename and language attributes to the <smtcmp_block> tags. For example:
 <smtcmp_block filename="path/to/file.md" language="markdown">
 <!-- ... existing content ... -->
@@ -355,23 +348,20 @@ ${
 </smtcmp_block>
 The user has full access to the file, so they prefer seeing only the changes in the markdown. Often this will mean that the start/end of the file will be skipped, but that's okay! Rewrite the entire file only if specifically requested. Always provide a brief explanation of the updates, except when the user specifically asks for just the content.
 `
-        : ''
-    }`
+    : ''
+}`
 
-    const systemPromptRAG = `You are an intelligent assistant to help answer any questions that the user has${this.settings.assistantLevel >= AssistantLevel.WithReferencingAndEdit ? `, particularly about editing and organizing markdown files in Obsidian` : ''}. You will be given your conversation history with them and potentially relevant blocks of markdown content from the current vault.
+    const systemPromptRAG = `You are an intelligent assistant to help answer any questions that the user has${modelPromptLevel == PromptLevel.Default ? `, particularly about editing and organizing markdown files in Obsidian` : ''}. You will be given your conversation history with them and potentially relevant blocks of markdown content from the current vault.
       
 1. Do not lie or make up facts.
 
 2. Format your response in markdown.
+
 ${
-  this.settings.assistantLevel >= AssistantLevel.Simple
+  modelPromptLevel == PromptLevel.Default
     ? `
-3. Respond in the same language as the user's message.`
-    : ''
-}
-${
-  this.settings.assistantLevel >= AssistantLevel.WithReferencing
-    ? `
+3. Respond in the same language as the user's message.
+
 4. When referencing markdown blocks in your answer, keep the following guidelines in mind:
 
   a. Never include line numbers in the output markdown.
@@ -471,7 +461,13 @@ ${transcript.map((t) => `${t.offset}: ${t.text}`).join('\n')}`
     }
 
     const response = await requestUrl({ url })
-
     return htmlToMarkdown(response.text)
+  }
+
+  private getModelPromptLevel(): PromptLevel {
+    const chatModel = this.settings.chatModels.find(
+      (model) => model.id === this.settings.chatModelId,
+    )
+    return chatModel?.promptLevel ?? PromptLevel.Default
   }
 }

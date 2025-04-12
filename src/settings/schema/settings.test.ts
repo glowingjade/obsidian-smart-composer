@@ -3,7 +3,6 @@ import {
   DEFAULT_EMBEDDING_MODELS,
   DEFAULT_PROVIDERS,
 } from '../../constants'
-import { AssistantLevel } from '../../types/assistant-level.types'
 
 import { SETTINGS_SCHEMA_VERSION } from './migrations'
 import { parseSmartComposerSettings } from './settings'
@@ -22,7 +21,6 @@ describe('parseSmartComposerSettings', () => {
       chatModelId: 'claude-3.7-sonnet',
       applyModelId: 'gpt-4o-mini',
       embeddingModelId: 'openai/text-embedding-3-small',
-      assistantLevel: AssistantLevel.WithReferencingAndEdit,
 
       systemPrompt: '',
 

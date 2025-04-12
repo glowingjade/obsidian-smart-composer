@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 import { ChatModel } from '../../../types/chat-model.types'
 import { EmbeddingModel } from '../../../types/embedding-model.types'
+import { PromptLevel } from '../../../types/prompt-level.types'
 import { LLMProvider } from '../../../types/provider.types'
 import { SettingMigration } from '../setting.types'
 
@@ -460,54 +461,63 @@ export const V2_DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: V2_PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
     id: 'claude-3.5-sonnet',
     model: 'claude-3-5-sonnet-latest',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'openai',
     providerId: V2_PROVIDER_TYPES_INFO.openai.defaultProviderId,
     id: 'gpt-4o',
     model: 'gpt-4o',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'openai',
     providerId: V2_PROVIDER_TYPES_INFO.openai.defaultProviderId,
     id: 'gpt-4o-mini',
     model: 'gpt-4o-mini',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'gemini',
     providerId: V2_PROVIDER_TYPES_INFO.gemini.defaultProviderId,
     id: 'gemini-1.5-pro',
     model: 'gemini-1.5-pro',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'gemini',
     providerId: V2_PROVIDER_TYPES_INFO.gemini.defaultProviderId,
     id: 'gemini-2.0-flash',
     model: 'gemini-2.0-flash-exp',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'gemini',
     providerId: V2_PROVIDER_TYPES_INFO.gemini.defaultProviderId,
     id: 'gemini-2.0-flash-thinking',
     model: 'gemini-2.0-flash-thinking-exp',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'gemini',
     providerId: V2_PROVIDER_TYPES_INFO.gemini.defaultProviderId,
     id: 'gemini-exp-1206',
     model: 'gemini-exp-1206',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'groq',
     providerId: V2_PROVIDER_TYPES_INFO.groq.defaultProviderId,
     id: 'groq/llama-3.1-70b',
     model: 'llama-3.1-70b-versatile',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'openai',
     providerId: V2_PROVIDER_TYPES_INFO.openai.defaultProviderId,
     id: 'o1',
     model: 'o1',
+    promptLevel: PromptLevel.Default,
     // @ts-expect-error: streamingDisabled is deprecated
     streamingDisabled: true, // currently, o1 API doesn't support streaming
   },
@@ -516,18 +526,21 @@ export const V2_DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: V2_PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
     id: 'claude-3.5-haiku',
     model: 'claude-3-5-haiku-latest',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'gemini',
     providerId: V2_PROVIDER_TYPES_INFO.gemini.defaultProviderId,
     id: 'gemini-1.5-flash',
     model: 'gemini-1.5-flash',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'groq',
     providerId: V2_PROVIDER_TYPES_INFO.groq.defaultProviderId,
     id: 'groq/llama-3.1-8b',
     model: 'llama-3.1-8b-instant',
+    promptLevel: PromptLevel.Simple,
   },
 ]
 
@@ -628,35 +641,38 @@ export const migrateFrom1To2: SettingMigration['migrate'] = (
   }
 
   let ollamaChatProviderId
+  const ollamaChatModel = data.ollamaChatModel
   if (
-    data.ollamaChatModel.baseUrl &&
-    data.ollamaChatModel.baseUrl !== defaultOllamaBaseUrl
+    ollamaChatModel.baseUrl &&
+    ollamaChatModel.baseUrl !== defaultOllamaBaseUrl
   ) {
     ollamaChatProviderId = `ollama-${ollamaCustomProviderCount + 1}`
     providers.push({
       type: 'ollama',
       id: ollamaChatProviderId,
-      baseUrl: data.ollamaChatModel.baseUrl,
+      baseUrl: ollamaChatModel.baseUrl,
     })
     ollamaCustomProviderCount += 1
   } else {
     ollamaChatProviderId = V2_PROVIDER_TYPES_INFO.ollama.defaultProviderId
   }
-  if (data.ollamaChatModel.model) {
-    const ollamaChatModelId = `${ollamaChatProviderId}/${data.ollamaChatModel.model}`
+  if (ollamaChatModel.model) {
+    const ollamaChatModelId = `${ollamaChatProviderId}/${ollamaChatModel.model}`
     chatModels.push({
       providerType: 'ollama',
       providerId: ollamaChatProviderId,
       id: ollamaChatModelId,
-      model: data.ollamaChatModel.model,
+      model: ollamaChatModel.model,
+      promptLevel: PromptLevel.Simple,
     })
     if (data.chatModelId === 'ollama') {
       chatModelId = ollamaChatModelId
     }
   }
 
+  const ollamaApplyModel = data.ollamaApplyModel
   const existingSameOllamaProviderForApplyModel = providers.find(
-    (v) => v.type === 'ollama' && v.baseUrl === data.ollamaApplyModel.baseUrl,
+    (v) => v.type === 'ollama' && v.baseUrl === ollamaApplyModel.baseUrl,
   )
 
   let ollamaApplyProviderId
@@ -668,7 +684,7 @@ export const migrateFrom1To2: SettingMigration['migrate'] = (
     providers.push({
       type: 'ollama',
       id: ollamaApplyProviderId,
-      baseUrl: data.ollamaApplyModel.baseUrl,
+      baseUrl: ollamaApplyModel.baseUrl,
     })
     ollamaCustomProviderCount += 1
   } else {
@@ -681,19 +697,20 @@ export const migrateFrom1To2: SettingMigration['migrate'] = (
       (v) =>
         v.providerType === 'ollama' &&
         v.providerId === ollamaApplyProviderId &&
-        v.model === data.ollamaApplyModel.model,
+        v.model === ollamaApplyModel.model,
     )
 
     let ollamaApplyModelId
     if (existingSameChatModelForApplyModel) {
       ollamaApplyModelId = existingSameChatModelForApplyModel.id
     } else {
-      ollamaApplyModelId = `${ollamaApplyProviderId}/${data.ollamaApplyModel.model}`
+      ollamaApplyModelId = `${ollamaApplyProviderId}/${ollamaApplyModel.model}`
       chatModels.push({
         providerType: 'ollama',
         providerId: ollamaApplyProviderId,
         id: ollamaApplyModelId,
-        model: data.ollamaApplyModel.model,
+        model: ollamaApplyModel.model,
+        promptLevel: PromptLevel.Simple,
       })
     }
     if (data.applyModelId === 'ollama') {
@@ -705,21 +722,23 @@ export const migrateFrom1To2: SettingMigration['migrate'] = (
    * handle OpenAI Compatible migration
    */
   let openAICompatibleCustomProviderCount = 0
-  if (data.openAICompatibleChatModel.baseUrl) {
+  const openAICompatibleChatModel = data.openAICompatibleChatModel
+  if (openAICompatibleChatModel.baseUrl) {
     const customProviderId = `custom-${openAICompatibleCustomProviderCount + 1}`
     providers.push({
       type: 'openai-compatible',
       id: customProviderId,
-      baseUrl: data.openAICompatibleChatModel.baseUrl,
-      apiKey: data.openAICompatibleChatModel.apiKey,
+      baseUrl: openAICompatibleChatModel.baseUrl,
+      apiKey: openAICompatibleChatModel.apiKey,
     })
-    if (data.openAICompatibleChatModel.model) {
-      const customChatModelId = `${customProviderId}/${data.openAICompatibleChatModel.model}`
+    if (openAICompatibleChatModel.model) {
+      const customChatModelId = `${customProviderId}/${openAICompatibleChatModel.model}`
       chatModels.push({
         providerType: 'openai-compatible',
         providerId: customProviderId,
         id: customChatModelId,
-        model: data.openAICompatibleChatModel.model,
+        model: openAICompatibleChatModel.model,
+        promptLevel: PromptLevel.Default,
       })
       if (data.chatModelId === 'openai-compatible') {
         chatModelId = customChatModelId
@@ -727,12 +746,13 @@ export const migrateFrom1To2: SettingMigration['migrate'] = (
     }
     openAICompatibleCustomProviderCount += 1
   }
-  if (data.openAICompatibleApplyModel.baseUrl) {
+  const openAICompatibleApplyModel = data.openAICompatibleApplyModel
+  if (openAICompatibleApplyModel.baseUrl) {
     const existingSameProvider = providers.find(
       (v) =>
         v.type === 'openai-compatible' &&
-        v.baseUrl === data.openAICompatibleApplyModel.baseUrl &&
-        v.apiKey === data.openAICompatibleApplyModel.apiKey,
+        v.baseUrl === openAICompatibleApplyModel.baseUrl &&
+        v.apiKey === openAICompatibleApplyModel.apiKey,
     )
 
     let customProviderId
@@ -744,29 +764,30 @@ export const migrateFrom1To2: SettingMigration['migrate'] = (
       providers.push({
         type: 'openai-compatible',
         id: customProviderId,
-        baseUrl: data.openAICompatibleApplyModel.baseUrl,
-        apiKey: data.openAICompatibleApplyModel.apiKey,
+        baseUrl: openAICompatibleApplyModel.baseUrl,
+        apiKey: openAICompatibleApplyModel.apiKey,
       })
     }
 
-    if (data.openAICompatibleApplyModel.model) {
+    if (openAICompatibleApplyModel.model) {
       const existingSameChatModel = chatModels.find(
         (v) =>
           v.providerType === 'openai-compatible' &&
           v.providerId === customProviderId &&
-          v.model === data.openAICompatibleApplyModel.model,
+          v.model === openAICompatibleApplyModel.model,
       )
 
       let customApplyModelId
       if (existingSameChatModel) {
         customApplyModelId = existingSameChatModel.id
       } else {
-        customApplyModelId = `${customProviderId}/${data.openAICompatibleApplyModel.model}`
+        customApplyModelId = `${customProviderId}/${openAICompatibleApplyModel.model}`
         chatModels.push({
           providerType: 'openai-compatible',
           providerId: customProviderId,
           id: customApplyModelId,
-          model: data.openAICompatibleApplyModel.model,
+          model: openAICompatibleApplyModel.model,
+          promptLevel: PromptLevel.Default,
         })
       }
       if (data.applyModelId === 'openai-compatible') {

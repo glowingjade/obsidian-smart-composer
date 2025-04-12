@@ -26,7 +26,6 @@ import { fileToMentionableImage } from '../../../utils/llm/image'
 import { openMarkdownFile, readTFileContent } from '../../../utils/obsidian'
 import { MemoizedSyntaxHighlighterWrapper } from '../SyntaxHighlighterWrapper'
 
-import { AssistantLevelSelect } from './AssistantLevelSelect'
 import { ImageUploadButton } from './ImageUploadButton'
 import LexicalContentEditable from './LexicalContentEditable'
 import MentionableBadge from './MentionableBadge'
@@ -276,7 +275,6 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
         <div className="smtcmp-chat-user-input-controls">
           <div className="smtcmp-chat-user-input-controls__model-select-container">
             <ModelSelect />
-            <AssistantLevelSelect />
           </div>
           <div className="smtcmp-chat-user-input-controls__buttons">
             <ImageUploadButton onUpload={handleUploadImages} />

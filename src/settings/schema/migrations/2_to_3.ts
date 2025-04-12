@@ -1,5 +1,6 @@
 import { PROVIDER_TYPES_INFO } from '../../../constants'
 import { ChatModel } from '../../../types/chat-model.types'
+import { PromptLevel } from '../../../types/prompt-level.types'
 import { LLMProvider } from '../../../types/provider.types'
 import { SettingMigration } from '../setting.types'
 
@@ -24,18 +25,21 @@ export const NEW_DEFAULT_CHAT_MODELS: ChatModel[] = [
     providerId: PROVIDER_TYPES_INFO.deepseek.defaultProviderId,
     id: 'deepseek-chat',
     model: 'deepseek-chat',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'deepseek',
     providerId: PROVIDER_TYPES_INFO.deepseek.defaultProviderId,
     id: 'deepseek-reasoner',
     model: 'deepseek-reasoner',
+    promptLevel: PromptLevel.Default,
   },
   {
     providerType: 'morph',
     providerId: PROVIDER_TYPES_INFO.morph.defaultProviderId,
     id: 'morph-v0',
     model: 'morph-v0',
+    promptLevel: PromptLevel.Default,
   },
 ]
 
@@ -75,8 +79,11 @@ export const migrateFrom2To3: SettingMigration['migrate'] = (data) => {
         // Override the model while keeping any custom settings
         Object.assign(existingModel, newModel)
       } else {
-        // Add new model
-        newData.chatModels.push({ ...newModel })
+        // Add new model with default promptLevel if not specified
+        newData.chatModels.push({
+          ...newModel,
+          promptLevel: newModel.promptLevel ?? PromptLevel.Default,
+        })
       }
     }
   }

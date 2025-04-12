@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { DEFAULT_PROVIDERS } from '../../constants'
 import SmartComposerPlugin from '../../main'
 import { ChatModel, chatModelSchema } from '../../types/chat-model.types'
+import { PromptLevel } from '../../types/prompt-level.types'
 import { ObsidianButton } from '../common/ObsidianButton'
 import { ObsidianDropdown } from '../common/ObsidianDropdown'
 import { ObsidianSetting } from '../common/ObsidianSetting'
@@ -23,6 +24,7 @@ export default function AddChatModelModalRoot({
     providerType: DEFAULT_PROVIDERS[0].type,
     id: '',
     model: '',
+    promptLevel: PromptLevel.Default,
   })
 
   const handleSubmit = async () => {
@@ -102,6 +104,22 @@ export default function AddChatModelModalRoot({
           placeholder="Enter the model name"
           onChange={(value: string) =>
             setFormData((prev) => ({ ...prev, model: value }))
+          }
+        />
+      </ObsidianSetting>
+
+      <ObsidianSetting name="Prompt Level" required>
+        <ObsidianDropdown
+          value={formData.promptLevel.toString()}
+          options={{
+            [PromptLevel.Simple.toString()]: 'Simple',
+            [PromptLevel.Default.toString()]: 'Default',
+          }}
+          onChange={(value: string) =>
+            setFormData((prev) => ({
+              ...prev,
+              promptLevel: parseInt(value) as PromptLevel,
+            }))
           }
         />
       </ObsidianSetting>
