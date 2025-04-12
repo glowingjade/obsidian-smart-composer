@@ -112,13 +112,13 @@ export default function AddChatModelModalRoot({
         <ObsidianDropdown
           value={formData.promptLevel.toString()}
           options={{
-            [PromptLevel.Simple.toString()]: 'Simple',
-            [PromptLevel.Default.toString()]: 'Default',
+            [PromptLevel.Simple]: 'Simple - For local models',
+            [PromptLevel.Default]: 'Default - Full functionality',
           }}
           onChange={(value: string) =>
             setFormData((prev) => ({
               ...prev,
-              promptLevel: parseInt(value) as PromptLevel,
+              promptLevel: Number(value) as PromptLevel,
             }))
           }
         />
