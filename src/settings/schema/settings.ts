@@ -1,6 +1,5 @@
-import { SETTING_MIGRATIONS } from './migrations'
+import { SETTINGS_SCHEMA_VERSION, SETTING_MIGRATIONS } from './migrations'
 import {
-  SETTINGS_SCHEMA_VERSION,
   SmartComposerSettings,
   smartComposerSettingsSchema,
 } from './setting.types'
@@ -9,7 +8,7 @@ function migrateSettings(
   data: Record<string, unknown>,
 ): Record<string, unknown> {
   let currentData = { ...data }
-  const currentVersion = (currentData.version as number) ?? 0
+  let currentVersion = (currentData.version as number) ?? 0
 
   for (const migration of SETTING_MIGRATIONS) {
     if (
@@ -21,6 +20,7 @@ function migrateSettings(
         `Migrating settings from ${migration.fromVersion} to ${migration.toVersion}`,
       )
       currentData = migration.migrate(currentData)
+      currentVersion = migration.toVersion
     }
   }
 

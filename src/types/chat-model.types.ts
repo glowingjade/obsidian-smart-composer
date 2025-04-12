@@ -23,7 +23,7 @@ export const chatModelSchema = z.discriminatedUnion('providerType', [
   z.object({
     providerType: z.literal('openai'),
     ...baseChatModelSchema.shape,
-    streamingDisabled: z.boolean().optional(),
+    reasoning_effort: z.string().optional(),
   }),
   z.object({
     providerType: z.literal('anthropic'),
@@ -57,6 +57,15 @@ export const chatModelSchema = z.discriminatedUnion('providerType', [
   z.object({
     providerType: z.literal('deepseek'),
     ...baseChatModelSchema.shape,
+  }),
+  z.object({
+    providerType: z.literal('perplexity'),
+    ...baseChatModelSchema.shape,
+    web_search_options: z
+      .object({
+        search_context_size: z.string(),
+      })
+      .optional(),
   }),
   z.object({
     providerType: z.literal('morph'),

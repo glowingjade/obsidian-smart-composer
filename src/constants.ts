@@ -14,6 +14,9 @@ type ModelPricing = {
 export const OPENAI_PRICES: Record<string, ModelPricing> = {
   'gpt-4o': { input: 2.5, output: 10 },
   'gpt-4o-mini': { input: 0.15, output: 0.6 },
+  o1: { input: 15, output: 60 },
+  'o3-mini': { input: 1.1, output: 4.4 },
+  'o1-mini': { input: 1.1, output: 4.4 },
 }
 
 export const ANTHROPIC_PRICES: Record<string, ModelPricing> = {
@@ -95,6 +98,14 @@ export const PROVIDER_TYPES_INFO = {
   deepseek: {
     label: 'DeepSeek',
     defaultProviderId: 'deepseek',
+    requireApiKey: true,
+    requireBaseUrl: false,
+    supportEmbedding: false,
+    additionalSettings: [],
+  },
+  perplexity: {
+    label: 'Perplexity',
+    defaultProviderId: 'perplexity',
     requireApiKey: true,
     requireBaseUrl: false,
     supportEmbedding: false,
@@ -186,6 +197,14 @@ export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
     id: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
   },
   {
+    type: 'deepseek',
+    id: PROVIDER_TYPES_INFO.deepseek.defaultProviderId,
+  },
+  {
+    type: 'perplexity',
+    id: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
+  },
+  {
     type: 'groq',
     id: PROVIDER_TYPES_INFO.groq.defaultProviderId,
   },
@@ -200,10 +219,6 @@ export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
   {
     type: 'lm-studio',
     id: PROVIDER_TYPES_INFO['lm-studio'].defaultProviderId,
-  },
-  {
-    type: 'deepseek',
-    id: PROVIDER_TYPES_INFO.deepseek.defaultProviderId,
   },
   {
     type: 'morph',
@@ -239,6 +254,12 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     model: 'claude-3-5-sonnet-latest',
   },
   {
+    providerType: 'anthropic',
+    providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
+    id: 'claude-3.5-haiku',
+    model: 'claude-3-5-haiku-latest',
+  },
+  {
     providerType: 'openai',
     providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
     id: 'gpt-4o',
@@ -251,16 +272,30 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     model: 'gpt-4o-mini',
   },
   {
+    providerType: 'openai',
+    providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
+    id: 'o3-mini',
+    model: 'o3-mini',
+    reasoning_effort: 'medium',
+  },
+  {
+    providerType: 'openai',
+    providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
+    id: 'o1',
+    model: 'o1',
+    reasoning_effort: 'medium',
+  },
+  {
     providerType: 'gemini',
     providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
-    id: 'gemini-1.5-pro',
-    model: 'gemini-1.5-pro',
+    id: 'gemini-2.5-pro',
+    model: 'gemini-2.5-pro-preview-03-25',
   },
   {
     providerType: 'gemini',
     providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
     id: 'gemini-2.0-flash',
-    model: 'gemini-2.0-flash-exp',
+    model: 'gemini-2.0-flash',
   },
   {
     providerType: 'gemini',
@@ -271,21 +306,14 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
   {
     providerType: 'gemini',
     providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
-    id: 'gemini-exp-1206',
-    model: 'gemini-exp-1206',
+    id: 'gemini-2.0-flash-lite',
+    model: 'gemini-2.0-flash-lite',
   },
   {
-    providerType: 'openai',
-    providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
-    id: 'o1',
-    model: 'o1',
-    streamingDisabled: true, // currently, o1 API doesn't support streaming
-  },
-  {
-    providerType: 'anthropic',
-    providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
-    id: 'claude-3.5-haiku',
-    model: 'claude-3-5-haiku-latest',
+    providerType: 'gemini',
+    providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
+    id: 'gemini-1.5-pro',
+    model: 'gemini-1.5-pro',
   },
   {
     providerType: 'gemini',
@@ -304,6 +332,51 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: PROVIDER_TYPES_INFO.deepseek.defaultProviderId,
     id: 'deepseek-reasoner',
     model: 'deepseek-reasoner',
+  },
+  {
+    providerType: 'perplexity',
+    providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
+    id: 'sonar',
+    model: 'sonar',
+    web_search_options: {
+      search_context_size: 'low',
+    },
+  },
+  {
+    providerType: 'perplexity',
+    providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
+    id: 'sonar-pro',
+    model: 'sonar',
+    web_search_options: {
+      search_context_size: 'low',
+    },
+  },
+  {
+    providerType: 'perplexity',
+    providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
+    id: 'sonar-deep-research',
+    model: 'sonar-deep-research',
+    web_search_options: {
+      search_context_size: 'low',
+    },
+  },
+  {
+    providerType: 'perplexity',
+    providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
+    id: 'sonar-reasoning',
+    model: 'sonar',
+    web_search_options: {
+      search_context_size: 'low',
+    },
+  },
+  {
+    providerType: 'perplexity',
+    providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
+    id: 'sonar-reasoning-pro',
+    model: 'sonar',
+    web_search_options: {
+      search_context_size: 'low',
+    },
   },
   {
     providerType: 'morph',

@@ -1,5 +1,3 @@
-import OpenAI from 'openai'
-
 import { ChatModel } from '../../types/chat-model.types'
 import {
   LLMOptions,
@@ -14,24 +12,24 @@ import { LLMProvider } from '../../types/provider.types'
 import { formatMessages } from '../../utils/llm/request'
 
 import { BaseLLMProvider } from './base'
-import { DeepSeekMessageAdapter } from './deepseekMessageAdapter'
 import { LLMAPIKeyNotSetException } from './exception'
+import { NoStainlessOpenAI } from './NoStainlessOpenAI'
+import { PerplexityMessageAdapter } from './perplexityMessageAdapter'
 
-// deepseek doesn't support image
-export class DeepSeekStudioProvider extends BaseLLMProvider<
-  Extract<LLMProvider, { type: 'deepseek' }>
+export class PerplexityProvider extends BaseLLMProvider<
+  Extract<LLMProvider, { type: 'perplexity' }>
 > {
-  private adapter: DeepSeekMessageAdapter
-  private client: OpenAI
+  private adapter: PerplexityMessageAdapter
+  private client: NoStainlessOpenAI
 
-  constructor(provider: Extract<LLMProvider, { type: 'deepseek' }>) {
+  constructor(provider: Extract<LLMProvider, { type: 'perplexity' }>) {
     super(provider)
-    this.adapter = new DeepSeekMessageAdapter()
-    this.client = new OpenAI({
+    this.adapter = new PerplexityMessageAdapter()
+    this.client = new NoStainlessOpenAI({
       apiKey: provider.apiKey ?? '',
       baseURL: provider.baseUrl
         ? provider.baseUrl.replace(/\/+$/, '')
-        : 'https://api.deepseek.com',
+        : 'https://api.perplexity.ai',
       dangerouslyAllowBrowser: true,
     })
   }
@@ -41,8 +39,8 @@ export class DeepSeekStudioProvider extends BaseLLMProvider<
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
-    if (model.providerType !== 'deepseek') {
-      throw new Error('Model is not a DeepSeek model')
+    if (model.providerType !== 'perplexity') {
+      throw new Error('Model is not a Perplexity model')
     }
     if (!this.client.apiKey) {
       throw new LLMAPIKeyNotSetException(
@@ -53,6 +51,8 @@ export class DeepSeekStudioProvider extends BaseLLMProvider<
     const formattedRequest = {
       ...request,
       messages: formatMessages(request.messages),
+      web_search_options:
+        model.web_search_options as LLMRequestNonStreaming['web_search_options'],
     }
 
     return this.adapter.generateResponse(this.client, formattedRequest, options)
@@ -63,8 +63,8 @@ export class DeepSeekStudioProvider extends BaseLLMProvider<
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
-    if (model.providerType !== 'deepseek') {
-      throw new Error('Model is not a DeepSeek model')
+    if (model.providerType !== 'perplexity') {
+      throw new Error('Model is not a Perplexity model')
     }
     if (!this.client.apiKey) {
       throw new LLMAPIKeyNotSetException(
@@ -75,6 +75,8 @@ export class DeepSeekStudioProvider extends BaseLLMProvider<
     const formattedRequest = {
       ...request,
       messages: formatMessages(request.messages),
+      web_search_options:
+        model.web_search_options as LLMRequestStreaming['web_search_options'],
     }
 
     return this.adapter.streamResponse(this.client, formattedRequest, options)

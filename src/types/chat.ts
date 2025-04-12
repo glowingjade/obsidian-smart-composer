@@ -4,7 +4,7 @@ import { SelectEmbedding } from '../database/schema'
 
 import { ChatModel } from './chat-model.types'
 import { ContentPart } from './llm/request'
-import { ResponseUsage } from './llm/response'
+import { Annotation, ResponseUsage } from './llm/response'
 import { Mentionable, SerializedMentionable } from './mentionable'
 
 export type ChatUserMessage = {
@@ -21,6 +21,7 @@ export type ChatAssistantMessage = {
   role: 'assistant'
   content: string
   reasoning?: string
+  annotations?: Annotation[]
   id: string
   metadata?: {
     usage?: ResponseUsage
@@ -43,6 +44,7 @@ export type SerializedChatAssistantMessage = {
   role: 'assistant'
   content: string
   reasoning?: string
+  annotations?: Annotation[]
   id: string
   metadata?: {
     usage?: ResponseUsage

@@ -5,7 +5,7 @@ import {
 } from '../../constants'
 import { AssistantLevel } from '../../types/assistant-level.types'
 
-import { SETTINGS_SCHEMA_VERSION } from './setting.types'
+import { SETTINGS_SCHEMA_VERSION } from './migrations'
 import { parseSmartComposerSettings } from './settings'
 
 describe('parseSmartComposerSettings', () => {

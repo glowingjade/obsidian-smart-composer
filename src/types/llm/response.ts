@@ -1,5 +1,5 @@
 // These types are based on the OpenRouter API specification
-// https://openrouter.ai/docs/responses
+// https://openrouter.ai/docs/api-reference/overview#responses
 
 export type LLMResponseBase = {
   id: string
@@ -33,6 +33,7 @@ type NonStreamingChoice = {
     content: string | null
     reasoning?: string | null
     role: string
+    annotations?: Annotation[]
   }
   error?: Error
 }
@@ -43,8 +44,20 @@ type StreamingChoice = {
     content?: string | null
     reasoning?: string | null
     role?: string
+    annotations?: Annotation[]
   }
   error?: Error
+}
+
+// Following annotation schema from OpenAI: https://platform.openai.com/docs/guides/tools-web-search#output-and-citations
+export type Annotation = {
+  type: 'url_citation'
+  url_citation: {
+    url: string
+    title?: string
+    start_index?: number
+    end_index?: number
+  }
 }
 
 type Error = {

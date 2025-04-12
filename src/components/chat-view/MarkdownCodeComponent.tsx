@@ -1,8 +1,11 @@
-import { Check, CopyIcon, Loader2 } from 'lucide-react'
+import { Check, CopyIcon, Eye, Loader2, Play } from 'lucide-react'
 import { PropsWithChildren, useMemo, useState } from 'react'
 
+import { useApp } from '../../contexts/app-context'
 import { useDarkModeContext } from '../../contexts/dark-mode-context'
+import { openMarkdownFile } from '../../utils/obsidian'
 
+import ObsidianMarkdown from './ObsidianMarkdown'
 import { MemoizedSyntaxHighlighterWrapper } from './SyntaxHighlighterWrapper'
 
 export default function MarkdownCodeComponent({
@@ -17,8 +20,11 @@ export default function MarkdownCodeComponent({
   language?: string
   filename?: string
 }>) {
-  const [copied, setCopied] = useState(false)
+  const app = useApp()
   const { isDarkMode } = useDarkModeContext()
+
+  const [isPreviewMode, setIsPreviewMode] = useState(true)
+  const [copied, setCopied] = useState(false)
 
   const wrapLines = useMemo(() => {
     return !language || ['markdown'].includes(language)
@@ -34,13 +40,32 @@ export default function MarkdownCodeComponent({
     }
   }
 
+  const handleOpenFile = () => {
+    if (filename) {
+      openMarkdownFile(app, filename)
+    }
+  }
+
   return (
-    <div className={`smtcmp-code-block ${filename ? 'has-filename' : ''}`}>
-      <div className={'smtcmp-code-block-header'}>
+    <div className="smtcmp-code-block">
+      <div className="smtcmp-code-block-header">
         {filename && (
-          <div className={'smtcmp-code-block-header-filename'}>{filename}</div>
+          <div
+            className="smtcmp-code-block-header-filename"
+            onClick={handleOpenFile}
+          >
+            {filename}
+          </div>
         )}
-        <div className={'smtcmp-code-block-header-button'}>
+        <div className="smtcmp-code-block-header-button">
+          <button
+            onClick={() => {
+              setIsPreviewMode(!isPreviewMode)
+            }}
+          >
+            <Eye size={12} />
+            {isPreviewMode ? 'View Raw Text' : 'View Formatted'}
+          </button>
           <button
             onClick={() => {
               handleCopy()
@@ -48,11 +73,13 @@ export default function MarkdownCodeComponent({
           >
             {copied ? (
               <>
-                <Check size={10} /> Copied
+                <Check size={10} />
+                <span>Copied</span>
               </>
             ) : (
               <>
-                <CopyIcon size={10} /> Copy
+                <CopyIcon size={10} />
+                <span>Copy</span>
               </>
             )}
           </button>
@@ -64,22 +91,32 @@ export default function MarkdownCodeComponent({
           >
             {isApplying ? (
               <>
-                <Loader2 className="spinner" size={14} /> Applying...
+                <Loader2 className="spinner" size={14} />
+                <span>Applying...</span>
               </>
             ) : (
-              'Apply'
+              <>
+                <Play size={10} />
+                <span>Apply</span>
+              </>
             )}
           </button>
         </div>
       </div>
-      <MemoizedSyntaxHighlighterWrapper
-        isDarkMode={isDarkMode}
-        language={language}
-        hasFilename={!!filename}
-        wrapLines={wrapLines}
-      >
-        {String(children)}
-      </MemoizedSyntaxHighlighterWrapper>
+      {isPreviewMode ? (
+        <div className="smtcmp-code-block-obsidian-markdown">
+          <ObsidianMarkdown content={String(children)} scale="sm" />
+        </div>
+      ) : (
+        <MemoizedSyntaxHighlighterWrapper
+          isDarkMode={isDarkMode}
+          language={language}
+          hasFilename={!!filename}
+          wrapLines={wrapLines}
+        >
+          {String(children)}
+        </MemoizedSyntaxHighlighterWrapper>
+      )}
     </div>
   )
 }

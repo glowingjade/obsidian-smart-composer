@@ -26,9 +26,13 @@ export class OpenAIMessageAdapter {
     const response = await client.chat.completions.create(
       {
         model: request.model,
-        messages: request.messages.map((m) =>
-          OpenAIMessageAdapter.parseRequestMessage(m),
-        ),
+        reasoning_effort: request.reasoning_effort,
+        web_search_options: request.web_search_options,
+        messages: request.messages.map((m) => this.parseRequestMessage(m)),
+        // TODO: max_tokens is deprecated in the OpenAI API, with max_completion_tokens being the
+        // recommended replacement. Reasoning models do not support max_tokens at all.
+        // However, many OpenAI-compatible APIs still only support max_tokens.
+        // Consider implementing a solution that works with both OpenAI and compatible APIs.
         max_tokens: request.max_tokens,
         temperature: request.temperature,
         top_p: request.top_p,
@@ -41,7 +45,7 @@ export class OpenAIMessageAdapter {
         signal: options?.signal,
       },
     )
-    return OpenAIMessageAdapter.parseNonStreamingResponse(response)
+    return this.parseNonStreamingResponse(response)
   }
 
   async streamResponse(
@@ -52,10 +56,14 @@ export class OpenAIMessageAdapter {
     const stream = await client.chat.completions.create(
       {
         model: request.model,
-        messages: request.messages.map((m) =>
-          OpenAIMessageAdapter.parseRequestMessage(m),
-        ),
-        max_completion_tokens: request.max_tokens,
+        reasoning_effort: request.reasoning_effort,
+        web_search_options: request.web_search_options,
+        messages: request.messages.map((m) => this.parseRequestMessage(m)),
+        // TODO: max_tokens is deprecated in the OpenAI API, with max_completion_tokens being the
+        // recommended replacement. Reasoning models do not support max_tokens at all.
+        // However, many OpenAI-compatible APIs still only support max_tokens.
+        // Consider implementing a solution that works with both OpenAI and compatible APIs.
+        max_tokens: request.max_tokens,
         temperature: request.temperature,
         top_p: request.top_p,
         frequency_penalty: request.frequency_penalty,
@@ -71,17 +79,18 @@ export class OpenAIMessageAdapter {
       },
     )
 
-    // eslint-disable-next-line no-inner-declarations
-    async function* streamResponse(): AsyncIterable<LLMResponseStreaming> {
-      for await (const chunk of stream) {
-        yield OpenAIMessageAdapter.parseStreamingResponseChunk(chunk)
-      }
-    }
-
-    return streamResponse()
+    return this.streamResponseGenerator(stream)
   }
 
-  static parseRequestMessage(
+  private async *streamResponseGenerator(
+    stream: AsyncIterable<ChatCompletionChunk>,
+  ): AsyncIterable<LLMResponseStreaming> {
+    for await (const chunk of stream) {
+      yield this.parseStreamingResponseChunk(chunk)
+    }
+  }
+
+  protected parseRequestMessage(
     message: RequestMessage,
   ): ChatCompletionMessageParam {
     switch (message.role) {
@@ -113,7 +122,7 @@ export class OpenAIMessageAdapter {
     }
   }
 
-  static parseNonStreamingResponse(
+  protected parseNonStreamingResponse(
     response: ChatCompletion,
   ): LLMResponseNonStreaming {
     return {
@@ -133,7 +142,7 @@ export class OpenAIMessageAdapter {
     }
   }
 
-  static parseStreamingResponseChunk(
+  protected parseStreamingResponseChunk(
     chunk: ChatCompletionChunk,
   ): LLMResponseStreaming {
     return {

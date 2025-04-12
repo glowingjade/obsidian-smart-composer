@@ -1,14 +1,15 @@
 import React, { useCallback, useMemo } from 'react'
-import Markdown from 'react-markdown'
 
 import { ChatMessage } from '../../types/chat'
 import {
-  ParsedSmtcmpBlock,
-  parsesmtcmpBlocks,
-} from '../../utils/chat/parse-smtcmp-block'
+  ParsedTagContent,
+  parseTagContents,
+} from '../../utils/chat/parse-tag-content'
 
+import AssistantMessageReasoning from './AssistantMessageReasoning'
 import MarkdownCodeComponent from './MarkdownCodeComponent'
 import MarkdownReferenceBlock from './MarkdownReferenceBlock'
+import ObsidianMarkdown from './ObsidianMarkdown'
 
 const ReactMarkdown = React.memo(function ReactMarkdown({
   onApply,
@@ -19,8 +20,8 @@ const ReactMarkdown = React.memo(function ReactMarkdown({
   children: string
   isApplying: boolean
 }) {
-  const blocks: ParsedSmtcmpBlock[] = useMemo(
-    () => parsesmtcmpBlocks(children),
+  const blocks: ParsedTagContent[] = useMemo(
+    () => parseTagContents(children),
     [children],
   )
 
@@ -28,9 +29,11 @@ const ReactMarkdown = React.memo(function ReactMarkdown({
     <>
       {blocks.map((block, index) =>
         block.type === 'string' ? (
-          <Markdown key={index} className="smtcmp-markdown">
-            {block.content}
-          </Markdown>
+          <div key={index}>
+            <ObsidianMarkdown content={block.content} scale="sm" />
+          </div>
+        ) : block.type === 'think' ? (
+          <AssistantMessageReasoning key={index} reasoning={block.content} />
         ) : block.startLine && block.endLine && block.filename ? (
           <MarkdownReferenceBlock
             key={index}
