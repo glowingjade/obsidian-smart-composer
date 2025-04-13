@@ -73,12 +73,13 @@ export const llmProviderSchema = z.discriminatedUnion('type', [
   }),
   z.object({
     type: z.literal('openai-compatible'),
-    ...baseLlmProviderSchema.shape,
+    id: z.string().min(1, 'id is required'),
     baseUrl: z
       .string({
         required_error: 'base URL is required',
       })
       .min(1, 'base URL is required'),
+    apiKey: z.string().optional(),
     additionalSettings: z
       .object({
         noStainless: z.boolean().optional(),
