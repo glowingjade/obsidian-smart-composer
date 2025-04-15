@@ -84,6 +84,7 @@ export class OpenAICompatibleProvider extends BaseLLMProvider<
     const embedding = await this.client.embeddings.create({
       model: model,
       input: text,
+      encoding_format: 'float',
     })
     return embedding.data[0].embedding
   }
