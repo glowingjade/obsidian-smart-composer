@@ -1,6 +1,5 @@
-import path from 'path'
-
 import { ChevronDown, ChevronRight } from 'lucide-react'
+import path from 'path-browserify'
 import { useState } from 'react'
 
 import { useApp } from '../../contexts/app-context'
