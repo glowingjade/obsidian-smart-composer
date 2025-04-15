@@ -18,7 +18,7 @@ const baseChatModelSchema = z.object({
       required_error: 'model is required',
     })
     .min(1, 'model is required'),
-  promptLevel: z.nativeEnum(PromptLevel).default(PromptLevel.Default),
+  promptLevel: z.nativeEnum(PromptLevel).default(PromptLevel.Default).optional(),
   enable: z.boolean().default(true).optional(),
 })
 
