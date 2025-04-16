@@ -35,11 +35,11 @@ import {
   getMentionableKey,
   serializeMentionable,
 } from '../../utils/chat/mentionable'
+import { MessageStream } from '../../utils/chat/messageStream'
 import { PromptGenerator } from '../../utils/chat/promptGenerator'
 import { readTFileContent } from '../../utils/obsidian'
 import { ErrorModal } from '../modals/ErrorModal'
 
-import { AnnotationManager } from './AnnotationManager'
 import AssistantMessageActions from './AssistantMessageActions'
 import AssistantMessageAnnotations from './AssistantMessageAnnotations'
 import AssistantMessageReasoning from './AssistantMessageReasoning'
@@ -204,30 +204,18 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       newChatHistory: ChatMessage[]
       useVaultSearch?: boolean
     }) => {
-      abortActiveStreams()
-      setQueryProgress({
-        type: 'idle',
-      })
-
-      const responseMessageId = uuidv4()
-      setChatMessages([
-        ...newChatHistory,
-        {
-          role: 'assistant',
-          content: '',
-          id: responseMessageId,
-          metadata: {
-            usage: undefined,
-            model: undefined,
-          },
-        },
-      ])
-
-      requestAnimationFrame(() => {
-        forceScrollToBottom()
-      })
-
       try {
+        abortActiveStreams()
+        setQueryProgress({
+          type: 'idle',
+        })
+
+        // Update the chat history to show the new user message
+        setChatMessages(newChatHistory)
+        requestAnimationFrame(() => {
+          forceScrollToBottom()
+        })
+
         const abortController = new AbortController()
         activeStreamAbortControllersRef.current.push(abortController)
 
@@ -241,76 +229,44 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           type: 'idle',
         })
 
+        const { providerClient, model } = getChatModelClient({
+          settings,
+          modelId: settings.chatModelId,
+        })
+
+        // Create an empty assistant message to store the response
+        const responseMessageId = uuidv4()
         setChatMessages([
           ...compiledMessages,
           {
             role: 'assistant',
             content: '',
             id: responseMessageId,
-            metadata: {
-              usage: undefined,
-              model: undefined,
-            },
           },
         ])
 
-        const { providerClient, model } = getChatModelClient({
-          settings,
-          modelId: settings.chatModelId,
+        const messageStream = new MessageStream({
+          providerClient,
+          model,
+          requestMessages,
+          abortSignal: abortController.signal,
         })
 
-        const stream = await providerClient.streamResponse(
-          model,
-          {
-            model: model.model,
-            messages: requestMessages,
-            stream: true,
-          },
-          {
-            signal: abortController.signal,
-          },
-        )
-
-        const annotationManager = new AnnotationManager()
-
-        for await (const chunk of stream) {
-          const content = chunk.choices[0]?.delta?.content ?? ''
-          const reasoning = chunk.choices[0]?.delta?.reasoning
-          const annotations = chunk.choices[0]?.delta?.annotations
-
-          if (annotations) {
-            // For annotations with empty titles, fetch the title of the URL and update the chat messages
-            await annotationManager.fetchUrlTitles(
-              annotations,
-              setChatMessages,
-              responseMessageId,
-            )
-          }
-
+        messageStream.subscribe((newMessage) => {
           setChatMessages((prevChatHistory) =>
             prevChatHistory.map((message) =>
               message.role === 'assistant' && message.id === responseMessageId
                 ? {
                     ...message,
-                    content: message.content + content,
-                    reasoning: reasoning
-                      ? (message.reasoning ?? '') + reasoning
-                      : message.reasoning,
-                    annotations: AnnotationManager.mergeAnnotations(
-                      message.annotations,
-                      annotations,
-                    ),
-                    metadata: {
-                      ...message.metadata,
-                      usage: chunk.usage ?? message.metadata?.usage,
-                      model,
-                    },
+                    ...newMessage,
                   }
                 : message,
             ),
           )
           autoScrollToBottom()
-        }
+        })
+
+        await messageStream.start()
       } catch (error) {
         if (error.name === 'AbortError') {
           return
