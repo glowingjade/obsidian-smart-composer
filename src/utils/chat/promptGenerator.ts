@@ -322,8 +322,7 @@ ${await this.getWebsiteContent(url)}
 
 ${
   modelPromptLevel == PromptLevel.Default
-    ? `
-4. Respond in the same language as the user's message.
+    ? `4. Respond in the same language as the user's message.
 
 5. When writing out new markdown blocks, also wrap them with <smtcmp_block> tags. For example:
 <smtcmp_block language="markdown">
@@ -359,8 +358,7 @@ The user has full access to the file, so they prefer seeing only the changes in 
 
 ${
   modelPromptLevel == PromptLevel.Default
-    ? `
-3. Respond in the same language as the user's message.
+    ? `3. Respond in the same language as the user's message.
 
 4. When referencing markdown blocks in your answer, keep the following guidelines in mind:
 

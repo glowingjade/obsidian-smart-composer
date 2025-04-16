@@ -242,8 +242,6 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   height: var(--size-4-4);
 
   .smtcmp-chat-user-input-controls__model-select-container {
-    display: flex;
-    gap: var(--size-4-2);
     flex-shrink: 1;
     overflow: hidden;
   }

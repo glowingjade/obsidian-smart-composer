@@ -108,12 +108,16 @@ export default function AddChatModelModalRoot({
         />
       </ObsidianSetting>
 
-      <ObsidianSetting name="Prompt Level" required>
+      <ObsidianSetting
+        name="Prompt Level"
+        desc={`Choose how complex the system prompt should be. Select "simple" for small models that ignore user questions and just repeat back instructions.`}
+        required
+      >
         <ObsidianDropdown
-          value={formData.promptLevel.toString()}
+          value={(formData.promptLevel ?? PromptLevel.Default).toString()}
           options={{
-            [PromptLevel.Simple]: 'Simple - For local models',
-            [PromptLevel.Default]: 'Default - Full functionality',
+            [PromptLevel.Default]: 'default',
+            [PromptLevel.Simple]: 'simple',
           }}
           onChange={(value: string) =>
             setFormData((prev) => ({
