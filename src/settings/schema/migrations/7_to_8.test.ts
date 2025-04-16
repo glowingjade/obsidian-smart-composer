@@ -1,7 +1,7 @@
 import { migrateFrom7To8 } from './7_to_8'
 
 describe('settings 7_to_8 migration', () => {
-  it('should add gpt-4.1 model after gpt-4o', () => {
+  it('should add gpt-4.1 model before gpt-4o', () => {
     const oldSettings = {
       version: 7,
       chatModels: [
@@ -39,14 +39,14 @@ describe('settings 7_to_8 migration', () => {
       {
         providerType: 'openai',
         providerId: 'openai',
-        id: 'gpt-4o',
-        model: 'gpt-4o',
+        id: 'gpt-4.1',
+        model: 'gpt-4.1',
       },
       {
         providerType: 'openai',
         providerId: 'openai',
-        id: 'gpt-4.1',
-        model: 'gpt-4.1',
+        id: 'gpt-4o',
+        model: 'gpt-4o',
       },
       {
         providerType: 'openai',
