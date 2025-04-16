@@ -30,21 +30,26 @@ export const migrateFrom7To8: SettingMigration['migrate'] = (data) => {
       )
     }
 
-    // Find the position after gpt-4o to insert the new model
-    const gpt4oIndex = newData.chatModels.findIndex(
-      (model) => model.id === 'gpt-4o'
+    // Find the position of gpt-4o model to insert before it
+    const gpt4oIndex = (newData.chatModels as unknown[]).findIndex(
+      (model: unknown) => {
+        return (model as { id: string }).id === 'gpt-4o'
+      }
     )
-    
+
     if (gpt4oIndex !== -1) {
-      // Insert after gpt-4o
-      (newData.chatModels as unknown[]).splice(gpt4oIndex + 1, 0, newModel)
+      // Insert before gpt-4o
+      (newData.chatModels as unknown[]).splice(gpt4oIndex, 0, newModel)
     } else {
-      // If gpt-4o doesn't exist, find any OpenAI model to insert after
-      const openaiModelIndex = newData.chatModels.findIndex(
-        (model) => model.providerType === 'openai'
+      // If gpt-4o doesn't exist, find any OpenAI model
+      const openaiModelIndex = (newData.chatModels as unknown[]).findIndex(
+        (model: unknown) => {
+          return (model as { providerType: string }).providerType === 'openai'
+        }
       )
-      
+
       if (openaiModelIndex !== -1) {
+        // Add after the first OpenAI model found
         (newData.chatModels as unknown[]).splice(openaiModelIndex + 1, 0, newModel)
       } else {
         // As a last resort, add to the end
