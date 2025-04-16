@@ -14,7 +14,7 @@ type ModelPricing = {
 export const OPENAI_PRICES: Record<string, ModelPricing> = {
   'gpt-4o': { input: 2.5, output: 10 },
   'gpt-4o-mini': { input: 0.15, output: 0.6 },
-  'gpt-4.1': { input: 2.0, output: 8.0 },  // New GPT-4.1 pricing
+  'gpt-4.1': { input: 2.0, output: 8.0 },
   o1: { input: 15, output: 60 },
   'o3-mini': { input: 1.1, output: 4.4 },
   'o1-mini': { input: 1.1, output: 4.4 },
