@@ -1,4 +1,5 @@
 import { SettingMigration } from '../setting.types'
+import { getMigratedProviders } from './migrationUtils';
 
 /**
  * Migration from version 6 to version 7
@@ -227,28 +228,7 @@ export const migrateFrom6To7: SettingMigration['migrate'] = (data) => {
   const newData = { ...data }
   newData.version = 7
 
-  if (!('providers' in newData && Array.isArray(newData.providers))) {
-    newData.providers = DEFAULT_PROVIDERS_V7
-  } else {
-    const defaultProviders = DEFAULT_PROVIDERS_V7.map((provider) => {
-      const existingProvider = (newData.providers as unknown[]).find(
-        (p: unknown) =>
-          (p as { type: string }).type === provider.type &&
-          (p as { id: string }).id === provider.id,
-      )
-      return existingProvider
-        ? Object.assign(existingProvider, provider)
-        : provider
-    })
-    const customProviders = (newData.providers as unknown[]).filter(
-      (p: unknown) =>
-        !defaultProviders.some(
-          (dp: unknown) =>
-            (dp as { id: string }).id === (p as { id: string }).id,
-        ),
-    )
-    newData.providers = [...defaultProviders, ...customProviders]
-  }
+  newData.providers = getMigratedProviders(newData, DEFAULT_PROVIDERS_V7);
 
   if (!('chatModels' in newData && Array.isArray(newData.chatModels))) {
     newData.chatModels = DEFAULT_CHAT_MODELS_V7
