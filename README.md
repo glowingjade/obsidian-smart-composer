@@ -158,7 +158,7 @@ This project is licensed under the [MIT License](LICENSE).
 
 If you find Smart Composer valuable, consider supporting its development:
 
-<a href="https://www.buymeacoffee.com/glowingjade" target="_blank">
+<a href="https://www.buymeacoffee.com/kevin.on" target="_blank">
   <img src="https://github.com/user-attachments/assets/e794767d-b7dd-40eb-9132-e48ae7088000" alt="Buy Me A Coffee" width="180">
 </a>
 

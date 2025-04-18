@@ -27,7 +27,7 @@ export function SettingsTabRoot({ app, plugin }: SettingsTabRootProps) {
         <ObsidianButton
           text="Buy Me a Coffee"
           onClick={() =>
-            window.open('https://www.buymeacoffee.com/glowingjade', '_blank')
+            window.open('https://www.buymeacoffee.com/kevin.on', '_blank')
           }
           cta
         />
