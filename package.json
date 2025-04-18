@@ -50,6 +50,7 @@
     "@google/generative-ai": "^0.24.0",
     "@lexical/clipboard": "^0.17.1",
     "@lexical/react": "^0.17.1",
+    "@modelcontextprotocol/sdk": "^1.9.0",
     "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-dropdown-menu": "^2.1.2",
     "@radix-ui/react-popover": "^1.1.2",
@@ -76,6 +77,7 @@
     "react-markdown": "^9.0.1",
     "react-syntax-highlighter": "^15.5.0",
     "remark-gfm": "^4.0.0",
+    "shell-env": "^4.0.1",
     "uuid": "^10.0.0",
     "vscode-diff": "^2.1.1",
     "zod": "^3.23.8"

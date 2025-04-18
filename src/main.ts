@@ -15,12 +15,14 @@ import {
 } from './settings/schema/setting.types'
 import { parseSmartComposerSettings } from './settings/schema/settings'
 import { SmartComposerSettingTab } from './settings/SettingTab'
+import { MCPManager } from './utils/mcp'
 import { getMentionableBlockData } from './utils/obsidian'
 
 export default class SmartComposerPlugin extends Plugin {
   settings: SmartComposerSettings
   initialChatProps?: ChatProps // TODO: change this to use view state like ApplyView
   settingsChangeListeners: ((newSettings: SmartComposerSettings) => void)[] = []
+  mcpManager: MCPManager | null = null
   dbManager: DatabaseManager | null = null
   ragEngine: RAGEngine | null = null
   private dbManagerInitPromise: Promise<DatabaseManager> | null = null
@@ -281,6 +283,15 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
     }
 
     return this.ragEngineInitPromise
+  }
+
+  async getMCPManager(): Promise<MCPManager> {
+    if (this.mcpManager) {
+      return this.mcpManager
+    }
+    this.mcpManager = new MCPManager()
+    await this.mcpManager.initialize()
+    return this.mcpManager
   }
 
   private registerTimeout(callback: () => void, timeout: number): void {
