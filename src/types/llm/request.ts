@@ -3,9 +3,15 @@
 
 import { ChatCompletionCreateParams, ReasoningEffort } from 'openai/resources'
 
+import { ToolCallRequest } from '../chat'
+
 export type LLMRequestBase = {
   messages: RequestMessage[]
   model: string
+
+  // Tool calling
+  tools?: RequestTool[]
+  tool_choice?: RequestToolChoice
 
   // LLM Parameters (https://openrouter.ai/docs/api-reference/parameters)
   max_tokens?: number // Range: [1, context_length)
@@ -51,12 +57,52 @@ type ImageContentPart = {
 
 export type ContentPart = TextContent | ImageContentPart
 
-export type RequestMessage = {
-  role: 'user' | 'assistant' | 'system'
-  // ContentParts are only for the 'user' role:
+type RequestSystemMessage = {
+  role: 'system'
+  content: string
+}
+type RequestUserMessage = {
+  role: 'user'
   content: string | ContentPart[]
 }
+type RequestAssistantMessage = {
+  role: 'assistant'
+  content: string
+  tool_calls?: ToolCallRequest[]
+}
+type RequestToolMessage = {
+  role: 'tool'
+  tool_call_id: string
+  content: string
+}
+export type RequestMessage =
+  | RequestSystemMessage
+  | RequestUserMessage
+  | RequestAssistantMessage
+  | RequestToolMessage
 
 export type LLMOptions = {
   signal?: AbortSignal
+}
+
+export type RequestTool = {
+  type: 'function'
+  function: FunctionDescription
+}
+
+export type RequestToolChoice =
+  | 'none'
+  | 'auto'
+  | 'required'
+  | {
+      type: 'function'
+      function: {
+        name: string
+      }
+    }
+
+type FunctionDescription = {
+  description?: string
+  name: string
+  parameters: Record<string, unknown>
 }

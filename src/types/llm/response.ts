@@ -34,6 +34,7 @@ type NonStreamingChoice = {
     reasoning?: string | null
     role: string
     annotations?: Annotation[]
+    tool_calls?: ToolCall[]
   }
   error?: Error
 }
@@ -45,6 +46,7 @@ type StreamingChoice = {
     reasoning?: string | null
     role?: string
     annotations?: Annotation[]
+    tool_calls?: ToolCallDelta[]
   }
   error?: Error
 }
@@ -63,4 +65,23 @@ export type Annotation = {
 type Error = {
   code: number // See "Error Handling" section
   message: string
+}
+
+export type ToolCall = {
+  id?: string
+  type: 'function'
+  function: {
+    arguments?: string
+    name: string
+  }
+}
+
+export type ToolCallDelta = {
+  index: number
+  id?: string
+  type?: 'function'
+  function?: {
+    arguments?: string
+    name?: string
+  }
 }

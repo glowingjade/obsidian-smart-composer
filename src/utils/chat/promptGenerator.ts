@@ -8,6 +8,7 @@ import { SmartComposerSettings } from '../../settings/schema/setting.types'
 import {
   ChatAssistantMessage,
   ChatMessage,
+  ChatToolMessage,
   ChatUserMessage,
 } from '../../types/chat'
 import { ContentPart, RequestMessage } from '../../types/llm/request'
@@ -33,6 +34,7 @@ export class PromptGenerator {
   private getRagEngine: () => Promise<RAGEngine>
   private app: App
   private settings: SmartComposerSettings
+  private MAX_CONTEXT_MESSAGES = 20
 
   constructor(
     getRagEngine: () => Promise<RAGEngine>,
@@ -46,43 +48,23 @@ export class PromptGenerator {
 
   public async generateRequestMessages({
     messages,
-    useVaultSearch,
-    onQueryProgressChange,
   }: {
     messages: ChatMessage[]
-    useVaultSearch?: boolean
-    onQueryProgressChange?: (queryProgress: QueryProgressState) => void
   }): Promise<{
     requestMessages: RequestMessage[]
-    compiledMessages: ChatMessage[]
+    updatedMessages?: ChatMessage[]
   }> {
     if (messages.length === 0) {
       throw new Error('No messages provided')
     }
-    const lastUserMessage = messages[messages.length - 1]
-    if (lastUserMessage.role !== 'user') {
-      throw new Error('Last message is not a user message')
-    }
 
-    const { promptContent, shouldUseRAG, similaritySearchResults } =
-      await this.compileUserMessagePrompt({
-        message: lastUserMessage,
-        useVaultSearch,
-        onQueryProgressChange,
-      })
-    let compiledMessages = [
-      ...messages.slice(0, -1),
-      {
-        ...lastUserMessage,
-        promptContent,
-        similaritySearchResults,
-      },
-    ]
-
-    // Safeguard: ensure all user messages have parsed content
-    compiledMessages = await Promise.all(
-      compiledMessages.map(async (message) => {
+    // Safegaurd: Ensure all user messages have complete prompt content
+    // If any messages needed compilation, we'll return them as updatedMessages
+    let hasUnparsedUserMessage = false
+    const compiledMessages = await Promise.all(
+      messages.map(async (message) => {
         if (message.role === 'user' && !message.promptContent) {
+          hasUnparsedUserMessage = true
           const { promptContent, similaritySearchResults } =
             await this.compileUserMessagePrompt({
               message,
@@ -96,6 +78,19 @@ export class PromptGenerator {
         return message
       }),
     )
+
+    // find last user message
+    let lastUserMessage: ChatUserMessage | undefined = undefined
+    for (let i = compiledMessages.length - 1; i >= 0; --i) {
+      if (compiledMessages[i].role === 'user') {
+        lastUserMessage = compiledMessages[i] as ChatUserMessage
+        break
+      }
+    }
+    if (!lastUserMessage) {
+      throw new Error('No user messages found')
+    }
+    const shouldUseRAG = lastUserMessage.similaritySearchResults !== undefined
 
     const systemMessage = this.getSystemMessage(shouldUseRAG)
 
@@ -112,19 +107,7 @@ export class PromptGenerator {
       systemMessage,
       ...(customInstructionMessage ? [customInstructionMessage] : []),
       ...(currentFileMessage ? [currentFileMessage] : []),
-      ...compiledMessages.slice(-20).map((message): RequestMessage => {
-        if (message.role === 'user') {
-          return {
-            role: 'user',
-            content: message.promptContent ?? '',
-          }
-        } else {
-          return {
-            role: 'assistant',
-            content: this.formatAssistantMessage({ message }),
-          }
-        }
-      }),
+      ...this.getChatHistoryMessages({ messages: compiledMessages }),
       ...(shouldUseRAG && this.getModelPromptLevel() == PromptLevel.Default
         ? [this.getRagInstructionMessage()]
         : []),
@@ -132,17 +115,86 @@ export class PromptGenerator {
 
     return {
       requestMessages,
-      compiledMessages,
+      updatedMessages: hasUnparsedUserMessage ? compiledMessages : undefined,
     }
   }
 
-  private formatAssistantMessage({
+  private getChatHistoryMessages({
+    messages,
+  }: {
+    messages: ChatMessage[]
+  }): RequestMessage[] {
+    // Get the last MAX_CONTEXT_MESSAGES messages and parse them into request messages
+    const requestMessages: RequestMessage[] = messages
+      .slice(-this.MAX_CONTEXT_MESSAGES)
+      .flatMap((message): RequestMessage[] => {
+        if (message.role === 'user') {
+          // We assume that all user messages have been compiled
+          return [
+            {
+              role: 'user',
+              content: message.promptContent ?? '',
+            },
+          ]
+        } else if (message.role === 'assistant') {
+          return this.parseAssistantMessage({ message })
+        } else {
+          // message.role === 'tool'
+          return this.parseToolMessage({ message })
+        }
+      })
+
+    // TODO: Also verify that tool messages appear right after their corresponding assistant tool calls
+    const filteredRequestMessages: RequestMessage[] = requestMessages
+      .map((msg) => {
+        switch (msg.role) {
+          case 'user':
+            return msg
+          case 'assistant': {
+            // Filter out tool calls that don't have a corresponding tool message
+            const filteredToolCalls = msg.tool_calls?.filter((t) =>
+              requestMessages.some(
+                (rm) => rm.role === 'tool' && rm.tool_call_id === t.id,
+              ),
+            )
+            return {
+              ...msg,
+              tool_calls:
+                filteredToolCalls && filteredToolCalls.length > 0
+                  ? filteredToolCalls
+                  : undefined,
+            }
+          }
+          case 'tool': {
+            // Filter out tool messages that don't have a corresponding assistant message
+            const assistantMessage = requestMessages.find(
+              (rm) =>
+                rm.role === 'assistant' &&
+                rm.tool_calls?.some((t) => t.id === msg.tool_call_id),
+            )
+            if (!assistantMessage) {
+              return null
+            } else {
+              return msg
+            }
+          }
+          default:
+            return msg
+        }
+      })
+      .filter((m) => m !== null)
+
+    return filteredRequestMessages
+  }
+
+  private parseAssistantMessage({
     message,
   }: {
     message: ChatAssistantMessage
-  }): string {
+  }): RequestMessage[] {
+    let citationContent: string | null = null
     if (message.annotations && message.annotations.length > 0) {
-      const citationContent = `Citations:
+      citationContent = `Citations:
 ${message.annotations
   .map((annotation, index) => {
     if (annotation.type === 'url_citation') {
@@ -151,12 +203,56 @@ ${message.annotations
     }
   })
   .join('\n')}`
-      return `${message.content}\n\n${citationContent}`
     }
-    return message.content
+
+    return [
+      {
+        role: 'assistant',
+        content: [
+          message.content,
+          ...(citationContent ? [citationContent] : []),
+        ].join('\n'),
+        tool_calls: message.toolCalls,
+      },
+    ]
   }
 
-  private async compileUserMessagePrompt({
+  private parseToolMessage({
+    message,
+  }: {
+    message: ChatToolMessage
+  }): RequestMessage[] {
+    switch (message.response.status) {
+      case 'pending_approval':
+      case 'pending_execution':
+      case 'aborted':
+        return [
+          {
+            role: 'tool',
+            tool_call_id: message.request.id,
+            content: `Tool call ${message.request.id} is ${message.response.status}`,
+          },
+        ]
+      case 'success':
+        return [
+          {
+            role: 'tool',
+            tool_call_id: message.request.id,
+            content: message.response.data.text,
+          },
+        ]
+      case 'error':
+        return [
+          {
+            role: 'tool',
+            tool_call_id: message.request.id,
+            content: `Error: ${message.response.error}`,
+          },
+        ]
+    }
+  }
+
+  public async compileUserMessagePrompt({
     message,
     useVaultSearch,
     onQueryProgressChange,
@@ -289,6 +385,11 @@ ${await this.getWebsiteContent(url)}
     const imageDataUrls = message.mentionables
       .filter((m): m is MentionableImage => m.type === 'image')
       .map(({ data }) => data)
+
+    // Reset query progress
+    onQueryProgressChange?.({
+      type: 'idle',
+    })
 
     return {
       promptContent: [

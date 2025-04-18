@@ -22,13 +22,52 @@ export type ChatAssistantMessage = {
   content: string
   reasoning?: string
   annotations?: Annotation[]
+  toolCalls?: ToolCallRequest[]
   id: string
   metadata?: {
     usage?: ResponseUsage
     model?: ChatModel // TODO: migrate legacy data to new model type
   }
 }
-export type ChatMessage = ChatUserMessage | ChatAssistantMessage
+export type ChatToolMessage = {
+  role: 'tool'
+  request: ToolCallRequest
+  response: ToolCallResponse
+  id: string
+}
+
+export type ToolCallRequest = {
+  id: string
+  name: string
+  arguments?: string
+}
+export type ToolCallResponse =
+  | {
+      status: 'pending_approval'
+    }
+  | {
+      status: 'pending_execution'
+    }
+  | {
+      status: 'success'
+      data: {
+        type: 'text'
+        text: string
+      }
+    }
+  | {
+      status: 'error'
+      error: string
+    }
+  | {
+      status: 'aborted'
+    }
+
+// FIXME: Update serialized types for ChatMessage
+export type ChatMessage =
+  | ChatUserMessage
+  | ChatAssistantMessage
+  | ChatToolMessage
 
 export type SerializedChatUserMessage = {
   role: 'user'

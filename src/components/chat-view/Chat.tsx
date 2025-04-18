@@ -15,6 +15,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { ApplyViewState } from '../../ApplyView'
 import { APPLY_VIEW_TYPE } from '../../constants'
 import { useApp } from '../../contexts/app-context'
+import { useMCP } from '../../contexts/mcp-context'
 import { useRAG } from '../../contexts/rag-context'
 import { useSettings } from '../../contexts/settings-context'
 import {
@@ -42,13 +43,14 @@ import { ErrorModal } from '../modals/ErrorModal'
 
 import AssistantMessageActions from './AssistantMessageActions'
 import AssistantMessageAnnotations from './AssistantMessageAnnotations'
+import AssistantMessageContent from './AssistantMessageContent'
 import AssistantMessageReasoning from './AssistantMessageReasoning'
 import ChatUserInput, { ChatUserInputRef } from './chat-input/ChatUserInput'
 import { editorStateToPlainText } from './chat-input/utils/editor-state-to-plain-text'
 import { ChatListDropdown } from './ChatListDropdown'
 import QueryProgress, { QueryProgressState } from './QueryProgress'
-import { ReactMarkdownItem } from './ReactMarkdown'
 import SimilaritySearchResults from './SimilaritySearchResults'
+import ToolMessage from './ToolMessage'
 import { useAutoScroll } from './useAutoScroll'
 
 // Add an empty line here
@@ -81,6 +83,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const app = useApp()
   const { settings } = useSettings()
   const { getRAGEngine } = useRAG()
+  const { getMCPManager } = useMCP()
 
   const {
     createOrUpdateConversation,
@@ -216,57 +219,51 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           forceScrollToBottom()
         })
 
+        // Compile the last user message
+        let compiledMessages = newChatHistory
+        const lastMessage = newChatHistory.at(-1)
+        if (lastMessage?.role === 'user') {
+          const { promptContent, similaritySearchResults } =
+            await promptGenerator.compileUserMessagePrompt({
+              message: lastMessage,
+              useVaultSearch,
+              onQueryProgressChange: setQueryProgress,
+            })
+          compiledMessages = [
+            ...newChatHistory.slice(0, -1),
+            {
+              ...lastMessage,
+              promptContent,
+              similaritySearchResults,
+            },
+          ]
+          setChatMessages(compiledMessages)
+        }
+
+        // Start the message stream
         const abortController = new AbortController()
         activeStreamAbortControllersRef.current.push(abortController)
-
-        const { requestMessages, compiledMessages } =
-          await promptGenerator.generateRequestMessages({
-            messages: newChatHistory,
-            useVaultSearch,
-            onQueryProgressChange: setQueryProgress,
-          })
-        setQueryProgress({
-          type: 'idle',
-        })
 
         const { providerClient, model } = getChatModelClient({
           settings,
           modelId: settings.chatModelId,
         })
-
-        // Create an empty assistant message to store the response
-        const responseMessageId = uuidv4()
-        setChatMessages([
-          ...compiledMessages,
-          {
-            role: 'assistant',
-            content: '',
-            id: responseMessageId,
-          },
-        ])
-
+        const mcpManager = await getMCPManager()
         const messageStream = new MessageStream({
           providerClient,
           model,
-          requestMessages,
+          messages: compiledMessages,
+          promptGenerator,
+          mcpManager,
           abortSignal: abortController.signal,
         })
 
-        messageStream.subscribe((newMessage) => {
-          setChatMessages((prevChatHistory) =>
-            prevChatHistory.map((message) =>
-              message.role === 'assistant' && message.id === responseMessageId
-                ? {
-                    ...message,
-                    ...newMessage,
-                  }
-                : message,
-            ),
-          )
+        messageStream.subscribe((newMessages) => {
+          setChatMessages(newMessages)
           autoScrollToBottom()
         })
 
-        await messageStream.start()
+        await messageStream.run()
       } catch (error) {
         if (error.name === 'AbortError') {
           return
@@ -591,8 +588,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
                 />
               )}
             </div>
-          ) : (
-            // message.role === 'assistant'
+          ) : message.role === 'assistant' ? (
             <div key={message.id} className="smtcmp-chat-messages-assistant">
               {message.reasoning && (
                 <AssistantMessageReasoning reasoning={message.reasoning} />
@@ -602,15 +598,27 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
                   annotations={message.annotations}
                 />
               )}
-              <ReactMarkdownItem
+              <AssistantMessageContent
+                content={message.content}
                 index={index}
                 chatMessages={chatMessages}
                 handleApply={handleApply}
                 isApplying={applyMutation.isPending}
-              >
-                {message.content}
-              </ReactMarkdownItem>
+              />
               {message.content && <AssistantMessageActions message={message} />}
+            </div>
+          ) : (
+            <div key={message.id}>
+              <ToolMessage
+                message={message}
+                onMessageUpdate={(updatedMessage) => {
+                  setChatMessages((prevChatHistory) =>
+                    prevChatHistory.map((msg) =>
+                      msg.id === message.id ? updatedMessage : msg,
+                    ),
+                  )
+                }}
+              />
             </div>
           ),
         )}

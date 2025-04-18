@@ -26,6 +26,8 @@ export class OpenAIMessageAdapter {
     const response = await client.chat.completions.create(
       {
         model: request.model,
+        tools: request.tools,
+        tool_choice: request.tool_choice,
         reasoning_effort: request.reasoning_effort,
         web_search_options: request.web_search_options,
         messages: request.messages.map((m) => this.parseRequestMessage(m)),
@@ -57,6 +59,8 @@ export class OpenAIMessageAdapter {
       {
         model: request.model,
         reasoning_effort: request.reasoning_effort,
+        tools: request.tools,
+        tool_choice: request.tool_choice,
         web_search_options: request.web_search_options,
         messages: request.messages.map((m) => this.parseRequestMessage(m)),
         // TODO: max_tokens is deprecated in the OpenAI API, with max_completion_tokens being the
@@ -111,13 +115,31 @@ export class OpenAIMessageAdapter {
         if (Array.isArray(message.content)) {
           throw new Error('Assistant message should be a string')
         }
-        return { role: 'assistant', content: message.content }
+        return {
+          role: 'assistant',
+          content: message.content,
+          tool_calls: message.tool_calls?.map((toolCall) => ({
+            id: toolCall.id,
+            function: {
+              arguments: toolCall.arguments ?? '',
+              name: toolCall.name,
+            },
+            type: 'function',
+          })),
+        }
       }
       case 'system': {
         if (Array.isArray(message.content)) {
           throw new Error('System message should be a string')
         }
         return { role: 'system', content: message.content }
+      }
+      case 'tool': {
+        return {
+          role: 'tool',
+          content: message.content,
+          tool_call_id: message.tool_call_id,
+        }
       }
     }
   }
@@ -132,6 +154,7 @@ export class OpenAIMessageAdapter {
         message: {
           content: choice.message.content,
           role: choice.message.role,
+          tool_calls: choice.message.tool_calls,
         },
       })),
       created: response.created,
@@ -152,6 +175,7 @@ export class OpenAIMessageAdapter {
         delta: {
           content: choice.delta.content ?? null,
           role: choice.delta.role,
+          tool_calls: choice.delta.tool_calls,
         },
       })),
       created: chunk.created,
