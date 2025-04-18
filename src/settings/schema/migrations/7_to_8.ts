@@ -203,6 +203,9 @@ export const DEFAULT_CHAT_MODELS_V8: DefaultChatModels = [
  *   - gpt-4.1-nano
  *   - o3
  *   - o4-mini
+ * - Disable the following deprecated models:
+ *   - o1
+ *   - o3-mini
  */
 export const migrateFrom7To8: SettingMigration['migrate'] = (data) => {
   const newData = { ...data }
