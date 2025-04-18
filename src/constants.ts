@@ -13,8 +13,8 @@ type ModelPricing = {
 
 export const OPENAI_PRICES: Record<string, ModelPricing> = {
   'gpt-4.1': { input: 2.0, output: 8.0 },
-  'gpt-4.1-mini': { input: 0.40, output: 1.6 },
-  'gpt-4.1-nano': { input: 0.10, output: 0.40 },
+  'gpt-4.1-mini': { input: 0.4, output: 1.6 },
+  'gpt-4.1-nano': { input: 0.1, output: 0.4 },
   'gpt-4o': { input: 2.5, output: 10 },
   'gpt-4o-mini': { input: 0.15, output: 0.6 },
   o3: { input: 10, output: 40 },
@@ -474,7 +474,11 @@ export const DEFAULT_EMBEDDING_MODELS: readonly EmbeddingModel[] = [
 ]
 
 // use ids
-export const RECOMMENDED_MODELS_FOR_CHAT = ['claude-3.7-sonnet', 'gpt-4o', 'gpt-4.1']
+export const RECOMMENDED_MODELS_FOR_CHAT = [
+  'claude-3.7-sonnet',
+  'gpt-4o',
+  'gpt-4.1',
+]
 export const RECOMMENDED_MODELS_FOR_APPLY = ['gpt-4o-mini']
 export const RECOMMENDED_MODELS_FOR_EMBEDDING = [
   'openai/text-embedding-3-small',

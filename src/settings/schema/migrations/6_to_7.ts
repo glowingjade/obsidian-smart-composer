@@ -1,5 +1,11 @@
 import { SettingMigration } from '../setting.types'
-import { DefaultChatModels, DefaultProviders, getMigratedChatModels, getMigratedProviders } from './migrationUtils';
+
+import {
+  DefaultChatModels,
+  DefaultProviders,
+  getMigratedChatModels,
+  getMigratedProviders,
+} from './migrationUtils'
 
 /**
  * Migration from version 6 to version 7
@@ -212,12 +218,8 @@ export const migrateFrom6To7: SettingMigration['migrate'] = (data) => {
   const newData = { ...data }
   newData.version = 7
 
-  newData.providers = getMigratedProviders(newData, DEFAULT_PROVIDERS_V7);
-  newData.chatModels = getMigratedChatModels(
-    newData,
-    DEFAULT_CHAT_MODELS_V7,
-  );
-
+  newData.providers = getMigratedProviders(newData, DEFAULT_PROVIDERS_V7)
+  newData.chatModels = getMigratedChatModels(newData, DEFAULT_CHAT_MODELS_V7)
 
   return newData
 }
