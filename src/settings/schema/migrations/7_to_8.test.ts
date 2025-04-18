@@ -118,5 +118,42 @@ describe('settings 7_to_8 migration', () => {
     ];
 
     expect(migratedSettings.chatModels).toEqual(expectedDefaultAndCustomModels);
-  })
-})
+  });
+
+  it('should deprecate o3-mini and o1 models in favor of o4-mini and o3', () => {
+    const oldSettings = {
+      version: 7,
+      chatModels: [
+        {
+          providerType: 'openai',
+          providerId: 'openai',
+          id: 'o3-mini',
+          model: 'o3-mini',
+          reasoning_effort: 'medium',
+          enable: true,
+        },
+        {
+          providerType: 'openai',
+          providerId: 'openai',
+          id: 'o1',
+          model: 'o1',
+          reasoning_effort: 'medium',
+          enable: true,
+        },
+      ],
+    };
+
+    const migratedSettings = migrateFrom7To8(oldSettings)
+    expect(migratedSettings.chatModels).toEqual([
+      ...DEFAULT_CHAT_MODELS_V8.map((model) => {
+        if (model.id === 'o3-mini' || model.id === 'o1') {
+          return {
+            ...model,
+            enable: false,
+          };
+        }
+        return model;
+      }),
+    ]);
+  });
+});
