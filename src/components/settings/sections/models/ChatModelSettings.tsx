@@ -20,13 +20,21 @@ type ModelSettingsRegistry = {
   SettingsComponent: React.FC<SettingsComponentProps>
 }
 
+const OPEN_AI_REASONING_MODEL_IDS = [
+  'o1',
+  'o1-mini',
+  'o3',
+  'o3-mini',
+  'o4-mini',
+]
+
 // Registry of available model settings
 const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
-  // OpenAI o1, o1-mini, o3, o3-mini, o4-mini settings
+  // OpenAI reasoning model settings
   {
     check: (model) =>
       model.providerType === 'openai' &&
-      ['o1', 'o1-mini', 'o3', 'o3-mini', 'o4-mini'].includes(model.model),
+      OPEN_AI_REASONING_MODEL_IDS.includes(model.model),
 
     SettingsComponent: (props: SettingsComponentProps) => {
       const { model, plugin, onClose } = props
