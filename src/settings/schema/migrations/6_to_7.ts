@@ -1,5 +1,5 @@
 import { SettingMigration } from '../setting.types'
-import { getMigratedProviders } from './migrationUtils';
+import { DefaultChatModels, DefaultProviders, getMigratedChatModels, getMigratedProviders } from './migrationUtils';
 
 /**
  * Migration from version 6 to version 7
@@ -10,10 +10,7 @@ import { getMigratedProviders } from './migrationUtils';
  * - Sort default models by provider type
  */
 
-export const DEFAULT_PROVIDERS_V7: readonly {
-  type: string
-  id: string
-}[] = [
+export const DEFAULT_PROVIDERS_V7: DefaultProviders = [
   {
     type: 'openai',
     id: 'openai',
@@ -56,20 +53,7 @@ export const DEFAULT_PROVIDERS_V7: readonly {
   },
 ]
 
-export const DEFAULT_CHAT_MODELS_V7: {
-  id: string
-  providerType: string
-  providerId: string
-  model: string
-  reasoning_effort?: string
-  thinking?: {
-    budget_tokens: number
-  }
-  web_search_options?: {
-    search_context_size?: string
-  }
-  enable?: boolean
-}[] = [
+export const DEFAULT_CHAT_MODELS_V7: DefaultChatModels = [
   {
     providerType: 'anthropic',
     providerId: 'anthropic',
@@ -229,31 +213,11 @@ export const migrateFrom6To7: SettingMigration['migrate'] = (data) => {
   newData.version = 7
 
   newData.providers = getMigratedProviders(newData, DEFAULT_PROVIDERS_V7);
+  newData.chatModels = getMigratedChatModels(
+    newData,
+    DEFAULT_CHAT_MODELS_V7,
+  );
 
-  if (!('chatModels' in newData && Array.isArray(newData.chatModels))) {
-    newData.chatModels = DEFAULT_CHAT_MODELS_V7
-  } else {
-    const defaultChatModels = DEFAULT_CHAT_MODELS_V7.map((model) => {
-      const existingModel = (newData.chatModels as unknown[]).find(
-        (m: unknown) => {
-          return (m as { id: string }).id === model.id
-        },
-      )
-      if (existingModel) {
-        return Object.assign(existingModel, model)
-      }
-      return model
-    })
-    const customChatModels = (newData.chatModels as unknown[]).filter(
-      (m: unknown) => {
-        return !defaultChatModels.some(
-          (dm: unknown) =>
-            (dm as { id: string }).id === (m as { id: string }).id,
-        )
-      },
-    )
-    newData.chatModels = [...defaultChatModels, ...customChatModels]
-  }
 
   return newData
 }
