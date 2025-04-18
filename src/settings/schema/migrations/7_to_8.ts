@@ -1,4 +1,3 @@
-import { PROVIDER_TYPES_INFO } from '../../../constants'
 import { SettingMigration } from '../setting.types'
 import { DefaultChatModels, getMigratedChatModels, getMigratedProviders } from './migrationUtils';
 
