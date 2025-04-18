@@ -35,6 +35,59 @@ export type ChatToolMessage = {
   response: ToolCallResponse
   id: string
 }
+export type ChatMessage =
+  | ChatUserMessage
+  | ChatAssistantMessage
+  | ChatToolMessage
+
+export type SerializedChatUserMessage = {
+  role: 'user'
+  content: SerializedEditorState | null
+  promptContent: string | ContentPart[] | null
+  id: string
+  mentionables: SerializedMentionable[]
+  similaritySearchResults?: (Omit<SelectEmbedding, 'embedding'> & {
+    similarity: number
+  })[]
+}
+export type SerializedChatAssistantMessage = {
+  role: 'assistant'
+  content: string
+  reasoning?: string
+  annotations?: Annotation[]
+  toolCalls?: ToolCallRequest[]
+  id: string
+  metadata?: {
+    usage?: ResponseUsage
+    model?: ChatModel // TODO: migrate legacy data to new model type
+  }
+}
+export type SerializedChatToolMessage = {
+  role: 'tool'
+  request: ToolCallRequest
+  response: ToolCallResponse
+  id: string
+}
+export type SerializedChatMessage =
+  | SerializedChatUserMessage
+  | SerializedChatAssistantMessage
+  | SerializedChatToolMessage
+
+export type ChatConversation = {
+  schemaVersion: number
+  id: string
+  title: string
+  createdAt: number
+  updatedAt: number
+  messages: SerializedChatMessage[]
+}
+export type ChatConversationMeta = {
+  schemaVersion: number
+  id: string
+  title: string
+  createdAt: number
+  updatedAt: number
+}
 
 export type ToolCallRequest = {
   id: string
@@ -62,50 +115,3 @@ export type ToolCallResponse =
   | {
       status: 'aborted'
     }
-
-// FIXME: Update serialized types for ChatMessage
-export type ChatMessage =
-  | ChatUserMessage
-  | ChatAssistantMessage
-  | ChatToolMessage
-
-export type SerializedChatUserMessage = {
-  role: 'user'
-  content: SerializedEditorState | null
-  promptContent: string | ContentPart[] | null
-  id: string
-  mentionables: SerializedMentionable[]
-  similaritySearchResults?: (Omit<SelectEmbedding, 'embedding'> & {
-    similarity: number
-  })[]
-}
-export type SerializedChatAssistantMessage = {
-  role: 'assistant'
-  content: string
-  reasoning?: string
-  annotations?: Annotation[]
-  id: string
-  metadata?: {
-    usage?: ResponseUsage
-    model?: ChatModel // TODO: migrate legacy data to new model type
-  }
-}
-export type SerializedChatMessage =
-  | SerializedChatUserMessage
-  | SerializedChatAssistantMessage
-
-export type ChatConversation = {
-  schemaVersion: number
-  id: string
-  title: string
-  createdAt: number
-  updatedAt: number
-  messages: SerializedChatMessage[]
-}
-export type ChatConversationMeta = {
-  schemaVersion: number
-  id: string
-  title: string
-  createdAt: number
-  updatedAt: number
-}
