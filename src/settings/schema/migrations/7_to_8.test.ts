@@ -6,9 +6,9 @@ describe('settings 7_to_8 migration', () => {
       version: 7,
     }
     const migratedSettings = migrateFrom7To8(oldSettings)
-    expect(migratedSettings.version).toBe(8);
-    expect(migratedSettings.chatModels).toEqual(DEFAULT_CHAT_MODELS_V8);
-  });
+    expect(migratedSettings.version).toBe(8)
+    expect(migratedSettings.chatModels).toEqual(DEFAULT_CHAT_MODELS_V8)
+  })
 
   it('should add default models and preserve custom models', () => {
     const oldSettings = {
@@ -28,7 +28,7 @@ describe('settings 7_to_8 migration', () => {
           enable: false,
         },
       ],
-    };
+    }
     const migratedSettings = migrateFrom7To8(oldSettings)
     expect(migratedSettings.chatModels).toEqual([
       ...DEFAULT_CHAT_MODELS_V8,
@@ -39,9 +39,8 @@ describe('settings 7_to_8 migration', () => {
         model: 'cohere-model',
         enable: false,
       },
-    ]);
-  });
-
+    ])
+  })
 
   it('should replace models that are in the new default models', () => {
     const oldSettings = {
@@ -89,7 +88,7 @@ describe('settings 7_to_8 migration', () => {
           model: 'gemini-exp-1206',
         },
       ],
-    };
+    }
 
     const migratedSettings = migrateFrom7To8(oldSettings)
     const expectedCustomDisabledModelIds = [
@@ -98,16 +97,16 @@ describe('settings 7_to_8 migration', () => {
       'gpt-4.1-nano',
       'o3',
       'o4-mini',
-    ];
+    ]
     const expectedDefaultAndCustomModels = [
       ...DEFAULT_CHAT_MODELS_V8.map((model) => {
         if (expectedCustomDisabledModelIds.includes(model.id)) {
           return {
             ...model,
             enable: false,
-          };
+          }
         }
-        return model;
+        return model
       }),
       {
         providerType: 'gemini',
@@ -115,10 +114,10 @@ describe('settings 7_to_8 migration', () => {
         id: 'gemini-exp-1206',
         model: 'gemini-exp-1206',
       },
-    ];
+    ]
 
-    expect(migratedSettings.chatModels).toEqual(expectedDefaultAndCustomModels);
-  });
+    expect(migratedSettings.chatModels).toEqual(expectedDefaultAndCustomModels)
+  })
 
   it('should deprecate o3-mini and o1 models in favor of o4-mini and o3', () => {
     const oldSettings = {
@@ -147,7 +146,7 @@ describe('settings 7_to_8 migration', () => {
           model: 'gemini-exp-1206',
         },
       ],
-    };
+    }
 
     const migratedSettings = migrateFrom7To8(oldSettings)
     expect(migratedSettings.chatModels).toEqual([
@@ -156,9 +155,9 @@ describe('settings 7_to_8 migration', () => {
           return {
             ...model,
             enable: false,
-          };
+          }
         }
-        return model;
+        return model
       }),
       {
         providerType: 'gemini',
@@ -166,6 +165,6 @@ describe('settings 7_to_8 migration', () => {
         id: 'gemini-exp-1206',
         model: 'gemini-exp-1206',
       },
-    ]);
-  });
-});
+    ])
+  })
+})
