@@ -22,11 +22,11 @@ type ModelSettingsRegistry = {
 
 // Registry of available model settings
 const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
-  // OpenAI o1, o1-mini, o3-mini settings
+  // OpenAI o1, o1-mini, o3, o3-mini, o4-mini settings
   {
     check: (model) =>
       model.providerType === 'openai' &&
-      ['o1', 'o1-mini', 'o3-mini'].includes(model.model),
+      ['o1', 'o1-mini', 'o3', 'o3-mini', 'o4-mini'].includes(model.model),
 
     SettingsComponent: (props: SettingsComponentProps) => {
       const { model, plugin, onClose } = props
