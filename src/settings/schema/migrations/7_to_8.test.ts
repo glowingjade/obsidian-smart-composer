@@ -140,6 +140,12 @@ describe('settings 7_to_8 migration', () => {
           reasoning_effort: 'medium',
           enable: true,
         },
+        {
+          providerType: 'gemini',
+          providerId: 'gemini',
+          id: 'gemini-exp-1206',
+          model: 'gemini-exp-1206',
+        },
       ],
     };
 
@@ -154,6 +160,12 @@ describe('settings 7_to_8 migration', () => {
         }
         return model;
       }),
+      {
+        providerType: 'gemini',
+        providerId: 'gemini',
+        id: 'gemini-exp-1206',
+        model: 'gemini-exp-1206',
+      },
     ]);
   });
 });
