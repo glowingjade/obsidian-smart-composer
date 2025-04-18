@@ -1,7 +1,16 @@
-import { migrateFrom7To8 } from './7_to_8'
+import { DEFAULT_CHAT_MODELS_V8, migrateFrom7To8 } from './7_to_8'
 
 describe('settings 7_to_8 migration', () => {
-  it('should add gpt-4.1 model before gpt-4o', () => {
+  it('should use default chat models if chat models is not present', () => {
+    const oldSettings = {
+      version: 7,
+    }
+    const migratedSettings = migrateFrom7To8(oldSettings)
+    expect(migratedSettings.version).toBe(8);
+    expect(migratedSettings.chatModels).toEqual(DEFAULT_CHAT_MODELS_V8);
+  });
+
+  it('should add default models and preserve custom models', () => {
     const oldSettings = {
       version: 7,
       chatModels: [
@@ -12,120 +21,102 @@ describe('settings 7_to_8 migration', () => {
           model: 'claude-3-7-sonnet-latest',
         },
         {
-          providerType: 'openai',
-          providerId: 'openai',
-          id: 'gpt-4o',
-          model: 'gpt-4o',
-        },
-        {
-          providerType: 'openai',
-          providerId: 'openai',
-          id: 'gpt-4o-mini',
-          model: 'gpt-4o-mini',
-        },
-      ],
-      chatModelId: 'gpt-4o',
-    }
-
-    const result = migrateFrom7To8(oldSettings)
-    expect(result.version).toBe(8)
-    expect(result.chatModels).toEqual([
-      {
-        providerType: 'anthropic',
-        providerId: 'anthropic',
-        id: 'claude-3.7-sonnet',
-        model: 'claude-3-7-sonnet-latest',
-      },
-      {
-        providerType: 'openai',
-        providerId: 'openai',
-        id: 'gpt-4.1',
-        model: 'gpt-4.1',
-      },
-      {
-        providerType: 'openai',
-        providerId: 'openai',
-        id: 'gpt-4o',
-        model: 'gpt-4o',
-      },
-      {
-        providerType: 'openai',
-        providerId: 'openai',
-        id: 'gpt-4o-mini',
-        model: 'gpt-4o-mini',
-      },
-    ])
-    expect(result.chatModelId).toBe('gpt-4o')
-  })
-
-  it('should replace existing gpt-4.1 with new configuration', () => {
-    const oldSettings = {
-      version: 7,
-      chatModels: [
-        {
-          providerType: 'openai',
-          providerId: 'custom-provider',
-          id: 'gpt-4.1',
-          model: 'custom-model-name',
+          providerType: 'openai-compatible',
+          providerId: 'cohere',
+          id: 'cohere-model',
+          model: 'cohere-model',
           enable: false,
         },
       ],
-      chatModelId: 'gpt-4.1',
-    }
-
-    const result = migrateFrom7To8(oldSettings)
-    expect(result.version).toBe(8)
-    expect(result.chatModels).toEqual([
+    };
+    const migratedSettings = migrateFrom7To8(oldSettings)
+    expect(migratedSettings.chatModels).toEqual([
+      ...DEFAULT_CHAT_MODELS_V8,
       {
-        providerType: 'openai',
-        providerId: 'openai',
-        id: 'gpt-4.1',
-        model: 'gpt-4.1',
+        providerType: 'openai-compatible',
+        providerId: 'cohere',
+        id: 'cohere-model',
+        model: 'cohere-model',
+        enable: false,
       },
-    ])
-    expect(result.chatModelId).toBe('gpt-4.1')
-  })
+    ]);
+  });
 
-  it('should add after another OpenAI model if gpt-4o doesnt exist', () => {
+
+  it('should replace models that are in the new default models', () => {
     const oldSettings = {
       version: 7,
       chatModels: [
         {
-          providerType: 'anthropic',
-          providerId: 'anthropic',
-          id: 'claude-3.7-sonnet',
-          model: 'claude-3-7-sonnet-latest',
+          providerType: 'openai',
+          providerId: 'openai',
+          id: 'gpt-4.1',
+          model: 'Custom gpt-4.1',
+          enable: false,
         },
         {
           providerType: 'openai',
           providerId: 'openai',
-          id: 'other-openai-model',
-          model: 'other-openai-model',
+          id: 'gpt-4.1-mini',
+          model: 'Custom gpt-4.1-mini',
+          enable: false,
+        },
+        {
+          providerType: 'openai',
+          providerId: 'openai',
+          id: 'gpt-4.1-nano',
+          model: 'Custom gpt-4.1-nano',
+          enable: false,
+        },
+        {
+          providerType: 'openai',
+          providerId: 'openai',
+          id: 'o3',
+          model: 'Custom o3',
+          enable: false,
+        },
+        {
+          providerType: 'openai',
+          providerId: 'openai',
+          id: 'o4-mini',
+          model: 'Custom o4-mini',
+          enable: false,
+        },
+        {
+          providerType: 'gemini',
+          providerId: 'gemini',
+          id: 'gemini-exp-1206',
+          model: 'gemini-exp-1206',
         },
       ],
-    }
+    };
 
-    const result = migrateFrom7To8(oldSettings)
-    expect(result.version).toBe(8)
-    expect(result.chatModels).toEqual([
+    const migratedSettings = migrateFrom7To8(oldSettings)
+    const expectedCustomDisabledModelIds = [
+      'gpt-4.1',
+      'gpt-4.1-mini',
+      'gpt-4.1-nano',
+      'o3',
+      'o4-mini',
+    ];
+    const expectedDefaultAndCustomModels = [
+      ...DEFAULT_CHAT_MODELS_V8.map((model) => {
+        if (expectedCustomDisabledModelIds.includes(model.id)) {
+          return {
+            ...model,
+            enable: false,
+          };
+        }
+        return model;
+      }),
       {
-        providerType: 'anthropic',
-        providerId: 'anthropic',
-        id: 'claude-3.7-sonnet',
-        model: 'claude-3-7-sonnet-latest',
+        providerType: 'gemini',
+        providerId: 'gemini',
+        id: 'gemini-exp-1206',
+        model: 'gemini-exp-1206',
       },
-      {
-        providerType: 'openai',
-        providerId: 'openai',
-        id: 'other-openai-model',
-        model: 'other-openai-model',
-      },
-      {
-        providerType: 'openai',
-        providerId: 'openai',
-        id: 'gpt-4.1',
-        model: 'gpt-4.1',
-      },
-    ])
+    ];
+
+    expect(migratedSettings.chatModels).toEqual(expectedDefaultAndCustomModels);
   })
 })
