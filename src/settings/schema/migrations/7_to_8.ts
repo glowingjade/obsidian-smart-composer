@@ -2,52 +2,6 @@ import { PROVIDER_TYPES_INFO } from '../../../constants'
 import { SettingMigration } from '../setting.types'
 import { DefaultChatModels, getMigratedChatModels, getMigratedProviders } from './migrationUtils';
 
-export const DEFAULT_PROVIDERS_V8: readonly {
-  type: string
-  id: string
-}[] = [
-  {
-    type: 'openai',
-    id: 'openai',
-  },
-  {
-    type: 'anthropic',
-    id: 'anthropic',
-  },
-  {
-    type: 'gemini',
-    id: 'gemini',
-  },
-  {
-    type: 'deepseek',
-    id: 'deepseek',
-  },
-  {
-    type: 'perplexity',
-    id: 'perplexity',
-  },
-  {
-    type: 'groq',
-    id: 'groq',
-  },
-  {
-    type: 'openrouter',
-    id: 'openrouter',
-  },
-  {
-    type: 'ollama',
-    id: 'ollama',
-  },
-  {
-    type: 'lm-studio',
-    id: 'lm-studio',
-  },
-  {
-    type: 'morph',
-    id: 'morph',
-  },
-];
-
 export const DEFAULT_CHAT_MODELS_V8: DefaultChatModels = [
   {
     providerType: 'anthropic',
@@ -255,7 +209,6 @@ export const migrateFrom7To8: SettingMigration['migrate'] = (data) => {
   const newData = { ...data }
   newData.version = 8
 
-  newData.providers = getMigratedProviders(newData, DEFAULT_PROVIDERS_V8);
   newData.chatModels = getMigratedChatModels(
     newData,
     DEFAULT_CHAT_MODELS_V8,
