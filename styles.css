@@ -291,21 +291,34 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  cursor: pointer;
 
   &.smtcmp-chat-user-input-file-badge-focused {
     border: 1px solid var(--interactive-accent);
+  }
+
+  .smtcmp-excluded-content {
+    text-decoration: line-through;
+    font-style: italic;
   }
 }
 
 .smtcmp-chat-user-input-file-badge:hover {
   background-color: var(--background-modifier-hover);
-  cursor: pointer;
 }
 
 .smtcmp-chat-user-input-file-badge-delete {
-  cursor: pointer;
+  height: 100%;
   display: flex;
+  align-items: center;
   color: var(--text-muted);
+}
+
+.smtcmp-chat-user-input-file-badge-eye {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  margin: 0 var(--size-2-1) 0 var(--size-4-1);
 }
 
 .smtcmp-chat-user-input-file-badge-name {
