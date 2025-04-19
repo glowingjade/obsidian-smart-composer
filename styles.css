@@ -301,6 +301,10 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
     text-decoration: line-through;
     font-style: italic;
   }
+
+  svg {
+    flex-shrink: 0;
+  }
 }
 
 .smtcmp-chat-user-input-file-badge:hover {
