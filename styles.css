@@ -337,12 +337,12 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
 }
 
 .smtcmp-chat-user-input-file-content-preview {
-  background-color: var(--background-primary);
+  background-color: var(--background-secondary);
   border-radius: var(--radius-s);
   border: 1px solid var(--background-modifier-border);
   max-height: 350px;
   overflow-y: auto;
-  white-space: pre-line;
+  padding: 0 var(--size-4-2);
 
   img {
     max-width: 100%;
