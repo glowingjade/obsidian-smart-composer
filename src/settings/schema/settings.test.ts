@@ -32,6 +32,8 @@ describe('parseSmartComposerSettings', () => {
         excludePatterns: [],
         includePatterns: [],
       },
+
+      includeCurrentFileContent: true,
     })
   })
 })

@@ -1,6 +1,8 @@
-import { X } from 'lucide-react'
+import clsx from 'clsx'
+import { Eye, EyeOff, X } from 'lucide-react'
 import { PropsWithChildren } from 'react'
 
+import { useSettings } from '../../../contexts/settings-context'
 import {
   Mentionable,
   MentionableBlock,
@@ -37,7 +39,7 @@ function BadgeBase({
           onDelete()
         }}
       >
-        <X size={10} />
+        <X size={12} />
       </div>
     </div>
   )
@@ -60,7 +62,7 @@ function FileBadge({
       <div className="smtcmp-chat-user-input-file-badge-name">
         {Icon && (
           <Icon
-            size={10}
+            size={12}
             className="smtcmp-chat-user-input-file-badge-name-icon"
           />
         )}
@@ -87,7 +89,7 @@ function FolderBadge({
       <div className="smtcmp-chat-user-input-file-badge-name">
         {Icon && (
           <Icon
-            size={10}
+            size={12}
             className="smtcmp-chat-user-input-file-badge-name-icon"
           />
         )}
@@ -112,11 +114,10 @@ function VaultBadge({
   const Icon = getMentionableIcon(mentionable)
   return (
     <BadgeBase onDelete={onDelete} onClick={onClick} isFocused={isFocused}>
-      {/* TODO: Update style */}
       <div className="smtcmp-chat-user-input-file-badge-name">
         {Icon && (
           <Icon
-            size={10}
+            size={12}
             className="smtcmp-chat-user-input-file-badge-name-icon"
           />
         )}
@@ -137,20 +138,49 @@ function CurrentFileBadge({
   onClick: () => void
   isFocused: boolean
 }) {
+  const { settings, setSettings } = useSettings()
+
   const Icon = getMentionableIcon(mentionable)
   return mentionable.file ? (
     <BadgeBase onDelete={onDelete} onClick={onClick} isFocused={isFocused}>
       <div className="smtcmp-chat-user-input-file-badge-name">
         {Icon && (
           <Icon
-            size={10}
+            size={12}
             className="smtcmp-chat-user-input-file-badge-name-icon"
           />
         )}
-        <span>{mentionable.file.name}</span>
+        <span
+          className={clsx(
+            !settings.includeCurrentFileContent && 'smtcmp-excluded-content',
+          )}
+        >
+          {mentionable.file.name}
+        </span>
       </div>
-      <div className="smtcmp-chat-user-input-file-badge-name-suffix">
+      <div
+        className={clsx(
+          'smtcmp-chat-user-input-file-badge-name-suffix',
+          !settings.includeCurrentFileContent && 'smtcmp-excluded-content',
+        )}
+      >
         {' (Current File)'}
+      </div>
+      <div
+        className="smtcmp-chat-user-input-file-badge-eye"
+        onClick={(e) => {
+          e.stopPropagation()
+          setSettings({
+            ...settings,
+            includeCurrentFileContent: !settings.includeCurrentFileContent,
+          })
+        }}
+      >
+        {settings.includeCurrentFileContent ? (
+          <Eye size={12} />
+        ) : (
+          <EyeOff size={12} />
+        )}
       </div>
     </BadgeBase>
   ) : null
@@ -173,7 +203,7 @@ function BlockBadge({
       <div className="smtcmp-chat-user-input-file-badge-name">
         {Icon && (
           <Icon
-            size={10}
+            size={12}
             className="smtcmp-chat-user-input-file-badge-name-icon"
           />
         )}
@@ -203,7 +233,7 @@ function UrlBadge({
       <div className="smtcmp-chat-user-input-file-badge-name">
         {Icon && (
           <Icon
-            size={10}
+            size={12}
             className="smtcmp-chat-user-input-file-badge-name-icon"
           />
         )}
@@ -230,7 +260,7 @@ function ImageBadge({
       <div className="smtcmp-chat-user-input-file-badge-name">
         {Icon && (
           <Icon
-            size={10}
+            size={12}
             className="smtcmp-chat-user-input-file-badge-name-icon"
           />
         )}

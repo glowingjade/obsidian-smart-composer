@@ -11,7 +11,6 @@ import {
 } from 'react'
 
 import { useApp } from '../../../contexts/app-context'
-import { useDarkModeContext } from '../../../contexts/dark-mode-context'
 import {
   Mentionable,
   MentionableImage,
@@ -24,7 +23,7 @@ import {
 } from '../../../utils/chat/mentionable'
 import { fileToMentionableImage } from '../../../utils/llm/image'
 import { openMarkdownFile, readTFileContent } from '../../../utils/obsidian'
-import { MemoizedSyntaxHighlighterWrapper } from '../SyntaxHighlighterWrapper'
+import ObsidianMarkdown from '../ObsidianMarkdown'
 
 import { ImageUploadButton } from './ImageUploadButton'
 import LexicalContentEditable from './LexicalContentEditable'
@@ -299,7 +298,6 @@ function MentionableContentPreview({
   mentionables: Mentionable[]
 }) {
   const app = useApp()
-  const { isDarkMode } = useDarkModeContext()
 
   const displayedMentionable: Mentionable | null = useMemo(() => {
     return (
@@ -353,14 +351,7 @@ function MentionableContentPreview({
 
   return displayFileContent ? (
     <div className="smtcmp-chat-user-input-file-content-preview">
-      <MemoizedSyntaxHighlighterWrapper
-        isDarkMode={isDarkMode}
-        language="markdown"
-        hasFilename={false}
-        wrapLines={false}
-      >
-        {displayFileContent}
-      </MemoizedSyntaxHighlighterWrapper>
+      <ObsidianMarkdown content={displayFileContent} scale="xs" />
     </div>
   ) : displayImage ? (
     <div className="smtcmp-chat-user-input-file-content-preview">
