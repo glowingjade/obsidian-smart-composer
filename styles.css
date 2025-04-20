@@ -702,22 +702,26 @@ input[type='text'].smtcmp-chat-list-dropdown-item-title-input {
 
     button {
       color: white;
-      padding: 0 var(--size-4-2);
-      height: var(--size-4-4);
+      padding: var(--size-4-1) var(--size-4-2);
       font-size: var(--font-ui-smaller);
       border-radius: 0;
       min-width: var(--size-4-5);
+      height: fit-content;
     }
   }
 
   .smtcmp-accept {
-    background: rgba(var(--color-green-rgb), 0.7);
-    box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.1);
+    background: rgba(var(--color-green-rgb), 0.4);
+    &:hover {
+      background: rgba(var(--color-green-rgb), 0.6);
+    }
   }
 
   .smtcmp-exclude {
-    background: rgba(var(--color-red-rgb), 0.7);
-    box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.1);
+    background: rgba(var(--color-red-rgb), 0.4);
+    &:hover {
+      background: rgba(var(--color-red-rgb), 0.6);
+    }
   }
 
   .smtcmp-diff-navigation {
