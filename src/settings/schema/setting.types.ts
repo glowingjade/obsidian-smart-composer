@@ -57,6 +57,8 @@ export const smartComposerSettingsSchema = z.object({
     excludePatterns: [],
     includePatterns: [],
   }),
+
+  includeCurrentFileContent: z.boolean().catch(true),
 })
 export type SmartComposerSettings = z.infer<typeof smartComposerSettingsSchema>
 

@@ -104,9 +104,10 @@ export class PromptGenerator {
     const currentFile = lastUserMessage.mentionables.find(
       (m) => m.type === 'current-file',
     )?.file
-    const currentFileMessage = currentFile
-      ? await this.getCurrentFileMessage(currentFile)
-      : undefined
+    const currentFileMessage =
+      currentFile && this.settings.includeCurrentFileContent
+        ? await this.getCurrentFileMessage(currentFile)
+        : undefined
 
     const requestMessages: RequestMessage[] = [
       systemMessage,
