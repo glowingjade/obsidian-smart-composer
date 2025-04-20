@@ -1,3 +1,5 @@
+import { ChatModel } from '../../../types/chat-model.types'
+
 import { DEFAULT_CHAT_MODELS_V8, migrateFrom7To8 } from './7_to_8'
 
 describe('settings 7_to_8 migration', () => {
@@ -17,16 +19,13 @@ describe('settings 7_to_8 migration', () => {
       }
       const migratedSettings = migrateFrom7To8(oldSettings)
       expect(migratedSettings.version).toBe(8)
-      expect(migratedSettings.chatModels).not.toContainEqual(
-        expect.objectContaining({
-          id: 'o3-mini',
-        }),
+
+      // More succinct way to check for missing models with proper type annotation
+      const modelIds = (migratedSettings.chatModels as ChatModel[]).map(
+        (model: ChatModel) => model.id,
       )
-      expect(migratedSettings.chatModels).not.toContainEqual(
-        expect.objectContaining({
-          id: 'o1',
-        }),
-      )
+      expect(modelIds).not.toContain('o1')
+      expect(modelIds).not.toContain('o3-mini')
     })
   })
 
