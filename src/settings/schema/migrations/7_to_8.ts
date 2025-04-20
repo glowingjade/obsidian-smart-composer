@@ -1,65 +1,8 @@
 import { SettingMigration } from '../setting.types'
 
-import {
-  DefaultChatModels,
-  DefaultProviders,
-  getMigratedChatModels,
-  getMigratedProviders,
-} from './migrationUtils'
+import { DefaultChatModels, getMigratedChatModels } from './migrationUtils'
 
-/**
- * Migration from version 6 to version 7
- * - Add perplexity provider
- * - Add perplexity models
- * - Add gemini models
- * - Change default providers order
- * - Sort default models by provider type
- */
-
-export const DEFAULT_PROVIDERS_V7: DefaultProviders = [
-  {
-    type: 'openai',
-    id: 'openai',
-  },
-  {
-    type: 'anthropic',
-    id: 'anthropic',
-  },
-  {
-    type: 'gemini',
-    id: 'gemini',
-  },
-  {
-    type: 'deepseek',
-    id: 'deepseek',
-  },
-  {
-    type: 'perplexity',
-    id: 'perplexity',
-  },
-  {
-    type: 'groq',
-    id: 'groq',
-  },
-  {
-    type: 'openrouter',
-    id: 'openrouter',
-  },
-  {
-    type: 'ollama',
-    id: 'ollama',
-  },
-  {
-    type: 'lm-studio',
-    id: 'lm-studio',
-  },
-  {
-    type: 'morph',
-    id: 'morph',
-  },
-]
-
-export const DEFAULT_CHAT_MODELS_V7: DefaultChatModels = [
+export const DEFAULT_CHAT_MODELS_V8: DefaultChatModels = [
   {
     providerType: 'anthropic',
     providerId: 'anthropic',
@@ -88,6 +31,27 @@ export const DEFAULT_CHAT_MODELS_V7: DefaultChatModels = [
     model: 'claude-3-5-haiku-latest',
   },
   {
+    // New
+    providerType: 'openai',
+    providerId: 'openai',
+    id: 'gpt-4.1',
+    model: 'gpt-4.1',
+  },
+  {
+    // New
+    providerType: 'openai',
+    providerId: 'openai',
+    id: 'gpt-4.1-mini',
+    model: 'gpt-4.1-mini',
+  },
+  {
+    // New
+    providerType: 'openai',
+    providerId: 'openai',
+    id: 'gpt-4.1-nano',
+    model: 'gpt-4.1-nano',
+  },
+  {
     providerType: 'openai',
     providerId: 'openai',
     id: 'gpt-4o',
@@ -100,17 +64,19 @@ export const DEFAULT_CHAT_MODELS_V7: DefaultChatModels = [
     model: 'gpt-4o-mini',
   },
   {
+    // New
     providerType: 'openai',
     providerId: 'openai',
-    id: 'o3-mini',
-    model: 'o3-mini',
+    id: 'o4-mini',
+    model: 'o4-mini',
     reasoning_effort: 'medium',
   },
   {
+    // New
     providerType: 'openai',
     providerId: 'openai',
-    id: 'o1',
-    model: 'o1',
+    id: 'o3',
+    model: 'o3',
     reasoning_effort: 'medium',
   },
   {
@@ -214,12 +180,23 @@ export const DEFAULT_CHAT_MODELS_V7: DefaultChatModels = [
   },
 ]
 
-export const migrateFrom6To7: SettingMigration['migrate'] = (data) => {
+/**
+ * Migration from version 7 to version 8
+ * - Add the following models:
+ *   - gpt-4.1
+ *   - gpt-4.1-mini
+ *   - gpt-4.1-nano
+ *   - o3
+ *   - o4-mini
+ * - Disable the following deprecated models:
+ *   - o1
+ *   - o3-mini
+ */
+export const migrateFrom7To8: SettingMigration['migrate'] = (data) => {
   const newData = { ...data }
-  newData.version = 7
+  newData.version = 8
 
-  newData.providers = getMigratedProviders(newData, DEFAULT_PROVIDERS_V7)
-  newData.chatModels = getMigratedChatModels(newData, DEFAULT_CHAT_MODELS_V7)
+  newData.chatModels = getMigratedChatModels(newData, DEFAULT_CHAT_MODELS_V8)
 
   return newData
 }

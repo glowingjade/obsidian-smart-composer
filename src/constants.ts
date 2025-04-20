@@ -12,9 +12,14 @@ type ModelPricing = {
 }
 
 export const OPENAI_PRICES: Record<string, ModelPricing> = {
+  'gpt-4.1': { input: 2.0, output: 8.0 },
+  'gpt-4.1-mini': { input: 0.4, output: 1.6 },
+  'gpt-4.1-nano': { input: 0.1, output: 0.4 },
   'gpt-4o': { input: 2.5, output: 10 },
   'gpt-4o-mini': { input: 0.15, output: 0.6 },
+  o3: { input: 10, output: 40 },
   o1: { input: 15, output: 60 },
+  'o4-mini': { input: 1.1, output: 4.4 },
   'o3-mini': { input: 1.1, output: 4.4 },
   'o1-mini': { input: 1.1, output: 4.4 },
 }
@@ -262,6 +267,24 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
   {
     providerType: 'openai',
     providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
+    id: 'gpt-4.1',
+    model: 'gpt-4.1',
+  },
+  {
+    providerType: 'openai',
+    providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
+    id: 'gpt-4.1-mini',
+    model: 'gpt-4.1-mini',
+  },
+  {
+    providerType: 'openai',
+    providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
+    id: 'gpt-4.1-nano',
+    model: 'gpt-4.1-nano',
+  },
+  {
+    providerType: 'openai',
+    providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
     id: 'gpt-4o',
     model: 'gpt-4o',
   },
@@ -274,15 +297,15 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
   {
     providerType: 'openai',
     providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
-    id: 'o3-mini',
-    model: 'o3-mini',
+    id: 'o4-mini',
+    model: 'o4-mini',
     reasoning_effort: 'medium',
   },
   {
     providerType: 'openai',
     providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
-    id: 'o1',
-    model: 'o1',
+    id: 'o3',
+    model: 'o3',
     reasoning_effort: 'medium',
   },
   {
@@ -437,7 +460,11 @@ export const DEFAULT_EMBEDDING_MODELS: readonly EmbeddingModel[] = [
 ]
 
 // use ids
-export const RECOMMENDED_MODELS_FOR_CHAT = ['claude-3.7-sonnet', 'gpt-4o']
+export const RECOMMENDED_MODELS_FOR_CHAT = [
+  'claude-3.7-sonnet',
+  'gpt-4o',
+  'gpt-4.1',
+]
 export const RECOMMENDED_MODELS_FOR_APPLY = ['gpt-4o-mini']
 export const RECOMMENDED_MODELS_FOR_EMBEDDING = [
   'openai/text-embedding-3-small',
