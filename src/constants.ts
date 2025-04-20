@@ -304,22 +304,8 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
   {
     providerType: 'openai',
     providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
-    id: 'o3-mini',
-    model: 'o3-mini',
-    reasoning_effort: 'medium',
-  },
-  {
-    providerType: 'openai',
-    providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
     id: 'o3',
     model: 'o3',
-    reasoning_effort: 'medium',
-  },
-  {
-    providerType: 'openai',
-    providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
-    id: 'o1',
-    model: 'o1',
     reasoning_effort: 'medium',
   },
   {

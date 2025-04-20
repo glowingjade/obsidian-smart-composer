@@ -72,28 +72,12 @@ export const DEFAULT_CHAT_MODELS_V8: DefaultChatModels = [
     reasoning_effort: 'medium',
   },
   {
-    providerType: 'openai',
-    providerId: 'openai',
-    id: 'o3-mini',
-    model: 'o3-mini',
-    reasoning_effort: 'medium',
-    enable: false, // Deprecate in favor of o4-mini
-  },
-  {
     // New
     providerType: 'openai',
     providerId: 'openai',
     id: 'o3',
     model: 'o3',
     reasoning_effort: 'medium',
-  },
-  {
-    providerType: 'openai',
-    providerId: 'openai',
-    id: 'o1',
-    model: 'o1',
-    reasoning_effort: 'medium',
-    enable: false, // Deprecate in favor of o3
   },
   {
     providerType: 'gemini',
