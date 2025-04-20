@@ -600,6 +600,9 @@ input[type='text'].smtcmp-chat-list-dropdown-item-title-input {
   flex-direction: column;
   font-family: var(--font-interface);
 
+  --smtcmp-current-color-rgb: 185, 28, 28; /* red-700 */
+  --smtcmp-incoming-color-rgb: 4, 120, 87; /* emerald-700 */
+
   .view-content {
     padding: 0;
   }
@@ -678,11 +681,11 @@ input[type='text'].smtcmp-chat-list-dropdown-item-title-input {
   }
 
   .smtcmp-diff-block.added {
-    background-color: rgba(var(--color-green-rgb), 0.2);
+    background-color: rgba(var(--smtcmp-incoming-color-rgb), 0.3);
   }
 
   .smtcmp-diff-block.removed {
-    background-color: rgba(var(--color-red-rgb), 0.2);
+    background-color: rgba(var(--smtcmp-current-color-rgb), 0.3);
   }
 
   .smtcmp-diff-block-container {
@@ -701,26 +704,26 @@ input[type='text'].smtcmp-chat-list-dropdown-item-title-input {
     overflow: hidden;
 
     button {
-      color: white;
       padding: var(--size-4-1) var(--size-4-2);
       font-size: var(--font-ui-smaller);
       border-radius: 0;
-      min-width: var(--size-4-5);
       height: fit-content;
     }
   }
 
   .smtcmp-accept {
-    background: rgba(var(--color-green-rgb), 0.4);
+    color: white;
+    background: rgba(var(--smtcmp-incoming-color-rgb), 0.8);
     &:hover {
-      background: rgba(var(--color-green-rgb), 0.6);
+      background: rgba(var(--smtcmp-incoming-color-rgb), 1);
     }
   }
 
   .smtcmp-exclude {
-    background: rgba(var(--color-red-rgb), 0.4);
+    color: white;
+    background: rgba(var(--smtcmp-current-color-rgb), 0.8);
     &:hover {
-      background: rgba(var(--color-red-rgb), 0.6);
+      background: rgba(var(--smtcmp-current-color-rgb), 1);
     }
   }
 

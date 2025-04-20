@@ -247,11 +247,11 @@ export default function ApplyViewRoot({
             </button>
             <button
               className="clickable-icon view-action"
-              aria-label="Reject changes"
+              aria-label="Cancel apply"
               onClick={handleReject}
             >
               {rejectIcon && <X size={14} />}
-              Reject
+              Cancel
             </button>
           </div>
         </div>
