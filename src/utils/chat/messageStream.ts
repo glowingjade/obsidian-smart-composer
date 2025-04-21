@@ -61,29 +61,29 @@ export class MessageStream {
       }
 
       // FIXME: Currently, assume that all tool calls are approved
-      const toolMessages: ChatToolMessage[] = toolCallRequests.map(
-        (toolCall) => ({
-          role: 'tool' as const,
-          id: uuidv4(),
+      const toolMessage: ChatToolMessage = {
+        role: 'tool' as const,
+        id: uuidv4(),
+        toolCalls: toolCallRequests.map((toolCall) => ({
           request: toolCall,
           response: {
             status: 'pending_execution' as const,
           },
-        }),
-      )
+        })),
+      }
 
-      this.updateMessages((messages) => [...messages, ...toolMessages])
+      this.updateMessages((messages) => [...messages, toolMessage])
 
       let aborted = false
       await Promise.all(
-        toolMessages.map(async (toolMessage) => {
-          const result = await this.mcpManager.callTool({
-            name: toolMessage.request.name,
-            args: toolMessage.request.arguments,
-            id: toolMessage.id,
+        toolMessage.toolCalls.map(async (toolCall) => {
+          const response = await this.mcpManager.callTool({
+            name: toolCall.request.name,
+            args: toolCall.request.arguments,
+            id: toolCall.request.id,
             signal: this.abortSignal,
           })
-          if (result.status === 'aborted') {
+          if (response.status === 'aborted') {
             aborted = true
           }
           this.updateMessages((messages) =>
@@ -91,7 +91,14 @@ export class MessageStream {
               message.id === toolMessage.id && message.role === 'tool'
                 ? {
                     ...message,
-                    response: result,
+                    toolCalls: message.toolCalls?.map((tc) =>
+                      tc.request.id === toolCall.request.id
+                        ? {
+                            ...tc,
+                            response,
+                          }
+                        : tc,
+                    ),
                   }
                 : message,
             ),
@@ -172,7 +179,7 @@ export class MessageStream {
         message.id === responseMessageId && message.role === 'assistant'
           ? {
               ...message,
-              toolCalls:
+              toolCallRequests:
                 toolCallRequests.length > 0 ? toolCallRequests : undefined,
             }
           : message,

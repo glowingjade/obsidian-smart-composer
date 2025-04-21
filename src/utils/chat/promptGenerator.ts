@@ -213,7 +213,7 @@ ${message.annotations
           message.content,
           ...(citationContent ? [citationContent] : []),
         ].join('\n'),
-        tool_calls: message.toolCalls,
+        tool_calls: message.toolCallRequests,
       },
     ]
   }
@@ -223,34 +223,30 @@ ${message.annotations
   }: {
     message: ChatToolMessage
   }): RequestMessage[] {
-    switch (message.response.status) {
-      case 'pending_approval':
-      case 'pending_execution':
-      case 'aborted':
-        return [
-          {
+    return message.toolCalls.map((toolCall) => {
+      switch (toolCall.response.status) {
+        case 'pending_approval':
+        case 'pending_execution':
+        case 'aborted':
+          return {
             role: 'tool',
-            tool_call_id: message.request.id,
-            content: `Tool call ${message.request.id} is ${message.response.status}`,
-          },
-        ]
-      case 'success':
-        return [
-          {
+            tool_call_id: toolCall.request.id,
+            content: `Tool call ${toolCall.request.id} is ${toolCall.response.status}`,
+          }
+        case 'success':
+          return {
             role: 'tool',
-            tool_call_id: message.request.id,
-            content: message.response.data.text,
-          },
-        ]
-      case 'error':
-        return [
-          {
+            tool_call_id: toolCall.request.id,
+            content: toolCall.response.data.text,
+          }
+        case 'error':
+          return {
             role: 'tool',
-            tool_call_id: message.request.id,
-            content: `Error: ${message.response.error}`,
-          },
-        ]
-    }
+            tool_call_id: toolCall.request.id,
+            content: `Error: ${toolCall.response.error}`,
+          }
+      }
+    })
   }
 
   public async compileUserMessagePrompt({

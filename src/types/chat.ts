@@ -22,7 +22,7 @@ export type ChatAssistantMessage = {
   content: string
   reasoning?: string
   annotations?: Annotation[]
-  toolCalls?: ToolCallRequest[]
+  toolCallRequests?: ToolCallRequest[]
   id: string
   metadata?: {
     usage?: ResponseUsage
@@ -31,9 +31,11 @@ export type ChatAssistantMessage = {
 }
 export type ChatToolMessage = {
   role: 'tool'
-  request: ToolCallRequest
-  response: ToolCallResponse
   id: string
+  toolCalls: {
+    request: ToolCallRequest
+    response: ToolCallResponse
+  }[]
 }
 export type ChatMessage =
   | ChatUserMessage
@@ -55,7 +57,7 @@ export type SerializedChatAssistantMessage = {
   content: string
   reasoning?: string
   annotations?: Annotation[]
-  toolCalls?: ToolCallRequest[]
+  toolCallRequests?: ToolCallRequest[]
   id: string
   metadata?: {
     usage?: ResponseUsage
@@ -64,8 +66,10 @@ export type SerializedChatAssistantMessage = {
 }
 export type SerializedChatToolMessage = {
   role: 'tool'
-  request: ToolCallRequest
-  response: ToolCallResponse
+  toolCalls: {
+    request: ToolCallRequest
+    response: ToolCallResponse
+  }[]
   id: string
 }
 export type SerializedChatMessage =

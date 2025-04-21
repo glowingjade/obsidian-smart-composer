@@ -61,11 +61,13 @@ const parseAssistantMessageForApply = (
 }
 
 const parseToolMessageForApply = (message: ChatToolMessage): string => {
-  return JSON.stringify({
-    name: message.request.name,
-    arguments: message.request.arguments ?? '',
-    response: message.response,
-  })
+  return JSON.stringify(
+    message.toolCalls.map((toolCall) => ({
+      name: toolCall.request.name,
+      arguments: toolCall.request.arguments ?? '',
+      response: toolCall.response,
+    })),
+  )
 }
 
 const generateApplyPrompt = (

@@ -1,5 +1,9 @@
 import { useMCP } from '../../contexts/mcp-context'
-import { ChatToolMessage } from '../../types/chat'
+import {
+  ChatToolMessage,
+  ToolCallRequest,
+  ToolCallResponse,
+} from '../../types/chat'
 
 export default function ToolMessage({
   message,
@@ -15,55 +19,79 @@ export default function ToolMessage({
         padding: 'var(--size-4-1)',
       }}
     >
-      <div>{message.request.name}</div>
-      <div>{message.request.arguments}</div>
-      <ToolMessageResponse
-        message={message}
-        onMessageUpdate={onMessageUpdate}
-      />
+      {message.toolCalls.map((toolCall) => (
+        <ToolCallStatus
+          key={toolCall.request.id}
+          request={toolCall.request}
+          response={toolCall.response}
+          onResponseUpdate={(response) =>
+            onMessageUpdate({
+              ...message,
+              toolCalls: message.toolCalls.map((t) =>
+                t.request.id === toolCall.request.id ? { ...t, response } : t,
+              ),
+            })
+          }
+        />
+      ))}
     </div>
   )
 }
 
-function ToolMessageResponse({
-  message,
-  onMessageUpdate,
+function ToolCallStatus({
+  request,
+  response,
+  onResponseUpdate,
 }: {
-  message: ChatToolMessage
-  onMessageUpdate: (message: ChatToolMessage) => void
+  request: ToolCallRequest
+  response: ToolCallResponse
+  onResponseUpdate: (response: ToolCallResponse) => void
 }) {
   const { getMCPManager } = useMCP()
   const handleAbort = async () => {
     const mcpManager = await getMCPManager()
-    mcpManager.abortToolCall(message.id)
-    onMessageUpdate({
-      ...message,
-      response: {
-        status: 'aborted',
-      },
+    mcpManager.abortToolCall(request.id)
+    onResponseUpdate({
+      status: 'aborted',
     })
   }
 
   const handleToolCall = async () => {
     const mcpManager = await getMCPManager()
-    onMessageUpdate({
-      ...message,
-      response: {
-        status: 'pending_execution',
-      },
+    onResponseUpdate({
+      status: 'pending_execution',
     })
     const toolCallResponse = await mcpManager.callTool({
-      name: message.request.name,
-      args: message.request.arguments,
-      id: message.id,
+      name: request.name,
+      args: request.arguments,
+      id: request.id,
     })
-    onMessageUpdate({
-      ...message,
-      response: toolCallResponse,
-    })
+    onResponseUpdate(toolCallResponse)
   }
 
-  switch (message.response.status) {
+  return (
+    <pre style={{ border: '1px solid var(--background-modifier-border)' }}>
+      <div>{request.name}</div>
+      <div>{request.arguments}</div>
+      <ToolCallStatusResponse
+        response={response}
+        handleAbort={handleAbort}
+        handleToolCall={handleToolCall}
+      />
+    </pre>
+  )
+}
+
+function ToolCallStatusResponse({
+  response,
+  handleAbort,
+  handleToolCall,
+}: {
+  response: ToolCallResponse
+  handleAbort: () => void
+  handleToolCall: () => void
+}) {
+  switch (response.status) {
     case 'pending_execution':
       return (
         <div>
@@ -82,22 +110,20 @@ function ToolMessageResponse({
       return (
         <div>
           <div>Success</div>
-          <div>{message.response.data.text.slice(0, 100)}</div>
+          <div>{response.data.text.slice(0, 100)}</div>
         </div>
       )
     case 'error':
       return (
         <div>
           <div>Error</div>
-          <div>{message.response.error}</div>
-          <button onClick={handleToolCall}>Retry</button>
+          <div>{response.error}</div>
         </div>
       )
     case 'aborted':
       return (
         <div>
           <div>Aborted</div>
-          <button onClick={handleToolCall}>Retry</button>
         </div>
       )
   }
