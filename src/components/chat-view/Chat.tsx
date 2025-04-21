@@ -25,7 +25,7 @@ import {
 } from '../../core/llm/exception'
 import { getChatModelClient } from '../../core/llm/manager'
 import { useChatHistory } from '../../hooks/useChatHistory'
-import { ChatMessage, ChatUserMessage } from '../../types/chat'
+import { ChatMessage, ChatToolMessage, ChatUserMessage } from '../../types/chat'
 import {
   MentionableBlock,
   MentionableBlockData,
@@ -36,7 +36,6 @@ import {
   getMentionableKey,
   serializeMentionable,
 } from '../../utils/chat/mentionable'
-import { MessageStream } from '../../utils/chat/messageStream'
 import { PromptGenerator } from '../../utils/chat/promptGenerator'
 import { readTFileContent } from '../../utils/obsidian'
 import { ErrorModal } from '../modals/ErrorModal'
@@ -52,6 +51,7 @@ import QueryProgress, { QueryProgressState } from './QueryProgress'
 import SimilaritySearchResults from './SimilaritySearchResults'
 import ToolMessage from './ToolMessage'
 import { useAutoScroll } from './useAutoScroll'
+import { useChatStreamManager } from './useChatStreamManager'
 
 // Add an empty line here
 const getNewInputMessage = (app: App): ChatUserMessage => {
@@ -127,12 +127,17 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     type: 'idle',
   })
 
-  const activeStreamAbortControllersRef = useRef<AbortController[]>([])
   const chatUserInputRefs = useRef<Map<string, ChatUserInputRef>>(new Map())
   const chatMessagesRef = useRef<HTMLDivElement>(null)
 
   const { autoScrollToBottom, forceScrollToBottom } = useAutoScroll({
     scrollContainerRef: chatMessagesRef,
+  })
+
+  const { abortActiveStreams, submitChatMutation } = useChatStreamManager({
+    setChatMessages,
+    autoScrollToBottom,
+    promptGenerator,
   })
 
   const registerChatUserInputRef = (
@@ -144,13 +149,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     } else {
       chatUserInputRefs.current.delete(id)
     }
-  }
-
-  const abortActiveStreams = () => {
-    for (const abortController of activeStreamAbortControllersRef.current) {
-      abortController.abort()
-    }
-    activeStreamAbortControllersRef.current = []
   }
 
   const handleLoadConversation = async (conversationId: string) => {
@@ -199,104 +197,71 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     abortActiveStreams()
   }
 
-  const submitMutation = useMutation({
-    mutationFn: async ({
-      newChatHistory,
+  const handleUserMessageSubmit = useCallback(
+    async ({
+      inputChatMessages,
       useVaultSearch,
     }: {
-      newChatHistory: ChatMessage[]
+      inputChatMessages: ChatMessage[]
       useVaultSearch?: boolean
     }) => {
-      try {
-        abortActiveStreams()
-        setQueryProgress({
-          type: 'idle',
-        })
-
-        // Update the chat history to show the new user message
-        setChatMessages(newChatHistory)
-        requestAnimationFrame(() => {
-          forceScrollToBottom()
-        })
-
-        // Compile the last user message
-        let compiledMessages = newChatHistory
-        const lastMessage = newChatHistory.at(-1)
-        if (lastMessage?.role === 'user') {
-          const { promptContent, similaritySearchResults } =
-            await promptGenerator.compileUserMessagePrompt({
-              message: lastMessage,
-              useVaultSearch,
-              onQueryProgressChange: setQueryProgress,
-            })
-          compiledMessages = [
-            ...newChatHistory.slice(0, -1),
-            {
-              ...lastMessage,
-              promptContent,
-              similaritySearchResults,
-            },
-          ]
-          setChatMessages(compiledMessages)
-        }
-
-        // Start the message stream
-        const abortController = new AbortController()
-        activeStreamAbortControllersRef.current.push(abortController)
-
-        const { providerClient, model } = getChatModelClient({
-          settings,
-          modelId: settings.chatModelId,
-        })
-        const mcpManager = await getMCPManager()
-        const messageStream = new MessageStream({
-          providerClient,
-          model,
-          messages: compiledMessages,
-          promptGenerator,
-          mcpManager,
-          abortSignal: abortController.signal,
-        })
-
-        messageStream.subscribe((newMessages) => {
-          setChatMessages(newMessages)
-          autoScrollToBottom()
-        })
-
-        await messageStream.run()
-      } catch (error) {
-        if (error.name === 'AbortError') {
-          return
-        } else {
-          throw error
-        }
-      }
-    },
-    onError: (error) => {
+      abortActiveStreams()
       setQueryProgress({
         type: 'idle',
       })
-      if (
-        error instanceof LLMAPIKeyNotSetException ||
-        error instanceof LLMAPIKeyInvalidException ||
-        error instanceof LLMBaseUrlNotSetException
-      ) {
-        new ErrorModal(app, 'Error', error.message, error.rawError?.message, {
-          showSettingsButton: true,
-        }).open()
-      } else {
-        new Notice(error.message)
-        console.error('Failed to generate response', error)
-      }
-    },
-  })
 
-  const handleSubmit = (
-    newChatHistory: ChatMessage[],
-    useVaultSearch?: boolean,
-  ) => {
-    submitMutation.mutate({ newChatHistory, useVaultSearch })
-  }
+      // Update the chat history to show the new user message
+      setChatMessages(inputChatMessages)
+      requestAnimationFrame(() => {
+        forceScrollToBottom()
+      })
+
+      const lastMessage = inputChatMessages.at(-1)
+      if (lastMessage?.role !== 'user') {
+        throw new Error('Last message is not a user message')
+      }
+
+      const compiledMessages = await Promise.all(
+        inputChatMessages.map(async (message) => {
+          if (message.role === 'user' && message.id === lastMessage.id) {
+            const { promptContent, similaritySearchResults } =
+              await promptGenerator.compileUserMessagePrompt({
+                message,
+                useVaultSearch,
+                onQueryProgressChange: setQueryProgress,
+              })
+            return {
+              ...message,
+              promptContent,
+              similaritySearchResults,
+            }
+          } else if (message.role === 'user' && !message.promptContent) {
+            // Ensure all user messages have prompt content
+            // This is a fallback for cases where compilation was missed earlier in the process
+            const { promptContent, similaritySearchResults } =
+              await promptGenerator.compileUserMessagePrompt({
+                message,
+              })
+            return {
+              ...message,
+              promptContent,
+              similaritySearchResults,
+            }
+          }
+          return message
+        }),
+      )
+
+      setChatMessages(compiledMessages)
+      submitChatMutation.mutate(compiledMessages)
+    },
+    [
+      submitChatMutation,
+      promptGenerator,
+      abortActiveStreams,
+      forceScrollToBottom,
+    ],
+  )
 
   const applyMutation = useMutation({
     mutationFn: async ({
@@ -362,6 +327,51 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       applyMutation.mutate({ blockToApply, chatMessages })
     },
     [applyMutation],
+  )
+
+  const handleToolMessageUpdate = useCallback(
+    async (toolMessage: ChatToolMessage) => {
+      const toolMessageIndex = chatMessages.findIndex(
+        (message) => message.id === toolMessage.id,
+      )
+      if (toolMessageIndex === -1) {
+        // The tool message no longer exists in the chat history.
+        // This likely means a new message was submitted while this stream was running.
+        // Abort the tool calls and keep the current chat history.
+        void (async () => {
+          const mcpManager = await getMCPManager()
+          toolMessage.toolCalls.forEach((toolCall) => {
+            mcpManager.abortToolCall(toolCall.request.id)
+          })
+        })()
+        return
+      }
+
+      setChatMessages((prevChatMessages) => {
+        return prevChatMessages.map((message) =>
+          message.id === toolMessage.id ? toolMessage : message,
+        )
+      })
+
+      // Resume the chat automatically if this tool message is the last message
+      // and all tool calls have completed.
+      if (
+        toolMessageIndex === chatMessages.length - 1 &&
+        toolMessage.toolCalls.every((toolCall) =>
+          ['success', 'error'].includes(toolCall.response.status),
+        )
+      ) {
+        forceScrollToBottom()
+        submitChatMutation.mutate(chatMessages)
+      }
+    },
+    [
+      chatMessages,
+      submitChatMutation,
+      setChatMessages,
+      getMCPManager,
+      forceScrollToBottom,
+    ],
   )
 
   useEffect(() => {
@@ -555,8 +565,8 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
                 }}
                 onSubmit={(content, useVaultSearch) => {
                   if (editorStateToPlainText(content).trim() === '') return
-                  handleSubmit(
-                    [
+                  handleUserMessageSubmit({
+                    inputChatMessages: [
                       ...chatMessages.slice(0, index),
                       {
                         role: 'user',
@@ -567,7 +577,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
                       },
                     ],
                     useVaultSearch,
-                  )
+                  })
                   chatUserInputRefs.current.get(inputMessage.id)?.focus()
                 }}
                 onFocus={() => {
@@ -611,19 +621,13 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
             <div key={message.id}>
               <ToolMessage
                 message={message}
-                onMessageUpdate={(updatedMessage) => {
-                  setChatMessages((prevChatHistory) =>
-                    prevChatHistory.map((msg) =>
-                      msg.id === message.id ? updatedMessage : msg,
-                    ),
-                  )
-                }}
+                onMessageUpdate={handleToolMessageUpdate}
               />
             </div>
           ),
         )}
         <QueryProgress state={queryProgress} />
-        {submitMutation.isPending && (
+        {submitChatMutation.isPending && (
           <button onClick={abortActiveStreams} className="smtcmp-stop-gen-btn">
             <CircleStop size={16} />
             <div>Stop Generation</div>
@@ -642,10 +646,10 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         }}
         onSubmit={(content, useVaultSearch) => {
           if (editorStateToPlainText(content).trim() === '') return
-          handleSubmit(
-            [...chatMessages, { ...inputMessage, content }],
+          handleUserMessageSubmit({
+            inputChatMessages: [...chatMessages, { ...inputMessage, content }],
             useVaultSearch,
-          )
+          })
           setInputMessage(getNewInputMessage(app))
         }}
         onFocus={() => {

@@ -20,7 +20,7 @@ import { MCPManager } from '../mcp'
 import { fetchAnnotationTitles } from './fetch-annotation-titles'
 import { PromptGenerator } from './promptGenerator'
 
-export type MessageStreamParams = {
+export type ResponseGeneratorParams = {
   providerClient: BaseLLMProvider<LLMProvider>
   model: ChatModel
   messages: ChatMessage[]
@@ -29,24 +29,25 @@ export type MessageStreamParams = {
   abortSignal?: AbortSignal
 }
 
-export class MessageStream {
-  private providerClient: BaseLLMProvider<LLMProvider>
-  private model: ChatModel
-  private promptGenerator: PromptGenerator
-  private mcpManager: MCPManager
-  private abortSignal?: AbortSignal
+export class ResponseGenerator {
+  private readonly providerClient: BaseLLMProvider<LLMProvider>
+  private readonly model: ChatModel
+  private readonly promptGenerator: PromptGenerator
+  private readonly mcpManager: MCPManager
+  private readonly abortSignal?: AbortSignal
+  private readonly receivedMessages: ChatMessage[]
+  private readonly maxAutoIterations = 5
 
-  private messages: ChatMessage[]
+  private responseMessages: ChatMessage[] = [] // Response messages that are generated after the initial messages
   private subscribers: ((messages: ChatMessage[]) => void)[] = []
-  private maxAutoIterations = 5
 
-  constructor(params: MessageStreamParams) {
+  constructor(params: ResponseGeneratorParams) {
     this.providerClient = params.providerClient
     this.model = params.model
+    this.receivedMessages = params.messages
     this.promptGenerator = params.promptGenerator
     this.mcpManager = params.mcpManager
     this.abortSignal = params.abortSignal
-    this.messages = params.messages
   }
 
   public subscribe(callback: (messages: ChatMessage[]) => void) {
@@ -55,73 +56,79 @@ export class MessageStream {
 
   public async run() {
     for (let i = 0; i < this.maxAutoIterations; i++) {
-      const { toolCallRequests } = await this.runSingleStream()
+      const { toolCallRequests } = await this.streamSingleResponse()
       if (toolCallRequests.length === 0) {
         return
       }
 
-      // FIXME: Currently, assume that all tool calls are approved
+      // FIXME: Implement tool call approval logic
       const toolMessage: ChatToolMessage = {
         role: 'tool' as const,
         id: uuidv4(),
         toolCalls: toolCallRequests.map((toolCall) => ({
           request: toolCall,
           response: {
-            status: 'pending_execution' as const,
+            status:
+              Math.random() < 0.5 ? 'pending_execution' : 'pending_approval',
           },
         })),
       }
 
-      this.updateMessages((messages) => [...messages, toolMessage])
+      this.updateResponseMessages((messages) => [...messages, toolMessage])
 
-      let aborted = false
       await Promise.all(
-        toolMessage.toolCalls.map(async (toolCall) => {
-          const response = await this.mcpManager.callTool({
-            name: toolCall.request.name,
-            args: toolCall.request.arguments,
-            id: toolCall.request.id,
-            signal: this.abortSignal,
-          })
-          if (response.status === 'aborted') {
-            aborted = true
-          }
-          this.updateMessages((messages) =>
-            messages.map((message) =>
-              message.id === toolMessage.id && message.role === 'tool'
-                ? {
-                    ...message,
-                    toolCalls: message.toolCalls?.map((tc) =>
-                      tc.request.id === toolCall.request.id
-                        ? {
-                            ...tc,
-                            response,
-                          }
-                        : tc,
-                    ),
-                  }
-                : message,
-            ),
+        toolMessage.toolCalls
+          .filter(
+            (toolCall) => toolCall.response.status === 'pending_execution',
           )
-        }),
+          .map(async (toolCall) => {
+            const response = await this.mcpManager.callTool({
+              name: toolCall.request.name,
+              args: toolCall.request.arguments,
+              id: toolCall.request.id,
+              signal: this.abortSignal,
+            })
+            this.updateResponseMessages((messages) =>
+              messages.map((message) =>
+                message.id === toolMessage.id && message.role === 'tool'
+                  ? {
+                      ...message,
+                      toolCalls: message.toolCalls?.map((tc) =>
+                        tc.request.id === toolCall.request.id
+                          ? {
+                              ...tc,
+                              response,
+                            }
+                          : tc,
+                      ),
+                    }
+                  : message,
+              ),
+            )
+          }),
       )
-      if (aborted) {
-        // Stop auto iteration if any tool call was aborted
+
+      const updatedToolMessage = this.responseMessages.find(
+        (message) => message.id === toolMessage.id && message.role === 'tool',
+      ) as ChatToolMessage | undefined
+      if (
+        !updatedToolMessage?.toolCalls?.every((toolCall) =>
+          ['success', 'error'].includes(toolCall.response.status),
+        )
+      ) {
+        // Exit the auto-iteration loop if any tool call hasn't completed
+        // Only 'success' or 'error' states are considered complete
         return
       }
     }
   }
 
-  private async runSingleStream(): Promise<{
+  private async streamSingleResponse(): Promise<{
     toolCallRequests: ToolCallRequest[]
   }> {
-    const { requestMessages, updatedMessages } =
-      await this.promptGenerator.generateRequestMessages({
-        messages: this.messages,
-      })
-    if (updatedMessages) {
-      this.messages = updatedMessages
-    }
+    const requestMessages = await this.promptGenerator.generateRequestMessages({
+      messages: [...this.receivedMessages, ...this.responseMessages],
+    })
 
     const tools: RequestTool[] = (await this.mcpManager.listTools()).map(
       (tool) => ({
@@ -148,14 +155,16 @@ export class MessageStream {
     )
 
     // Create a new assistant message for the response if it doesn't exist
-    if (this.messages.at(-1)?.role !== 'assistant') {
-      this.messages.push({
+    if (this.responseMessages.at(-1)?.role !== 'assistant') {
+      this.responseMessages.push({
         role: 'assistant',
         content: '',
         id: uuidv4(),
       })
     }
-    const responseMessageId = (this.messages.at(-1) as ChatAssistantMessage).id
+    const responseMessageId = (
+      this.responseMessages.at(-1) as ChatAssistantMessage
+    ).id
     const responseToolCalls: Record<number, ToolCallDelta> = {}
     for await (const chunk of stream) {
       this.processChunk(chunk, responseMessageId, responseToolCalls)
@@ -174,7 +183,7 @@ export class MessageStream {
       })
       .filter((toolCall) => toolCall !== null)
 
-    this.updateMessages((messages) =>
+    this.updateResponseMessages((messages) =>
       messages.map((message) =>
         message.id === responseMessageId && message.role === 'assistant'
           ? {
@@ -200,6 +209,7 @@ export class MessageStream {
     const toolCalls = chunk.choices[0]?.delta?.tool_calls
     const annotations = chunk.choices[0]?.delta?.annotations
 
+    // TODO: rewrite this code in a way that is more readable
     if (toolCalls) {
       for (const toolCall of toolCalls) {
         const { index } = toolCall
@@ -228,7 +238,7 @@ export class MessageStream {
     if (annotations) {
       // For annotations with empty titles, fetch the title of the URL and update the chat messages
       fetchAnnotationTitles(annotations, (url, title) => {
-        this.updateMessages((messages) =>
+        this.updateResponseMessages((messages) =>
           messages.map((message) =>
             message.id === responseMessageId && message.role === 'assistant'
               ? {
@@ -251,7 +261,7 @@ export class MessageStream {
       })
     }
 
-    this.updateMessages((messages) =>
+    this.updateResponseMessages((messages) =>
       messages.map((message) =>
         message.id === responseMessageId && message.role === 'assistant'
           ? {
@@ -260,7 +270,7 @@ export class MessageStream {
               reasoning: reasoning
                 ? (message.reasoning ?? '') + reasoning
                 : message.reasoning,
-              annotations: this.appendAnnotations(
+              annotations: this.mergeAnnotations(
                 message.annotations,
                 annotations,
               ),
@@ -274,18 +284,18 @@ export class MessageStream {
     )
   }
 
-  private updateMessages(
+  private updateResponseMessages(
     updaterFunction: (messages: ChatMessage[]) => ChatMessage[],
   ) {
-    this.messages = updaterFunction(this.messages)
-    this.notifySubscribers(this.messages)
+    this.responseMessages = updaterFunction(this.responseMessages)
+    this.notifySubscribers(this.responseMessages)
   }
 
   private notifySubscribers(messages: ChatMessage[]) {
     this.subscribers.forEach((callback) => callback(messages))
   }
 
-  private appendAnnotations = (
+  private mergeAnnotations = (
     prevAnnotations?: Annotation[],
     newAnnotations?: Annotation[],
   ): Annotation[] | undefined => {

@@ -50,21 +50,16 @@ export class PromptGenerator {
     messages,
   }: {
     messages: ChatMessage[]
-  }): Promise<{
-    requestMessages: RequestMessage[]
-    updatedMessages?: ChatMessage[]
-  }> {
+  }): Promise<RequestMessage[]> {
     if (messages.length === 0) {
       throw new Error('No messages provided')
     }
 
-    // Safegaurd: Ensure all user messages have complete prompt content
-    // If any messages needed compilation, we'll return them as updatedMessages
-    let hasUnparsedUserMessage = false
+    // Ensure all user messages have prompt content
+    // This is a fallback for cases where compilation was missed earlier in the process
     const compiledMessages = await Promise.all(
       messages.map(async (message) => {
         if (message.role === 'user' && !message.promptContent) {
-          hasUnparsedUserMessage = true
           const { promptContent, similaritySearchResults } =
             await this.compileUserMessagePrompt({
               message,
@@ -114,10 +109,7 @@ export class PromptGenerator {
         : []),
     ]
 
-    return {
-      requestMessages,
-      updatedMessages: hasUnparsedUserMessage ? compiledMessages : undefined,
-    }
+    return requestMessages
   }
 
   private getChatHistoryMessages({
@@ -264,71 +256,72 @@ ${message.annotations
       similarity: number
     })[]
   }> {
-    if (!message.content) {
-      return {
-        promptContent: '',
-        shouldUseRAG: false,
-      }
-    }
-    const query = editorStateToPlainText(message.content)
-    let similaritySearchResults = undefined
-
-    useVaultSearch =
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-      useVaultSearch ||
-      message.mentionables.some(
-        (m): m is MentionableVault => m.type === 'vault',
-      )
-
-    onQueryProgressChange?.({
-      type: 'reading-mentionables',
-    })
-    const files = message.mentionables
-      .filter((m): m is MentionableFile => m.type === 'file')
-      .map((m) => m.file)
-    const folders = message.mentionables
-      .filter((m): m is MentionableFolder => m.type === 'folder')
-      .map((m) => m.folder)
-    const nestedFiles = folders.flatMap((folder) =>
-      getNestedFiles(folder, this.app.vault),
-    )
-    const allFiles = [...files, ...nestedFiles]
-    const fileContents = await readMultipleTFiles(allFiles, this.app.vault)
-
-    // Count tokens incrementally to avoid long processing times on large content sets
-    const exceedsTokenThreshold = async () => {
-      let accTokenCount = 0
-      for (const content of fileContents) {
-        const count = await tokenCount(content)
-        accTokenCount += count
-        if (accTokenCount > this.settings.ragOptions.thresholdTokens) {
-          return true
+    try {
+      if (!message.content) {
+        return {
+          promptContent: '',
+          shouldUseRAG: false,
         }
       }
-      return false
-    }
-    const shouldUseRAG = useVaultSearch || (await exceedsTokenThreshold())
+      const query = editorStateToPlainText(message.content)
+      let similaritySearchResults = undefined
 
-    let filePrompt: string
-    if (shouldUseRAG) {
-      similaritySearchResults = useVaultSearch
-        ? await (
-            await this.getRagEngine()
-          ).processQuery({
-            query,
-            onQueryProgressChange: onQueryProgressChange,
-          }) // TODO: Add similarity boosting for mentioned files or folders
-        : await (
-            await this.getRagEngine()
-          ).processQuery({
-            query,
-            scope: {
-              files: files.map((f) => f.path),
-              folders: folders.map((f) => f.path),
-            },
-            onQueryProgressChange: onQueryProgressChange,
-          })
-      filePrompt = `## Potentially Relevant Snippets from the current vault
+      useVaultSearch =
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+        useVaultSearch ||
+        message.mentionables.some(
+          (m): m is MentionableVault => m.type === 'vault',
+        )
+
+      onQueryProgressChange?.({
+        type: 'reading-mentionables',
+      })
+      const files = message.mentionables
+        .filter((m): m is MentionableFile => m.type === 'file')
+        .map((m) => m.file)
+      const folders = message.mentionables
+        .filter((m): m is MentionableFolder => m.type === 'folder')
+        .map((m) => m.folder)
+      const nestedFiles = folders.flatMap((folder) =>
+        getNestedFiles(folder, this.app.vault),
+      )
+      const allFiles = [...files, ...nestedFiles]
+      const fileContents = await readMultipleTFiles(allFiles, this.app.vault)
+
+      // Count tokens incrementally to avoid long processing times on large content sets
+      const exceedsTokenThreshold = async () => {
+        let accTokenCount = 0
+        for (const content of fileContents) {
+          const count = await tokenCount(content)
+          accTokenCount += count
+          if (accTokenCount > this.settings.ragOptions.thresholdTokens) {
+            return true
+          }
+        }
+        return false
+      }
+      const shouldUseRAG = useVaultSearch || (await exceedsTokenThreshold())
+
+      let filePrompt: string
+      if (shouldUseRAG) {
+        similaritySearchResults = useVaultSearch
+          ? await (
+              await this.getRagEngine()
+            ).processQuery({
+              query,
+              onQueryProgressChange: onQueryProgressChange,
+            }) // TODO: Add similarity boosting for mentioned files or folders
+          : await (
+              await this.getRagEngine()
+            ).processQuery({
+              query,
+              scope: {
+                files: files.map((f) => f.path),
+                folders: folders.map((f) => f.path),
+              },
+              onQueryProgressChange: onQueryProgressChange,
+            })
+        filePrompt = `## Potentially Relevant Snippets from the current vault
 ${similaritySearchResults
   .map(({ path, content, metadata }) => {
     const newContent =
@@ -341,30 +334,30 @@ ${similaritySearchResults
     return `\`\`\`${path}\n${newContent}\n\`\`\`\n`
   })
   .join('')}\n`
-    } else {
-      filePrompt = allFiles
-        .map((file, index) => {
-          return `\`\`\`${file.path}\n${fileContents[index]}\n\`\`\`\n`
+      } else {
+        filePrompt = allFiles
+          .map((file, index) => {
+            return `\`\`\`${file.path}\n${fileContents[index]}\n\`\`\`\n`
+          })
+          .join('')
+      }
+
+      const blocks = message.mentionables.filter(
+        (m): m is MentionableBlock => m.type === 'block',
+      )
+      const blockPrompt = blocks
+        .map(({ file, content }) => {
+          return `\`\`\`${file.path}\n${content}\n\`\`\`\n`
         })
         .join('')
-    }
 
-    const blocks = message.mentionables.filter(
-      (m): m is MentionableBlock => m.type === 'block',
-    )
-    const blockPrompt = blocks
-      .map(({ file, content }) => {
-        return `\`\`\`${file.path}\n${content}\n\`\`\`\n`
-      })
-      .join('')
+      const urls = message.mentionables.filter(
+        (m): m is MentionableUrl => m.type === 'url',
+      )
 
-    const urls = message.mentionables.filter(
-      (m): m is MentionableUrl => m.type === 'url',
-    )
-
-    const urlPrompt =
-      urls.length > 0
-        ? `## Potentially Relevant Websearch Results
+      const urlPrompt =
+        urls.length > 0
+          ? `## Potentially Relevant Websearch Results
 ${(
   await Promise.all(
     urls.map(
@@ -377,34 +370,41 @@ ${await this.getWebsiteContent(url)}
   )
 ).join('\n')}
 `
-        : ''
+          : ''
 
-    const imageDataUrls = message.mentionables
-      .filter((m): m is MentionableImage => m.type === 'image')
-      .map(({ data }) => data)
+      const imageDataUrls = message.mentionables
+        .filter((m): m is MentionableImage => m.type === 'image')
+        .map(({ data }) => data)
 
-    // Reset query progress
-    onQueryProgressChange?.({
-      type: 'idle',
-    })
+      // Reset query progress
+      onQueryProgressChange?.({
+        type: 'idle',
+      })
 
-    return {
-      promptContent: [
-        ...imageDataUrls.map(
-          (data): ContentPart => ({
-            type: 'image_url',
-            image_url: {
-              url: data,
-            },
-          }),
-        ),
-        {
-          type: 'text',
-          text: `${filePrompt}${blockPrompt}${urlPrompt}\n\n${query}\n\n`,
-        },
-      ],
-      shouldUseRAG,
-      similaritySearchResults: similaritySearchResults,
+      return {
+        promptContent: [
+          ...imageDataUrls.map(
+            (data): ContentPart => ({
+              type: 'image_url',
+              image_url: {
+                url: data,
+              },
+            }),
+          ),
+          {
+            type: 'text',
+            text: `${filePrompt}${blockPrompt}${urlPrompt}\n\n${query}\n\n`,
+          },
+        ],
+        shouldUseRAG,
+        similaritySearchResults: similaritySearchResults,
+      }
+    } catch (error) {
+      console.error('Failed to compile user message', error)
+      onQueryProgressChange?.({
+        type: 'idle',
+      })
+      throw error
     }
   }
 
