@@ -160,6 +160,11 @@ function MentionsTypeaheadMenuItem({
     >
       {Icon && <Icon size={14} className="smtcmp-popover-item-icon" />}
       <span className="text">{option.name}</span>
+      {option.mentionable.type === 'folder' && (
+        <span className="text smtcmp-mention-popover-folder-path">
+          {option.mentionable.folder.path}
+        </span>
+      )}
     </li>
   )
 }
@@ -241,7 +246,7 @@ export default function NewMentionsPlugin({
         anchorElementRef.current && results.length
           ? createPortal(
               <div
-                className="smtcmp-popover"
+                className="smtcmp-popover smtcmp-mention-popover"
                 style={{
                   position: 'fixed',
                 }}

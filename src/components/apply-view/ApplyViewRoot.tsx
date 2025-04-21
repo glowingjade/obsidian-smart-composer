@@ -81,7 +81,7 @@ export default function ApplyViewRoot({
     close()
   }
 
-  const rejectDiffBlock = (index: number) => {
+  const acceptCurrentBlock = (index: number) => {
     setDiff((prevDiff) => {
       const currentPart = prevDiff[index]
 
@@ -110,7 +110,7 @@ export default function ApplyViewRoot({
     })
   }
 
-  const acceptDiffBlock = (index: number) => {
+  const acceptIncomingBlock = (index: number) => {
     setDiff((prevDiff) => {
       const currentPart = prevDiff[index]
 
@@ -130,6 +130,30 @@ export default function ApplyViewRoot({
               value: currentPart.modifiedValue,
             }
           : currentPart
+
+      return [
+        ...prevDiff.slice(0, index),
+        newPart,
+        ...prevDiff.slice(index + 1),
+      ]
+    })
+  }
+
+  const acceptBothBlocks = (index: number) => {
+    setDiff((prevDiff) => {
+      const currentPart = prevDiff[index]
+
+      if (currentPart.type === 'unchanged') {
+        // Should not happen
+        return prevDiff
+      }
+
+      const newPart: DiffBlock = {
+        type: 'unchanged',
+        value: [currentPart.originalValue, currentPart.modifiedValue]
+          .filter(Boolean)
+          .join('\n'),
+      }
 
       return [
         ...prevDiff.slice(0, index),
@@ -223,11 +247,11 @@ export default function ApplyViewRoot({
             </button>
             <button
               className="clickable-icon view-action"
-              aria-label="Reject changes"
+              aria-label="Cancel apply"
               onClick={handleReject}
             >
               {rejectIcon && <X size={14} />}
-              Reject
+              Cancel
             </button>
           </div>
         </div>
@@ -248,8 +272,9 @@ export default function ApplyViewRoot({
                   <DiffBlockView
                     key={index}
                     block={block}
-                    onAccept={() => acceptDiffBlock(index)}
-                    onReject={() => rejectDiffBlock(index)}
+                    onAcceptIncoming={() => acceptIncomingBlock(index)}
+                    onAcceptCurrent={() => acceptCurrentBlock(index)}
+                    onAcceptBoth={() => acceptBothBlocks(index)}
                     ref={(el) => {
                       diffBlockRefs.current[index] = el
                     }}
@@ -268,13 +293,11 @@ const DiffBlockView = forwardRef<
   HTMLDivElement,
   {
     block: DiffBlock
-    onAccept: () => void
-    onReject: () => void
+    onAcceptIncoming: () => void
+    onAcceptCurrent: () => void
+    onAcceptBoth: () => void
   }
->(({ block: part, onAccept, onReject }, ref) => {
-  const acceptIcon = getIcon('check')
-  const rejectIcon = getIcon('x')
-
+>(({ block: part, onAcceptIncoming, onAcceptCurrent, onAcceptBoth }, ref) => {
   if (part.type === 'unchanged') {
     return (
       <div className="smtcmp-diff-block">
@@ -295,20 +318,13 @@ const DiffBlockView = forwardRef<
           </div>
         )}
         <div className="smtcmp-diff-block-actions">
-          <button
-            aria-label="Accept block"
-            onClick={onAccept}
-            className="smtcmp-accept"
-          >
-            {acceptIcon && 'Y'}
+          <button onClick={onAcceptIncoming} className="smtcmp-accept">
+            Accept Incoming
           </button>
-          <button
-            aria-label="Reject block"
-            onClick={onReject}
-            className="smtcmp-exclude"
-          >
-            {rejectIcon && 'N'}
+          <button onClick={onAcceptCurrent} className="smtcmp-exclude">
+            Accept Current
           </button>
+          <button onClick={onAcceptBoth}>Accept Both</button>
         </div>
       </div>
     )

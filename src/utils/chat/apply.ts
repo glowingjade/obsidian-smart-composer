@@ -13,6 +13,8 @@ import { RequestMessage } from '../../types/llm/request'
 import { MentionableBlock, MentionableFile } from '../../types/mentionable'
 import { LLMProvider } from '../../types/provider.types'
 
+const MAX_CHAT_HISTORY_MESSAGES = 10
+
 const systemPrompt = `You are an intelligent assistant helping a user apply changes to a markdown file.
 
 You will receive:
@@ -82,6 +84,7 @@ ${currentFileContent}
 
 ## Conversation History
 ${chatMessages
+  .slice(-MAX_CHAT_HISTORY_MESSAGES)
   .map((message) => {
     if (message.role === 'user') {
       return `[User]: ${parseUserMessageForApply(message)}`
