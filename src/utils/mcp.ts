@@ -1,67 +1,155 @@
 import type { Client as ClientType } from '@modelcontextprotocol/sdk/client/index.js'
-import type { StdioServerParameters } from '@modelcontextprotocol/sdk/client/stdio.js'
 import type { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types'
 import { Platform } from 'obsidian'
 
-const MOCK_MCP_SERVERS: Record<string, StdioServerParameters> = {
-  filesystem: {
-    command: 'npx',
-    args: [
-      '-y',
-      '@modelcontextprotocol/server-filesystem',
-      '/Users/kwanghyunon/Desktop',
-      '/Users/kwanghyunon/Downloads',
-      '/Users/kwanghyunon/Dropbox',
-    ],
-  },
-  perplexityAsk: {
-    command: 'npx',
-    args: ['-y', 'server-perplexity-ask'],
-    env: {
-      PERPLEXITY_API_KEY: 'PERPLEXITY_API_KEY',
-    },
-  },
-  todoist: {
-    command: 'npx',
-    args: ['-y', '@abhiz123/todoist-mcp-server'],
-    env: {
-      TODOIST_API_TOKEN: 'TODOIST_API_TOKEN',
-    },
-  },
+import { SmartComposerSettings } from '../settings/schema/setting.types'
+import { MCPServerConfig } from '../types/mcp.types'
+
+export type MCPServerState = {
+  name: string
+  client: ClientType
+  status: 'stopped' | 'connecting' | 'connected' | 'error'
+  tools?: Tool[]
+  error?: Error
 }
 
 export class MCPManager {
-  private disabled = !Platform.isDesktop // MCP should be disabled on mobile since it doesn't support node.js
-  private defaultEnv: Record<string, string>
-  private clients: Record<string, ClientType> = {}
-  private activeToolCalls: Map<string, AbortController> = new Map()
+  private readonly disabled = !Platform.isDesktop // MCP should be disabled on mobile since it doesn't support node.js
 
+  private readonly settings: SmartComposerSettings
   private readonly DELIMITER = '---'
+
+  private defaultEnv: Record<string, string>
+  private servers: MCPServerState[] = []
+  private activeToolCalls: Map<string, AbortController> = new Map()
+  private subscribers = new Set<(servers: MCPServerState[]) => void>()
+
+  constructor({ settings }: { settings: SmartComposerSettings }) {
+    this.settings = settings
+  }
 
   public async initialize() {
     if (this.disabled) {
       return
     }
 
+    // Get default environment variables
     const { shellEnvSync } = await import('shell-env')
     this.defaultEnv = shellEnvSync()
 
+    // Create MCP servers
+    const servers = await Promise.all(
+      this.settings.mcp.servers.map((serverConfig) =>
+        this.createServer(serverConfig),
+      ),
+    )
+    this.updateServers(servers)
+    console.log('Initialized MCP servers', servers)
+  }
+
+  public getServers() {
+    return this.servers
+  }
+
+  public subscribeServersChange(cb: (servers: MCPServerState[]) => void) {
+    this.subscribers.add(cb)
+    return () => this.subscribers.delete(cb)
+  }
+
+  public async connectServer(name: string) {
+    const serverConfig = this.settings.mcp.servers.find(
+      (server) => server.id === name,
+    )
+    if (!serverConfig) {
+      throw new Error(`MCP server ${name} not found`)
+    }
+
+    const server = this.servers.find((server) => server.name === name)
+    if (server?.status === 'connected') {
+      return
+    }
+    this.updateServers(
+      this.servers.map((s) =>
+        s.name === name ? { ...s, status: 'connecting' } : s,
+      ),
+    )
+    const updatedServer = await this.createServer(serverConfig)
+    this.updateServers([
+      ...this.servers.map((s) => (s.name === name ? updatedServer : s)),
+    ])
+  }
+
+  public async disconnectServer(name: string) {
+    const { Client } = await import('@modelcontextprotocol/sdk/client/index.js')
+    const server = this.servers.find((server) => server.name === name)
+    if (!server) {
+      return
+    }
+    try {
+      await server.client.close()
+      this.updateServers(
+        this.servers.map((s) =>
+          s.name === server.name
+            ? {
+                name: server.name,
+                client: server.client,
+                status: 'stopped',
+                tools: undefined,
+                error: undefined,
+              }
+            : s,
+        ),
+      )
+    } catch (error) {
+      // Reset the client
+      this.updateServers(
+        this.servers.map((s) =>
+          s.name === name
+            ? {
+                ...s,
+                client: new Client({ name, version: '1.0.0' }),
+                status: 'stopped',
+                tools: undefined,
+                error: undefined,
+              }
+            : s,
+        ),
+      )
+    }
+  }
+
+  private notifySubscribers() {
+    for (const cb of this.subscribers) cb(this.servers)
+  }
+
+  private updateServers(servers: MCPServerState[]) {
+    this.servers = servers
+    this.notifySubscribers()
+  }
+
+  private async createServer(
+    serverConfig: MCPServerConfig,
+  ): Promise<MCPServerState> {
+    console.log('Creating server', serverConfig)
     const { Client } = await import('@modelcontextprotocol/sdk/client/index.js')
     const { StdioClientTransport } = await import(
       '@modelcontextprotocol/sdk/client/stdio.js'
     )
+    const { id: name, parameters: serverParams } = serverConfig
+    const client = new Client({ name, version: '1.0.0' })
 
-    for (const [name, serverParams] of Object.entries(MOCK_MCP_SERVERS)) {
-      if (name.includes(this.DELIMITER)) {
-        console.error(
-          `MCP server name ${name} contains the delimiter ${this.DELIMITER}. This is not allowed.`,
-        )
-        continue
-      }
-      const client = new Client({
+    if (name.includes(this.DELIMITER)) {
+      return {
         name,
-        version: '1.0.0',
-      })
+        client,
+        status: 'error',
+        error: new Error(
+          `MCP server name ${name} contains the delimiter ${this.DELIMITER}. This is not allowed.`,
+        ),
+      }
+    }
+
+    try {
       await client.connect(
         new StdioClientTransport({
           ...serverParams,
@@ -71,7 +159,34 @@ export class MCPManager {
           },
         }),
       )
-      this.clients[name] = client
+    } catch (error) {
+      return {
+        name,
+        client,
+        status: 'error',
+        error: new Error(
+          `Failed to connect to MCP server ${name}: ${error instanceof Error ? error.message : String(error)}`,
+        ),
+      }
+    }
+
+    try {
+      const toolList = await client.listTools()
+      return {
+        name,
+        status: 'connected',
+        client,
+        tools: toolList.tools,
+      }
+    } catch (error) {
+      return {
+        name,
+        status: 'error',
+        client,
+        error: new Error(
+          `Failed to list tools for MCP server ${name}: ${error instanceof Error ? error.message : String(error)}`,
+        ),
+      }
     }
   }
 
@@ -79,17 +194,27 @@ export class MCPManager {
     if (this.disabled) {
       return []
     }
-    const tools: Tool[] = []
-    for (const [clientName, client] of Object.entries(this.clients)) {
-      const toolList = await client.listTools()
-      tools.push(
-        ...toolList.tools.map((tool) => ({
-          ...tool,
-          name: this.getToolName(clientName, tool.name),
-        })),
+    return (
+      await Promise.all(
+        this.servers.map(async (server): Promise<Tool[]> => {
+          if (server.status !== 'connected') {
+            return []
+          }
+          try {
+            const toolList = await server.client.listTools()
+            return toolList.tools.map((tool) => ({
+              ...tool,
+              name: this.getToolName(server.name, tool.name),
+            }))
+          } catch (error) {
+            console.error(
+              `Failed to list tools for MCP server ${server.name}: ${error instanceof Error ? error.message : String(error)}`,
+            )
+            return []
+          }
+        }),
       )
-    }
-    return tools
+    ).flat()
   }
 
   public async callTool({
@@ -138,8 +263,12 @@ export class MCPManager {
     console.log(`Calling tool ${name}: ${JSON.stringify(args)}`)
 
     try {
-      const { clientName, toolName } = this.parseToolName(name)
-      const client = this.clients[clientName]
+      const { serverName, toolName } = this.parseToolName(name)
+      const server = this.servers.find((server) => server.name === serverName)
+      if (!server) {
+        throw new Error(`MCP server ${serverName} not found`)
+      }
+      const { client } = server
 
       const parsedArgs: Record<string, unknown> | undefined =
         typeof args === 'string' ? (args === '' ? {} : JSON.parse(args)) : args
@@ -206,7 +335,7 @@ export class MCPManager {
   }
 
   private parseToolName(name: string): {
-    clientName: string
+    serverName: string
     toolName: string
   } {
     const regex = new RegExp(`^(.+?)${this.DELIMITER}(.+)$`)
@@ -216,17 +345,17 @@ export class MCPManager {
       throw new Error(`Invalid tool name: ${name}`)
     }
 
-    const clientName = match[1]
+    const serverName = match[1]
     const toolName = match[2]
 
-    if (!clientName || !toolName) {
+    if (!serverName || !toolName) {
       throw new Error(`Invalid tool name: ${name}`)
     }
 
-    return { clientName, toolName }
+    return { serverName, toolName }
   }
 
-  private getToolName(clientName: string, toolName: string): string {
-    return `${clientName}${this.DELIMITER}${toolName}`
+  private getToolName(serverName: string, toolName: string): string {
+    return `${serverName}${this.DELIMITER}${toolName}`
   }
 }

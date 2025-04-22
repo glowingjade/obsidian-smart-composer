@@ -289,7 +289,7 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
     if (this.mcpManager) {
       return this.mcpManager
     }
-    this.mcpManager = new MCPManager()
+    this.mcpManager = new MCPManager({ settings: this.settings })
     await this.mcpManager.initialize()
     return this.mcpManager
   }
