@@ -361,8 +361,14 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           ['success', 'error'].includes(toolCall.response.status),
         )
       ) {
+        // Using updated toolMessage directly because chatMessages state
+        // still contains the old values
+        submitChatMutation.mutate(
+          chatMessages.map((message) =>
+            message.id === toolMessage.id ? toolMessage : message,
+          ),
+        )
         forceScrollToBottom()
-        submitChatMutation.mutate(chatMessages)
       }
     },
     [
