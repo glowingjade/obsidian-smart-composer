@@ -165,9 +165,14 @@ export class ResponseGenerator {
     const responseMessageId = (
       this.responseMessages.at(-1) as ChatAssistantMessage
     ).id
-    const responseToolCalls: Record<number, ToolCallDelta> = {}
+    let responseToolCalls: Record<number, ToolCallDelta> = {}
     for await (const chunk of stream) {
-      this.processChunk(chunk, responseMessageId, responseToolCalls)
+      const { updatedToolCalls } = this.processChunk(
+        chunk,
+        responseMessageId,
+        responseToolCalls,
+      )
+      responseToolCalls = updatedToolCalls
     }
     const toolCallRequests: ToolCallRequest[] = Object.values(responseToolCalls)
       .map((toolCall) => {
@@ -203,37 +208,17 @@ export class ResponseGenerator {
     chunk: LLMResponseStreaming,
     responseMessageId: string,
     responseToolCalls: Record<number, ToolCallDelta>,
-  ) {
+  ): {
+    updatedToolCalls: Record<number, ToolCallDelta>
+  } {
     const content = chunk.choices[0]?.delta?.content ?? ''
     const reasoning = chunk.choices[0]?.delta?.reasoning
     const toolCalls = chunk.choices[0]?.delta?.tool_calls
     const annotations = chunk.choices[0]?.delta?.annotations
 
-    // TODO: rewrite this code in a way that is more readable
-    if (toolCalls) {
-      for (const toolCall of toolCalls) {
-        const { index } = toolCall
-
-        if (!responseToolCalls[index]) {
-          responseToolCalls[index] = toolCall
-        } else {
-          responseToolCalls[index].id =
-            responseToolCalls[index].id ?? toolCall.id
-          responseToolCalls[index].type =
-            responseToolCalls[index].type ?? toolCall.type
-          if (responseToolCalls[index].function || toolCall.function) {
-            responseToolCalls[index].function = {
-              name:
-                responseToolCalls[index].function?.name ??
-                toolCall.function?.name,
-              arguments:
-                (responseToolCalls[index].function?.arguments ?? '') +
-                (toolCall.function?.arguments ?? ''),
-            }
-          }
-        }
-      }
-    }
+    const updatedToolCalls = toolCalls
+      ? this.mergeToolCallDeltas(toolCalls, responseToolCalls)
+      : responseToolCalls
 
     if (annotations) {
       // For annotations with empty titles, fetch the title of the URL and update the chat messages
@@ -282,6 +267,10 @@ export class ResponseGenerator {
           : message,
       ),
     )
+
+    return {
+      updatedToolCalls,
+    }
   }
 
   private updateResponseMessages(
@@ -295,10 +284,47 @@ export class ResponseGenerator {
     this.subscribers.forEach((callback) => callback(messages))
   }
 
-  private mergeAnnotations = (
+  private mergeToolCallDeltas(
+    toolCalls: ToolCallDelta[],
+    existingToolCalls: Record<number, ToolCallDelta>,
+  ): Record<number, ToolCallDelta> {
+    return toolCalls.reduce(
+      (merged, toolCall) => {
+        const { index } = toolCall
+
+        if (!merged[index]) {
+          return { ...merged, [index]: toolCall }
+        }
+
+        const mergedToolCall: ToolCallDelta = {
+          index,
+          id: merged[index].id ?? toolCall.id,
+          type: merged[index].type ?? toolCall.type,
+        }
+
+        if (merged[index].function || toolCall.function) {
+          const existingArgs = merged[index].function?.arguments
+          const newArgs = toolCall.function?.arguments
+
+          mergedToolCall.function = {
+            name: merged[index].function?.name ?? toolCall.function?.name,
+            arguments:
+              existingArgs || newArgs
+                ? [existingArgs ?? '', newArgs ?? ''].join('')
+                : undefined,
+          }
+        }
+
+        return { ...merged, [index]: mergedToolCall }
+      },
+      { ...existingToolCalls },
+    )
+  }
+
+  private mergeAnnotations(
     prevAnnotations?: Annotation[],
     newAnnotations?: Annotation[],
-  ): Annotation[] | undefined => {
+  ): Annotation[] | undefined {
     if (!prevAnnotations) return newAnnotations
     if (!newAnnotations) return prevAnnotations
 
