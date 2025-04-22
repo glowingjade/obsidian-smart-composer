@@ -1459,3 +1459,9 @@ button.smtcmp-chat-input-model-select {
   white-space: nowrap;
   color: var(--text-muted);
 }
+
+.smtcmp-settings-description-preserve-whitespace {
+  .setting-item-description {
+    white-space: pre-wrap;
+  }
+}

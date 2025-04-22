@@ -147,6 +147,10 @@ export default class SmartComposerPlugin extends Plugin {
     // DatabaseManager cleanup
     this.dbManager?.cleanup()
     this.dbManager = null
+
+    // MCPManager cleanup
+    this.mcpManager?.cleanup()
+    this.mcpManager = null
   }
 
   async loadSettings() {
@@ -289,7 +293,12 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
     if (this.mcpManager) {
       return this.mcpManager
     }
-    this.mcpManager = new MCPManager({ settings: this.settings })
+    this.mcpManager = new MCPManager({
+      settings: this.settings,
+      registerSettingsListener: (
+        listener: (settings: SmartComposerSettings) => void,
+      ) => this.addSettingsChangeListener(listener),
+    })
     await this.mcpManager.initialize()
     return this.mcpManager
   }

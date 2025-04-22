@@ -1,5 +1,6 @@
 import type { Client as ClientType } from '@modelcontextprotocol/sdk/client/index.js'
 import type { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types'
+import isEqual from 'lodash.isequal'
 import { Platform } from 'obsidian'
 
 import { SmartComposerSettings } from '../settings/schema/setting.types'
@@ -8,6 +9,7 @@ import { MCPServerConfig } from '../types/mcp.types'
 export type MCPServerState = {
   name: string
   client: ClientType
+  config: MCPServerConfig
   status: 'stopped' | 'connecting' | 'connected' | 'error'
   tools?: Tool[]
   error?: Error
@@ -16,16 +18,28 @@ export type MCPServerState = {
 export class MCPManager {
   private readonly disabled = !Platform.isDesktop // MCP should be disabled on mobile since it doesn't support node.js
 
-  private readonly settings: SmartComposerSettings
+  private settings: SmartComposerSettings
   private readonly DELIMITER = '---'
 
   private defaultEnv: Record<string, string>
   private servers: MCPServerState[] = []
   private activeToolCalls: Map<string, AbortController> = new Map()
   private subscribers = new Set<(servers: MCPServerState[]) => void>()
+  private unsubscribeFromSettings: () => void
 
-  constructor({ settings }: { settings: SmartComposerSettings }) {
+  constructor({
+    settings,
+    registerSettingsListener,
+  }: {
+    settings: SmartComposerSettings
+    registerSettingsListener: (
+      listener: (settings: SmartComposerSettings) => void,
+    ) => () => void
+  }) {
     this.settings = settings
+    this.unsubscribeFromSettings = registerSettingsListener((newSettings) => {
+      this.handleSettingsUpdate(newSettings)
+    })
   }
 
   public async initialize() {
@@ -44,16 +58,30 @@ export class MCPManager {
       ),
     )
     this.updateServers(servers)
-    console.log('Initialized MCP servers', servers)
   }
 
   public getServers() {
     return this.servers
   }
 
-  public subscribeServersChange(cb: (servers: MCPServerState[]) => void) {
-    this.subscribers.add(cb)
-    return () => this.subscribers.delete(cb)
+  public subscribeServersChange(callback: (servers: MCPServerState[]) => void) {
+    this.subscribers.add(callback)
+    return () => this.subscribers.delete(callback)
+  }
+
+  public async handleSettingsUpdate(settings: SmartComposerSettings) {
+    this.settings = settings
+    const updatedServers = await Promise.all(
+      settings.mcp.servers.map(async (serverConfig) => {
+        const server = this.servers.find((s) => s.name === serverConfig.id)
+        if (server && isEqual(server.config, serverConfig)) {
+          // Server is already up to date
+          return server
+        }
+        return this.createServer(serverConfig)
+      }),
+    )
+    this.updateServers(updatedServers)
   }
 
   public async connectServer(name: string) {
@@ -91,8 +119,7 @@ export class MCPManager {
         this.servers.map((s) =>
           s.name === server.name
             ? {
-                name: server.name,
-                client: server.client,
+                ...s,
                 status: 'stopped',
                 tools: undefined,
                 error: undefined,
@@ -130,7 +157,6 @@ export class MCPManager {
   private async createServer(
     serverConfig: MCPServerConfig,
   ): Promise<MCPServerState> {
-    console.log('Creating server', serverConfig)
     const { Client } = await import('@modelcontextprotocol/sdk/client/index.js')
     const { StdioClientTransport } = await import(
       '@modelcontextprotocol/sdk/client/stdio.js'
@@ -142,6 +168,7 @@ export class MCPManager {
       return {
         name,
         client,
+        config: serverConfig,
         status: 'error',
         error: new Error(
           `MCP server name ${name} contains the delimiter ${this.DELIMITER}. This is not allowed.`,
@@ -163,6 +190,7 @@ export class MCPManager {
       return {
         name,
         client,
+        config: serverConfig,
         status: 'error',
         error: new Error(
           `Failed to connect to MCP server ${name}: ${error instanceof Error ? error.message : String(error)}`,
@@ -174,15 +202,17 @@ export class MCPManager {
       const toolList = await client.listTools()
       return {
         name,
-        status: 'connected',
         client,
+        config: serverConfig,
+        status: 'connected',
         tools: toolList.tools,
       }
     } catch (error) {
       return {
         name,
-        status: 'error',
         client,
+        config: serverConfig,
+        status: 'error',
         error: new Error(
           `Failed to list tools for MCP server ${name}: ${error instanceof Error ? error.message : String(error)}`,
         ),
@@ -357,5 +387,12 @@ export class MCPManager {
 
   private getToolName(serverName: string, toolName: string): string {
     return `${serverName}${this.DELIMITER}${toolName}`
+  }
+
+  public cleanup() {
+    if (this.unsubscribeFromSettings) {
+      this.unsubscribeFromSettings()
+    }
+    // TODO: Close all connections
   }
 }
