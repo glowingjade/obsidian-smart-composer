@@ -9,6 +9,7 @@ import {
   MCPServerParameters,
   mcpServerParametersSchema,
 } from '../../types/mcp.types'
+import { validateServerName } from '../../utils/mcp/tool-name-utils'
 import { ObsidianButton } from '../common/ObsidianButton'
 import { ObsidianSetting } from '../common/ObsidianSetting'
 import { ObsidianTextInput } from '../common/ObsidianTextInput'
@@ -50,6 +51,8 @@ function McpServerFormComponent({
       if (serverName.length === 0) {
         throw new Error('Name is required')
       }
+      validateServerName(serverName)
+
       if (
         plugin.settings.mcp.servers.find(
           (server) =>

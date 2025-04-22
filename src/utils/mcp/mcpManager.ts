@@ -3,8 +3,14 @@ import type { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types'
 import isEqual from 'lodash.isequal'
 import { Platform } from 'obsidian'
 
-import { SmartComposerSettings } from '../settings/schema/setting.types'
-import { MCPServerConfig } from '../types/mcp.types'
+import { SmartComposerSettings } from '../../settings/schema/setting.types'
+import { MCPServerConfig } from '../../types/mcp.types'
+
+import {
+  getToolName,
+  parseToolName,
+  validateServerName,
+} from './tool-name-utils'
 
 export type MCPServerState = {
   name: string
@@ -19,7 +25,6 @@ export class MCPManager {
   private readonly disabled = !Platform.isDesktop // MCP should be disabled on mobile since it doesn't support node.js
 
   private settings: SmartComposerSettings
-  private readonly DELIMITER = '---'
 
   private defaultEnv: Record<string, string>
   private servers: MCPServerState[] = []
@@ -58,6 +63,13 @@ export class MCPManager {
       ),
     )
     this.updateServers(servers)
+  }
+
+  public cleanup() {
+    if (this.unsubscribeFromSettings) {
+      this.unsubscribeFromSettings()
+    }
+    // TODO: Close all connections
   }
 
   public getServers() {
@@ -164,15 +176,15 @@ export class MCPManager {
     const { id: name, parameters: serverParams } = serverConfig
     const client = new Client({ name, version: '1.0.0' })
 
-    if (name.includes(this.DELIMITER)) {
+    try {
+      validateServerName(name)
+    } catch (error) {
       return {
         name,
         client,
         config: serverConfig,
         status: 'error',
-        error: new Error(
-          `MCP server name ${name} contains the delimiter ${this.DELIMITER}. This is not allowed.`,
-        ),
+        error: error as Error,
       }
     }
 
@@ -234,7 +246,7 @@ export class MCPManager {
             const toolList = await server.client.listTools()
             return toolList.tools.map((tool) => ({
               ...tool,
-              name: this.getToolName(server.name, tool.name),
+              name: getToolName(server.name, tool.name),
             }))
           } catch (error) {
             console.error(
@@ -293,7 +305,7 @@ export class MCPManager {
     console.log(`Calling tool ${name}: ${JSON.stringify(args)}`)
 
     try {
-      const { serverName, toolName } = this.parseToolName(name)
+      const { serverName, toolName } = parseToolName(name)
       const server = this.servers.find((server) => server.name === serverName)
       if (!server) {
         throw new Error(`MCP server ${serverName} not found`)
@@ -362,37 +374,5 @@ export class MCPManager {
       return true
     }
     return false
-  }
-
-  private parseToolName(name: string): {
-    serverName: string
-    toolName: string
-  } {
-    const regex = new RegExp(`^(.+?)${this.DELIMITER}(.+)$`)
-    const match = name.match(regex)
-
-    if (!match || match.length < 3) {
-      throw new Error(`Invalid tool name: ${name}`)
-    }
-
-    const serverName = match[1]
-    const toolName = match[2]
-
-    if (!serverName || !toolName) {
-      throw new Error(`Invalid tool name: ${name}`)
-    }
-
-    return { serverName, toolName }
-  }
-
-  private getToolName(serverName: string, toolName: string): string {
-    return `${serverName}${this.DELIMITER}${toolName}`
-  }
-
-  public cleanup() {
-    if (this.unsubscribeFromSettings) {
-      this.unsubscribeFromSettings()
-    }
-    // TODO: Close all connections
   }
 }

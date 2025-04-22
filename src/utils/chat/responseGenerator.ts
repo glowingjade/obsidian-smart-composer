@@ -15,7 +15,7 @@ import {
   ToolCallDelta,
 } from '../../types/llm/response'
 import { LLMProvider } from '../../types/provider.types'
-import { MCPManager } from '../mcp'
+import { MCPManager } from '../mcp/mcpManager'
 
 import { fetchAnnotationTitles } from './fetch-annotation-titles'
 import { PromptGenerator } from './promptGenerator'

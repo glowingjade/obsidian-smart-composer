@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 
 import { useSettings } from '../../../contexts/settings-context'
 import SmartComposerPlugin from '../../../main'
-import { MCPManager, MCPServerState } from '../../../utils/mcp'
+import { MCPManager, MCPServerState } from '../../../utils/mcp/mcpManager'
 import { ObsidianButton } from '../../common/ObsidianButton'
 import { AddMcpServerModal, EditMcpServerModal } from '../McpServerModal'
 
