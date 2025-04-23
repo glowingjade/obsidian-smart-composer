@@ -74,12 +74,20 @@ function McpServerFormComponent({
           servers: existingServer
             ? plugin.settings.mcp.servers.map((server) =>
                 server.id === existingServer.id
-                  ? { id: serverName, parameters: validatedParameters }
+                  ? {
+                      ...server,
+                      id: serverName,
+                      parameters: validatedParameters,
+                    }
                   : server,
               )
             : [
                 ...plugin.settings.mcp.servers,
-                { id: serverName, parameters: validatedParameters },
+                {
+                  id: serverName,
+                  parameters: validatedParameters,
+                  toolOptions: {},
+                },
               ],
         },
       }

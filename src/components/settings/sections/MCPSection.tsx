@@ -126,12 +126,12 @@ function McpToolComponent({
 }) {
   const { settings, setSettings } = useSettings()
 
-  const toolOption = server.config.toolOptions?.[tool.name]
+  const toolOption = server.config.toolOptions[tool.name]
   const disabled = toolOption?.disabled ?? false
   const allowAutoExecution = toolOption?.allowAutoExecution ?? false
 
   const handleToggleEnabled = (enabled: boolean) => {
-    const toolOptions = server.config.toolOptions ?? {}
+    const toolOptions = server.config.toolOptions
     toolOptions[tool.name] = {
       disabled: !enabled,
       allowAutoExecution: allowAutoExecution,
@@ -153,7 +153,7 @@ function McpToolComponent({
   }
 
   const handleToggleAutoExecution = (autoExecution: boolean) => {
-    const toolOptions = server.config.toolOptions ?? {}
+    const toolOptions = server.config.toolOptions
     toolOptions[tool.name] = {
       disabled: disabled,
       allowAutoExecution: autoExecution,
@@ -175,7 +175,7 @@ function McpToolComponent({
   }
 
   return (
-    <div>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <div>{tool.name}</div>
       <ObsidianToggle
         value={!disabled}

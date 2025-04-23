@@ -24,7 +24,7 @@ export const mcpServerToolOptionsSchema = z.record(
 export const mcpServerConfigSchema = z.object({
   id: z.string(),
   parameters: mcpServerParametersSchema,
-  toolOptions: mcpServerToolOptionsSchema.optional().catch({}),
+  toolOptions: mcpServerToolOptionsSchema,
 })
 export type McpServerConfig = z.infer<typeof mcpServerConfigSchema>
 

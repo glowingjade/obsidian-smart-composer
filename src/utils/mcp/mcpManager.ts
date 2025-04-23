@@ -246,9 +246,7 @@ export class McpManager {
           try {
             const toolList = await server.client.listTools()
             return toolList.tools
-              .filter(
-                (tool) => !server.config.toolOptions?.[tool.name]?.disabled,
-              )
+              .filter((tool) => !server.config.toolOptions[tool.name]?.disabled)
               .map((tool) => ({
                 ...tool,
                 name: getToolName(server.name, tool.name),
@@ -270,7 +268,7 @@ export class McpManager {
     if (!server) {
       return false
     }
-    const toolOption = server.config.toolOptions?.[toolName]
+    const toolOption = server.config.toolOptions[toolName]
     if (!toolOption) {
       return false
     }

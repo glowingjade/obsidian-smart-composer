@@ -81,7 +81,7 @@ function ToolCallStatus({
     if (!server) {
       return
     }
-    const toolOptions = server.toolOptions ?? {}
+    const toolOptions = server.toolOptions
     if (!toolOptions[toolName]) {
       // If the tool is not in the toolOptions, add it with default values
       toolOptions[toolName] = {
