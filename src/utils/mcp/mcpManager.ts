@@ -1,10 +1,11 @@
-import type { Client as ClientType } from '@modelcontextprotocol/sdk/client/index.js'
 import isEqual from 'lodash.isequal'
 import { Platform } from 'obsidian'
 
 import { SmartComposerSettings } from '../../settings/schema/setting.types'
 import {
   McpServerConfig,
+  McpServerState,
+  McpServerStatus,
   McpTool,
   McpToolCallResponse,
 } from '../../types/mcp.types'
@@ -14,15 +15,6 @@ import {
   parseToolName,
   validateServerName,
 } from './tool-name-utils'
-
-export type McpServerState = {
-  name: string
-  client: ClientType
-  config: McpServerConfig
-  status: 'stopped' | 'connecting' | 'connected' | 'error'
-  tools?: McpTool[]
-  error?: Error
-}
 
 export class McpManager {
   private readonly disabled = !Platform.isDesktop // MCP should be disabled on mobile since it doesn't support node.js
@@ -119,7 +111,7 @@ export class McpManager {
     }
     this.updateServers(
       this.servers.map((s) =>
-        s.name === name ? { ...s, status: 'connecting' } : s,
+        s.name === name ? { ...s, status: McpServerStatus.Connecting } : s,
       ),
     )
     const updatedServer = await this.createServer(serverConfig)
@@ -141,7 +133,7 @@ export class McpManager {
           s.name === server.name
             ? {
                 ...s,
-                status: 'stopped',
+                status: McpServerStatus.Stopped,
                 tools: undefined,
                 error: undefined,
               }
@@ -156,7 +148,7 @@ export class McpManager {
             ? {
                 ...s,
                 client: new Client({ name, version: '1.0.0' }),
-                status: 'stopped',
+                status: McpServerStatus.Stopped,
                 tools: undefined,
                 error: undefined,
               }
@@ -192,7 +184,7 @@ export class McpManager {
         name,
         client,
         config: serverConfig,
-        status: 'error',
+        status: McpServerStatus.Error,
         error: error as Error,
       }
     }
@@ -212,7 +204,7 @@ export class McpManager {
         name,
         client,
         config: serverConfig,
-        status: 'error',
+        status: McpServerStatus.Error,
         error: new Error(
           `Failed to connect to MCP server ${name}: ${error instanceof Error ? error.message : String(error)}`,
         ),
@@ -225,7 +217,7 @@ export class McpManager {
         name,
         client,
         config: serverConfig,
-        status: 'connected',
+        status: McpServerStatus.Connected,
         tools: toolList.tools,
       }
     } catch (error) {
@@ -233,7 +225,7 @@ export class McpManager {
         name,
         client,
         config: serverConfig,
-        status: 'error',
+        status: McpServerStatus.Error,
         error: new Error(
           `Failed to list tools for MCP server ${name}: ${error instanceof Error ? error.message : String(error)}`,
         ),
@@ -248,7 +240,7 @@ export class McpManager {
     return (
       await Promise.all(
         this.servers.map(async (server): Promise<McpTool[]> => {
-          if (server.status !== 'connected') {
+          if (server.status !== McpServerStatus.Connected) {
             return []
           }
           try {

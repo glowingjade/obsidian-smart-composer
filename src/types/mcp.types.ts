@@ -1,8 +1,10 @@
+import type { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import type { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types'
 import { z } from 'zod'
 
 export type McpTool = Tool
 export type McpToolCallResponse = CallToolResult
+export type McpClient = Client
 
 export const mcpServerParametersSchema = z.object({
   command: z.string(),
@@ -25,3 +27,19 @@ export const mcpServerConfigSchema = z.object({
   toolOptions: mcpServerToolOptionsSchema.optional().catch({}),
 })
 export type McpServerConfig = z.infer<typeof mcpServerConfigSchema>
+
+export enum McpServerStatus {
+  Stopped = 'stopped',
+  Connecting = 'connecting',
+  Connected = 'connected',
+  Error = 'error',
+}
+
+export type McpServerState = {
+  name: string
+  client: McpClient
+  config: McpServerConfig
+  status: McpServerStatus
+  tools?: McpTool[]
+  error?: Error
+}
