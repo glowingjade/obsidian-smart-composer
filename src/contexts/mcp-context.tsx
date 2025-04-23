@@ -6,33 +6,33 @@ import {
   useMemo,
 } from 'react'
 
-import { MCPManager } from '../utils/mcp/mcpManager'
+import { McpManager } from '../utils/mcp/mcpManager'
 
-export type MCPContextType = {
-  getMCPManager: () => Promise<MCPManager>
+export type McpContextType = {
+  getMcpManager: () => Promise<McpManager>
 }
 
-const MCPContext = createContext<MCPContextType | null>(null)
+const McpContext = createContext<McpContextType | null>(null)
 
-export function MCPProvider({
-  getMCPManager,
+export function McpProvider({
+  getMcpManager,
   children,
-}: PropsWithChildren<{ getMCPManager: () => Promise<MCPManager> }>) {
+}: PropsWithChildren<{ getMcpManager: () => Promise<McpManager> }>) {
   useEffect(() => {
-    void getMCPManager()
-  }, [getMCPManager])
+    void getMcpManager()
+  }, [getMcpManager])
 
   const value = useMemo(() => {
-    return { getMCPManager }
-  }, [getMCPManager])
+    return { getMcpManager }
+  }, [getMcpManager])
 
-  return <MCPContext.Provider value={value}>{children}</MCPContext.Provider>
+  return <McpContext.Provider value={value}>{children}</McpContext.Provider>
 }
 
-export function useMCP() {
-  const context = useContext(MCPContext)
+export function useMcp() {
+  const context = useContext(McpContext)
   if (!context) {
-    throw new Error('useMCP must be used within a MCPProvider')
+    throw new Error('useMcp must be used within a McpProvider')
   }
   return context
 }

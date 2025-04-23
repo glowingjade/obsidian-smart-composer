@@ -15,7 +15,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { ApplyViewState } from '../../ApplyView'
 import { APPLY_VIEW_TYPE } from '../../constants'
 import { useApp } from '../../contexts/app-context'
-import { useMCP } from '../../contexts/mcp-context'
+import { useMcp } from '../../contexts/mcp-context'
 import { useRAG } from '../../contexts/rag-context'
 import { useSettings } from '../../contexts/settings-context'
 import {
@@ -83,7 +83,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const app = useApp()
   const { settings } = useSettings()
   const { getRAGEngine } = useRAG()
-  const { getMCPManager } = useMCP()
+  const { getMcpManager } = useMcp()
 
   const {
     createOrUpdateConversation,
@@ -339,7 +339,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         // This likely means a new message was submitted while this stream was running.
         // Abort the tool calls and keep the current chat history.
         void (async () => {
-          const mcpManager = await getMCPManager()
+          const mcpManager = await getMcpManager()
           toolMessage.toolCalls.forEach((toolCall) => {
             mcpManager.abortToolCall(toolCall.request.id)
           })
@@ -375,7 +375,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       chatMessages,
       submitChatMutation,
       setChatMessages,
-      getMCPManager,
+      getMcpManager,
       forceScrollToBottom,
     ],
   )

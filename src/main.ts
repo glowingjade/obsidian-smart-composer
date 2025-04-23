@@ -15,14 +15,14 @@ import {
 } from './settings/schema/setting.types'
 import { parseSmartComposerSettings } from './settings/schema/settings'
 import { SmartComposerSettingTab } from './settings/SettingTab'
-import { MCPManager } from './utils/mcp/mcpManager'
+import { McpManager } from './utils/mcp/mcpManager'
 import { getMentionableBlockData } from './utils/obsidian'
 
 export default class SmartComposerPlugin extends Plugin {
   settings: SmartComposerSettings
   initialChatProps?: ChatProps // TODO: change this to use view state like ApplyView
   settingsChangeListeners: ((newSettings: SmartComposerSettings) => void)[] = []
-  mcpManager: MCPManager | null = null
+  mcpManager: McpManager | null = null
   dbManager: DatabaseManager | null = null
   ragEngine: RAGEngine | null = null
   private dbManagerInitPromise: Promise<DatabaseManager> | null = null
@@ -148,7 +148,7 @@ export default class SmartComposerPlugin extends Plugin {
     this.dbManager?.cleanup()
     this.dbManager = null
 
-    // MCPManager cleanup
+    // McpManager cleanup
     this.mcpManager?.cleanup()
     this.mcpManager = null
   }
@@ -289,11 +289,11 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
     return this.ragEngineInitPromise
   }
 
-  async getMCPManager(): Promise<MCPManager> {
+  async getMcpManager(): Promise<McpManager> {
     if (this.mcpManager) {
       return this.mcpManager
     }
-    this.mcpManager = new MCPManager({
+    this.mcpManager = new McpManager({
       settings: this.settings,
       registerSettingsListener: (
         listener: (settings: SmartComposerSettings) => void,

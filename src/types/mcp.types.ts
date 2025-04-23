@@ -9,7 +9,7 @@ export const mcpServerParametersSchema = z.object({
   args: z.array(z.string()).optional(),
   env: z.record(z.string(), z.string()).optional(),
 })
-export type MCPServerParameters = z.infer<typeof mcpServerParametersSchema>
+export type McpServerParameters = z.infer<typeof mcpServerParametersSchema>
 
 export const mcpServerToolOptionsSchema = z.record(
   z.string(),
@@ -24,4 +24,4 @@ export const mcpServerConfigSchema = z.object({
   parameters: mcpServerParametersSchema,
   toolOptions: mcpServerToolOptionsSchema.optional().catch({}),
 })
-export type MCPServerConfig = z.infer<typeof mcpServerConfigSchema>
+export type McpServerConfig = z.infer<typeof mcpServerConfigSchema>

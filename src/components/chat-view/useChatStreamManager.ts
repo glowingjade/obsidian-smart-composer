@@ -3,7 +3,7 @@ import { Notice } from 'obsidian'
 import { useCallback, useMemo, useRef } from 'react'
 
 import { useApp } from '../../contexts/app-context'
-import { useMCP } from '../../contexts/mcp-context'
+import { useMcp } from '../../contexts/mcp-context'
 import { useSettings } from '../../contexts/settings-context'
 import {
   LLMAPIKeyInvalidException,
@@ -34,7 +34,7 @@ export function useChatStreamManager({
 }: UseChatStreamManagerParams): UseChatStreamManager {
   const app = useApp()
   const { settings } = useSettings()
-  const { getMCPManager } = useMCP()
+  const { getMcpManager } = useMcp()
 
   const activeStreamAbortControllersRef = useRef<AbortController[]>([])
 
@@ -65,7 +65,7 @@ export function useChatStreamManager({
       activeStreamAbortControllersRef.current.push(abortController)
 
       try {
-        const mcpManager = await getMCPManager()
+        const mcpManager = await getMcpManager()
         const responseGenerator = new ResponseGenerator({
           providerClient,
           model,

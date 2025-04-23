@@ -4,7 +4,7 @@ import { Platform } from 'obsidian'
 
 import { SmartComposerSettings } from '../../settings/schema/setting.types'
 import {
-  MCPServerConfig,
+  McpServerConfig,
   McpTool,
   McpToolCallResponse,
 } from '../../types/mcp.types'
@@ -15,24 +15,24 @@ import {
   validateServerName,
 } from './tool-name-utils'
 
-export type MCPServerState = {
+export type McpServerState = {
   name: string
   client: ClientType
-  config: MCPServerConfig
+  config: McpServerConfig
   status: 'stopped' | 'connecting' | 'connected' | 'error'
   tools?: McpTool[]
   error?: Error
 }
 
-export class MCPManager {
+export class McpManager {
   private readonly disabled = !Platform.isDesktop // MCP should be disabled on mobile since it doesn't support node.js
 
   private settings: SmartComposerSettings
 
   private defaultEnv: Record<string, string>
-  private servers: MCPServerState[] = []
+  private servers: McpServerState[] = []
   private activeToolCalls: Map<string, AbortController> = new Map()
-  private subscribers = new Set<(servers: MCPServerState[]) => void>()
+  private subscribers = new Set<(servers: McpServerState[]) => void>()
   private unsubscribeFromSettings: () => void
 
   constructor({
@@ -79,7 +79,7 @@ export class MCPManager {
     return this.servers
   }
 
-  public subscribeServersChange(callback: (servers: MCPServerState[]) => void) {
+  public subscribeServersChange(callback: (servers: McpServerState[]) => void) {
     this.subscribers.add(callback)
     return () => this.subscribers.delete(callback)
   }
@@ -87,7 +87,7 @@ export class MCPManager {
   public async handleSettingsUpdate(settings: SmartComposerSettings) {
     this.settings = settings
     const updatedServers = await Promise.all(
-      settings.mcp.servers.map(async (serverConfig: MCPServerConfig) => {
+      settings.mcp.servers.map(async (serverConfig: McpServerConfig) => {
         const server = this.servers.find((s) => s.name === serverConfig.id)
         if (
           server &&
@@ -170,14 +170,14 @@ export class MCPManager {
     for (const cb of this.subscribers) cb(this.servers)
   }
 
-  private updateServers(servers: MCPServerState[]) {
+  private updateServers(servers: McpServerState[]) {
     this.servers = servers
     this.notifySubscribers()
   }
 
   private async createServer(
-    serverConfig: MCPServerConfig,
-  ): Promise<MCPServerState> {
+    serverConfig: McpServerConfig,
+  ): Promise<McpServerState> {
     const { Client } = await import('@modelcontextprotocol/sdk/client/index.js')
     const { StdioClientTransport } = await import(
       '@modelcontextprotocol/sdk/client/stdio.js'

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useMCP } from '../../contexts/mcp-context'
+import { useMcp } from '../../contexts/mcp-context'
 import { useSettings } from '../../contexts/settings-context'
 import {
   ChatToolMessage,
@@ -52,18 +52,18 @@ function ToolCallStatus({
   onResponseUpdate: (response: ToolCallResponse) => void
 }) {
   const { settings, setSettings } = useSettings()
-  const { getMCPManager } = useMCP()
+  const { getMcpManager } = useMcp()
 
   const handleAbort = useCallback(async () => {
-    const mcpManager = await getMCPManager()
+    const mcpManager = await getMcpManager()
     mcpManager.abortToolCall(request.id)
     onResponseUpdate({
       status: 'aborted',
     })
-  }, [request, onResponseUpdate, getMCPManager])
+  }, [request, onResponseUpdate, getMcpManager])
 
   const handleToolCall = useCallback(async () => {
-    const mcpManager = await getMCPManager()
+    const mcpManager = await getMcpManager()
     onResponseUpdate({
       status: 'pending_execution',
     })
@@ -73,7 +73,7 @@ function ToolCallStatus({
       id: request.id,
     })
     onResponseUpdate(toolCallResponse)
-  }, [request, onResponseUpdate, getMCPManager])
+  }, [request, onResponseUpdate, getMcpManager])
 
   const handleAllowAutoExecution = useCallback(async () => {
     const { serverName, toolName } = parseToolName(request.name)

@@ -4,21 +4,21 @@ import { useEffect, useState } from 'react'
 import { useSettings } from '../../../contexts/settings-context'
 import SmartComposerPlugin from '../../../main'
 import { McpTool } from '../../../types/mcp.types'
-import { MCPManager, MCPServerState } from '../../../utils/mcp/mcpManager'
+import { McpManager, McpServerState } from '../../../utils/mcp/mcpManager'
 import { ObsidianButton } from '../../common/ObsidianButton'
 import { ObsidianToggle } from '../../common/ObsidianToggle'
 import { AddMcpServerModal, EditMcpServerModal } from '../McpServerModal'
 
-type MCPSectionProps = {
+type McpSectionProps = {
   app: App
   plugin: SmartComposerPlugin
 }
 
-export function MCPSection({ app, plugin }: MCPSectionProps) {
+export function McpSection({ app, plugin }: McpSectionProps) {
   const { settings, setSettings } = useSettings()
 
-  const [mcpManager, setMcpManager] = useState<MCPManager | null>(null)
-  const [mcpServers, setMcpServers] = useState<MCPServerState[]>([])
+  const [mcpManager, setMcpManager] = useState<McpManager | null>(null)
+  const [mcpServers, setMcpServers] = useState<McpServerState[]>([])
 
   const handleDeleteServer = (serverName: string) => {
     setSettings({
@@ -34,7 +34,7 @@ export function MCPSection({ app, plugin }: MCPSectionProps) {
 
   useEffect(() => {
     const initMCPManager = async () => {
-      const mcpManager = await plugin.getMCPManager()
+      const mcpManager = await plugin.getMcpManager()
       setMcpManager(mcpManager)
       setMcpServers(mcpManager.getServers())
     }
@@ -86,7 +86,7 @@ function MCPServer({
   onEdit,
   onDelete,
 }: {
-  server: MCPServerState
+  server: McpServerState
   onConnect: () => void
   onDisconnect: () => void
   onEdit: () => void
@@ -122,7 +122,7 @@ function McpToolComponent({
   server,
 }: {
   tool: McpTool
-  server: MCPServerState
+  server: McpServerState
 }) {
   const { settings, setSettings } = useSettings()
 

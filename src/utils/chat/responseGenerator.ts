@@ -15,7 +15,7 @@ import {
   ToolCallDelta,
 } from '../../types/llm/response'
 import { LLMProvider } from '../../types/provider.types'
-import { MCPManager } from '../mcp/mcpManager'
+import { McpManager } from '../mcp/mcpManager'
 
 import { fetchAnnotationTitles } from './fetch-annotation-titles'
 import { PromptGenerator } from './promptGenerator'
@@ -25,7 +25,7 @@ export type ResponseGeneratorParams = {
   model: ChatModel
   messages: ChatMessage[]
   promptGenerator: PromptGenerator
-  mcpManager: MCPManager
+  mcpManager: McpManager
   abortSignal?: AbortSignal
 }
 
@@ -33,7 +33,7 @@ export class ResponseGenerator {
   private readonly providerClient: BaseLLMProvider<LLMProvider>
   private readonly model: ChatModel
   private readonly promptGenerator: PromptGenerator
-  private readonly mcpManager: MCPManager
+  private readonly mcpManager: McpManager
   private readonly abortSignal?: AbortSignal
   private readonly receivedMessages: ChatMessage[]
   private readonly maxAutoIterations = 5

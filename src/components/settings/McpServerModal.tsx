@@ -6,7 +6,7 @@ import * as z from 'zod'
 
 import SmartComposerPlugin from '../../main'
 import {
-  MCPServerParameters,
+  McpServerParameters,
   mcpServerParametersSchema,
 } from '../../types/mcp.types'
 import { validateServerName } from '../../utils/mcp/tool-name-utils'
@@ -63,7 +63,7 @@ function McpServerFormComponent({
       }
 
       const parsedParameters = JSON.parse(parameters)
-      const validatedParameters: MCPServerParameters = mcpServerParametersSchema
+      const validatedParameters: McpServerParameters = mcpServerParametersSchema
         .strict()
         .parse(parsedParameters)
 
