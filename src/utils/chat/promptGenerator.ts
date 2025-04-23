@@ -220,6 +220,7 @@ ${message.annotations
       switch (toolCall.response.status) {
         case ToolCallResponseStatus.PendingApproval:
         case ToolCallResponseStatus.PendingExecution:
+        case ToolCallResponseStatus.Rejected:
         case ToolCallResponseStatus.Aborted:
           return {
             role: 'tool',

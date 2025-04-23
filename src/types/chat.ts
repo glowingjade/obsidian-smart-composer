@@ -101,6 +101,7 @@ export type ToolCallRequest = {
 export enum ToolCallResponseStatus {
   PendingApproval = 'pending_approval',
   PendingExecution = 'pending_execution',
+  Rejected = 'rejected',
   Success = 'success',
   Error = 'error',
   Aborted = 'aborted',
@@ -110,6 +111,7 @@ export type ToolCallResponse =
       status:
         | ToolCallResponseStatus.PendingApproval
         | ToolCallResponseStatus.PendingExecution
+        | ToolCallResponseStatus.Rejected
     }
   | {
       status: ToolCallResponseStatus.Success

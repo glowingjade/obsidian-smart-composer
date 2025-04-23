@@ -55,14 +55,6 @@ function ToolCallStatus({
   const { settings, setSettings } = useSettings()
   const { getMcpManager } = useMcp()
 
-  const handleAbort = useCallback(async () => {
-    const mcpManager = await getMcpManager()
-    mcpManager.abortToolCall(request.id)
-    onResponseUpdate({
-      status: ToolCallResponseStatus.Aborted,
-    })
-  }, [request, onResponseUpdate, getMcpManager])
-
   const handleToolCall = useCallback(async () => {
     const mcpManager = await getMcpManager()
     onResponseUpdate({
@@ -108,15 +100,33 @@ function ToolCallStatus({
     })
   }, [request, settings, setSettings])
 
+  const handleReject = useCallback(async () => {
+    onResponseUpdate({
+      status: ToolCallResponseStatus.Rejected,
+    })
+  }, [onResponseUpdate])
+
+  const handleAbort = useCallback(async () => {
+    const mcpManager = await getMcpManager()
+    mcpManager.abortToolCall(request.id)
+    onResponseUpdate({
+      status: ToolCallResponseStatus.Aborted,
+    })
+  }, [request, onResponseUpdate, getMcpManager])
+
   return (
     <pre style={{ border: '1px solid var(--background-modifier-border)' }}>
       <div>{request.name}</div>
       <div>{request.arguments}</div>
       <ToolCallStatusResponse
         response={response}
+        onAllow={handleToolCall}
+        onAllowAutoExecution={() => {
+          handleAllowAutoExecution()
+          handleToolCall()
+        }}
+        onReject={handleReject}
         onAbort={handleAbort}
-        onToolCall={handleToolCall}
-        onAllowAutoExecution={handleAllowAutoExecution}
       />
     </pre>
   )
@@ -124,14 +134,16 @@ function ToolCallStatus({
 
 function ToolCallStatusResponse({
   response,
-  onAbort,
-  onToolCall,
+  onAllow,
   onAllowAutoExecution,
+  onReject,
+  onAbort,
 }: {
   response: ToolCallResponse
-  onAbort: () => void
-  onToolCall: () => void
+  onAllow: () => void
   onAllowAutoExecution: () => void
+  onReject: () => void
+  onAbort: () => void
 }) {
   switch (response.status) {
     case ToolCallResponseStatus.PendingExecution:
@@ -145,15 +157,9 @@ function ToolCallStatusResponse({
       return (
         <div>
           <div>Pending approval</div>
-          <button onClick={onToolCall}>Allow</button>
-          <button
-            onClick={() => {
-              onAllowAutoExecution()
-              onToolCall()
-            }}
-          >
-            Always allow
-          </button>
+          <button onClick={onAllow}>Allow</button>
+          <button onClick={onAllowAutoExecution}>Always allow</button>
+          <button onClick={onReject}>Reject</button>
         </div>
       )
     case ToolCallResponseStatus.Success:
