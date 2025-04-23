@@ -3,8 +3,10 @@ import { useEffect, useState } from 'react'
 
 import { useSettings } from '../../../contexts/settings-context'
 import SmartComposerPlugin from '../../../main'
+import { McpTool } from '../../../types/mcp.types'
 import { MCPManager, MCPServerState } from '../../../utils/mcp/mcpManager'
 import { ObsidianButton } from '../../common/ObsidianButton'
+import { ObsidianToggle } from '../../common/ObsidianToggle'
 import { AddMcpServerModal, EditMcpServerModal } from '../McpServerModal'
 
 type MCPSectionProps = {
@@ -99,7 +101,7 @@ function MCPServer({
         <div>
           <div>Tools</div>
           {server.tools.map((tool) => (
-            <div key={tool.name}>{tool.name}</div>
+            <McpToolComponent key={tool.name} tool={tool} server={server} />
           ))}
         </div>
       )}
@@ -111,6 +113,78 @@ function MCPServer({
       )}
       <button onClick={onEdit}>Edit</button>
       <button onClick={onDelete}>Delete</button>
+    </div>
+  )
+}
+
+function McpToolComponent({
+  tool,
+  server,
+}: {
+  tool: McpTool
+  server: MCPServerState
+}) {
+  const { settings, setSettings } = useSettings()
+
+  const toolOption = server.config.toolOptions?.[tool.name]
+  const disabled = toolOption?.disabled ?? false
+  const allowAutoExecution = toolOption?.allowAutoExecution ?? false
+
+  const handleToggleEnabled = (enabled: boolean) => {
+    const toolOptions = server.config.toolOptions ?? {}
+    toolOptions[tool.name] = {
+      disabled: !enabled,
+      allowAutoExecution: allowAutoExecution,
+    }
+    setSettings({
+      ...settings,
+      mcp: {
+        ...settings.mcp,
+        servers: settings.mcp.servers.map((s) =>
+          s.id === server.name
+            ? {
+                ...s,
+                toolOptions: toolOptions,
+              }
+            : s,
+        ),
+      },
+    })
+  }
+
+  const handleToggleAutoExecution = (autoExecution: boolean) => {
+    const toolOptions = server.config.toolOptions ?? {}
+    toolOptions[tool.name] = {
+      disabled: disabled,
+      allowAutoExecution: autoExecution,
+    }
+    setSettings({
+      ...settings,
+      mcp: {
+        ...settings.mcp,
+        servers: settings.mcp.servers.map((s) =>
+          s.id === server.name
+            ? {
+                ...s,
+                toolOptions: toolOptions,
+              }
+            : s,
+        ),
+      },
+    })
+  }
+
+  return (
+    <div>
+      <div>{tool.name}</div>
+      <ObsidianToggle
+        value={!disabled}
+        onChange={(value) => handleToggleEnabled(value)}
+      />
+      <ObsidianToggle
+        value={allowAutoExecution}
+        onChange={(value) => handleToggleAutoExecution(value)}
+      />
     </div>
   )
 }

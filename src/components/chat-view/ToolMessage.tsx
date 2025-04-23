@@ -1,9 +1,13 @@
+import { useCallback } from 'react'
+
 import { useMCP } from '../../contexts/mcp-context'
+import { useSettings } from '../../contexts/settings-context'
 import {
   ChatToolMessage,
   ToolCallRequest,
   ToolCallResponse,
 } from '../../types/chat'
+import { parseToolName } from '../../utils/mcp/tool-name-utils'
 
 export default function ToolMessage({
   message,
@@ -47,16 +51,18 @@ function ToolCallStatus({
   response: ToolCallResponse
   onResponseUpdate: (response: ToolCallResponse) => void
 }) {
+  const { settings, setSettings } = useSettings()
   const { getMCPManager } = useMCP()
-  const handleAbort = async () => {
+
+  const handleAbort = useCallback(async () => {
     const mcpManager = await getMCPManager()
     mcpManager.abortToolCall(request.id)
     onResponseUpdate({
       status: 'aborted',
     })
-  }
+  }, [request, onResponseUpdate, getMCPManager])
 
-  const handleToolCall = async () => {
+  const handleToolCall = useCallback(async () => {
     const mcpManager = await getMCPManager()
     onResponseUpdate({
       status: 'pending_execution',
@@ -67,7 +73,39 @@ function ToolCallStatus({
       id: request.id,
     })
     onResponseUpdate(toolCallResponse)
-  }
+  }, [request, onResponseUpdate, getMCPManager])
+
+  const handleAllowAutoExecution = useCallback(async () => {
+    const { serverName, toolName } = parseToolName(request.name)
+    const server = settings.mcp.servers.find((s) => s.id === serverName)
+    if (!server) {
+      return
+    }
+    const toolOptions = server.toolOptions ?? {}
+    if (!toolOptions[toolName]) {
+      // If the tool is not in the toolOptions, add it with default values
+      toolOptions[toolName] = {
+        allowAutoExecution: false,
+        disabled: false,
+      }
+    }
+    toolOptions[toolName].allowAutoExecution = true
+
+    setSettings({
+      ...settings,
+      mcp: {
+        ...settings.mcp,
+        servers: settings.mcp.servers.map((s) =>
+          s.id === server.id
+            ? {
+                ...s,
+                toolOptions: toolOptions,
+              }
+            : s,
+        ),
+      },
+    })
+  }, [request, settings, setSettings])
 
   return (
     <pre style={{ border: '1px solid var(--background-modifier-border)' }}>
@@ -75,8 +113,9 @@ function ToolCallStatus({
       <div>{request.arguments}</div>
       <ToolCallStatusResponse
         response={response}
-        handleAbort={handleAbort}
-        handleToolCall={handleToolCall}
+        onAbort={handleAbort}
+        onToolCall={handleToolCall}
+        onAllowAutoExecution={handleAllowAutoExecution}
       />
     </pre>
   )
@@ -84,26 +123,36 @@ function ToolCallStatus({
 
 function ToolCallStatusResponse({
   response,
-  handleAbort,
-  handleToolCall,
+  onAbort,
+  onToolCall,
+  onAllowAutoExecution,
 }: {
   response: ToolCallResponse
-  handleAbort: () => void
-  handleToolCall: () => void
+  onAbort: () => void
+  onToolCall: () => void
+  onAllowAutoExecution: () => void
 }) {
   switch (response.status) {
     case 'pending_execution':
       return (
         <div>
           <div>Pending execution</div>
-          <button onClick={handleAbort}>Abort</button>
+          <button onClick={onAbort}>Abort</button>
         </div>
       )
     case 'pending_approval':
       return (
         <div>
           <div>Pending approval</div>
-          <button onClick={handleToolCall}>Allow</button>
+          <button onClick={onToolCall}>Allow</button>
+          <button
+            onClick={() => {
+              onAllowAutoExecution()
+              onToolCall()
+            }}
+          >
+            Always allow
+          </button>
         </div>
       )
     case 'success':

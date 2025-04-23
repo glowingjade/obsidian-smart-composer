@@ -1,10 +1,13 @@
 import type { Client as ClientType } from '@modelcontextprotocol/sdk/client/index.js'
-import type { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types'
 import isEqual from 'lodash.isequal'
 import { Platform } from 'obsidian'
 
 import { SmartComposerSettings } from '../../settings/schema/setting.types'
-import { MCPServerConfig } from '../../types/mcp.types'
+import {
+  MCPServerConfig,
+  McpTool,
+  McpToolCallResponse,
+} from '../../types/mcp.types'
 
 import {
   getToolName,
@@ -17,7 +20,7 @@ export type MCPServerState = {
   client: ClientType
   config: MCPServerConfig
   status: 'stopped' | 'connecting' | 'connected' | 'error'
-  tools?: Tool[]
+  tools?: McpTool[]
   error?: Error
 }
 
@@ -84,11 +87,17 @@ export class MCPManager {
   public async handleSettingsUpdate(settings: SmartComposerSettings) {
     this.settings = settings
     const updatedServers = await Promise.all(
-      settings.mcp.servers.map(async (serverConfig) => {
+      settings.mcp.servers.map(async (serverConfig: MCPServerConfig) => {
         const server = this.servers.find((s) => s.name === serverConfig.id)
-        if (server && isEqual(server.config, serverConfig)) {
+        if (
+          server &&
+          isEqual(server.config.parameters, serverConfig.parameters)
+        ) {
           // Server is already up to date
-          return server
+          return {
+            ...server,
+            config: serverConfig,
+          }
         }
         return this.createServer(serverConfig)
       }),
@@ -232,22 +241,26 @@ export class MCPManager {
     }
   }
 
-  public async listTools(): Promise<Tool[]> {
+  public async listAvailableTools(): Promise<McpTool[]> {
     if (this.disabled) {
       return []
     }
     return (
       await Promise.all(
-        this.servers.map(async (server): Promise<Tool[]> => {
+        this.servers.map(async (server): Promise<McpTool[]> => {
           if (server.status !== 'connected') {
             return []
           }
           try {
             const toolList = await server.client.listTools()
-            return toolList.tools.map((tool) => ({
-              ...tool,
-              name: getToolName(server.name, tool.name),
-            }))
+            return toolList.tools
+              .filter(
+                (tool) => !server.config.toolOptions?.[tool.name]?.disabled,
+              )
+              .map((tool) => ({
+                ...tool,
+                name: getToolName(server.name, tool.name),
+              }))
           } catch (error) {
             console.error(
               `Failed to list tools for MCP server ${server.name}: ${error instanceof Error ? error.message : String(error)}`,
@@ -257,6 +270,19 @@ export class MCPManager {
         }),
       )
     ).flat()
+  }
+
+  public isToolAutoExecutionAllowed(requestToolName: string): boolean {
+    const { serverName, toolName } = parseToolName(requestToolName)
+    const server = this.servers.find((server) => server.name === serverName)
+    if (!server) {
+      return false
+    }
+    const toolOption = server.config.toolOptions?.[toolName]
+    if (!toolOption) {
+      return false
+    }
+    return toolOption.allowAutoExecution ?? false
   }
 
   public async callTool({
@@ -324,7 +350,7 @@ export class MCPManager {
         {
           signal: compositeSignal,
         },
-      )) as CallToolResult
+      )) as McpToolCallResponse
 
       if (result.content[0].type !== 'text') {
         throw new Error(

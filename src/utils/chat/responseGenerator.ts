@@ -61,15 +61,15 @@ export class ResponseGenerator {
         return
       }
 
-      // FIXME: Implement tool call approval logic
       const toolMessage: ChatToolMessage = {
         role: 'tool' as const,
         id: uuidv4(),
         toolCalls: toolCallRequests.map((toolCall) => ({
           request: toolCall,
           response: {
-            status:
-              Math.random() < 0.5 ? 'pending_execution' : 'pending_approval',
+            status: this.mcpManager.isToolAutoExecutionAllowed(toolCall.name)
+              ? 'pending_execution'
+              : 'pending_approval',
           },
         })),
       }
@@ -130,16 +130,16 @@ export class ResponseGenerator {
       messages: [...this.receivedMessages, ...this.responseMessages],
     })
 
-    const tools: RequestTool[] = (await this.mcpManager.listTools()).map(
-      (tool) => ({
-        type: 'function',
-        function: {
-          name: tool.name,
-          description: tool.description,
-          parameters: tool.inputSchema,
-        },
-      }),
-    )
+    const tools: RequestTool[] = (
+      await this.mcpManager.listAvailableTools()
+    ).map((tool) => ({
+      type: 'function',
+      function: {
+        name: tool.name,
+        description: tool.description,
+        parameters: tool.inputSchema,
+      },
+    }))
 
     const stream = await this.providerClient.streamResponse(
       this.model,
