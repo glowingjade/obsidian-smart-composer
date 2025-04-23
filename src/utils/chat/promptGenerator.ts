@@ -10,6 +10,7 @@ import {
   ChatMessage,
   ChatToolMessage,
   ChatUserMessage,
+  ToolCallResponseStatus,
 } from '../../types/chat'
 import { ContentPart, RequestMessage } from '../../types/llm/request'
 import {
@@ -217,21 +218,21 @@ ${message.annotations
   }): RequestMessage[] {
     return message.toolCalls.map((toolCall) => {
       switch (toolCall.response.status) {
-        case 'pending_approval':
-        case 'pending_execution':
-        case 'aborted':
+        case ToolCallResponseStatus.PendingApproval:
+        case ToolCallResponseStatus.PendingExecution:
+        case ToolCallResponseStatus.Aborted:
           return {
             role: 'tool',
             tool_call_id: toolCall.request.id,
             content: `Tool call ${toolCall.request.id} is ${toolCall.response.status}`,
           }
-        case 'success':
+        case ToolCallResponseStatus.Success:
           return {
             role: 'tool',
             tool_call_id: toolCall.request.id,
             content: toolCall.response.data.text,
           }
-        case 'error':
+        case ToolCallResponseStatus.Error:
           return {
             role: 'tool',
             tool_call_id: toolCall.request.id,

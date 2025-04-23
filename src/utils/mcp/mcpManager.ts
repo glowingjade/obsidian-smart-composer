@@ -2,12 +2,13 @@ import isEqual from 'lodash.isequal'
 import { Platform } from 'obsidian'
 
 import { SmartComposerSettings } from '../../settings/schema/setting.types'
+import { ToolCallResponse, ToolCallResponseStatus } from '../../types/chat'
 import {
   McpServerConfig,
   McpServerState,
   McpServerStatus,
   McpTool,
-  McpToolCallResponse,
+  McpToolCallResult,
 } from '../../types/mcp.types'
 
 import {
@@ -260,20 +261,15 @@ export class McpManager {
     id?: string
     signal?: AbortSignal
   }): Promise<
-    | {
-        status: 'success'
-        data: {
-          type: 'text'
-          text: string
-        }
+    Extract<
+      ToolCallResponse,
+      {
+        status:
+          | ToolCallResponseStatus.Success
+          | ToolCallResponseStatus.Error
+          | ToolCallResponseStatus.Aborted
       }
-    | {
-        status: 'error'
-        error: string
-      }
-    | {
-        status: 'aborted'
-      }
+    >
   > {
     if (this.disabled) {
       throw new Error('MCP is not supported on mobile')
@@ -317,7 +313,7 @@ export class McpManager {
         {
           signal: compositeSignal,
         },
-      )) as McpToolCallResponse
+      )) as McpToolCallResult
 
       if (result.content[0].type !== 'text') {
         throw new Error(
@@ -326,12 +322,12 @@ export class McpManager {
       }
       if (result.isError) {
         return {
-          status: 'error',
+          status: ToolCallResponseStatus.Error,
           error: result.content[0].text,
         }
       }
       return {
-        status: 'success',
+        status: ToolCallResponseStatus.Success,
         data: {
           type: 'text',
           text: result.content[0].text,
@@ -340,13 +336,13 @@ export class McpManager {
     } catch (error) {
       if (error.name === 'AbortError') {
         return {
-          status: 'aborted',
+          status: ToolCallResponseStatus.Aborted,
         }
       }
 
       // Handle other errors
       return {
-        status: 'error',
+        status: ToolCallResponseStatus.Error,
         error: error.message || 'Unknown error occurred',
       }
     } finally {

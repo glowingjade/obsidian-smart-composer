@@ -6,6 +6,7 @@ import {
   ChatToolMessage,
   ToolCallRequest,
   ToolCallResponse,
+  ToolCallResponseStatus,
 } from '../../types/chat'
 import { parseToolName } from '../../utils/mcp/tool-name-utils'
 
@@ -58,14 +59,14 @@ function ToolCallStatus({
     const mcpManager = await getMcpManager()
     mcpManager.abortToolCall(request.id)
     onResponseUpdate({
-      status: 'aborted',
+      status: ToolCallResponseStatus.Aborted,
     })
   }, [request, onResponseUpdate, getMcpManager])
 
   const handleToolCall = useCallback(async () => {
     const mcpManager = await getMcpManager()
     onResponseUpdate({
-      status: 'pending_execution',
+      status: ToolCallResponseStatus.PendingExecution,
     })
     const toolCallResponse = await mcpManager.callTool({
       name: request.name,
@@ -133,14 +134,14 @@ function ToolCallStatusResponse({
   onAllowAutoExecution: () => void
 }) {
   switch (response.status) {
-    case 'pending_execution':
+    case ToolCallResponseStatus.PendingExecution:
       return (
         <div>
           <div>Pending execution</div>
           <button onClick={onAbort}>Abort</button>
         </div>
       )
-    case 'pending_approval':
+    case ToolCallResponseStatus.PendingApproval:
       return (
         <div>
           <div>Pending approval</div>
@@ -155,21 +156,21 @@ function ToolCallStatusResponse({
           </button>
         </div>
       )
-    case 'success':
+    case ToolCallResponseStatus.Success:
       return (
         <div>
           <div>Success</div>
           <div>{response.data.text.slice(0, 100)}</div>
         </div>
       )
-    case 'error':
+    case ToolCallResponseStatus.Error:
       return (
         <div>
           <div>Error</div>
           <div>{response.error}</div>
         </div>
       )
-    case 'aborted':
+    case ToolCallResponseStatus.Aborted:
       return (
         <div>
           <div>Aborted</div>

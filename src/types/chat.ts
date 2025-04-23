@@ -98,24 +98,30 @@ export type ToolCallRequest = {
   name: string
   arguments?: string
 }
+export enum ToolCallResponseStatus {
+  PendingApproval = 'pending_approval',
+  PendingExecution = 'pending_execution',
+  Success = 'success',
+  Error = 'error',
+  Aborted = 'aborted',
+}
 export type ToolCallResponse =
   | {
-      status: 'pending_approval'
+      status:
+        | ToolCallResponseStatus.PendingApproval
+        | ToolCallResponseStatus.PendingExecution
     }
   | {
-      status: 'pending_execution'
-    }
-  | {
-      status: 'success'
+      status: ToolCallResponseStatus.Success
       data: {
         type: 'text'
         text: string
       }
     }
   | {
-      status: 'error'
+      status: ToolCallResponseStatus.Error
       error: string
     }
   | {
-      status: 'aborted'
+      status: ToolCallResponseStatus.Aborted
     }

@@ -6,6 +6,7 @@ import {
   ChatMessage,
   ChatToolMessage,
   ToolCallRequest,
+  ToolCallResponseStatus,
 } from '../../types/chat'
 import { ChatModel } from '../../types/chat-model.types'
 import { RequestTool } from '../../types/llm/request'
@@ -68,8 +69,8 @@ export class ResponseGenerator {
           request: toolCall,
           response: {
             status: this.mcpManager.isToolAutoExecutionAllowed(toolCall.name)
-              ? 'pending_execution'
-              : 'pending_approval',
+              ? ToolCallResponseStatus.PendingExecution
+              : ToolCallResponseStatus.PendingApproval,
           },
         })),
       }
@@ -79,7 +80,9 @@ export class ResponseGenerator {
       await Promise.all(
         toolMessage.toolCalls
           .filter(
-            (toolCall) => toolCall.response.status === 'pending_execution',
+            (toolCall) =>
+              toolCall.response.status ===
+              ToolCallResponseStatus.PendingExecution,
           )
           .map(async (toolCall) => {
             const response = await this.mcpManager.callTool({
@@ -113,7 +116,10 @@ export class ResponseGenerator {
       ) as ChatToolMessage | undefined
       if (
         !updatedToolMessage?.toolCalls?.every((toolCall) =>
-          ['success', 'error'].includes(toolCall.response.status),
+          [
+            ToolCallResponseStatus.Success,
+            ToolCallResponseStatus.Error,
+          ].includes(toolCall.response.status),
         )
       ) {
         // Exit the auto-iteration loop if any tool call hasn't completed

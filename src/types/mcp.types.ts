@@ -3,7 +3,7 @@ import type { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types'
 import { z } from 'zod'
 
 export type McpTool = Tool
-export type McpToolCallResponse = CallToolResult
+export type McpToolCallResult = CallToolResult
 export type McpClient = Client
 
 export const mcpServerParametersSchema = z.object({
