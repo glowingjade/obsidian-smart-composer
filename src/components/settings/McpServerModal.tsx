@@ -87,6 +87,7 @@ function McpServerFormComponent({
                   id: serverName,
                   parameters: validatedParameters,
                   toolOptions: {},
+                  enabled: true,
                 },
               ],
         },

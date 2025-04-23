@@ -54,7 +54,7 @@ export class McpManager {
     // Create MCP servers
     const servers = await Promise.all(
       this.settings.mcp.servers.map((serverConfig) =>
-        this.createServer(serverConfig),
+        this.connectServer(serverConfig),
       ),
     )
     this.updateServers(servers)
@@ -78,116 +78,92 @@ export class McpManager {
 
   public async handleSettingsUpdate(settings: SmartComposerSettings) {
     this.settings = settings
-    const updatedServers = await Promise.all(
-      settings.mcp.servers.map(async (serverConfig: McpServerConfig) => {
-        const server = this.servers.find((s) => s.name === serverConfig.id)
+    const updatedServers = settings.mcp.servers.map(
+      (serverConfig: McpServerConfig): McpServerState => {
+        const existingServer = this.servers.find(
+          (s) => s.name === serverConfig.id,
+        )
         if (
-          server &&
-          isEqual(server.config.parameters, serverConfig.parameters)
+          existingServer &&
+          isEqual(existingServer.config.parameters, serverConfig.parameters) &&
+          existingServer.config.enabled === serverConfig.enabled
         ) {
           // Server is already up to date
           return {
-            ...server,
+            ...existingServer,
             config: serverConfig,
           }
         }
-        return this.createServer(serverConfig)
-      }),
+        return {
+          name: serverConfig.id,
+          config: serverConfig,
+          status: McpServerStatus.Connecting,
+        }
+      },
     )
+
     this.updateServers(updatedServers)
-  }
 
-  public async connectServer(name: string) {
-    const serverConfig = this.settings.mcp.servers.find(
-      (server) => server.id === name,
+    await Promise.all(
+      updatedServers
+        .filter((s) => s.status === McpServerStatus.Connecting)
+        .map(async (s) => {
+          const server = await this.connectServer(s.config)
+          this.updateServers((prevServers) =>
+            prevServers.map((prevServer) =>
+              prevServer.name === server.name ? server : prevServer,
+            ),
+          )
+        }),
     )
-    if (!serverConfig) {
-      throw new Error(`MCP server ${name} not found`)
-    }
-
-    const server = this.servers.find((server) => server.name === name)
-    if (server?.status === 'connected') {
-      return
-    }
-    this.updateServers(
-      this.servers.map((s) =>
-        s.name === name ? { ...s, status: McpServerStatus.Connecting } : s,
-      ),
-    )
-    const updatedServer = await this.createServer(serverConfig)
-    this.updateServers([
-      ...this.servers.map((s) => (s.name === name ? updatedServer : s)),
-    ])
-  }
-
-  public async disconnectServer(name: string) {
-    const { Client } = await import('@modelcontextprotocol/sdk/client/index.js')
-    const server = this.servers.find((server) => server.name === name)
-    if (!server) {
-      return
-    }
-    try {
-      await server.client.close()
-      this.updateServers(
-        this.servers.map((s) =>
-          s.name === server.name
-            ? {
-                ...s,
-                status: McpServerStatus.Stopped,
-                tools: undefined,
-                error: undefined,
-              }
-            : s,
-        ),
-      )
-    } catch (error) {
-      // Reset the client
-      this.updateServers(
-        this.servers.map((s) =>
-          s.name === name
-            ? {
-                ...s,
-                client: new Client({ name, version: '1.0.0' }),
-                status: McpServerStatus.Stopped,
-                tools: undefined,
-                error: undefined,
-              }
-            : s,
-        ),
-      )
-    }
   }
 
   private notifySubscribers() {
     for (const cb of this.subscribers) cb(this.servers)
   }
 
-  private updateServers(servers: McpServerState[]) {
-    this.servers = servers
+  private updateServers(
+    newServersOrUpdater?:
+      | McpServerState[]
+      | ((prevServers: McpServerState[]) => McpServerState[]),
+  ) {
+    if (typeof newServersOrUpdater === 'function') {
+      this.servers = newServersOrUpdater(this.servers)
+    } else if (newServersOrUpdater !== undefined) {
+      this.servers = newServersOrUpdater
+    }
     this.notifySubscribers()
   }
 
-  private async createServer(
+  private async connectServer(
     serverConfig: McpServerConfig,
   ): Promise<McpServerState> {
-    const { Client } = await import('@modelcontextprotocol/sdk/client/index.js')
-    const { StdioClientTransport } = await import(
-      '@modelcontextprotocol/sdk/client/stdio.js'
-    )
-    const { id: name, parameters: serverParams } = serverConfig
-    const client = new Client({ name, version: '1.0.0' })
+    const { id: name, parameters: serverParams, enabled } = serverConfig
+
+    if (!enabled) {
+      return {
+        name,
+        config: serverConfig,
+        status: McpServerStatus.Disconnected,
+      }
+    }
 
     try {
       validateServerName(name)
     } catch (error) {
       return {
         name,
-        client,
         config: serverConfig,
         status: McpServerStatus.Error,
         error: error as Error,
       }
     }
+
+    const { Client } = await import('@modelcontextprotocol/sdk/client/index.js')
+    const { StdioClientTransport } = await import(
+      '@modelcontextprotocol/sdk/client/stdio.js'
+    )
+    const client = new Client({ name, version: '1.0.0' })
 
     try {
       await client.connect(
@@ -202,7 +178,6 @@ export class McpManager {
     } catch (error) {
       return {
         name,
-        client,
         config: serverConfig,
         status: McpServerStatus.Error,
         error: new Error(
@@ -215,15 +190,14 @@ export class McpManager {
       const toolList = await client.listTools()
       return {
         name,
-        client,
         config: serverConfig,
         status: McpServerStatus.Connected,
+        client,
         tools: toolList.tools,
       }
     } catch (error) {
       return {
         name,
-        client,
         config: serverConfig,
         status: McpServerStatus.Error,
         error: new Error(
@@ -325,6 +299,9 @@ export class McpManager {
       const server = this.servers.find((server) => server.name === serverName)
       if (!server) {
         throw new Error(`MCP server ${serverName} not found`)
+      }
+      if (server.status !== McpServerStatus.Connected) {
+        throw new Error(`MCP server ${serverName} is not connected`)
       }
       const { client } = server
 

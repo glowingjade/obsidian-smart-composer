@@ -24,12 +24,13 @@ export const mcpServerToolOptionsSchema = z.record(
 export const mcpServerConfigSchema = z.object({
   id: z.string(),
   parameters: mcpServerParametersSchema,
+  enabled: z.boolean(),
   toolOptions: mcpServerToolOptionsSchema,
 })
 export type McpServerConfig = z.infer<typeof mcpServerConfigSchema>
 
 export enum McpServerStatus {
-  Stopped = 'stopped',
+  Disconnected = 'disconnected',
   Connecting = 'connecting',
   Connected = 'connected',
   Error = 'error',
@@ -37,9 +38,18 @@ export enum McpServerStatus {
 
 export type McpServerState = {
   name: string
-  client: McpClient
   config: McpServerConfig
-  status: McpServerStatus
-  tools?: McpTool[]
-  error?: Error
-}
+} & (
+  | {
+      status: McpServerStatus.Connecting | McpServerStatus.Disconnected
+    }
+  | {
+      status: McpServerStatus.Connected
+      client: McpClient
+      tools: McpTool[]
+    }
+  | {
+      status: McpServerStatus.Error
+      error: Error
+    }
+)

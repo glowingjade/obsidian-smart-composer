@@ -1,9 +1,13 @@
 import { App } from 'obsidian'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { useSettings } from '../../../contexts/settings-context'
 import SmartComposerPlugin from '../../../main'
-import { McpServerState, McpTool } from '../../../types/mcp.types'
+import {
+  McpServerState,
+  McpServerStatus,
+  McpTool,
+} from '../../../types/mcp.types'
 import { McpManager } from '../../../utils/mcp/mcpManager'
 import { ObsidianButton } from '../../common/ObsidianButton'
 import { ObsidianToggle } from '../../common/ObsidianToggle'
@@ -15,22 +19,8 @@ type McpSectionProps = {
 }
 
 export function McpSection({ app, plugin }: McpSectionProps) {
-  const { settings, setSettings } = useSettings()
-
   const [mcpManager, setMcpManager] = useState<McpManager | null>(null)
   const [mcpServers, setMcpServers] = useState<McpServerState[]>([])
-
-  const handleDeleteServer = (serverName: string) => {
-    setSettings({
-      ...settings,
-      mcp: {
-        ...settings.mcp,
-        servers: settings.mcp.servers.filter(
-          (server) => server.id !== serverName,
-        ),
-      },
-    })
-  }
 
   useEffect(() => {
     const initMCPManager = async () => {
@@ -66,12 +56,9 @@ export function McpSection({ app, plugin }: McpSectionProps) {
           <MCPServer
             key={server.name}
             server={server}
-            onConnect={() => mcpManager?.connectServer(server.name)}
-            onDisconnect={() => mcpManager?.disconnectServer(server.name)}
             onEdit={() =>
               new EditMcpServerModal(app, plugin, server.name).open()
             }
-            onDelete={() => handleDeleteServer(server.name)}
           />
         ))}
       </div>
@@ -81,23 +68,52 @@ export function McpSection({ app, plugin }: McpSectionProps) {
 
 function MCPServer({
   server,
-  onConnect,
-  onDisconnect,
   onEdit,
-  onDelete,
 }: {
   server: McpServerState
-  onConnect: () => void
-  onDisconnect: () => void
   onEdit: () => void
-  onDelete: () => void
 }) {
+  const { settings, setSettings } = useSettings()
+
+  const handleToggleEnabled = useCallback(
+    (enabled: boolean) => {
+      setSettings({
+        ...settings,
+        mcp: {
+          ...settings.mcp,
+          servers: settings.mcp.servers.map((s) =>
+            s.id === server.name ? { ...s, enabled } : s,
+          ),
+        },
+      })
+    },
+    [settings, setSettings, server.name],
+  )
+
+  const handleDelete = useCallback(() => {
+    setSettings({
+      ...settings,
+      mcp: {
+        ...settings.mcp,
+        servers: settings.mcp.servers.filter((s) => s.id !== server.name),
+      },
+    })
+  }, [settings, setSettings, server.name])
+
   return (
     <div>
       <div>{server.name}</div>
       <div>{server.status}</div>
-      {server.error && <div>{server.error.message}</div>}
-      {server.tools && (
+      {server.status === McpServerStatus.Error && (
+        <div>{server.error.message}</div>
+      )}
+      <ObsidianToggle
+        value={server.config.enabled}
+        onChange={handleToggleEnabled}
+      />
+      <button onClick={onEdit}>Edit</button>
+      <button onClick={handleDelete}>Delete</button>
+      {server.status === McpServerStatus.Connected && (
         <div>
           <div>Tools</div>
           {server.tools.map((tool) => (
@@ -105,14 +121,6 @@ function MCPServer({
           ))}
         </div>
       )}
-      {['connecting', 'connected'].includes(server.status) && (
-        <button onClick={onDisconnect}>Disconnect</button>
-      )}
-      {['error', 'stopped'].includes(server.status) && (
-        <button onClick={onConnect}>Connect</button>
-      )}
-      <button onClick={onEdit}>Edit</button>
-      <button onClick={onDelete}>Delete</button>
     </div>
   )
 }
