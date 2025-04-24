@@ -1,3 +1,13 @@
+import {
+  Check,
+  ChevronDown,
+  ChevronUp,
+  CircleMinus,
+  Edit,
+  Loader2,
+  Trash2,
+  X,
+} from 'lucide-react'
 import { App } from 'obsidian'
 import { useCallback, useEffect, useState } from 'react'
 
@@ -51,9 +61,17 @@ export function McpSection({ app, plugin }: McpSectionProps) {
         onClick={() => new AddMcpServerModal(app, plugin).open()}
       />
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div className="smtcmp-settings-sub-header">MCP Servers</div>
+      <div className="smtcmp-settings-desc">Current MCP servers</div>
+      <div className="smtcmp-mcp-servers-container">
+        <div className="smtcmp-mcp-servers-header">
+          <div>Server</div>
+          <div>Status</div>
+          <div>Enabled</div>
+          <div>Actions</div>
+        </div>
         {mcpServers.map((server) => (
-          <MCPServer
+          <McpServerComponent
             key={server.name}
             server={server}
             onEdit={() =>
@@ -66,7 +84,7 @@ export function McpSection({ app, plugin }: McpSectionProps) {
   )
 }
 
-function MCPServer({
+function McpServerComponent({
   server,
   onEdit,
 }: {
@@ -74,6 +92,7 @@ function MCPServer({
   onEdit: () => void
 }) {
   const { settings, setSettings } = useSettings()
+  const [isOpen, setIsOpen] = useState(false)
 
   const handleToggleEnabled = useCallback(
     (enabled: boolean) => {
@@ -101,26 +120,105 @@ function MCPServer({
   }, [settings, setSettings, server.name])
 
   return (
-    <div>
-      <div>{server.name}</div>
-      <div>{server.status}</div>
-      {server.status === McpServerStatus.Error && (
-        <div>{server.error.message}</div>
-      )}
-      <ObsidianToggle
-        value={server.config.enabled}
-        onChange={handleToggleEnabled}
-      />
-      <button onClick={onEdit}>Edit</button>
-      <button onClick={handleDelete}>Delete</button>
+    <div className="smtcmp-mcp-server">
+      <div className="smtcmp-mcp-server-row">
+        <div className="smtcmp-mcp-server-name">{server.name}</div>
+        <div className="smtcmp-mcp-server-status">
+          <McpServerStatusBadge status={server.status} />
+        </div>
+        <div className="smtcmp-mcp-server-toggle">
+          <ObsidianToggle
+            value={server.config.enabled}
+            onChange={handleToggleEnabled}
+          />
+        </div>
+        <div className="smtcmp-mcp-server-actions">
+          <div onClick={onEdit} className="clickable-icon" aria-label="Edit">
+            <Edit size={16} />
+          </div>
+          <div
+            onClick={handleDelete}
+            className="clickable-icon"
+            aria-label="Delete"
+          >
+            <Trash2 size={16} />
+          </div>
+          <div
+            onClick={() => setIsOpen(!isOpen)}
+            className="clickable-icon"
+            aria-label={isOpen ? 'Collapse' : 'Expand'}
+          >
+            {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </div>
+        </div>
+      </div>
+      {isOpen && <ExpandedServerInfo server={server} />}
+    </div>
+  )
+}
+
+function ExpandedServerInfo({ server }: { server: McpServerState }) {
+  if (
+    server.status === McpServerStatus.Disconnected ||
+    server.status === McpServerStatus.Connecting
+  ) {
+    return null
+  }
+
+  return (
+    <div className="smtcmp-server-expanded-info">
       {server.status === McpServerStatus.Connected && (
         <div>
-          <div>Tools</div>
-          {server.tools.map((tool) => (
-            <McpToolComponent key={tool.name} tool={tool} server={server} />
-          ))}
+          <div className="smtcmp-server-expanded-info-header">Tools</div>
+          <div className="smtcmp-server-tools-container">
+            {server.tools.map((tool) => (
+              <McpToolComponent key={tool.name} tool={tool} server={server} />
+            ))}
+          </div>
         </div>
       )}
+      {server.status === McpServerStatus.Error && (
+        <div>
+          <div className="smtcmp-server-expanded-info-header">Error</div>
+          <div className="smtcmp-server-error-message">
+            {server.error.message}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function McpServerStatusBadge({ status }: { status: McpServerStatus }) {
+  const statusConfig = {
+    [McpServerStatus.Connected]: {
+      icon: <Check size={16} />,
+      label: 'Connected',
+      statusClass: 'smtcmp-mcp-server-status-badge--connected',
+    },
+    [McpServerStatus.Connecting]: {
+      icon: <Loader2 size={16} className="spinner" />,
+      label: 'Connecting...',
+      statusClass: 'smtcmp-mcp-server-status-badge--connecting',
+    },
+    [McpServerStatus.Error]: {
+      icon: <X size={16} />,
+      label: 'Error',
+      statusClass: 'smtcmp-mcp-server-status-badge--error',
+    },
+    [McpServerStatus.Disconnected]: {
+      icon: <CircleMinus size={16} />,
+      label: 'Disconnected',
+      statusClass: 'smtcmp-mcp-server-status-badge--disconnected',
+    },
+  }
+
+  const { icon, label, statusClass } = statusConfig[status]
+
+  return (
+    <div className={`smtcmp-mcp-server-status-badge ${statusClass}`}>
+      {icon}
+      <div className="smtcmp-mcp-server-status-badge-label">{label}</div>
     </div>
   )
 }
@@ -183,16 +281,25 @@ function McpToolComponent({
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-      <div>{tool.name}</div>
-      <ObsidianToggle
-        value={!disabled}
-        onChange={(value) => handleToggleEnabled(value)}
-      />
-      <ObsidianToggle
-        value={allowAutoExecution}
-        onChange={(value) => handleToggleAutoExecution(value)}
-      />
+    <div className="smtcmp-mcp-tool">
+      <div className="smtcmp-mcp-tool-info">
+        <div className="smtcmp-mcp-tool-name">{tool.name}</div>
+        <div className="smtcmp-mcp-tool-description">{tool.description}</div>
+      </div>
+      <div className="smtcmp-mcp-tool-toggle">
+        <span className="smtcmp-mcp-tool-toggle-label">Enabled</span>
+        <ObsidianToggle
+          value={!disabled}
+          onChange={(value) => handleToggleEnabled(value)}
+        />
+      </div>
+      <div className="smtcmp-mcp-tool-toggle">
+        <span className="smtcmp-mcp-tool-toggle-label">Auto-execute</span>
+        <ObsidianToggle
+          value={allowAutoExecution}
+          onChange={(value) => handleToggleAutoExecution(value)}
+        />
+      </div>
     </div>
   )
 }

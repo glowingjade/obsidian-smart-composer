@@ -42,5 +42,5 @@ export function ObsidianToggle({ value, onChange }: ObsidianToggleProps) {
     toggleComponent.onChange(onChange)
   }, [toggleComponent, value, onChange])
 
-  return <div ref={containerRef} />
+  return <div ref={containerRef} style={{ display: 'contents' }} />
 }

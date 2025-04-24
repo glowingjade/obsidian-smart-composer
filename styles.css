@@ -1586,3 +1586,157 @@ button.smtcmp-chat-input-model-select {
     border-left: none !important;
   }
 }
+
+/* MCP Section Styles */
+.smtcmp-mcp-servers-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.smtcmp-mcp-servers-header {
+  display: grid;
+  grid-template-columns: 1fr 120px 64px 112px; /* Match columns with .smtcmp-mcp-server-row to ensure proper alignment */
+  gap: 16px;
+  align-items: center;
+  min-height: 40px;
+  border-bottom: var(--border-width) solid var(--background-modifier-border);
+  font-weight: var(--font-medium);
+  color: var(--text-muted);
+
+  & > div:nth-child(1) {
+    text-align: left;
+  }
+  & > div:nth-child(2) {
+    text-align: left;
+  }
+  & > div:nth-child(3) {
+    text-align: center;
+  }
+  & > div:nth-child(4) {
+    text-align: center;
+  }
+}
+
+.smtcmp-mcp-server {
+  border-bottom: var(--border-width) solid var(--background-modifier-border);
+}
+
+.smtcmp-mcp-server-row {
+  display: grid;
+  grid-template-columns: 1fr 120px 64px 112px; /* Match columns with .smtcmp-mcp-servers-header to ensure proper alignment */
+  gap: 16px;
+  align-items: center;
+  min-height: 40px;
+}
+
+.smtcmp-mcp-server-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.smtcmp-mcp-server-status {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.smtcmp-mcp-server-toggle {
+  display: flex;
+  justify-content: center;
+}
+
+.smtcmp-mcp-server-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.smtcmp-server-expanded-info {
+  margin: 0 0 8px 16px;
+  padding-left: 16px;
+  border-left: var(--border-width) solid var(--background-modifier-border);
+}
+
+.smtcmp-server-expanded-info-header {
+  font-weight: var(--font-medium);
+  margin-bottom: 8px;
+}
+
+.smtcmp-server-tools-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.smtcmp-server-error-message {
+  color: var(--text-error);
+  font-weight: var(--font-medium);
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-small);
+}
+
+.smtcmp-mcp-server-status-badge {
+  border-radius: 9999px;
+  padding: 2px 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1;
+}
+
+.smtcmp-mcp-server-status-badge-label {
+  font-size: var(--font-ui-smaller);
+}
+
+.smtcmp-mcp-server-status-badge--connected {
+  background-color: color-mix(in srgb, var(--text-success) 10%, transparent);
+  color: var(--text-success);
+}
+
+.smtcmp-mcp-server-status-badge--connecting {
+  background-color: color-mix(in srgb, var(--text-muted) 10%, transparent);
+  color: var(--text-muted);
+}
+
+.smtcmp-mcp-server-status-badge--error {
+  background-color: color-mix(in srgb, var(--text-error) 10%, transparent);
+  color: var(--text-error);
+}
+
+.smtcmp-mcp-server-status-badge--disconnected {
+  background-color: color-mix(in srgb, var(--text-muted) 10%, transparent);
+  color: var(--text-muted);
+}
+
+.smtcmp-mcp-tool {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 16px;
+  align-items: center;
+}
+
+.smtcmp-mcp-tool-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.smtcmp-mcp-tool-name {
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-smaller);
+}
+
+.smtcmp-mcp-tool-description {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
+
+.smtcmp-mcp-tool-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.smtcmp-mcp-tool-toggle-label {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
