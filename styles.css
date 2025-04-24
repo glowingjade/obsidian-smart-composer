@@ -1160,6 +1160,12 @@ button.smtcmp-chat-input-model-select {
   margin: var(--size-4-2) 0;
 }
 
+.smtcmp-settings-sub-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .smtcmp-settings-sub-header {
   color: var(--text-normal);
   font-size: var(--h4-size);
@@ -1617,6 +1623,14 @@ button.smtcmp-chat-input-model-select {
   }
 }
 
+.smtcmp-mcp-servers-empty {
+  padding: 16px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--text-muted);
+}
+
 .smtcmp-mcp-server {
   border-bottom: var(--border-width) solid var(--background-modifier-border);
 }
@@ -1652,7 +1666,7 @@ button.smtcmp-chat-input-model-select {
 }
 
 .smtcmp-server-expanded-info {
-  margin: 0 0 8px 16px;
+  margin-bottom: 16px;
   padding-left: 16px;
   border-left: var(--border-width) solid var(--background-modifier-border);
 }
@@ -1673,6 +1687,7 @@ button.smtcmp-chat-input-model-select {
   font-weight: var(--font-medium);
   font-family: var(--font-monospace);
   font-size: var(--font-ui-small);
+  user-select: text;
 }
 
 .smtcmp-mcp-server-status-badge {
@@ -1739,4 +1754,27 @@ button.smtcmp-chat-input-model-select {
 .smtcmp-mcp-tool-toggle-label {
   font-size: var(--font-ui-smaller);
   color: var(--text-muted);
+}
+
+/* MCP Server Modal Styles */
+.smtcmp-mcp-server-modal-textarea {
+  width: 100%;
+  font-family: var(--font-monospace);
+  resize: none;
+  word-break: break-all;
+}
+
+.smtcmp-mcp-server-modal-validation {
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-small);
+  padding: 4px 0;
+  white-space: pre-wrap;
+
+  &.smtcmp-mcp-server-modal-validation--error {
+    color: var(--text-error);
+  }
+
+  &.smtcmp-mcp-server-modal-validation--success {
+    color: var(--text-success);
+  }
 }

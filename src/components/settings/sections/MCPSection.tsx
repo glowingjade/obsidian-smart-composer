@@ -55,14 +55,14 @@ export function McpSection({ app, plugin }: McpSectionProps) {
   return (
     <div className="smtcmp-settings-section">
       <div className="smtcmp-settings-header">MCP (Model Context Pool)</div>
+      <div className="smtcmp-settings-sub-header-container">
+        <div className="smtcmp-settings-sub-header">MCP Servers</div>
+        <ObsidianButton
+          text="Add MCP Server"
+          onClick={() => new AddMcpServerModal(app, plugin).open()}
+        />
+      </div>
 
-      <ObsidianButton
-        text="Add MCP Server"
-        onClick={() => new AddMcpServerModal(app, plugin).open()}
-      />
-
-      <div className="smtcmp-settings-sub-header">MCP Servers</div>
-      <div className="smtcmp-settings-desc">Current MCP servers</div>
       <div className="smtcmp-mcp-servers-container">
         <div className="smtcmp-mcp-servers-header">
           <div>Server</div>
@@ -70,15 +70,19 @@ export function McpSection({ app, plugin }: McpSectionProps) {
           <div>Enabled</div>
           <div>Actions</div>
         </div>
-        {mcpServers.map((server) => (
-          <McpServerComponent
-            key={server.name}
-            server={server}
-            onEdit={() =>
-              new EditMcpServerModal(app, plugin, server.name).open()
-            }
-          />
-        ))}
+        {mcpServers.length > 0 ? (
+          mcpServers.map((server) => (
+            <McpServerComponent
+              key={server.name}
+              server={server}
+              onEdit={() =>
+                new EditMcpServerModal(app, plugin, server.name).open()
+              }
+            />
+          ))
+        ) : (
+          <div className="smtcmp-mcp-servers-empty">No MCP servers found</div>
+        )}
       </div>
     </div>
   )

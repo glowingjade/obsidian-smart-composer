@@ -159,28 +159,23 @@ function McpServerFormComponent({
         className="smtcmp-settings-textarea-header smtcmp-settings-description-preserve-whitespace"
         required
       />
-      <ObsidianSetting className="smtcmp-settings-textarea">
-        <TextareaAutosize
-          value={parameters}
-          placeholder={PARAMETERS_PLACEHOLDER}
-          onChange={(e) => setParameters(e.target.value)}
-          style={{
-            width: '100%',
-            fontFamily: 'var(--font-monospace)',
-            resize: 'none',
-            wordBreak: 'break-all',
-          }}
-          maxRows={20}
-          minRows={PARAMETERS_PLACEHOLDER.split('\n').length}
-        />
-        {validationError !== null ? (
-          <div style={{ color: 'red', whiteSpace: 'pre-wrap' }}>
-            {validationError}
-          </div>
-        ) : parameters.length > 0 ? (
-          <div style={{ color: 'green' }}>Valid parameters</div>
-        ) : null}
-      </ObsidianSetting>
+      <TextareaAutosize
+        value={parameters}
+        placeholder={PARAMETERS_PLACEHOLDER}
+        onChange={(e) => setParameters(e.target.value)}
+        className="smtcmp-mcp-server-modal-textarea"
+        maxRows={20}
+        minRows={PARAMETERS_PLACEHOLDER.split('\n').length}
+      />
+      {validationError !== null ? (
+        <div className="smtcmp-mcp-server-modal-validation smtcmp-mcp-server-modal-validation--error">
+          {validationError}
+        </div>
+      ) : parameters.length > 0 ? (
+        <div className="smtcmp-mcp-server-modal-validation smtcmp-mcp-server-modal-validation--success">
+          Valid parameters
+        </div>
+      ) : null}
 
       <ObsidianSetting>
         <ObsidianButton text="Save" onClick={handleSubmit} cta />
