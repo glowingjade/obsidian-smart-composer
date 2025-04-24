@@ -13,6 +13,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { useSettings } from '../../../contexts/settings-context'
 import SmartComposerPlugin from '../../../main'
+import { ConfirmModal } from '../../../settings/ConfirmModal'
 import {
   McpServerState,
   McpServerStatus,
@@ -75,9 +76,8 @@ export function McpSection({ app, plugin }: McpSectionProps) {
             <McpServerComponent
               key={server.name}
               server={server}
-              onEdit={() =>
-                new EditMcpServerModal(app, plugin, server.name).open()
-              }
+              app={app}
+              plugin={plugin}
             />
           ))
         ) : (
@@ -90,13 +90,37 @@ export function McpSection({ app, plugin }: McpSectionProps) {
 
 function McpServerComponent({
   server,
-  onEdit,
+  app,
+  plugin,
 }: {
   server: McpServerState
-  onEdit: () => void
+  app: App
+  plugin: SmartComposerPlugin
 }) {
   const { settings, setSettings } = useSettings()
   const [isOpen, setIsOpen] = useState(false)
+
+  const handleEdit = useCallback(() => {
+    new EditMcpServerModal(app, plugin, server.name).open()
+  }, [server.name, app, plugin])
+
+  const handleDelete = useCallback(() => {
+    const message = `Are you sure you want to delete MCP server "${server.name}"?`
+    new ConfirmModal(app, {
+      title: 'Delete MCP Server',
+      message: message,
+      ctaText: 'Delete',
+      onConfirm: async () => {
+        await setSettings({
+          ...settings,
+          mcp: {
+            ...settings.mcp,
+            servers: settings.mcp.servers.filter((s) => s.id !== server.name),
+          },
+        })
+      },
+    }).open()
+  }, [server.name, settings, setSettings, app])
 
   const handleToggleEnabled = useCallback(
     (enabled: boolean) => {
@@ -113,16 +137,6 @@ function McpServerComponent({
     [settings, setSettings, server.name],
   )
 
-  const handleDelete = useCallback(() => {
-    setSettings({
-      ...settings,
-      mcp: {
-        ...settings.mcp,
-        servers: settings.mcp.servers.filter((s) => s.id !== server.name),
-      },
-    })
-  }, [settings, setSettings, server.name])
-
   return (
     <div className="smtcmp-mcp-server">
       <div className="smtcmp-mcp-server-row">
@@ -137,7 +151,11 @@ function McpServerComponent({
           />
         </div>
         <div className="smtcmp-mcp-server-actions">
-          <div onClick={onEdit} className="clickable-icon" aria-label="Edit">
+          <div
+            onClick={handleEdit}
+            className="clickable-icon"
+            aria-label="Edit"
+          >
             <Edit size={16} />
           </div>
           <div
