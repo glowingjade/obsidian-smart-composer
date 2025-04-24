@@ -32,6 +32,7 @@ import { ModelSelect } from './ModelSelect'
 import { MentionNode } from './plugins/mention/MentionNode'
 import { NodeMutations } from './plugins/on-mutation/OnMutationPlugin'
 import { SubmitButton } from './SubmitButton'
+import ToolBadge from './ToolBadge'
 import { VaultChatButton } from './VaultChatButton'
 
 export type ChatUserInputRef = {
@@ -203,6 +204,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
       <div className="smtcmp-chat-user-input-container" ref={containerRef}>
         {mentionables.length > 0 && (
           <div className="smtcmp-chat-user-input-files">
+            <ToolBadge />
             {mentionables.map((m) => (
               <MentionableBadge
                 key={getMentionableKey(serializeMentionable(m))}

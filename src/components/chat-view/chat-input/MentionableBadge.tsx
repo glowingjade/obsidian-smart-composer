@@ -152,7 +152,8 @@ function CurrentFileBadge({
         )}
         <span
           className={clsx(
-            !settings.includeCurrentFileContent && 'smtcmp-excluded-content',
+            !settings.chatOptions.includeCurrentFileContent &&
+              'smtcmp-excluded-content',
           )}
         >
           {mentionable.file.name}
@@ -161,7 +162,8 @@ function CurrentFileBadge({
       <div
         className={clsx(
           'smtcmp-chat-user-input-file-badge-name-suffix',
-          !settings.includeCurrentFileContent && 'smtcmp-excluded-content',
+          !settings.chatOptions.includeCurrentFileContent &&
+            'smtcmp-excluded-content',
         )}
       >
         {' (Current File)'}
@@ -172,11 +174,15 @@ function CurrentFileBadge({
           e.stopPropagation()
           setSettings({
             ...settings,
-            includeCurrentFileContent: !settings.includeCurrentFileContent,
+            chatOptions: {
+              ...settings.chatOptions,
+              includeCurrentFileContent:
+                !settings.chatOptions.includeCurrentFileContent,
+            },
           })
         }}
       >
-        {settings.includeCurrentFileContent ? (
+        {settings.chatOptions.includeCurrentFileContent ? (
           <Eye size={12} />
         ) : (
           <EyeOff size={12} />

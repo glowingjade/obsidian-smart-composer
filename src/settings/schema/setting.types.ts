@@ -68,7 +68,16 @@ export const smartComposerSettingsSchema = z.object({
       servers: [],
     }),
 
-  includeCurrentFileContent: z.boolean().catch(true),
+  // Chat options
+  chatOptions: z
+    .object({
+      includeCurrentFileContent: z.boolean(),
+      enableTools: z.boolean(),
+    })
+    .catch({
+      includeCurrentFileContent: true,
+      enableTools: true,
+    }),
 })
 export type SmartComposerSettings = z.infer<typeof smartComposerSettingsSchema>
 

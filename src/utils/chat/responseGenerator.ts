@@ -25,6 +25,7 @@ export type ResponseGeneratorParams = {
   providerClient: BaseLLMProvider<LLMProvider>
   model: ChatModel
   messages: ChatMessage[]
+  enableTools: boolean
   promptGenerator: PromptGenerator
   mcpManager: McpManager
   abortSignal?: AbortSignal
@@ -33,6 +34,7 @@ export type ResponseGeneratorParams = {
 export class ResponseGenerator {
   private readonly providerClient: BaseLLMProvider<LLMProvider>
   private readonly model: ChatModel
+  private readonly enableTools: boolean
   private readonly promptGenerator: PromptGenerator
   private readonly mcpManager: McpManager
   private readonly abortSignal?: AbortSignal
@@ -45,6 +47,7 @@ export class ResponseGenerator {
   constructor(params: ResponseGeneratorParams) {
     this.providerClient = params.providerClient
     this.model = params.model
+    this.enableTools = params.enableTools
     this.receivedMessages = params.messages
     this.promptGenerator = params.promptGenerator
     this.mcpManager = params.mcpManager
@@ -135,16 +138,16 @@ export class ResponseGenerator {
       messages: [...this.receivedMessages, ...this.responseMessages],
     })
 
-    const tools: RequestTool[] = (
-      await this.mcpManager.listAvailableTools()
-    ).map((tool) => ({
-      type: 'function',
-      function: {
-        name: tool.name,
-        description: tool.description,
-        parameters: tool.inputSchema,
-      },
-    }))
+    const tools: RequestTool[] | undefined = this.enableTools
+      ? (await this.mcpManager.listAvailableTools()).map((tool) => ({
+          type: 'function',
+          function: {
+            name: tool.name,
+            description: tool.description,
+            parameters: tool.inputSchema,
+          },
+        }))
+      : undefined
 
     const stream = await this.providerClient.streamResponse(
       this.model,

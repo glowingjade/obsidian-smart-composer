@@ -70,6 +70,7 @@ export function useChatStreamManager({
           providerClient,
           model,
           messages: chatMessages,
+          enableTools: settings.chatOptions.enableTools,
           promptGenerator,
           mcpManager,
           abortSignal: abortController.signal,
