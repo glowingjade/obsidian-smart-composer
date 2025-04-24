@@ -1,7 +1,7 @@
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
-import ObsidianMarkdown from './ObsidianMarkdown'
+import { ObsidianMarkdown } from './ObsidianMarkdown'
 
 export default function AssistantMessageReasoning({
   reasoning,

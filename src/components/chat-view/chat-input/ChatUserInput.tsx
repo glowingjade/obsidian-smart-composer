@@ -23,7 +23,7 @@ import {
 } from '../../../utils/chat/mentionable'
 import { fileToMentionableImage } from '../../../utils/llm/image'
 import { openMarkdownFile, readTFileContent } from '../../../utils/obsidian'
-import ObsidianMarkdown from '../ObsidianMarkdown'
+import { ObsidianMarkdown } from '../ObsidianMarkdown'
 
 import { ImageUploadButton } from './ImageUploadButton'
 import LexicalContentEditable from './LexicalContentEditable'

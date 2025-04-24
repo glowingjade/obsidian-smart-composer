@@ -5,7 +5,7 @@ import { useApp } from '../../contexts/app-context'
 import { useDarkModeContext } from '../../contexts/dark-mode-context'
 import { openMarkdownFile } from '../../utils/obsidian'
 
-import ObsidianMarkdown from './ObsidianMarkdown'
+import { ObsidianMarkdown } from './ObsidianMarkdown'
 import { MemoizedSyntaxHighlighterWrapper } from './SyntaxHighlighterWrapper'
 
 export default function MarkdownCodeComponent({

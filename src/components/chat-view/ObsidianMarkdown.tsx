@@ -1,5 +1,5 @@
 import { App, Keymap, MarkdownRenderer } from 'obsidian'
-import { useCallback, useEffect, useRef } from 'react'
+import { memo, useCallback, useEffect, useRef } from 'react'
 
 import { useApp } from '../../contexts/app-context'
 import { useChatView } from '../../contexts/chat-view-context'
@@ -16,7 +16,7 @@ type ObsidianMarkdownProps = {
  * @param scale - The scale of the markdown content.
  * @returns A React component that renders the Obsidian Markdown content.
  */
-export default function ObsidianMarkdown({
+const ObsidianMarkdown = memo(function ObsidianMarkdown({
   content,
   scale = 'base',
 }: ObsidianMarkdownProps) {
@@ -53,7 +53,7 @@ export default function ObsidianMarkdown({
       className={`markdown-rendered smtcmp-markdown-rendered smtcmp-scale-${scale}`}
     />
   )
-}
+})
 
 /**
  * Adds click and hover handlers to internal links rendered by MarkdownRenderer.render().
@@ -94,3 +94,24 @@ function setupMarkdownLinks(
     }
   })
 }
+
+function ObsidianCodeBlock({
+  content,
+  language,
+  scale = 'sm',
+}: {
+  content: string
+  language?: string
+  scale?: 'xs' | 'sm' | 'base'
+}) {
+  return (
+    <div className="smtcmp-obsidian-code-block">
+      <ObsidianMarkdown
+        content={`\`\`\`${language ?? ''}\n${content}\n\`\`\``}
+        scale={scale}
+      />
+    </div>
+  )
+}
+
+export { ObsidianCodeBlock, ObsidianMarkdown }

@@ -9,7 +9,7 @@ import {
 import AssistantMessageReasoning from './AssistantMessageReasoning'
 import MarkdownCodeComponent from './MarkdownCodeComponent'
 import MarkdownReferenceBlock from './MarkdownReferenceBlock'
-import ObsidianMarkdown from './ObsidianMarkdown'
+import { ObsidianMarkdown } from './ObsidianMarkdown'
 
 export default function AssistantMessageContent({
   content,
