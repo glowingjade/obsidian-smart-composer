@@ -16,16 +16,17 @@ export function EtcSection({ app }: EtcSectionProps) {
   const { setSettings } = useSettings()
 
   const handleResetSettings = () => {
-    new ConfirmModal(
-      app,
-      'Reset settings',
-      'Are you sure you want to reset all settings to default values? This cannot be undone.',
-      async () => {
+    new ConfirmModal(app, {
+      title: 'Reset settings',
+      message:
+        'Are you sure you want to reset all settings to default values? This cannot be undone.',
+      ctaText: 'Reset',
+      onConfirm: async () => {
         const defaultSettings = smartComposerSettingsSchema.parse({})
         await setSettings(defaultSettings)
         new Notice('Settings have been reset to defaults')
       },
-    ).open()
+    }).open()
   }
 
   return (
