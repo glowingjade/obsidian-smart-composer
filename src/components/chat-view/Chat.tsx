@@ -368,7 +368,9 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
             message.id === toolMessage.id ? toolMessage : message,
           ),
         )
-        forceScrollToBottom()
+        requestAnimationFrame(() => {
+          forceScrollToBottom()
+        })
       }
     },
     [
