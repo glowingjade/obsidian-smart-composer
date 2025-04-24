@@ -25,7 +25,12 @@ import {
 } from '../../core/llm/exception'
 import { getChatModelClient } from '../../core/llm/manager'
 import { useChatHistory } from '../../hooks/useChatHistory'
-import { ChatMessage, ChatToolMessage, ChatUserMessage } from '../../types/chat'
+import {
+  ChatMessage,
+  ChatToolMessage,
+  ChatUserMessage,
+  ToolCallResponseStatus,
+} from '../../types/chat'
 import {
   MentionableBlock,
   MentionableBlockData,
@@ -382,6 +387,33 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     ],
   )
 
+  const showContinueResponseButton = useMemo(() => {
+    /**
+     * Display the button to continue response when:
+     * 1. There is no ongoing generation
+     * 2. The most recent message is a tool message
+     * 3. All tool calls within that message have completed
+     */
+
+    if (submitChatMutation.isPending) return false
+
+    const lastMessage = chatMessages.at(-1)
+    if (lastMessage?.role !== 'tool') return false
+
+    return lastMessage.toolCalls.every((toolCall) =>
+      [
+        ToolCallResponseStatus.Aborted,
+        ToolCallResponseStatus.Rejected,
+        ToolCallResponseStatus.Error,
+        ToolCallResponseStatus.Success,
+      ].includes(toolCall.response.status),
+    )
+  }, [submitChatMutation.isPending, chatMessages])
+
+  const handleContinueResponse = useCallback(() => {
+    submitChatMutation.mutate(chatMessages)
+  }, [submitChatMutation, chatMessages])
+
   useEffect(() => {
     setFocusedMessageId(inputMessage.id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -635,6 +667,16 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           ),
         )}
         <QueryProgress state={queryProgress} />
+        {showContinueResponseButton && (
+          <div className="smtcmp-continue-response-button-container">
+            <button
+              className="smtcmp-continue-response-button"
+              onClick={handleContinueResponse}
+            >
+              <div>Continue Response</div>
+            </button>
+          </div>
+        )}
         {submitChatMutation.isPending && (
           <button onClick={abortActiveStreams} className="smtcmp-stop-gen-btn">
             <CircleStop size={16} />

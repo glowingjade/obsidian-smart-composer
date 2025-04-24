@@ -96,7 +96,7 @@ export class PromptGenerator {
       (m) => m.type === 'current-file',
     )?.file
     const currentFileMessage =
-      currentFile && this.settings.includeCurrentFileContent
+      currentFile && this.settings.chatOptions.includeCurrentFileContent
         ? await this.getCurrentFileMessage(currentFile)
         : undefined
 

@@ -73,10 +73,12 @@ export const smartComposerSettingsSchema = z.object({
     .object({
       includeCurrentFileContent: z.boolean(),
       enableTools: z.boolean(),
+      maxAutoIterations: z.number(),
     })
     .catch({
       includeCurrentFileContent: true,
       enableTools: true,
+      maxAutoIterations: 5,
     }),
 })
 export type SmartComposerSettings = z.infer<typeof smartComposerSettingsSchema>

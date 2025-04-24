@@ -26,6 +26,7 @@ export type ResponseGeneratorParams = {
   model: ChatModel
   messages: ChatMessage[]
   enableTools: boolean
+  maxAutoIterations: number
   promptGenerator: PromptGenerator
   mcpManager: McpManager
   abortSignal?: AbortSignal
@@ -39,7 +40,7 @@ export class ResponseGenerator {
   private readonly mcpManager: McpManager
   private readonly abortSignal?: AbortSignal
   private readonly receivedMessages: ChatMessage[]
-  private readonly maxAutoIterations = 5
+  private readonly maxAutoIterations: number
 
   private responseMessages: ChatMessage[] = [] // Response messages that are generated after the initial messages
   private subscribers: ((messages: ChatMessage[]) => void)[] = []
@@ -48,6 +49,7 @@ export class ResponseGenerator {
     this.providerClient = params.providerClient
     this.model = params.model
     this.enableTools = params.enableTools
+    this.maxAutoIterations = params.maxAutoIterations
     this.receivedMessages = params.messages
     this.promptGenerator = params.promptGenerator
     this.mcpManager = params.mcpManager

@@ -1785,3 +1785,15 @@ button.smtcmp-chat-input-model-select {
     color: var(--text-success);
   }
 }
+
+.smtcmp-continue-response-button-container {
+  display: flex;
+  justify-content: end;
+  padding: var(--size-4-1) 0;
+}
+
+.smtcmp-continue-response-button {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-1);
+}

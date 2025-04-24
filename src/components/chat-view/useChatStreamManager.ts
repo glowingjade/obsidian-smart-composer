@@ -71,6 +71,7 @@ export function useChatStreamManager({
           model,
           messages: chatMessages,
           enableTools: settings.chatOptions.enableTools,
+          maxAutoIterations: settings.chatOptions.maxAutoIterations,
           promptGenerator,
           mcpManager,
           abortSignal: abortController.signal,

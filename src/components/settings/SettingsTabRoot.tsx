@@ -33,11 +33,11 @@ export function SettingsTabRoot({ app, plugin }: SettingsTabRootProps) {
           cta
         />
       </ObsidianSetting>
+      <ChatSection />
       {/* TODO: Change the order of the sections */}
       <McpSection app={app} plugin={plugin} />
       <ProvidersSection app={app} plugin={plugin} />
       <ModelsSection app={app} plugin={plugin} />
-      <ChatSection />
       <RAGSection app={app} plugin={plugin} />
       <EtcSection app={app} plugin={plugin} />
     </>
