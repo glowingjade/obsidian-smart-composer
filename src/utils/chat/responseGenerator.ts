@@ -69,7 +69,7 @@ export class ResponseGenerator {
           request: toolCall,
           response: {
             status: this.mcpManager.isToolAutoExecutionAllowed(toolCall.name)
-              ? ToolCallResponseStatus.PendingExecution
+              ? ToolCallResponseStatus.Running
               : ToolCallResponseStatus.PendingApproval,
           },
         })),
@@ -81,8 +81,7 @@ export class ResponseGenerator {
         toolMessage.toolCalls
           .filter(
             (toolCall) =>
-              toolCall.response.status ===
-              ToolCallResponseStatus.PendingExecution,
+              toolCall.response.status === ToolCallResponseStatus.Running,
           )
           .map(async (toolCall) => {
             const response = await this.mcpManager.callTool({
