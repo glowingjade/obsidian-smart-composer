@@ -1601,14 +1601,17 @@ button.smtcmp-chat-input-model-select {
 
 .smtcmp-mcp-servers-header {
   display: grid;
-  grid-template-columns: 1fr 120px 64px 112px; /* Match columns with .smtcmp-mcp-server-row to ensure proper alignment */
-  gap: 16px;
+  grid-template-columns: 1fr 128px 64px 112px; /* Match columns with .smtcmp-mcp-server-row to ensure proper alignment */
+  gap: var(--size-4-4);
   align-items: center;
-  min-height: 40px;
+  min-height: var(--size-4-10);
   border-bottom: var(--border-width) solid var(--background-modifier-border);
   font-weight: var(--font-medium);
   color: var(--text-muted);
 
+  & > div {
+    padding: var(--size-4-1);
+  }
   & > div:nth-child(1) {
     text-align: left;
   }
@@ -1624,7 +1627,7 @@ button.smtcmp-chat-input-model-select {
 }
 
 .smtcmp-mcp-servers-empty {
-  padding: 16px 0;
+  padding: var(--size-4-4) 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1637,10 +1640,14 @@ button.smtcmp-chat-input-model-select {
 
 .smtcmp-mcp-server-row {
   display: grid;
-  grid-template-columns: 1fr 120px 64px 112px; /* Match columns with .smtcmp-mcp-servers-header to ensure proper alignment */
-  gap: 16px;
+  grid-template-columns: 1fr 128px 64px 112px; /* Match columns with .smtcmp-mcp-servers-header to ensure proper alignment */
+  gap: var(--size-4-4);
   align-items: center;
-  min-height: 40px;
+  min-height: var(--size-4-10);
+
+  & > div {
+    padding: var(--size-4-1);
+  }
 }
 
 .smtcmp-mcp-server-name {
@@ -1662,24 +1669,24 @@ button.smtcmp-chat-input-model-select {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--size-4-2);
 }
 
 .smtcmp-server-expanded-info {
-  margin-bottom: 16px;
-  padding-left: 16px;
+  margin-bottom: var(--size-4-4);
+  padding-left: var(--size-4-4);
   border-left: var(--border-width) solid var(--background-modifier-border);
 }
 
 .smtcmp-server-expanded-info-header {
   font-weight: var(--font-medium);
-  margin-bottom: 8px;
+  margin-bottom: var(--size-4-2);
 }
 
 .smtcmp-server-tools-container {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--size-4-2);
 }
 
 .smtcmp-server-error-message {
@@ -1692,10 +1699,10 @@ button.smtcmp-chat-input-model-select {
 
 .smtcmp-mcp-server-status-badge {
   border-radius: 9999px;
-  padding: 2px 8px;
+  padding: var(--size-2-1) var(--size-4-2);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--size-4-1);
   line-height: 1;
 }
 
@@ -1726,7 +1733,7 @@ button.smtcmp-chat-input-model-select {
 .smtcmp-mcp-tool {
   display: grid;
   grid-template-columns: 1fr auto auto;
-  gap: 16px;
+  gap: var(--size-4-4);
   align-items: center;
 }
 
@@ -1748,7 +1755,7 @@ button.smtcmp-chat-input-model-select {
 .smtcmp-mcp-tool-toggle {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--size-4-2);
 }
 
 .smtcmp-mcp-tool-toggle-label {
@@ -1767,7 +1774,7 @@ button.smtcmp-chat-input-model-select {
 .smtcmp-mcp-server-modal-validation {
   font-family: var(--font-monospace);
   font-size: var(--font-ui-small);
-  padding: 4px 0;
+  padding: var(--size-4-1) 0;
   white-space: pre-wrap;
 
   &.smtcmp-mcp-server-modal-validation--error {
