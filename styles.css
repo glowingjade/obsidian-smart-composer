@@ -161,7 +161,13 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   .smtcmp-chat-messages-assistant {
     display: flex;
     flex-direction: column;
+  }
+
+  .smtcmp-assistant-tool-message-group {
     padding-bottom: var(--size-4-2);
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-1);
   }
 }
 
@@ -1400,6 +1406,7 @@ button.smtcmp-chat-input-model-select {
     --heading-spacing: calc(var(--p-spacing) * 2.5);
     --checkbox-size: calc(var(--render-scale) * 1rem);
     --checkbox-radius: calc(var(--render-scale) * var(--radius-s));
+    --icon-size: calc(var(--render-scale) * var(--icon-m));
 
     /* adjust list indent */
     --list-indent: 1.5em;
@@ -1442,11 +1449,6 @@ button.smtcmp-chat-input-model-select {
     background-color: transparent;
     border-top: 1px solid var(--background-modifier-border);
     border-bottom: 1px solid var(--background-modifier-border);
-  }
-
-  /* Hide copy code buttons */
-  .copy-code-button {
-    display: none !important;
   }
 }
 
@@ -1788,7 +1790,7 @@ button.smtcmp-chat-input-model-select {
 
 .smtcmp-continue-response-button-container {
   display: flex;
-  justify-content: end;
+  justify-content: center;
   padding: var(--size-4-1) 0;
 }
 

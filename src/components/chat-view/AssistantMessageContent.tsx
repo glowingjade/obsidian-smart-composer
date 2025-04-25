@@ -13,22 +13,20 @@ import { ObsidianMarkdown } from './ObsidianMarkdown'
 
 export default function AssistantMessageContent({
   content,
-  index,
-  chatMessages,
+  contextMessages,
   handleApply,
   isApplying,
 }: {
   content: ChatAssistantMessage['content']
-  index: number
-  chatMessages: ChatMessage[]
+  contextMessages: ChatMessage[]
   handleApply: (blockToApply: string, chatMessages: ChatMessage[]) => void
   isApplying: boolean
 }) {
   const onApply = useCallback(
     (blockToApply: string) => {
-      handleApply(blockToApply, chatMessages.slice(0, index + 1))
+      handleApply(blockToApply, contextMessages)
     },
-    [handleApply, chatMessages, index],
+    [handleApply, contextMessages],
   )
 
   return (

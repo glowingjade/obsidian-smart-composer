@@ -24,6 +24,20 @@ const STATUS_LABELS: Record<ToolCallResponseStatus, string> = {
   [ToolCallResponseStatus.Aborted]: 'Aborted',
 }
 
+export const getToolMessageContent = (message: ChatToolMessage): string => {
+  return message.toolCalls
+    ?.map((toolCall) => {
+      const { serverName, toolName } = parseToolName(toolCall.request.name)
+      return [
+        `${STATUS_LABELS[toolCall.response.status]} ${serverName}:${toolName}`,
+        ...(toolCall.request.arguments
+          ? [`Parameters: ${toolCall.request.arguments}`]
+          : []),
+      ].join('\n')
+    })
+    .join('\n')
+}
+
 export default function ToolMessage({
   message,
   onMessageUpdate,

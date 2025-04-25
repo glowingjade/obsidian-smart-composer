@@ -11,9 +11,9 @@ import {
 import { ResponseUsage } from '../../types/llm/response'
 
 type LLMResponseInfoProps = {
-  usage?: ResponseUsage
+  usage: ResponseUsage | null
   estimatedPrice: number | null
-  model?: string
+  model: string | null
 }
 
 export default function LLMResponseInfoPopover({

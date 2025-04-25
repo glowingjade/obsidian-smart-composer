@@ -26,6 +26,7 @@ import {
 import { getChatModelClient } from '../../core/llm/manager'
 import { useChatHistory } from '../../hooks/useChatHistory'
 import {
+  AssistantToolMessageGroup,
   ChatMessage,
   ChatToolMessage,
   ChatUserMessage,
@@ -41,22 +42,19 @@ import {
   getMentionableKey,
   serializeMentionable,
 } from '../../utils/chat/mentionable'
+import { groupAssistantAndToolMessages } from '../../utils/chat/message-groups'
 import { PromptGenerator } from '../../utils/chat/promptGenerator'
 import { readTFileContent } from '../../utils/obsidian'
 import { ErrorModal } from '../modals/ErrorModal'
 
-import AssistantMessageActions from './AssistantMessageActions'
-import AssistantMessageAnnotations from './AssistantMessageAnnotations'
-import AssistantMessageContent from './AssistantMessageContent'
-import AssistantMessageReasoning from './AssistantMessageReasoning'
+import AssistantToolMessageGroupItem from './AssistantToolMessageGroupItem'
 import ChatUserInput, { ChatUserInputRef } from './chat-input/ChatUserInput'
 import { editorStateToPlainText } from './chat-input/utils/editor-state-to-plain-text'
 import { ChatListDropdown } from './ChatListDropdown'
 import QueryProgress, { QueryProgressState } from './QueryProgress'
-import SimilaritySearchResults from './SimilaritySearchResults'
-import ToolMessage from './ToolMessage'
 import { useAutoScroll } from './useAutoScroll'
 import { useChatStreamManager } from './useChatStreamManager'
+import UserMessageItem from './UserMessageItem'
 
 // Add an empty line here
 const getNewInputMessage = (app: App): ChatUserMessage => {
@@ -131,6 +129,11 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const [queryProgress, setQueryProgress] = useState<QueryProgressState>({
     type: 'idle',
   })
+
+  const groupedChatMessages: (ChatUserMessage | AssistantToolMessageGroup)[] =
+    useMemo(() => {
+      return groupAssistantAndToolMessages(chatMessages)
+    }, [chatMessages])
 
   const chatUserInputRefs = useRef<Map<string, ChatUserInputRef>>(new Map())
   const chatMessagesRef = useRef<HTMLDivElement>(null)
@@ -585,85 +588,77 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         </div>
       </div>
       <div className="smtcmp-chat-messages" ref={chatMessagesRef}>
-        {chatMessages.map((message, index) =>
-          message.role === 'user' ? (
-            <div key={message.id} className="smtcmp-chat-messages-user">
-              <ChatUserInput
-                ref={(ref) => registerChatUserInputRef(message.id, ref)}
-                initialSerializedEditorState={message.content}
-                onChange={(content) => {
-                  setChatMessages((prevChatHistory) =>
-                    prevChatHistory.map((msg) =>
-                      msg.role === 'user' && msg.id === message.id
-                        ? {
-                            ...msg,
-                            content,
-                          }
-                        : msg,
-                    ),
-                  )
-                }}
-                onSubmit={(content, useVaultSearch) => {
-                  if (editorStateToPlainText(content).trim() === '') return
-                  handleUserMessageSubmit({
-                    inputChatMessages: [
-                      ...chatMessages.slice(0, index),
-                      {
-                        role: 'user',
-                        content: content,
-                        promptContent: null,
-                        id: message.id,
-                        mentionables: message.mentionables,
-                      },
-                    ],
-                    useVaultSearch,
-                  })
-                  chatUserInputRefs.current.get(inputMessage.id)?.focus()
-                }}
-                onFocus={() => {
-                  setFocusedMessageId(message.id)
-                }}
-                mentionables={message.mentionables}
-                setMentionables={(mentionables) => {
-                  setChatMessages((prevChatHistory) =>
-                    prevChatHistory.map((msg) =>
-                      msg.id === message.id ? { ...msg, mentionables } : msg,
-                    ),
-                  )
-                }}
-              />
-              {message.similaritySearchResults && (
-                <SimilaritySearchResults
-                  similaritySearchResults={message.similaritySearchResults}
-                />
-              )}
-            </div>
-          ) : message.role === 'assistant' ? (
-            <div key={message.id} className="smtcmp-chat-messages-assistant">
-              {message.reasoning && (
-                <AssistantMessageReasoning reasoning={message.reasoning} />
-              )}
-              {message.annotations && (
-                <AssistantMessageAnnotations
-                  annotations={message.annotations}
-                />
-              )}
-              <AssistantMessageContent
-                content={message.content}
-                index={index}
-                chatMessages={chatMessages}
-                handleApply={handleApply}
-                isApplying={applyMutation.isPending}
-              />
-              {message.content && <AssistantMessageActions message={message} />}
-            </div>
+        {groupedChatMessages.map((messageOrGroup, index) =>
+          !Array.isArray(messageOrGroup) ? (
+            <UserMessageItem
+              key={messageOrGroup.id}
+              message={messageOrGroup}
+              chatUserInputRef={(ref) =>
+                registerChatUserInputRef(messageOrGroup.id, ref)
+              }
+              onInputChange={(content) => {
+                setChatMessages((prevChatHistory) =>
+                  prevChatHistory.map((msg) =>
+                    msg.role === 'user' && msg.id === messageOrGroup.id
+                      ? {
+                          ...msg,
+                          content,
+                        }
+                      : msg,
+                  ),
+                )
+              }}
+              onSubmit={(content, useVaultSearch) => {
+                if (editorStateToPlainText(content).trim() === '') return
+                handleUserMessageSubmit({
+                  inputChatMessages: [
+                    ...groupedChatMessages
+                      .slice(0, index)
+                      .flatMap((messageOrGroup): ChatMessage[] =>
+                        !Array.isArray(messageOrGroup)
+                          ? [messageOrGroup]
+                          : messageOrGroup,
+                      ),
+                    {
+                      role: 'user',
+                      content: content,
+                      promptContent: null,
+                      id: messageOrGroup.id,
+                      mentionables: messageOrGroup.mentionables,
+                    },
+                  ],
+                  useVaultSearch,
+                })
+                chatUserInputRefs.current.get(inputMessage.id)?.focus()
+              }}
+              onFocus={() => {
+                setFocusedMessageId(messageOrGroup.id)
+              }}
+              onMentionablesChange={(mentionables) => {
+                setChatMessages((prevChatHistory) =>
+                  prevChatHistory.map((msg) =>
+                    msg.id === messageOrGroup.id
+                      ? { ...msg, mentionables }
+                      : msg,
+                  ),
+                )
+              }}
+            />
           ) : (
-            <div key={message.id}>
-              <ToolMessage
-                message={message}
-                onMessageUpdate={handleToolMessageUpdate}
-              />
-            </div>
+            <AssistantToolMessageGroupItem
+              key={messageOrGroup.at(0)?.id}
+              messages={messageOrGroup}
+              contextMessages={groupedChatMessages
+                .slice(0, index + 1)
+                .flatMap((messageOrGroup): ChatMessage[] =>
+                  !Array.isArray(messageOrGroup)
+                    ? [messageOrGroup]
+                    : messageOrGroup,
+                )}
+              isApplying={applyMutation.isPending}
+              onApply={handleApply}
+              onToolMessageUpdate={handleToolMessageUpdate}
+            />
           ),
         )}
         <QueryProgress state={queryProgress} />

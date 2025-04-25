@@ -37,10 +37,16 @@ export type ChatToolMessage = {
     response: ToolCallResponse
   }[]
 }
+
 export type ChatMessage =
   | ChatUserMessage
   | ChatAssistantMessage
   | ChatToolMessage
+
+export type AssistantToolMessageGroup = (
+  | ChatAssistantMessage
+  | ChatToolMessage
+)[]
 
 export type SerializedChatUserMessage = {
   role: 'user'
