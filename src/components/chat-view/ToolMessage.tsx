@@ -40,9 +40,11 @@ export const getToolMessageContent = (message: ChatToolMessage): string => {
 
 export default function ToolMessage({
   message,
+  conversationId,
   onMessageUpdate,
 }: {
   message: ChatToolMessage
+  conversationId: string
   onMessageUpdate: (message: ChatToolMessage) => void
 }) {
   return (
@@ -55,6 +57,7 @@ export default function ToolMessage({
           <ToolCallItem
             request={toolCall.request}
             response={toolCall.response}
+            conversationId={conversationId}
             onResponseUpdate={(response) =>
               onMessageUpdate({
                 ...message,
@@ -73,18 +76,21 @@ export default function ToolMessage({
 function ToolCallItem({
   request,
   response,
+  conversationId,
   onResponseUpdate,
 }: {
   request: ToolCallRequest
   response: ToolCallResponse
+  conversationId: string
   onResponseUpdate: (response: ToolCallResponse) => void
 }) {
   const {
     handleToolCall,
+    handleAllowForConversation,
     handleAllowAutoExecution,
     handleReject,
     handleAbort,
-  } = useToolCall(request, onResponseUpdate)
+  } = useToolCall(request, conversationId, onResponseUpdate)
 
   const [isOpen, setIsOpen] = useState(
     // Open by default if the tool call requires approval
@@ -158,12 +164,19 @@ function ToolCallItem({
                   setIsOpen(false)
                 }}
                 menuOptions={[
-                  // TODO: Add option to allow in current chat session
                   {
                     label: 'Always allow this tool',
                     onClick: () => {
                       handleToolCall()
                       handleAllowAutoExecution()
+                      setIsOpen(false)
+                    },
+                  },
+                  {
+                    label: 'Allow for this chat',
+                    onClick: () => {
+                      handleToolCall()
+                      handleAllowForConversation()
                       setIsOpen(false)
                     },
                   },
@@ -192,6 +205,7 @@ function ToolCallItem({
 
 function useToolCall(
   request: ToolCallRequest,
+  conversationId: string,
   onResponseUpdate: (response: ToolCallResponse) => void,
 ) {
   const { settings, setSettings } = useSettings()
@@ -209,6 +223,11 @@ function useToolCall(
     })
     onResponseUpdate(toolCallResponse)
   }, [request, onResponseUpdate, getMcpManager])
+
+  const handleAllowForConversation = useCallback(async () => {
+    const mcpManager = await getMcpManager()
+    mcpManager.allowToolForConversation(request.name, conversationId)
+  }, [request, conversationId, getMcpManager])
 
   const handleAllowAutoExecution = useCallback(async () => {
     const { serverName, toolName } = parseToolName(request.name)
@@ -258,6 +277,7 @@ function useToolCall(
 
   return {
     handleToolCall,
+    handleAllowForConversation,
     handleAllowAutoExecution,
     handleReject,
     handleAbort,

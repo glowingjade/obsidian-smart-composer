@@ -25,6 +25,7 @@ export class McpManager {
   private defaultEnv: Record<string, string>
   private servers: McpServerState[] = []
   private activeToolCalls: Map<string, AbortController> = new Map()
+  private allowedToolsByConversation: Map<string, Set<string>> = new Map()
   private subscribers = new Set<(servers: McpServerState[]) => void>()
   private unsubscribeFromSettings: () => void
 
@@ -237,7 +238,36 @@ export class McpManager {
     ).flat()
   }
 
-  public isToolAutoExecutionAllowed(requestToolName: string): boolean {
+  public allowToolForConversation(
+    requestToolName: string,
+    conversationId: string,
+  ): void {
+    let allowedTools = this.allowedToolsByConversation.get(conversationId)
+    if (!allowedTools) {
+      allowedTools = new Set<string>()
+      this.allowedToolsByConversation.set(conversationId, allowedTools)
+    }
+    allowedTools.add(requestToolName)
+  }
+
+  public isToolExecutionAllowed({
+    requestToolName,
+    conversationId,
+  }: {
+    requestToolName: string
+    conversationId?: string
+  }): boolean {
+    // Check if the tool is allowed for the conversation
+    if (conversationId) {
+      if (
+        this.allowedToolsByConversation
+          .get(conversationId)
+          ?.has(requestToolName)
+      ) {
+        return true
+      }
+    }
+
     const { serverName, toolName } = parseToolName(requestToolName)
     const server = this.servers.find((server) => server.name === serverName)
     if (!server) {

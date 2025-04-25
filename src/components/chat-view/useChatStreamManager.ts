@@ -24,7 +24,11 @@ type UseChatStreamManagerParams = {
 
 export type UseChatStreamManager = {
   abortActiveStreams: () => void
-  submitChatMutation: UseMutationResult<void, Error, ChatMessage[]>
+  submitChatMutation: UseMutationResult<
+    void,
+    Error,
+    { chatMessages: ChatMessage[]; conversationId: string }
+  >
 }
 
 export function useChatStreamManager({
@@ -53,7 +57,13 @@ export function useChatStreamManager({
   }, [settings])
 
   const submitChatMutation = useMutation({
-    mutationFn: async (chatMessages: ChatMessage[]) => {
+    mutationFn: async ({
+      chatMessages,
+      conversationId,
+    }: {
+      chatMessages: ChatMessage[]
+      conversationId: string
+    }) => {
       const lastMessage = chatMessages.at(-1)
       if (!lastMessage) {
         // chatMessages is empty
@@ -70,6 +80,7 @@ export function useChatStreamManager({
           providerClient,
           model,
           messages: chatMessages,
+          conversationId,
           enableTools: settings.chatOptions.enableTools,
           maxAutoIterations: settings.chatOptions.maxAutoIterations,
           promptGenerator,

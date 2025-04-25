@@ -25,6 +25,7 @@ export type ResponseGeneratorParams = {
   providerClient: BaseLLMProvider<LLMProvider>
   model: ChatModel
   messages: ChatMessage[]
+  conversationId: string
   enableTools: boolean
   maxAutoIterations: number
   promptGenerator: PromptGenerator
@@ -35,6 +36,7 @@ export type ResponseGeneratorParams = {
 export class ResponseGenerator {
   private readonly providerClient: BaseLLMProvider<LLMProvider>
   private readonly model: ChatModel
+  private readonly conversationId: string
   private readonly enableTools: boolean
   private readonly promptGenerator: PromptGenerator
   private readonly mcpManager: McpManager
@@ -48,6 +50,7 @@ export class ResponseGenerator {
   constructor(params: ResponseGeneratorParams) {
     this.providerClient = params.providerClient
     this.model = params.model
+    this.conversationId = params.conversationId
     this.enableTools = params.enableTools
     this.maxAutoIterations = params.maxAutoIterations
     this.receivedMessages = params.messages
@@ -73,7 +76,10 @@ export class ResponseGenerator {
         toolCalls: toolCallRequests.map((toolCall) => ({
           request: toolCall,
           response: {
-            status: this.mcpManager.isToolAutoExecutionAllowed(toolCall.name)
+            status: this.mcpManager.isToolExecutionAllowed({
+              requestToolName: toolCall.name,
+              conversationId: this.conversationId,
+            })
               ? ToolCallResponseStatus.Running
               : ToolCallResponseStatus.PendingApproval,
           },

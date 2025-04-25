@@ -13,7 +13,8 @@ import ToolMessage from './ToolMessage'
 export type AssistantToolMessageGroupItemProps = {
   messages: AssistantToolMessageGroup
   contextMessages: ChatMessage[]
-  isApplying: boolean
+  conversationId: string
+  isApplying: boolean // TODO: isApplying should be a boolean for each assistant message
   onApply: (blockToApply: string, chatMessages: ChatMessage[]) => void
   onToolMessageUpdate: (message: ChatToolMessage) => void
 }
@@ -21,6 +22,7 @@ export type AssistantToolMessageGroupItemProps = {
 export default function AssistantToolMessageGroupItem({
   messages,
   contextMessages,
+  conversationId,
   isApplying,
   onApply,
   onToolMessageUpdate,
@@ -51,6 +53,7 @@ export default function AssistantToolMessageGroupItem({
           <div key={message.id}>
             <ToolMessage
               message={message}
+              conversationId={conversationId}
               onMessageUpdate={onToolMessageUpdate}
             />
           </div>

@@ -261,10 +261,14 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       )
 
       setChatMessages(compiledMessages)
-      submitChatMutation.mutate(compiledMessages)
+      submitChatMutation.mutate({
+        chatMessages: compiledMessages,
+        conversationId: currentConversationId,
+      })
     },
     [
       submitChatMutation,
+      currentConversationId,
       promptGenerator,
       abortActiveStreams,
       forceScrollToBottom,
@@ -371,11 +375,12 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       ) {
         // Using updated toolMessage directly because chatMessages state
         // still contains the old values
-        submitChatMutation.mutate(
-          chatMessages.map((message) =>
+        submitChatMutation.mutate({
+          chatMessages: chatMessages.map((message) =>
             message.id === toolMessage.id ? toolMessage : message,
           ),
-        )
+          conversationId: currentConversationId,
+        })
         requestAnimationFrame(() => {
           forceScrollToBottom()
         })
@@ -383,6 +388,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     },
     [
       chatMessages,
+      currentConversationId,
       submitChatMutation,
       setChatMessages,
       getMcpManager,
@@ -414,8 +420,11 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   }, [submitChatMutation.isPending, chatMessages])
 
   const handleContinueResponse = useCallback(() => {
-    submitChatMutation.mutate(chatMessages)
-  }, [submitChatMutation, chatMessages])
+    submitChatMutation.mutate({
+      chatMessages: chatMessages,
+      conversationId: currentConversationId,
+    })
+  }, [submitChatMutation, chatMessages, currentConversationId])
 
   useEffect(() => {
     setFocusedMessageId(inputMessage.id)
@@ -655,6 +664,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
                     ? [messageOrGroup]
                     : messageOrGroup,
                 )}
+              conversationId={currentConversationId}
               isApplying={applyMutation.isPending}
               onApply={handleApply}
               onToolMessageUpdate={handleToolMessageUpdate}
