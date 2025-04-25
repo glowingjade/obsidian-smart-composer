@@ -350,10 +350,14 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
           return {
             role: 'assistant',
             content: [
-              {
-                type: 'text',
-                text: message.content,
-              },
+              ...(message.content.trim() === ''
+                ? []
+                : [
+                    {
+                      type: 'text' as const,
+                      text: message.content,
+                    },
+                  ]),
               ...anthropicToolCalls,
             ],
           }
