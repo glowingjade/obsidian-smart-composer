@@ -170,6 +170,9 @@ export class ResponseGenerator {
         role: 'assistant',
         content: '',
         id: uuidv4(),
+        metadata: {
+          model: this.model,
+        },
       })
     }
     const responseMessageId = (
