@@ -148,7 +148,7 @@ export class PromptGenerator {
             // Filter out tool calls that don't have a corresponding tool message
             const filteredToolCalls = msg.tool_calls?.filter((t) =>
               requestMessages.some(
-                (rm) => rm.role === 'tool' && rm.tool_call_id === t.id,
+                (rm) => rm.role === 'tool' && rm.tool_call.id === t.id,
               ),
             )
             return {
@@ -164,7 +164,7 @@ export class PromptGenerator {
             const assistantMessage = requestMessages.find(
               (rm) =>
                 rm.role === 'assistant' &&
-                rm.tool_calls?.some((t) => t.id === msg.tool_call_id),
+                rm.tool_calls?.some((t) => t.id === msg.tool_call.id),
             )
             if (!assistantMessage) {
               return null
@@ -224,19 +224,19 @@ ${message.annotations
         case ToolCallResponseStatus.Aborted:
           return {
             role: 'tool',
-            tool_call_id: toolCall.request.id,
+            tool_call: toolCall.request,
             content: `Tool call ${toolCall.request.id} is ${toolCall.response.status}`,
           }
         case ToolCallResponseStatus.Success:
           return {
             role: 'tool',
-            tool_call_id: toolCall.request.id,
+            tool_call: toolCall.request,
             content: toolCall.response.data.text,
           }
         case ToolCallResponseStatus.Error:
           return {
             role: 'tool',
-            tool_call_id: toolCall.request.id,
+            tool_call: toolCall.request,
             content: `Error: ${toolCall.response.error}`,
           }
       }

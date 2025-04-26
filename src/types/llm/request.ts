@@ -72,8 +72,8 @@ type RequestAssistantMessage = {
 }
 type RequestToolMessage = {
   role: 'tool'
-  tool_call_id: string
-  content: string
+  tool_call: ToolCallRequest
+  content: string // tool response
 }
 export type RequestMessage =
   | RequestSystemMessage
@@ -104,5 +104,8 @@ export type RequestToolChoice =
 type FunctionDescription = {
   description?: string
   name: string
-  parameters: Record<string, unknown>
+  parameters: {
+    type: 'object'
+    properties?: Record<string, unknown>
+  }
 }

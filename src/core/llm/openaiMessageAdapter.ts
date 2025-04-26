@@ -138,7 +138,7 @@ export class OpenAIMessageAdapter {
         return {
           role: 'tool',
           content: message.content,
-          tool_call_id: message.tool_call_id,
+          tool_call_id: message.tool_call.id,
         }
       }
     }

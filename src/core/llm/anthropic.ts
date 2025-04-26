@@ -22,6 +22,7 @@ import {
   LLMResponseNonStreaming,
   LLMResponseStreaming,
   ResponseUsage,
+  ToolCall,
 } from '../../types/llm/response'
 import { LLMProvider } from '../../types/provider.types'
 import { parseImageDataUrl } from '../../utils/llm/image'
@@ -377,7 +378,7 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
           content: [
             {
               type: 'tool_result',
-              tool_use_id: message.tool_call_id,
+              tool_use_id: message.tool_call.id,
               content: message.content,
             },
           ],
@@ -403,6 +404,19 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
         .map((c) => c.thinking)
         .join('') || undefined
 
+    const toolCalls: ToolCall[] = response.content
+      .filter((c) => c.type === 'tool_use')
+      .map((c): ToolCall => {
+        return {
+          id: c.id,
+          type: 'function',
+          function: {
+            name: c.name,
+            arguments: JSON.stringify(c.input),
+          },
+        }
+      })
+
     return {
       id: response.id,
       choices: [
@@ -411,6 +425,7 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
           message: {
             content: textContent,
             reasoning: reasoningContent,
+            tool_calls: toolCalls.length > 0 ? toolCalls : undefined,
             role: response.role,
           },
         },
