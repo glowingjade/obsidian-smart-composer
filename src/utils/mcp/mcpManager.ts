@@ -21,13 +21,13 @@ export class McpManager {
   private readonly disabled = !Platform.isDesktop // MCP should be disabled on mobile since it doesn't support node.js
 
   private settings: SmartComposerSettings
-
+  private unsubscribeFromSettings: () => void
   private defaultEnv: Record<string, string>
-  private servers: McpServerState[] = []
+
+  private servers: McpServerState[] = [] // IMPORTANT: Always use this.updateServers() to update this array
   private activeToolCalls: Map<string, AbortController> = new Map()
   private allowedToolsByConversation: Map<string, Set<string>> = new Map()
   private subscribers = new Set<(servers: McpServerState[]) => void>()
-  private unsubscribeFromSettings: () => void
 
   constructor({
     settings,
@@ -63,10 +63,21 @@ export class McpManager {
   }
 
   public cleanup() {
+    // Disconnect all clients
+    void Promise.all(
+      this.servers
+        .filter((s) => s.status === McpServerStatus.Connected)
+        .map((s) => s.client.close()),
+    )
+
     if (this.unsubscribeFromSettings) {
       this.unsubscribeFromSettings()
     }
-    // TODO: Close all connections
+
+    this.servers = []
+    this.subscribers.clear()
+    this.activeToolCalls.clear()
+    this.allowedToolsByConversation.clear()
   }
 
   public getServers() {
@@ -129,11 +140,31 @@ export class McpManager {
       | McpServerState[]
       | ((prevServers: McpServerState[]) => McpServerState[]),
   ) {
-    if (typeof newServersOrUpdater === 'function') {
-      this.servers = newServersOrUpdater(this.servers)
-    } else if (newServersOrUpdater !== undefined) {
-      this.servers = newServersOrUpdater
+    const currentServers = this.servers
+    const nextServers =
+      typeof newServersOrUpdater === 'function'
+        ? newServersOrUpdater(currentServers)
+        : (newServersOrUpdater ?? currentServers)
+
+    // Find clients that need to be disconnected
+    const clientsToDisconnect = currentServers
+      .filter((server) => server.status === McpServerStatus.Connected)
+      .map((server) => server.client)
+      .filter(
+        (client) =>
+          !nextServers.some(
+            (server) =>
+              server.status === McpServerStatus.Connected &&
+              server.client === client,
+          ),
+      )
+
+    // Disconnect clients in the background
+    if (clientsToDisconnect.length > 0) {
+      void Promise.all(clientsToDisconnect.map((client) => client.close()))
     }
+
+    this.servers = nextServers
     this.notifySubscribers()
   }
 
