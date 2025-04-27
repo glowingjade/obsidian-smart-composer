@@ -78,7 +78,7 @@ export const smartComposerSettingsSchema = z.object({
     .catch({
       includeCurrentFileContent: true,
       enableTools: true,
-      maxAutoIterations: 5,
+      maxAutoIterations: 1,
     }),
 })
 export type SmartComposerSettings = z.infer<typeof smartComposerSettingsSchema>
