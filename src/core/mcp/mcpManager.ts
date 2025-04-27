@@ -11,7 +11,7 @@ import {
   McpToolCallResult,
 } from '../../types/mcp.types'
 
-import { InvalidToolNameException } from './exception'
+import { InvalidToolNameException, McpNotAvailableException } from './exception'
 import {
   getToolName,
   parseToolName,
@@ -174,6 +174,10 @@ export class McpManager {
   private async connectServer(
     serverConfig: McpServerConfig,
   ): Promise<McpServerState> {
+    if (this.disabled) {
+      throw new McpNotAvailableException()
+    }
+
     const { id: name, parameters: serverParams, enabled } = serverConfig
 
     if (!enabled) {
@@ -343,7 +347,7 @@ export class McpManager {
     >
   > {
     if (this.disabled) {
-      throw new Error('MCP is not supported on mobile')
+      throw new McpNotAvailableException()
     }
 
     const toolAbortController = new AbortController()
