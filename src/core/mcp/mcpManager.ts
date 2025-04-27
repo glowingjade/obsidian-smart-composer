@@ -2,7 +2,6 @@ import isEqual from 'lodash.isequal'
 import { Platform } from 'obsidian'
 
 import { SmartComposerSettings } from '../../settings/schema/setting.types'
-import { ToolCallResponse, ToolCallResponseStatus } from '../../types/chat'
 import {
   McpServerConfig,
   McpServerState,
@@ -10,6 +9,10 @@ import {
   McpTool,
   McpToolCallResult,
 } from '../../types/mcp.types'
+import {
+  ToolCallResponse,
+  ToolCallResponseStatus,
+} from '../../types/tool-call.types'
 
 import { InvalidToolNameException, McpNotAvailableException } from './exception'
 import {
@@ -362,8 +365,6 @@ export class McpManager {
     if (signal) {
       signal.addEventListener('abort', () => toolAbortController.abort())
     }
-
-    console.log(`Calling tool ${name}: ${JSON.stringify(args)}`)
 
     try {
       const { serverName, toolName } = parseToolName(name)

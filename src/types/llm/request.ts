@@ -3,7 +3,7 @@
 
 import { ChatCompletionCreateParams, ReasoningEffort } from 'openai/resources'
 
-import { ToolCallRequest } from '../chat'
+import { ToolCallRequest } from '../tool-call.types'
 
 export type LLMRequestBase = {
   messages: RequestMessage[]

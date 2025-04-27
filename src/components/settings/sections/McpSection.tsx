@@ -294,9 +294,9 @@ function McpToolComponent({
   }
 
   const handleToggleAutoExecution = (autoExecution: boolean) => {
-    const toolOptions = server.config.toolOptions
+    const toolOptions = { ...server.config.toolOptions }
     toolOptions[tool.name] = {
-      disabled: disabled,
+      ...toolOptions[tool.name],
       allowAutoExecution: autoExecution,
     }
     setSettings({

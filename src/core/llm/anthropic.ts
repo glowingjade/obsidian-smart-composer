@@ -3,6 +3,7 @@ import {
   Tool as AnthropicTool,
   ToolChoice as AnthropicToolChoice,
   Base64ImageSource,
+  ContentBlockParam,
   ImageBlockParam,
   MessageParam,
   MessageStreamEvent,
@@ -325,48 +326,46 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
         return { role: 'user', content: message.content }
       }
       case 'assistant': {
-        if (message.tool_calls && message.tool_calls.length > 0) {
-          const anthropicToolCalls = message.tool_calls
-            .map((toolCall) => {
-              try {
-                const parsedArgs =
-                  toolCall.arguments && toolCall.arguments.length > 0
-                    ? JSON.parse(toolCall.arguments)
-                    : {}
-
-                return {
-                  type: 'tool_use' as const,
-                  id: toolCall.id,
-                  name: toolCall.name,
-                  input: parsedArgs,
+        const anthropicToolCalls = message.tool_calls?.map(
+          (toolCall): ContentBlockParam => {
+            const parsedArgs = (() => {
+              if (toolCall.arguments && toolCall.arguments.length > 0) {
+                try {
+                  return JSON.parse(toolCall.arguments) as unknown
+                } catch (error) {
+                  return {}
                 }
-              } catch (error) {
-                // Skip invalid tool calls that fail JSON parsing
-                // NOTE: This could cause issues if we later receive a tool message referencing this skipped tool call's ID
-                return null
               }
-            })
-            .filter((toolCall) => toolCall !== null)
+              return {}
+            })()
 
-          return {
-            role: 'assistant',
-            content: [
-              ...(message.content.trim() === ''
-                ? []
-                : [
-                    {
-                      type: 'text' as const,
-                      text: message.content,
-                    },
-                  ]),
-              ...anthropicToolCalls,
-            ],
-          }
-        }
-        if (message.content.trim() === '') {
+            return {
+              type: 'tool_use' as const,
+              id: toolCall.id,
+              name: toolCall.name,
+              input: parsedArgs,
+            }
+          },
+        )
+
+        const messageContent = [
+          ...(message.content.trim() === ''
+            ? []
+            : [
+                {
+                  type: 'text' as const,
+                  text: message.content,
+                },
+              ]),
+          ...(anthropicToolCalls ? anthropicToolCalls : []),
+        ]
+
+        if (messageContent.length === 0) {
+          // No content or tool calls, skip the message
           return null
         }
-        return { role: 'assistant', content: message.content }
+
+        return { role: 'assistant', content: messageContent }
       }
       case 'system': {
         // System messages should be extracted and handled separately

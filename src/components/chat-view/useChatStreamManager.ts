@@ -74,6 +74,8 @@ export function useChatStreamManager({
       const abortController = new AbortController()
       activeStreamAbortControllersRef.current.push(abortController)
 
+      let unsubscribeResponseGenerator: (() => void) | undefined
+
       try {
         const mcpManager = await getMcpManager()
         const responseGenerator = new ResponseGenerator({
@@ -88,25 +90,27 @@ export function useChatStreamManager({
           abortSignal: abortController.signal,
         })
 
-        responseGenerator.subscribe((responseMessages) => {
-          setChatMessages((prevChatMessages) => {
-            const lastMessageIndex = prevChatMessages.findIndex(
-              (message) => message.id === lastMessage.id,
-            )
-            if (lastMessageIndex === -1) {
-              // The last message no longer exists in the chat history.
-              // This likely means a new message was submitted while this stream was running.
-              // Abort this stream and keep the current chat history.
-              abortController.abort()
-              return prevChatMessages
-            }
-            return [
-              ...prevChatMessages.slice(0, lastMessageIndex + 1),
-              ...responseMessages,
-            ]
-          })
-          autoScrollToBottom()
-        })
+        unsubscribeResponseGenerator = responseGenerator.subscribe(
+          (responseMessages) => {
+            setChatMessages((prevChatMessages) => {
+              const lastMessageIndex = prevChatMessages.findIndex(
+                (message) => message.id === lastMessage.id,
+              )
+              if (lastMessageIndex === -1) {
+                // The last message no longer exists in the chat history.
+                // This likely means a new message was submitted while this stream was running.
+                // Abort this stream and keep the current chat history.
+                abortController.abort()
+                return prevChatMessages
+              }
+              return [
+                ...prevChatMessages.slice(0, lastMessageIndex + 1),
+                ...responseMessages,
+              ]
+            })
+            autoScrollToBottom()
+          },
+        )
 
         await responseGenerator.run()
       } catch (error) {
@@ -115,6 +119,10 @@ export function useChatStreamManager({
           return
         }
         throw error
+      } finally {
+        if (unsubscribeResponseGenerator) {
+          unsubscribeResponseGenerator()
+        }
       }
     },
     onError: (error) => {

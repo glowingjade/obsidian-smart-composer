@@ -62,6 +62,9 @@ function McpServerFormComponent({
         throw new Error('Server with same name already exists')
       }
 
+      if (parameters.trim().length === 0) {
+        throw new Error('Parameters are required')
+      }
       const parsedParameters = JSON.parse(parameters)
       const validatedParameters: McpServerParameters = mcpServerParametersSchema
         .strict()

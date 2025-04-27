@@ -121,7 +121,7 @@ export class OpenAIMessageAdapter {
           tool_calls: message.tool_calls?.map((toolCall) => ({
             id: toolCall.id,
             function: {
-              arguments: toolCall.arguments ?? '',
+              arguments: toolCall.arguments ?? '{}',
               name: toolCall.name,
             },
             type: 'function',

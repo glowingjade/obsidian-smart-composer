@@ -6,6 +6,7 @@ import { ChatModel } from './chat-model.types'
 import { ContentPart } from './llm/request'
 import { Annotation, ResponseUsage } from './llm/response'
 import { Mentionable, SerializedMentionable } from './mentionable'
+import { ToolCallRequest, ToolCallResponse } from './tool-call.types'
 
 export type ChatUserMessage = {
   role: 'user'
@@ -98,38 +99,3 @@ export type ChatConversationMeta = {
   createdAt: number
   updatedAt: number
 }
-
-export type ToolCallRequest = {
-  id: string
-  name: string
-  arguments?: string
-}
-export enum ToolCallResponseStatus {
-  PendingApproval = 'pending_approval',
-  Rejected = 'rejected',
-  Running = 'running',
-  Success = 'success',
-  Error = 'error',
-  Aborted = 'aborted',
-}
-export type ToolCallResponse =
-  | {
-      status:
-        | ToolCallResponseStatus.PendingApproval
-        | ToolCallResponseStatus.Rejected
-        | ToolCallResponseStatus.Running
-    }
-  | {
-      status: ToolCallResponseStatus.Success
-      data: {
-        type: 'text'
-        text: string
-      }
-    }
-  | {
-      status: ToolCallResponseStatus.Error
-      error: string
-    }
-  | {
-      status: ToolCallResponseStatus.Aborted
-    }

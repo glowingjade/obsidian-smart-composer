@@ -42,14 +42,14 @@ function CopyButton({ messages }: { messages: AssistantToolMessageGroup }) {
     <Tooltip.Provider delayDuration={0}>
       <Tooltip.Root>
         <Tooltip.Trigger asChild>
-          <button>
+          <button onClick={copied ? undefined : handleCopy}>
             {copied ? (
               <Check
                 size={12}
                 className="smtcmp-assistant-message-actions-icon--copied"
               />
             ) : (
-              <CopyIcon onClick={handleCopy} size={12} />
+              <CopyIcon size={12} />
             )}
           </button>
         </Tooltip.Trigger>

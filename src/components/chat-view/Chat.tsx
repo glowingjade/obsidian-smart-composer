@@ -30,13 +30,13 @@ import {
   ChatMessage,
   ChatToolMessage,
   ChatUserMessage,
-  ToolCallResponseStatus,
 } from '../../types/chat'
 import {
   MentionableBlock,
   MentionableBlockData,
   MentionableCurrentFile,
 } from '../../types/mentionable'
+import { ToolCallResponseStatus } from '../../types/tool-call.types'
 import { applyChangesToFile } from '../../utils/chat/apply'
 import {
   getMentionableKey,
@@ -370,7 +370,10 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       if (
         toolMessageIndex === chatMessages.length - 1 &&
         toolMessage.toolCalls.every((toolCall) =>
-          ['success', 'error'].includes(toolCall.response.status),
+          [
+            ToolCallResponseStatus.Success,
+            ToolCallResponseStatus.Error,
+          ].includes(toolCall.response.status),
         )
       ) {
         // Using updated toolMessage directly because chatMessages state

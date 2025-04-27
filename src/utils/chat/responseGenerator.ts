@@ -6,8 +6,6 @@ import {
   ChatAssistantMessage,
   ChatMessage,
   ChatToolMessage,
-  ToolCallRequest,
-  ToolCallResponseStatus,
 } from '../../types/chat'
 import { ChatModel } from '../../types/chat-model.types'
 import { RequestTool } from '../../types/llm/request'
@@ -17,6 +15,10 @@ import {
   ToolCallDelta,
 } from '../../types/llm/response'
 import { LLMProvider } from '../../types/provider.types'
+import {
+  ToolCallRequest,
+  ToolCallResponseStatus,
+} from '../../types/tool-call.types'
 
 import { fetchAnnotationTitles } from './fetch-annotation-titles'
 import { PromptGenerator } from './promptGenerator'
@@ -61,6 +63,10 @@ export class ResponseGenerator {
 
   public subscribe(callback: (messages: ChatMessage[]) => void) {
     this.subscribers.push(callback)
+
+    return () => {
+      this.subscribers = this.subscribers.filter((cb) => cb !== callback)
+    }
   }
 
   public async run() {
@@ -307,37 +313,39 @@ export class ResponseGenerator {
     toolCalls: ToolCallDelta[],
     existingToolCalls: Record<number, ToolCallDelta>,
   ): Record<number, ToolCallDelta> {
-    return toolCalls.reduce(
-      (merged, toolCall) => {
-        const { index } = toolCall
+    const merged = { ...existingToolCalls }
 
-        if (!merged[index]) {
-          return { ...merged, [index]: toolCall }
+    for (const toolCall of toolCalls) {
+      const { index } = toolCall
+
+      if (!merged[index]) {
+        merged[index] = toolCall
+        continue
+      }
+
+      const mergedToolCall: ToolCallDelta = {
+        index,
+        id: merged[index].id ?? toolCall.id,
+        type: merged[index].type ?? toolCall.type,
+      }
+
+      if (merged[index].function || toolCall.function) {
+        const existingArgs = merged[index].function?.arguments
+        const newArgs = toolCall.function?.arguments
+
+        mergedToolCall.function = {
+          name: merged[index].function?.name ?? toolCall.function?.name,
+          arguments:
+            existingArgs || newArgs
+              ? [existingArgs ?? '', newArgs ?? ''].join('')
+              : undefined,
         }
+      }
 
-        const mergedToolCall: ToolCallDelta = {
-          index,
-          id: merged[index].id ?? toolCall.id,
-          type: merged[index].type ?? toolCall.type,
-        }
+      merged[index] = mergedToolCall
+    }
 
-        if (merged[index].function || toolCall.function) {
-          const existingArgs = merged[index].function?.arguments
-          const newArgs = toolCall.function?.arguments
-
-          mergedToolCall.function = {
-            name: merged[index].function?.name ?? toolCall.function?.name,
-            arguments:
-              existingArgs || newArgs
-                ? [existingArgs ?? '', newArgs ?? ''].join('')
-                : undefined,
-          }
-        }
-
-        return { ...merged, [index]: mergedToolCall }
-      },
-      { ...existingToolCalls },
-    )
+    return merged
   }
 
   private mergeAnnotations(

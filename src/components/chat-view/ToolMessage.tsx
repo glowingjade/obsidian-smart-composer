@@ -6,12 +6,12 @@ import { useMcp } from '../../contexts/mcp-context'
 import { useSettings } from '../../contexts/settings-context'
 import { InvalidToolNameException } from '../../core/mcp/exception'
 import { parseToolName } from '../../core/mcp/tool-name-utils'
+import { ChatToolMessage } from '../../types/chat'
 import {
-  ChatToolMessage,
   ToolCallRequest,
   ToolCallResponse,
   ToolCallResponseStatus,
-} from '../../types/chat'
+} from '../../types/tool-call.types'
 import { SplitButton } from '../common/SplitButton'
 
 import { ObsidianCodeBlock } from './ObsidianMarkdown'
@@ -235,7 +235,7 @@ function useToolCall(
     onResponseUpdate({
       status: ToolCallResponseStatus.Running,
     })
-    const toolCallResponse = await mcpManager.callTool({
+    const toolCallResponse: ToolCallResponse = await mcpManager.callTool({
       name: request.name,
       args: request.arguments,
       id: request.id,
@@ -254,7 +254,7 @@ function useToolCall(
     if (!server) {
       throw new Error(`Server ${serverName} not found`)
     }
-    const toolOptions = server.toolOptions
+    const toolOptions = { ...server.toolOptions }
     if (!toolOptions[toolName]) {
       // If the tool is not in the toolOptions, add it with default values
       toolOptions[toolName] = {
@@ -262,7 +262,10 @@ function useToolCall(
         disabled: false,
       }
     }
-    toolOptions[toolName].allowAutoExecution = true
+    toolOptions[toolName] = {
+      ...toolOptions[toolName],
+      allowAutoExecution: true,
+    }
 
     setSettings({
       ...settings,

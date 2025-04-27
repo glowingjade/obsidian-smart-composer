@@ -10,7 +10,6 @@ import {
   ChatMessage,
   ChatToolMessage,
   ChatUserMessage,
-  ToolCallResponseStatus,
 } from '../../types/chat'
 import { ContentPart, RequestMessage } from '../../types/llm/request'
 import {
@@ -22,6 +21,7 @@ import {
   MentionableVault,
 } from '../../types/mentionable'
 import { PromptLevel } from '../../types/prompt-level.types'
+import { ToolCallResponseStatus } from '../../types/tool-call.types'
 import { tokenCount } from '../llm/token'
 import {
   getNestedFiles,
