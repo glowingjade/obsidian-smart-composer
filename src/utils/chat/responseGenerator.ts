@@ -2,11 +2,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { BaseLLMProvider } from '../../core/llm/base'
 import { McpManager } from '../../core/mcp/mcpManager'
-import {
-  ChatAssistantMessage,
-  ChatMessage,
-  ChatToolMessage,
-} from '../../types/chat'
+import { ChatMessage, ChatToolMessage } from '../../types/chat'
 import { ChatModel } from '../../types/chat-model.types'
 import { RequestTool } from '../../types/llm/request'
 import {
@@ -54,7 +50,7 @@ export class ResponseGenerator {
     this.model = params.model
     this.conversationId = params.conversationId
     this.enableTools = params.enableTools
-    this.maxAutoIterations = params.maxAutoIterations
+    this.maxAutoIterations = Math.max(1, params.maxAutoIterations) // Ensure maxAutoIterations is at least 1
     this.receivedMessages = params.messages
     this.promptGenerator = params.promptGenerator
     this.mcpManager = params.mcpManager
@@ -187,9 +183,11 @@ export class ResponseGenerator {
         },
       })
     }
-    const responseMessageId = (
-      this.responseMessages.at(-1) as ChatAssistantMessage
-    ).id
+    const lastMessage = this.responseMessages.at(-1)
+    if (lastMessage?.role !== 'assistant') {
+      throw new Error('Last message is not an assistant message')
+    }
+    const responseMessageId = lastMessage.id
     let responseToolCalls: Record<number, ToolCallDelta> = {}
     for await (const chunk of stream) {
       const { updatedToolCalls } = this.processChunk(

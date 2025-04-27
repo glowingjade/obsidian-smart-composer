@@ -13,7 +13,7 @@ export function validateServerName(
   delimiter: string = DEFAULT_DELIMITER,
 ): void {
   // OpenAI only allows alphanumeric characters, underscores, and hyphens in the tool name
-  const regex = new RegExp(`^[a-zA-Z0-9_-]+$`)
+  const regex = /^[a-zA-Z0-9_-]+$/
   if (!regex.test(name)) {
     throw new Error(
       `Invalid MCP server name: ${name}. Only alphanumeric characters, underscores, and hyphens are allowed.`,

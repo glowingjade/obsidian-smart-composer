@@ -389,9 +389,6 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
   static parseNonStreamingResponse(
     response: Anthropic.Message,
   ): LLMResponseNonStreaming {
-    if (response.content[0].type === 'tool_use') {
-      throw new Error('Unsupported content type: tool_use')
-    }
     const textContent = response.content
       .filter((c) => c.type === 'text')
       .map((c) => c.text)

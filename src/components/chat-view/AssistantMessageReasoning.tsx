@@ -1,9 +1,11 @@
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
+
+import DotLoader from '../common/DotLoader'
 
 import { ObsidianMarkdown } from './ObsidianMarkdown'
 
-export default function AssistantMessageReasoning({
+const AssistantMessageReasoning = memo(function AssistantMessageReasoning({
   reasoning,
 }: {
   reasoning: string
@@ -55,8 +57,6 @@ export default function AssistantMessageReasoning({
       )}
     </div>
   )
-}
+})
 
-function DotLoader() {
-  return <span className="smtcmp-dot-loader" aria-label="Loading"></span>
-}
+export default AssistantMessageReasoning

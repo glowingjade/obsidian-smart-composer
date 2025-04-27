@@ -1,4 +1,5 @@
 import { SelectEmbedding } from '../../database/schema'
+import DotLoader from '../common/DotLoader'
 
 export type QueryProgressState =
   | {
@@ -86,8 +87,4 @@ export default function QueryProgress({
         </div>
       )
   }
-}
-
-function DotLoader() {
-  return <span className="smtcmp-dot-loader" aria-label="Loading"></span>
 }

@@ -18,9 +18,23 @@ export default function ToolBadge() {
   const [mcpManager, setMcpManager] = useState<McpManager | null>(null)
   const [toolCount, setToolCount] = useState(0)
 
-  const handleClick = useCallback(() => {
+  const handleBadgeClick = useCallback(() => {
     new McpSectionModal(app, plugin).open()
   }, [plugin, app])
+
+  const handleToolToggle = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      e.stopPropagation()
+      setSettings({
+        ...settings,
+        chatOptions: {
+          ...settings.chatOptions,
+          enableTools: !settings.chatOptions.enableTools,
+        },
+      })
+    },
+    [settings, setSettings],
+  )
 
   useEffect(() => {
     const initMCPManager = async () => {
@@ -48,7 +62,10 @@ export default function ToolBadge() {
   }, [mcpManager])
 
   return (
-    <div className="smtcmp-chat-user-input-file-badge" onClick={handleClick}>
+    <div
+      className="smtcmp-chat-user-input-file-badge"
+      onClick={handleBadgeClick}
+    >
       <div className="smtcmp-chat-user-input-file-badge-name">
         <Wrench
           size={12}
@@ -64,16 +81,7 @@ export default function ToolBadge() {
       </div>
       <div
         className="smtcmp-chat-user-input-file-badge-eye"
-        onClick={(e) => {
-          e.stopPropagation()
-          setSettings({
-            ...settings,
-            chatOptions: {
-              ...settings.chatOptions,
-              enableTools: !settings.chatOptions.enableTools,
-            },
-          })
-        }}
+        onClick={handleToolToggle}
       >
         {settings.chatOptions.enableTools ? (
           <Eye size={12} />

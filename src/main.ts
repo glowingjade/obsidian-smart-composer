@@ -293,14 +293,20 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
     if (this.mcpManager) {
       return this.mcpManager
     }
-    this.mcpManager = new McpManager({
-      settings: this.settings,
-      registerSettingsListener: (
-        listener: (settings: SmartComposerSettings) => void,
-      ) => this.addSettingsChangeListener(listener),
-    })
-    await this.mcpManager.initialize()
-    return this.mcpManager
+
+    try {
+      this.mcpManager = new McpManager({
+        settings: this.settings,
+        registerSettingsListener: (
+          listener: (settings: SmartComposerSettings) => void,
+        ) => this.addSettingsChangeListener(listener),
+      })
+      await this.mcpManager.initialize()
+      return this.mcpManager
+    } catch (error) {
+      this.mcpManager = null
+      throw error
+    }
   }
 
   private registerTimeout(callback: () => void, timeout: number): void {

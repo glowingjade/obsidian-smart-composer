@@ -124,7 +124,7 @@ export function ChatSection() {
           value={settings.chatOptions.maxAutoIterations.toString()}
           onChange={async (value) => {
             const parsedValue = parseInt(value)
-            if (isNaN(parsedValue)) {
+            if (isNaN(parsedValue) || parsedValue < 1) {
               return
             }
             await setSettings({

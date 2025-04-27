@@ -123,6 +123,10 @@ export function useChatStreamManager({
         if (unsubscribeResponseGenerator) {
           unsubscribeResponseGenerator()
         }
+        activeStreamAbortControllersRef.current =
+          activeStreamAbortControllersRef.current.filter(
+            (controller) => controller !== abortController,
+          )
       }
     },
     onError: (error) => {

@@ -24,15 +24,18 @@ export function SplitButton({
         {primaryText}
       </button>
       <DropdownMenu.Root open={isOpen} onOpenChange={setIsOpen}>
-        <DropdownMenu.Trigger className="smtcmp-split-button-toggle">
+        <DropdownMenu.Trigger
+          className="smtcmp-split-button-toggle"
+          aria-label="Show more options"
+        >
           <ChevronDown size={16} />
         </DropdownMenu.Trigger>
         <DropdownMenu.Portal>
           <DropdownMenu.Content className="smtcmp-popover">
             <ul>
-              {menuOptions.map((option, index) => (
+              {menuOptions.map((option) => (
                 <DropdownMenu.Item
-                  key={index}
+                  key={option.label}
                   onSelect={option.onClick}
                   asChild
                 >

@@ -65,7 +65,12 @@ function McpServerFormComponent({
       if (parameters.trim().length === 0) {
         throw new Error('Parameters are required')
       }
-      const parsedParameters = JSON.parse(parameters)
+      let parsedParameters: unknown
+      try {
+        parsedParameters = JSON.parse(parameters)
+      } catch {
+        throw new Error('Parameters must be valid JSON')
+      }
       const validatedParameters: McpServerParameters = mcpServerParametersSchema
         .strict()
         .parse(parsedParameters)
@@ -112,7 +117,7 @@ function McpServerFormComponent({
   const validateParameters = useCallback((parameters: string) => {
     try {
       if (parameters.length === 0) {
-        setValidationError(null)
+        setValidationError('Parameters are required')
         return
       }
       const parsedParameters = JSON.parse(parameters)
@@ -174,11 +179,11 @@ function McpServerFormComponent({
         <div className="smtcmp-mcp-server-modal-validation smtcmp-mcp-server-modal-validation--error">
           {validationError}
         </div>
-      ) : parameters.length > 0 ? (
+      ) : (
         <div className="smtcmp-mcp-server-modal-validation smtcmp-mcp-server-modal-validation--success">
           Valid parameters
         </div>
-      ) : null}
+      )}
 
       <ObsidianSetting>
         <ObsidianButton text="Save" onClick={handleSubmit} cta />

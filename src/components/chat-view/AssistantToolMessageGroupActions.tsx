@@ -63,7 +63,7 @@ function CopyButton({ messages }: { messages: AssistantToolMessageGroup }) {
   )
 }
 
-function LLMResponesInfoButton({
+function LLMResponseInfoButton({
   messages,
 }: {
   messages: AssistantToolMessageGroup
@@ -134,7 +134,7 @@ export default function AssistantToolMessageGroupActions({
 }) {
   return (
     <div className="smtcmp-assistant-message-actions">
-      <LLMResponesInfoButton messages={messages} />
+      <LLMResponseInfoButton messages={messages} />
       <CopyButton messages={messages} />
     </div>
   )

@@ -35,6 +35,8 @@ export class McpManager {
   private allowedToolsByConversation: Map<string, Set<string>> = new Map()
   private subscribers = new Set<(servers: McpServerState[]) => void>()
 
+  private availableToolsCache: McpTool[] | null = null
+
   constructor({
     settings,
     registerSettingsListener,
@@ -83,7 +85,6 @@ export class McpManager {
     this.servers = []
     this.subscribers.clear()
     this.activeToolCalls.clear()
-    this.allowedToolsByConversation.clear()
   }
 
   public getServers() {
@@ -172,6 +173,7 @@ export class McpManager {
 
     this.servers = nextServers
     this.notifySubscribers()
+    this.availableToolsCache = null // Invalidate available tools cache
   }
 
   private async connectServer(
@@ -254,7 +256,12 @@ export class McpManager {
     if (this.disabled) {
       return []
     }
-    return (
+
+    if (this.availableToolsCache) {
+      return this.availableToolsCache
+    }
+
+    const availableTools = (
       await Promise.all(
         this.servers.map(async (server): Promise<McpTool[]> => {
           if (server.status !== McpServerStatus.Connected) {
@@ -277,6 +284,9 @@ export class McpManager {
         }),
       )
     ).flat()
+
+    this.availableToolsCache = [...availableTools]
+    return availableTools
   }
 
   public allowToolForConversation(
@@ -391,6 +401,9 @@ export class McpManager {
         },
       )) as McpToolCallResult
 
+      if (result.content.length === 0) {
+        throw new Error('Tool call returned no content')
+      }
       if (result.content[0].type !== 'text') {
         throw new Error(
           `Tool result with content type ${result.content[0].type} is not currently supported.`,

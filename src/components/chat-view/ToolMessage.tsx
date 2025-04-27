@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import { Check, ChevronDown, ChevronRight, Loader2, X } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 
 import { useMcp } from '../../contexts/mcp-context'
 import { useSettings } from '../../contexts/settings-context'
@@ -48,7 +48,7 @@ export const getToolMessageContent = (message: ChatToolMessage): string => {
     .join('\n')
 }
 
-export default function ToolMessage({
+const ToolMessage = memo(function ToolMessage({
   message,
   conversationId,
   onMessageUpdate,
@@ -81,7 +81,7 @@ export default function ToolMessage({
       ))}
     </div>
   )
-}
+})
 
 function ToolCallItem({
   request,
@@ -322,3 +322,5 @@ function StatusIcon({ status }: { status: ToolCallResponseStatus }) {
       return null
   }
 }
+
+export default ToolMessage

@@ -1,9 +1,9 @@
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { memo, useRef, useState } from 'react'
 
 import { Annotation } from '../../types/llm/response'
 
-export default function AssistantMessageAnnotations({
+const AssistantMessageAnnotations = memo(function AssistantMessageAnnotations({
   annotations,
 }: {
   annotations: Annotation[]
@@ -58,4 +58,6 @@ export default function AssistantMessageAnnotations({
       )}
     </div>
   )
-}
+})
+
+export default AssistantMessageAnnotations
