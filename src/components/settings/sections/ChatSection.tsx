@@ -118,7 +118,7 @@ export function ChatSection() {
 
       <ObsidianSetting
         name="Max auto tool requests"
-        desc="Maximum number of consecutive tool calls that can be made automatically without user confirmation."
+        desc="Maximum number of consecutive tool calls that can be made automatically without user confirmation. Higher values can significantly increase costs as each tool call consumes additional tokens."
       >
         <ObsidianTextInput
           value={settings.chatOptions.maxAutoIterations.toString()}
