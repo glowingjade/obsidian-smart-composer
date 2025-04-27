@@ -6,6 +6,7 @@ import { ChatModel } from './chat-model.types'
 import { ContentPart } from './llm/request'
 import { Annotation, ResponseUsage } from './llm/response'
 import { Mentionable, SerializedMentionable } from './mentionable'
+import { ToolCallRequest, ToolCallResponse } from './tool-call.types'
 
 export type ChatUserMessage = {
   role: 'user'
@@ -22,13 +23,31 @@ export type ChatAssistantMessage = {
   content: string
   reasoning?: string
   annotations?: Annotation[]
+  toolCallRequests?: ToolCallRequest[]
   id: string
   metadata?: {
     usage?: ResponseUsage
     model?: ChatModel // TODO: migrate legacy data to new model type
   }
 }
-export type ChatMessage = ChatUserMessage | ChatAssistantMessage
+export type ChatToolMessage = {
+  role: 'tool'
+  id: string
+  toolCalls: {
+    request: ToolCallRequest
+    response: ToolCallResponse
+  }[]
+}
+
+export type ChatMessage =
+  | ChatUserMessage
+  | ChatAssistantMessage
+  | ChatToolMessage
+
+export type AssistantToolMessageGroup = (
+  | ChatAssistantMessage
+  | ChatToolMessage
+)[]
 
 export type SerializedChatUserMessage = {
   role: 'user'
@@ -45,15 +64,25 @@ export type SerializedChatAssistantMessage = {
   content: string
   reasoning?: string
   annotations?: Annotation[]
+  toolCallRequests?: ToolCallRequest[]
   id: string
   metadata?: {
     usage?: ResponseUsage
     model?: ChatModel // TODO: migrate legacy data to new model type
   }
 }
+export type SerializedChatToolMessage = {
+  role: 'tool'
+  toolCalls: {
+    request: ToolCallRequest
+    response: ToolCallResponse
+  }[]
+  id: string
+}
 export type SerializedChatMessage =
   | SerializedChatUserMessage
   | SerializedChatAssistantMessage
+  | SerializedChatToolMessage
 
 export type ChatConversation = {
   schemaVersion: number

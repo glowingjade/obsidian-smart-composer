@@ -144,8 +144,15 @@ const serializeChatMessage = (message: ChatMessage): SerializedChatMessage => {
         content: message.content,
         reasoning: message.reasoning,
         annotations: message.annotations,
+        toolCallRequests: message.toolCallRequests,
         id: message.id,
         metadata: message.metadata,
+      }
+    case 'tool':
+      return {
+        role: 'tool',
+        toolCalls: message.toolCalls,
+        id: message.id,
       }
   }
 }
@@ -173,8 +180,15 @@ const deserializeChatMessage = (
         content: message.content,
         reasoning: message.reasoning,
         annotations: message.annotations,
+        toolCallRequests: message.toolCallRequests,
         id: message.id,
         metadata: message.metadata,
+      }
+    case 'tool':
+      return {
+        role: 'tool',
+        toolCalls: message.toolCalls,
+        id: message.id,
       }
   }
 }

@@ -15,6 +15,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { ApplyViewState } from '../../ApplyView'
 import { APPLY_VIEW_TYPE } from '../../constants'
 import { useApp } from '../../contexts/app-context'
+import { useMcp } from '../../contexts/mcp-context'
 import { useRAG } from '../../contexts/rag-context'
 import { useSettings } from '../../contexts/settings-context'
 import {
@@ -24,32 +25,36 @@ import {
 } from '../../core/llm/exception'
 import { getChatModelClient } from '../../core/llm/manager'
 import { useChatHistory } from '../../hooks/useChatHistory'
-import { ChatMessage, ChatUserMessage } from '../../types/chat'
+import {
+  AssistantToolMessageGroup,
+  ChatMessage,
+  ChatToolMessage,
+  ChatUserMessage,
+} from '../../types/chat'
 import {
   MentionableBlock,
   MentionableBlockData,
   MentionableCurrentFile,
 } from '../../types/mentionable'
+import { ToolCallResponseStatus } from '../../types/tool-call.types'
 import { applyChangesToFile } from '../../utils/chat/apply'
 import {
   getMentionableKey,
   serializeMentionable,
 } from '../../utils/chat/mentionable'
+import { groupAssistantAndToolMessages } from '../../utils/chat/message-groups'
 import { PromptGenerator } from '../../utils/chat/promptGenerator'
 import { readTFileContent } from '../../utils/obsidian'
 import { ErrorModal } from '../modals/ErrorModal'
 
-import { AnnotationManager } from './AnnotationManager'
-import AssistantMessageActions from './AssistantMessageActions'
-import AssistantMessageAnnotations from './AssistantMessageAnnotations'
-import AssistantMessageReasoning from './AssistantMessageReasoning'
+import AssistantToolMessageGroupItem from './AssistantToolMessageGroupItem'
 import ChatUserInput, { ChatUserInputRef } from './chat-input/ChatUserInput'
 import { editorStateToPlainText } from './chat-input/utils/editor-state-to-plain-text'
 import { ChatListDropdown } from './ChatListDropdown'
 import QueryProgress, { QueryProgressState } from './QueryProgress'
-import { ReactMarkdownItem } from './ReactMarkdown'
-import SimilaritySearchResults from './SimilaritySearchResults'
 import { useAutoScroll } from './useAutoScroll'
+import { useChatStreamManager } from './useChatStreamManager'
+import UserMessageItem from './UserMessageItem'
 
 // Add an empty line here
 const getNewInputMessage = (app: App): ChatUserMessage => {
@@ -81,6 +86,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const app = useApp()
   const { settings } = useSettings()
   const { getRAGEngine } = useRAG()
+  const { getMcpManager } = useMcp()
 
   const {
     createOrUpdateConversation,
@@ -124,12 +130,22 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     type: 'idle',
   })
 
-  const activeStreamAbortControllersRef = useRef<AbortController[]>([])
+  const groupedChatMessages: (ChatUserMessage | AssistantToolMessageGroup)[] =
+    useMemo(() => {
+      return groupAssistantAndToolMessages(chatMessages)
+    }, [chatMessages])
+
   const chatUserInputRefs = useRef<Map<string, ChatUserInputRef>>(new Map())
   const chatMessagesRef = useRef<HTMLDivElement>(null)
 
   const { autoScrollToBottom, forceScrollToBottom } = useAutoScroll({
     scrollContainerRef: chatMessagesRef,
+  })
+
+  const { abortActiveStreams, submitChatMutation } = useChatStreamManager({
+    setChatMessages,
+    autoScrollToBottom,
+    promptGenerator,
   })
 
   const registerChatUserInputRef = (
@@ -141,13 +157,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     } else {
       chatUserInputRefs.current.delete(id)
     }
-  }
-
-  const abortActiveStreams = () => {
-    for (const abortController of activeStreamAbortControllersRef.current) {
-      abortController.abort()
-    }
-    activeStreamAbortControllersRef.current = []
   }
 
   const handleLoadConversation = async (conversationId: string) => {
@@ -196,12 +205,12 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     abortActiveStreams()
   }
 
-  const submitMutation = useMutation({
-    mutationFn: async ({
-      newChatHistory,
+  const handleUserMessageSubmit = useCallback(
+    async ({
+      inputChatMessages,
       useVaultSearch,
     }: {
-      newChatHistory: ChatMessage[]
+      inputChatMessages: ChatMessage[]
       useVaultSearch?: boolean
     }) => {
       abortActiveStreams()
@@ -209,141 +218,62 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         type: 'idle',
       })
 
-      const responseMessageId = uuidv4()
-      setChatMessages([
-        ...newChatHistory,
-        {
-          role: 'assistant',
-          content: '',
-          id: responseMessageId,
-          metadata: {
-            usage: undefined,
-            model: undefined,
-          },
-        },
-      ])
-
+      // Update the chat history to show the new user message
+      setChatMessages(inputChatMessages)
       requestAnimationFrame(() => {
         forceScrollToBottom()
       })
 
-      try {
-        const abortController = new AbortController()
-        activeStreamAbortControllersRef.current.push(abortController)
+      const lastMessage = inputChatMessages.at(-1)
+      if (lastMessage?.role !== 'user') {
+        throw new Error('Last message is not a user message')
+      }
 
-        const { requestMessages, compiledMessages } =
-          await promptGenerator.generateRequestMessages({
-            messages: newChatHistory,
-            useVaultSearch,
-            onQueryProgressChange: setQueryProgress,
-          })
-        setQueryProgress({
-          type: 'idle',
-        })
-
-        setChatMessages([
-          ...compiledMessages,
-          {
-            role: 'assistant',
-            content: '',
-            id: responseMessageId,
-            metadata: {
-              usage: undefined,
-              model: undefined,
-            },
-          },
-        ])
-
-        const { providerClient, model } = getChatModelClient({
-          settings,
-          modelId: settings.chatModelId,
-        })
-
-        const stream = await providerClient.streamResponse(
-          model,
-          {
-            model: model.model,
-            messages: requestMessages,
-            stream: true,
-          },
-          {
-            signal: abortController.signal,
-          },
-        )
-
-        const annotationManager = new AnnotationManager()
-
-        for await (const chunk of stream) {
-          const content = chunk.choices[0]?.delta?.content ?? ''
-          const reasoning = chunk.choices[0]?.delta?.reasoning
-          const annotations = chunk.choices[0]?.delta?.annotations
-
-          if (annotations) {
-            // For annotations with empty titles, fetch the title of the URL and update the chat messages
-            await annotationManager.fetchUrlTitles(
-              annotations,
-              setChatMessages,
-              responseMessageId,
-            )
+      const compiledMessages = await Promise.all(
+        inputChatMessages.map(async (message) => {
+          if (message.role === 'user' && message.id === lastMessage.id) {
+            const { promptContent, similaritySearchResults } =
+              await promptGenerator.compileUserMessagePrompt({
+                message,
+                useVaultSearch,
+                onQueryProgressChange: setQueryProgress,
+              })
+            return {
+              ...message,
+              promptContent,
+              similaritySearchResults,
+            }
+          } else if (message.role === 'user' && !message.promptContent) {
+            // Ensure all user messages have prompt content
+            // This is a fallback for cases where compilation was missed earlier in the process
+            const { promptContent, similaritySearchResults } =
+              await promptGenerator.compileUserMessagePrompt({
+                message,
+              })
+            return {
+              ...message,
+              promptContent,
+              similaritySearchResults,
+            }
           }
+          return message
+        }),
+      )
 
-          setChatMessages((prevChatHistory) =>
-            prevChatHistory.map((message) =>
-              message.role === 'assistant' && message.id === responseMessageId
-                ? {
-                    ...message,
-                    content: message.content + content,
-                    reasoning: reasoning
-                      ? (message.reasoning ?? '') + reasoning
-                      : message.reasoning,
-                    annotations: AnnotationManager.mergeAnnotations(
-                      message.annotations,
-                      annotations,
-                    ),
-                    metadata: {
-                      ...message.metadata,
-                      usage: chunk.usage ?? message.metadata?.usage,
-                      model,
-                    },
-                  }
-                : message,
-            ),
-          )
-          autoScrollToBottom()
-        }
-      } catch (error) {
-        if (error.name === 'AbortError') {
-          return
-        } else {
-          throw error
-        }
-      }
-    },
-    onError: (error) => {
-      setQueryProgress({
-        type: 'idle',
+      setChatMessages(compiledMessages)
+      submitChatMutation.mutate({
+        chatMessages: compiledMessages,
+        conversationId: currentConversationId,
       })
-      if (
-        error instanceof LLMAPIKeyNotSetException ||
-        error instanceof LLMAPIKeyInvalidException ||
-        error instanceof LLMBaseUrlNotSetException
-      ) {
-        new ErrorModal(app, 'Error', error.message, error.rawError?.message, {
-          showSettingsButton: true,
-        }).open()
-      } else {
-        new Notice(error.message)
-        console.error('Failed to generate response', error)
-      }
     },
-  })
-
-  const handleSubmit = (
-    newChatHistory: ChatMessage[],
-    useVaultSearch?: boolean,
-  ) => {
-    submitMutation.mutate({ newChatHistory, useVaultSearch })
-  }
+    [
+      submitChatMutation,
+      currentConversationId,
+      promptGenerator,
+      abortActiveStreams,
+      forceScrollToBottom,
+    ],
+  )
 
   const applyMutation = useMutation({
     mutationFn: async ({
@@ -410,6 +340,91 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     },
     [applyMutation],
   )
+
+  const handleToolMessageUpdate = useCallback(
+    async (toolMessage: ChatToolMessage) => {
+      const toolMessageIndex = chatMessages.findIndex(
+        (message) => message.id === toolMessage.id,
+      )
+      if (toolMessageIndex === -1) {
+        // The tool message no longer exists in the chat history.
+        // This likely means a new message was submitted while this stream was running.
+        // Abort the tool calls and keep the current chat history.
+        void (async () => {
+          const mcpManager = await getMcpManager()
+          toolMessage.toolCalls.forEach((toolCall) => {
+            mcpManager.abortToolCall(toolCall.request.id)
+          })
+        })()
+        return
+      }
+
+      const updatedMessages = chatMessages.map((message) =>
+        message.id === toolMessage.id ? toolMessage : message,
+      )
+      setChatMessages(updatedMessages)
+
+      // Resume the chat automatically if this tool message is the last message
+      // and all tool calls have completed.
+      if (
+        toolMessageIndex === chatMessages.length - 1 &&
+        toolMessage.toolCalls.every((toolCall) =>
+          [
+            ToolCallResponseStatus.Success,
+            ToolCallResponseStatus.Error,
+          ].includes(toolCall.response.status),
+        )
+      ) {
+        // Using updated toolMessage directly because chatMessages state
+        // still contains the old values
+        submitChatMutation.mutate({
+          chatMessages: updatedMessages,
+          conversationId: currentConversationId,
+        })
+        requestAnimationFrame(() => {
+          forceScrollToBottom()
+        })
+      }
+    },
+    [
+      chatMessages,
+      currentConversationId,
+      submitChatMutation,
+      setChatMessages,
+      getMcpManager,
+      forceScrollToBottom,
+    ],
+  )
+
+  const showContinueResponseButton = useMemo(() => {
+    /**
+     * Display the button to continue response when:
+     * 1. There is no ongoing generation
+     * 2. The most recent message is a tool message
+     * 3. All tool calls within that message have completed
+     */
+
+    if (submitChatMutation.isPending) return false
+
+    const lastMessage = chatMessages.at(-1)
+    if (lastMessage?.role !== 'tool') return false
+
+    return lastMessage.toolCalls.every((toolCall) =>
+      [
+        ToolCallResponseStatus.Aborted,
+        ToolCallResponseStatus.Rejected,
+        ToolCallResponseStatus.Error,
+        ToolCallResponseStatus.Success,
+      ].includes(toolCall.response.status),
+    )
+  }, [submitChatMutation.isPending, chatMessages])
+
+  const handleContinueResponse = useCallback(() => {
+    submitChatMutation.mutate({
+      chatMessages: chatMessages,
+      conversationId: currentConversationId,
+    })
+  }, [submitChatMutation, chatMessages, currentConversationId])
 
   useEffect(() => {
     setFocusedMessageId(inputMessage.id)
@@ -582,84 +597,92 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         </div>
       </div>
       <div className="smtcmp-chat-messages" ref={chatMessagesRef}>
-        {chatMessages.map((message, index) =>
-          message.role === 'user' ? (
-            <div key={message.id} className="smtcmp-chat-messages-user">
-              <ChatUserInput
-                ref={(ref) => registerChatUserInputRef(message.id, ref)}
-                initialSerializedEditorState={message.content}
-                onChange={(content) => {
-                  setChatMessages((prevChatHistory) =>
-                    prevChatHistory.map((msg) =>
-                      msg.role === 'user' && msg.id === message.id
-                        ? {
-                            ...msg,
-                            content,
-                          }
-                        : msg,
-                    ),
-                  )
-                }}
-                onSubmit={(content, useVaultSearch) => {
-                  if (editorStateToPlainText(content).trim() === '') return
-                  handleSubmit(
-                    [
-                      ...chatMessages.slice(0, index),
-                      {
-                        role: 'user',
-                        content: content,
-                        promptContent: null,
-                        id: message.id,
-                        mentionables: message.mentionables,
-                      },
-                    ],
-                    useVaultSearch,
-                  )
-                  chatUserInputRefs.current.get(inputMessage.id)?.focus()
-                }}
-                onFocus={() => {
-                  setFocusedMessageId(message.id)
-                }}
-                mentionables={message.mentionables}
-                setMentionables={(mentionables) => {
-                  setChatMessages((prevChatHistory) =>
-                    prevChatHistory.map((msg) =>
-                      msg.id === message.id ? { ...msg, mentionables } : msg,
-                    ),
-                  )
-                }}
-              />
-              {message.similaritySearchResults && (
-                <SimilaritySearchResults
-                  similaritySearchResults={message.similaritySearchResults}
-                />
-              )}
-            </div>
+        {groupedChatMessages.map((messageOrGroup, index) =>
+          !Array.isArray(messageOrGroup) ? (
+            <UserMessageItem
+              key={messageOrGroup.id}
+              message={messageOrGroup}
+              chatUserInputRef={(ref) =>
+                registerChatUserInputRef(messageOrGroup.id, ref)
+              }
+              onInputChange={(content) => {
+                setChatMessages((prevChatHistory) =>
+                  prevChatHistory.map((msg) =>
+                    msg.role === 'user' && msg.id === messageOrGroup.id
+                      ? {
+                          ...msg,
+                          content,
+                        }
+                      : msg,
+                  ),
+                )
+              }}
+              onSubmit={(content, useVaultSearch) => {
+                if (editorStateToPlainText(content).trim() === '') return
+                handleUserMessageSubmit({
+                  inputChatMessages: [
+                    ...groupedChatMessages
+                      .slice(0, index)
+                      .flatMap((messageOrGroup): ChatMessage[] =>
+                        !Array.isArray(messageOrGroup)
+                          ? [messageOrGroup]
+                          : messageOrGroup,
+                      ),
+                    {
+                      role: 'user',
+                      content: content,
+                      promptContent: null,
+                      id: messageOrGroup.id,
+                      mentionables: messageOrGroup.mentionables,
+                    },
+                  ],
+                  useVaultSearch,
+                })
+                chatUserInputRefs.current.get(inputMessage.id)?.focus()
+              }}
+              onFocus={() => {
+                setFocusedMessageId(messageOrGroup.id)
+              }}
+              onMentionablesChange={(mentionables) => {
+                setChatMessages((prevChatHistory) =>
+                  prevChatHistory.map((msg) =>
+                    msg.id === messageOrGroup.id
+                      ? { ...msg, mentionables }
+                      : msg,
+                  ),
+                )
+              }}
+            />
           ) : (
-            // message.role === 'assistant'
-            <div key={message.id} className="smtcmp-chat-messages-assistant">
-              {message.reasoning && (
-                <AssistantMessageReasoning reasoning={message.reasoning} />
-              )}
-              {message.annotations && (
-                <AssistantMessageAnnotations
-                  annotations={message.annotations}
-                />
-              )}
-              <ReactMarkdownItem
-                index={index}
-                chatMessages={chatMessages}
-                handleApply={handleApply}
-                isApplying={applyMutation.isPending}
-              >
-                {message.content}
-              </ReactMarkdownItem>
-              {message.content && <AssistantMessageActions message={message} />}
-            </div>
+            <AssistantToolMessageGroupItem
+              key={messageOrGroup.at(0)?.id}
+              messages={messageOrGroup}
+              contextMessages={groupedChatMessages
+                .slice(0, index + 1)
+                .flatMap((messageOrGroup): ChatMessage[] =>
+                  !Array.isArray(messageOrGroup)
+                    ? [messageOrGroup]
+                    : messageOrGroup,
+                )}
+              conversationId={currentConversationId}
+              isApplying={applyMutation.isPending}
+              onApply={handleApply}
+              onToolMessageUpdate={handleToolMessageUpdate}
+            />
           ),
         )}
         <QueryProgress state={queryProgress} />
-        {submitMutation.isPending && (
+        {showContinueResponseButton && (
+          <div className="smtcmp-continue-response-button-container">
+            <button
+              className="smtcmp-continue-response-button"
+              onClick={handleContinueResponse}
+            >
+              <div>Continue Response</div>
+            </button>
+          </div>
+        )}
+        {submitChatMutation.isPending && (
           <button onClick={abortActiveStreams} className="smtcmp-stop-gen-btn">
             <CircleStop size={16} />
             <div>Stop Generation</div>
@@ -678,10 +701,10 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         }}
         onSubmit={(content, useVaultSearch) => {
           if (editorStateToPlainText(content).trim() === '') return
-          handleSubmit(
-            [...chatMessages, { ...inputMessage, content }],
+          handleUserMessageSubmit({
+            inputChatMessages: [...chatMessages, { ...inputMessage, content }],
             useVaultSearch,
-          )
+          })
           setInputMessage(getNewInputMessage(app))
         }}
         onFocus={() => {

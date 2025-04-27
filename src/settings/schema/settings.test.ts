@@ -33,7 +33,15 @@ describe('parseSmartComposerSettings', () => {
         includePatterns: [],
       },
 
-      includeCurrentFileContent: true,
+      mcp: {
+        servers: [],
+      },
+
+      chatOptions: {
+        includeCurrentFileContent: true,
+        enableTools: true,
+        maxAutoIterations: 1,
+      },
     })
   })
 })

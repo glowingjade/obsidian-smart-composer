@@ -65,15 +65,14 @@ export default function AddEmbeddingModelModalRoot({
 
       if (!supportedDimensionsForIndex.includes(dimension)) {
         const confirmed = await new Promise<boolean>((resolve) => {
-          new ConfirmModal(
-            plugin.app,
-            'Performance Warning',
-            `This model outputs ${dimension} dimensions, but the optimized dimensions for database indexing are: ${supportedDimensionsForIndex.join(
+          new ConfirmModal(plugin.app, {
+            title: 'Performance Warning',
+            message: `This model outputs ${dimension} dimensions, but the optimized dimensions for database indexing are: ${supportedDimensionsForIndex.join(
               ', ',
             )}.\n\nThis may result in slower search performance.\n\nDo you want to continue anyway?`,
-            () => resolve(true),
-            () => resolve(false),
-          ).open()
+            onConfirm: () => resolve(true),
+            onCancel: () => resolve(false),
+          }).open()
         })
 
         if (!confirmed) {

@@ -1,10 +1,16 @@
 import {
   Content,
   EnhancedGenerateContentResponse,
+  FunctionCallPart,
+  Tool as GeminiTool,
   GenerateContentResult,
   GenerateContentStreamResult,
   GoogleGenerativeAI,
+  Part,
+  Schema,
+  SchemaType,
 } from '@google/generative-ai'
+import { v4 as uuidv4 } from 'uuid'
 
 import { ChatModel } from '../../types/chat-model.types'
 import {
@@ -12,6 +18,7 @@ import {
   LLMRequestNonStreaming,
   LLMRequestStreaming,
   RequestMessage,
+  RequestTool,
 } from '../../types/llm/request'
 import {
   LLMResponseNonStreaming,
@@ -96,6 +103,9 @@ export class GeminiProvider extends BaseLLMProvider<
           contents: request.messages
             .map((message) => GeminiProvider.parseRequestMessage(message))
             .filter((m): m is Content => m !== null),
+          tools: request.tools?.map((tool) =>
+            GeminiProvider.parseRequestTool(tool),
+          ),
         },
         {
           signal: options?.signal,
@@ -164,6 +174,9 @@ export class GeminiProvider extends BaseLLMProvider<
           contents: request.messages
             .map((message) => GeminiProvider.parseRequestMessage(message))
             .filter((m): m is Content => m !== null),
+          tools: request.tools?.map((tool) =>
+            GeminiProvider.parseRequestTool(tool),
+          ),
         },
         {
           signal: options?.signal,
@@ -199,42 +212,84 @@ export class GeminiProvider extends BaseLLMProvider<
   }
 
   static parseRequestMessage(message: RequestMessage): Content | null {
-    if (message.role === 'system') {
-      return null
-    }
+    switch (message.role) {
+      case 'system':
+        // System messages should be extracted and handled separately
+        return null
+      case 'user': {
+        const contentParts: Part[] = Array.isArray(message.content)
+          ? message.content.map((part) => {
+              switch (part.type) {
+                case 'text':
+                  return { text: part.text }
+                case 'image_url': {
+                  const { mimeType, base64Data } = parseImageDataUrl(
+                    part.image_url.url,
+                  )
+                  GeminiProvider.validateImageType(mimeType)
 
-    if (Array.isArray(message.content)) {
-      return {
-        role: message.role === 'user' ? 'user' : 'model',
-        parts: message.content.map((part) => {
-          switch (part.type) {
-            case 'text':
-              return { text: part.text }
-            case 'image_url': {
-              const { mimeType, base64Data } = parseImageDataUrl(
-                part.image_url.url,
-              )
-              GeminiProvider.validateImageType(mimeType)
+                  return {
+                    inlineData: {
+                      data: base64Data,
+                      mimeType,
+                    },
+                  }
+                }
+              }
+            })
+          : [{ text: message.content }]
 
+        return {
+          role: 'user',
+          parts: contentParts,
+        }
+      }
+      case 'assistant': {
+        const contentParts: Part[] = [
+          ...(message.content === '' ? [] : [{ text: message.content }]),
+          ...(message.tool_calls?.map((toolCall): FunctionCallPart => {
+            try {
+              const args = JSON.parse(toolCall.arguments ?? '{}')
               return {
-                inlineData: {
-                  data: base64Data,
-                  mimeType,
+                functionCall: {
+                  name: toolCall.name,
+                  args,
+                },
+              }
+            } catch (error) {
+              // If the arguments are not valid JSON, return an empty object
+              return {
+                functionCall: {
+                  name: toolCall.name,
+                  args: {},
                 },
               }
             }
-          }
-        }),
-      }
-    }
+          }) ?? []),
+        ]
 
-    return {
-      role: message.role === 'user' ? 'user' : 'model',
-      parts: [
-        {
-          text: message.content,
-        },
-      ],
+        if (contentParts.length === 0) {
+          return null
+        }
+
+        return {
+          role: 'model',
+          parts: contentParts,
+        }
+      }
+      case 'tool': {
+        return {
+          role: 'user',
+          parts: [
+            {
+              functionResponse: {
+                name: message.tool_call.name,
+                response: { result: message.content }, // Gemini requires a response object
+              },
+            },
+          ],
+        }
+      }
     }
   }
 
@@ -252,6 +307,14 @@ export class GeminiProvider extends BaseLLMProvider<
           message: {
             content: response.response.text(),
             role: 'assistant',
+            tool_calls: response.response.functionCalls()?.map((f) => ({
+              id: uuidv4(),
+              type: 'function',
+              function: {
+                name: f.name,
+                arguments: JSON.stringify(f.args),
+              },
+            })),
           },
         },
       ],
@@ -281,6 +344,15 @@ export class GeminiProvider extends BaseLLMProvider<
           finish_reason: chunk.candidates?.[0]?.finishReason ?? null,
           delta: {
             content: chunk.text(),
+            tool_calls: chunk.functionCalls()?.map((f, index) => ({
+              index,
+              id: uuidv4(),
+              type: 'function',
+              function: {
+                name: f.name,
+                arguments: JSON.stringify(f.args),
+              },
+            })),
           },
         },
       ],
@@ -294,6 +366,24 @@ export class GeminiProvider extends BaseLLMProvider<
             total_tokens: chunk.usageMetadata.totalTokenCount,
           }
         : undefined,
+    }
+  }
+
+  private static parseRequestTool(tool: RequestTool): GeminiTool {
+    return {
+      functionDeclarations: [
+        {
+          name: tool.function.name,
+          description: tool.function.description,
+          parameters: {
+            type: SchemaType.OBJECT,
+            properties: (tool.function.parameters.properties ?? {}) as Record<
+              string,
+              Schema
+            >,
+          },
+        },
+      ],
     }
   }
 

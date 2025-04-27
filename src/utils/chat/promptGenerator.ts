@@ -8,6 +8,7 @@ import { SmartComposerSettings } from '../../settings/schema/setting.types'
 import {
   ChatAssistantMessage,
   ChatMessage,
+  ChatToolMessage,
   ChatUserMessage,
 } from '../../types/chat'
 import { ContentPart, RequestMessage } from '../../types/llm/request'
@@ -20,6 +21,7 @@ import {
   MentionableVault,
 } from '../../types/mentionable'
 import { PromptLevel } from '../../types/prompt-level.types'
+import { ToolCallResponseStatus } from '../../types/tool-call.types'
 import { tokenCount } from '../llm/token'
 import {
   getNestedFiles,
@@ -33,6 +35,7 @@ export class PromptGenerator {
   private getRagEngine: () => Promise<RAGEngine>
   private app: App
   private settings: SmartComposerSettings
+  private MAX_CONTEXT_MESSAGES = 20
 
   constructor(
     getRagEngine: () => Promise<RAGEngine>,
@@ -46,42 +49,17 @@ export class PromptGenerator {
 
   public async generateRequestMessages({
     messages,
-    useVaultSearch,
-    onQueryProgressChange,
   }: {
     messages: ChatMessage[]
-    useVaultSearch?: boolean
-    onQueryProgressChange?: (queryProgress: QueryProgressState) => void
-  }): Promise<{
-    requestMessages: RequestMessage[]
-    compiledMessages: ChatMessage[]
-  }> {
+  }): Promise<RequestMessage[]> {
     if (messages.length === 0) {
       throw new Error('No messages provided')
     }
-    const lastUserMessage = messages[messages.length - 1]
-    if (lastUserMessage.role !== 'user') {
-      throw new Error('Last message is not a user message')
-    }
 
-    const { promptContent, shouldUseRAG, similaritySearchResults } =
-      await this.compileUserMessagePrompt({
-        message: lastUserMessage,
-        useVaultSearch,
-        onQueryProgressChange,
-      })
-    let compiledMessages = [
-      ...messages.slice(0, -1),
-      {
-        ...lastUserMessage,
-        promptContent,
-        similaritySearchResults,
-      },
-    ]
-
-    // Safeguard: ensure all user messages have parsed content
-    compiledMessages = await Promise.all(
-      compiledMessages.map(async (message) => {
+    // Ensure all user messages have prompt content
+    // This is a fallback for cases where compilation was missed earlier in the process
+    const compiledMessages = await Promise.all(
+      messages.map(async (message) => {
         if (message.role === 'user' && !message.promptContent) {
           const { promptContent, similaritySearchResults } =
             await this.compileUserMessagePrompt({
@@ -97,6 +75,19 @@ export class PromptGenerator {
       }),
     )
 
+    // find last user message
+    let lastUserMessage: ChatUserMessage | undefined = undefined
+    for (let i = compiledMessages.length - 1; i >= 0; --i) {
+      if (compiledMessages[i].role === 'user') {
+        lastUserMessage = compiledMessages[i] as ChatUserMessage
+        break
+      }
+    }
+    if (!lastUserMessage) {
+      throw new Error('No user messages found')
+    }
+    const shouldUseRAG = lastUserMessage.similaritySearchResults !== undefined
+
     const systemMessage = this.getSystemMessage(shouldUseRAG)
 
     const customInstructionMessage = this.getCustomInstructionMessage()
@@ -105,7 +96,7 @@ export class PromptGenerator {
       (m) => m.type === 'current-file',
     )?.file
     const currentFileMessage =
-      currentFile && this.settings.includeCurrentFileContent
+      currentFile && this.settings.chatOptions.includeCurrentFileContent
         ? await this.getCurrentFileMessage(currentFile)
         : undefined
 
@@ -113,37 +104,91 @@ export class PromptGenerator {
       systemMessage,
       ...(customInstructionMessage ? [customInstructionMessage] : []),
       ...(currentFileMessage ? [currentFileMessage] : []),
-      ...compiledMessages.slice(-20).map((message): RequestMessage => {
-        if (message.role === 'user') {
-          return {
-            role: 'user',
-            content: message.promptContent ?? '',
-          }
-        } else {
-          return {
-            role: 'assistant',
-            content: this.formatAssistantMessage({ message }),
-          }
-        }
-      }),
+      ...this.getChatHistoryMessages({ messages: compiledMessages }),
       ...(shouldUseRAG && this.getModelPromptLevel() == PromptLevel.Default
         ? [this.getRagInstructionMessage()]
         : []),
     ]
 
-    return {
-      requestMessages,
-      compiledMessages,
-    }
+    return requestMessages
   }
 
-  private formatAssistantMessage({
+  private getChatHistoryMessages({
+    messages,
+  }: {
+    messages: ChatMessage[]
+  }): RequestMessage[] {
+    // Get the last MAX_CONTEXT_MESSAGES messages and parse them into request messages
+    const requestMessages: RequestMessage[] = messages
+      .slice(-this.MAX_CONTEXT_MESSAGES)
+      .flatMap((message): RequestMessage[] => {
+        if (message.role === 'user') {
+          // We assume that all user messages have been compiled
+          return [
+            {
+              role: 'user',
+              content: message.promptContent ?? '',
+            },
+          ]
+        } else if (message.role === 'assistant') {
+          return this.parseAssistantMessage({ message })
+        } else {
+          // message.role === 'tool'
+          return this.parseToolMessage({ message })
+        }
+      })
+
+    // TODO: Also verify that tool messages appear right after their corresponding assistant tool calls
+    const filteredRequestMessages: RequestMessage[] = requestMessages
+      .map((msg) => {
+        switch (msg.role) {
+          case 'user':
+            return msg
+          case 'assistant': {
+            // Filter out tool calls that don't have a corresponding tool message
+            const filteredToolCalls = msg.tool_calls?.filter((t) =>
+              requestMessages.some(
+                (rm) => rm.role === 'tool' && rm.tool_call.id === t.id,
+              ),
+            )
+            return {
+              ...msg,
+              tool_calls:
+                filteredToolCalls && filteredToolCalls.length > 0
+                  ? filteredToolCalls
+                  : undefined,
+            }
+          }
+          case 'tool': {
+            // Filter out tool messages that don't have a corresponding assistant message
+            const assistantMessage = requestMessages.find(
+              (rm) =>
+                rm.role === 'assistant' &&
+                rm.tool_calls?.some((t) => t.id === msg.tool_call.id),
+            )
+            if (!assistantMessage) {
+              return null
+            } else {
+              return msg
+            }
+          }
+          default:
+            return msg
+        }
+      })
+      .filter((m) => m !== null)
+
+    return filteredRequestMessages
+  }
+
+  private parseAssistantMessage({
     message,
   }: {
     message: ChatAssistantMessage
-  }): string {
+  }): RequestMessage[] {
+    let citationContent: string | null = null
     if (message.annotations && message.annotations.length > 0) {
-      const citationContent = `Citations:
+      citationContent = `Citations:
 ${message.annotations
   .map((annotation, index) => {
     if (annotation.type === 'url_citation') {
@@ -152,12 +197,53 @@ ${message.annotations
     }
   })
   .join('\n')}`
-      return `${message.content}\n\n${citationContent}`
     }
-    return message.content
+
+    return [
+      {
+        role: 'assistant',
+        content: [
+          message.content,
+          ...(citationContent ? [citationContent] : []),
+        ].join('\n'),
+        tool_calls: message.toolCallRequests,
+      },
+    ]
   }
 
-  private async compileUserMessagePrompt({
+  private parseToolMessage({
+    message,
+  }: {
+    message: ChatToolMessage
+  }): RequestMessage[] {
+    return message.toolCalls.map((toolCall) => {
+      switch (toolCall.response.status) {
+        case ToolCallResponseStatus.PendingApproval:
+        case ToolCallResponseStatus.Running:
+        case ToolCallResponseStatus.Rejected:
+        case ToolCallResponseStatus.Aborted:
+          return {
+            role: 'tool',
+            tool_call: toolCall.request,
+            content: `Tool call ${toolCall.request.id} is ${toolCall.response.status}`,
+          }
+        case ToolCallResponseStatus.Success:
+          return {
+            role: 'tool',
+            tool_call: toolCall.request,
+            content: toolCall.response.data.text,
+          }
+        case ToolCallResponseStatus.Error:
+          return {
+            role: 'tool',
+            tool_call: toolCall.request,
+            content: `Error: ${toolCall.response.error}`,
+          }
+      }
+    })
+  }
+
+  public async compileUserMessagePrompt({
     message,
     useVaultSearch,
     onQueryProgressChange,
@@ -172,71 +258,72 @@ ${message.annotations
       similarity: number
     })[]
   }> {
-    if (!message.content) {
-      return {
-        promptContent: '',
-        shouldUseRAG: false,
-      }
-    }
-    const query = editorStateToPlainText(message.content)
-    let similaritySearchResults = undefined
-
-    useVaultSearch =
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-      useVaultSearch ||
-      message.mentionables.some(
-        (m): m is MentionableVault => m.type === 'vault',
-      )
-
-    onQueryProgressChange?.({
-      type: 'reading-mentionables',
-    })
-    const files = message.mentionables
-      .filter((m): m is MentionableFile => m.type === 'file')
-      .map((m) => m.file)
-    const folders = message.mentionables
-      .filter((m): m is MentionableFolder => m.type === 'folder')
-      .map((m) => m.folder)
-    const nestedFiles = folders.flatMap((folder) =>
-      getNestedFiles(folder, this.app.vault),
-    )
-    const allFiles = [...files, ...nestedFiles]
-    const fileContents = await readMultipleTFiles(allFiles, this.app.vault)
-
-    // Count tokens incrementally to avoid long processing times on large content sets
-    const exceedsTokenThreshold = async () => {
-      let accTokenCount = 0
-      for (const content of fileContents) {
-        const count = await tokenCount(content)
-        accTokenCount += count
-        if (accTokenCount > this.settings.ragOptions.thresholdTokens) {
-          return true
+    try {
+      if (!message.content) {
+        return {
+          promptContent: '',
+          shouldUseRAG: false,
         }
       }
-      return false
-    }
-    const shouldUseRAG = useVaultSearch || (await exceedsTokenThreshold())
+      const query = editorStateToPlainText(message.content)
+      let similaritySearchResults = undefined
 
-    let filePrompt: string
-    if (shouldUseRAG) {
-      similaritySearchResults = useVaultSearch
-        ? await (
-            await this.getRagEngine()
-          ).processQuery({
-            query,
-            onQueryProgressChange: onQueryProgressChange,
-          }) // TODO: Add similarity boosting for mentioned files or folders
-        : await (
-            await this.getRagEngine()
-          ).processQuery({
-            query,
-            scope: {
-              files: files.map((f) => f.path),
-              folders: folders.map((f) => f.path),
-            },
-            onQueryProgressChange: onQueryProgressChange,
-          })
-      filePrompt = `## Potentially Relevant Snippets from the current vault
+      useVaultSearch =
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+        useVaultSearch ||
+        message.mentionables.some(
+          (m): m is MentionableVault => m.type === 'vault',
+        )
+
+      onQueryProgressChange?.({
+        type: 'reading-mentionables',
+      })
+      const files = message.mentionables
+        .filter((m): m is MentionableFile => m.type === 'file')
+        .map((m) => m.file)
+      const folders = message.mentionables
+        .filter((m): m is MentionableFolder => m.type === 'folder')
+        .map((m) => m.folder)
+      const nestedFiles = folders.flatMap((folder) =>
+        getNestedFiles(folder, this.app.vault),
+      )
+      const allFiles = [...files, ...nestedFiles]
+      const fileContents = await readMultipleTFiles(allFiles, this.app.vault)
+
+      // Count tokens incrementally to avoid long processing times on large content sets
+      const exceedsTokenThreshold = async () => {
+        let accTokenCount = 0
+        for (const content of fileContents) {
+          const count = await tokenCount(content)
+          accTokenCount += count
+          if (accTokenCount > this.settings.ragOptions.thresholdTokens) {
+            return true
+          }
+        }
+        return false
+      }
+      const shouldUseRAG = useVaultSearch || (await exceedsTokenThreshold())
+
+      let filePrompt: string
+      if (shouldUseRAG) {
+        similaritySearchResults = useVaultSearch
+          ? await (
+              await this.getRagEngine()
+            ).processQuery({
+              query,
+              onQueryProgressChange: onQueryProgressChange,
+            }) // TODO: Add similarity boosting for mentioned files or folders
+          : await (
+              await this.getRagEngine()
+            ).processQuery({
+              query,
+              scope: {
+                files: files.map((f) => f.path),
+                folders: folders.map((f) => f.path),
+              },
+              onQueryProgressChange: onQueryProgressChange,
+            })
+        filePrompt = `## Potentially Relevant Snippets from the current vault
 ${similaritySearchResults
   .map(({ path, content, metadata }) => {
     const newContent =
@@ -249,30 +336,30 @@ ${similaritySearchResults
     return `\`\`\`${path}\n${newContent}\n\`\`\`\n`
   })
   .join('')}\n`
-    } else {
-      filePrompt = allFiles
-        .map((file, index) => {
-          return `\`\`\`${file.path}\n${fileContents[index]}\n\`\`\`\n`
+      } else {
+        filePrompt = allFiles
+          .map((file, index) => {
+            return `\`\`\`${file.path}\n${fileContents[index]}\n\`\`\`\n`
+          })
+          .join('')
+      }
+
+      const blocks = message.mentionables.filter(
+        (m): m is MentionableBlock => m.type === 'block',
+      )
+      const blockPrompt = blocks
+        .map(({ file, content }) => {
+          return `\`\`\`${file.path}\n${content}\n\`\`\`\n`
         })
         .join('')
-    }
 
-    const blocks = message.mentionables.filter(
-      (m): m is MentionableBlock => m.type === 'block',
-    )
-    const blockPrompt = blocks
-      .map(({ file, content }) => {
-        return `\`\`\`${file.path}\n${content}\n\`\`\`\n`
-      })
-      .join('')
+      const urls = message.mentionables.filter(
+        (m): m is MentionableUrl => m.type === 'url',
+      )
 
-    const urls = message.mentionables.filter(
-      (m): m is MentionableUrl => m.type === 'url',
-    )
-
-    const urlPrompt =
-      urls.length > 0
-        ? `## Potentially Relevant Websearch Results
+      const urlPrompt =
+        urls.length > 0
+          ? `## Potentially Relevant Websearch Results
 ${(
   await Promise.all(
     urls.map(
@@ -285,29 +372,41 @@ ${await this.getWebsiteContent(url)}
   )
 ).join('\n')}
 `
-        : ''
+          : ''
 
-    const imageDataUrls = message.mentionables
-      .filter((m): m is MentionableImage => m.type === 'image')
-      .map(({ data }) => data)
+      const imageDataUrls = message.mentionables
+        .filter((m): m is MentionableImage => m.type === 'image')
+        .map(({ data }) => data)
 
-    return {
-      promptContent: [
-        ...imageDataUrls.map(
-          (data): ContentPart => ({
-            type: 'image_url',
-            image_url: {
-              url: data,
-            },
-          }),
-        ),
-        {
-          type: 'text',
-          text: `${filePrompt}${blockPrompt}${urlPrompt}\n\n${query}\n\n`,
-        },
-      ],
-      shouldUseRAG,
-      similaritySearchResults: similaritySearchResults,
+      // Reset query progress
+      onQueryProgressChange?.({
+        type: 'idle',
+      })
+
+      return {
+        promptContent: [
+          ...imageDataUrls.map(
+            (data): ContentPart => ({
+              type: 'image_url',
+              image_url: {
+                url: data,
+              },
+            }),
+          ),
+          {
+            type: 'text',
+            text: `${filePrompt}${blockPrompt}${urlPrompt}\n\n${query}\n\n`,
+          },
+        ],
+        shouldUseRAG,
+        similaritySearchResults: similaritySearchResults,
+      }
+    } catch (error) {
+      console.error('Failed to compile user message', error)
+      onQueryProgressChange?.({
+        type: 'idle',
+      })
+      throw error
     }
   }
 

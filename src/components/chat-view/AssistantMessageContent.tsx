@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react'
 
-import { ChatMessage } from '../../types/chat'
+import { ChatAssistantMessage, ChatMessage } from '../../types/chat'
 import {
   ParsedTagContent,
   parseTagContents,
@@ -9,9 +9,34 @@ import {
 import AssistantMessageReasoning from './AssistantMessageReasoning'
 import MarkdownCodeComponent from './MarkdownCodeComponent'
 import MarkdownReferenceBlock from './MarkdownReferenceBlock'
-import ObsidianMarkdown from './ObsidianMarkdown'
+import { ObsidianMarkdown } from './ObsidianMarkdown'
 
-const ReactMarkdown = React.memo(function ReactMarkdown({
+export default function AssistantMessageContent({
+  content,
+  contextMessages,
+  handleApply,
+  isApplying,
+}: {
+  content: ChatAssistantMessage['content']
+  contextMessages: ChatMessage[]
+  handleApply: (blockToApply: string, chatMessages: ChatMessage[]) => void
+  isApplying: boolean
+}) {
+  const onApply = useCallback(
+    (blockToApply: string) => {
+      handleApply(blockToApply, contextMessages)
+    },
+    [handleApply, contextMessages],
+  )
+
+  return (
+    <AssistantTextRenderer onApply={onApply} isApplying={isApplying}>
+      {content}
+    </AssistantTextRenderer>
+  )
+}
+
+const AssistantTextRenderer = React.memo(function AssistantTextRenderer({
   onApply,
   isApplying,
   children,
@@ -56,30 +81,3 @@ const ReactMarkdown = React.memo(function ReactMarkdown({
     </>
   )
 })
-
-export function ReactMarkdownItem({
-  index,
-  chatMessages,
-  handleApply,
-  isApplying,
-  children,
-}: {
-  index: number
-  chatMessages: ChatMessage[]
-  handleApply: (blockToApply: string, chatMessages: ChatMessage[]) => void
-  isApplying: boolean
-  children: string
-}) {
-  const onApply = useCallback(
-    (blockToApply: string) => {
-      handleApply(blockToApply, chatMessages.slice(0, index + 1))
-    },
-    [handleApply, chatMessages, index],
-  )
-
-  return (
-    <ReactMarkdown onApply={onApply} isApplying={isApplying}>
-      {children}
-    </ReactMarkdown>
-  )
-}

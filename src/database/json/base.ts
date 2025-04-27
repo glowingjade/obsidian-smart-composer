@@ -1,6 +1,5 @@
-import * as path from 'path'
-
 import { App, normalizePath } from 'obsidian'
+import path from 'path-browserify'
 
 export abstract class AbstractJsonRepository<T, M> {
   protected dataDir: string

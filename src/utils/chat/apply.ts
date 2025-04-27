@@ -2,7 +2,12 @@ import { TFile } from 'obsidian'
 
 import { editorStateToPlainText } from '../../components/chat-view/chat-input/utils/editor-state-to-plain-text'
 import { BaseLLMProvider } from '../../core/llm/base'
-import { ChatMessage, ChatUserMessage } from '../../types/chat'
+import {
+  ChatAssistantMessage,
+  ChatMessage,
+  ChatToolMessage,
+  ChatUserMessage,
+} from '../../types/chat'
 import { ChatModel } from '../../types/chat-model.types'
 import { RequestMessage } from '../../types/llm/request'
 import { MentionableBlock, MentionableFile } from '../../types/mentionable'
@@ -49,6 +54,22 @@ const parseUserMessageForApply = (message: ChatUserMessage): string => {
   return `${filePrompt}${blocksPrompt}\n\n${message.content ? editorStateToPlainText(message.content) : ''}\n\n`
 }
 
+const parseAssistantMessageForApply = (
+  message: ChatAssistantMessage,
+): string => {
+  return message.content
+}
+
+const parseToolMessageForApply = (message: ChatToolMessage): string => {
+  return JSON.stringify(
+    message.toolCalls.map((toolCall) => ({
+      name: toolCall.request.name,
+      arguments: toolCall.request.arguments ?? '',
+      response: toolCall.response,
+    })),
+  )
+}
+
 const generateApplyPrompt = (
   blockToApply: string,
   currentFile: TFile,
@@ -69,8 +90,10 @@ ${chatMessages
   .map((message) => {
     if (message.role === 'user') {
       return `[User]: ${parseUserMessageForApply(message)}`
-    } else {
-      return `[Assistant]: ${message.content}`
+    } else if (message.role === 'assistant') {
+      return `[Assistant]: ${parseAssistantMessageForApply(message)}`
+    } else if (message.role === 'tool') {
+      return `[Tool]: ${parseToolMessageForApply(message)}`
     }
   })
   .join('\n')}

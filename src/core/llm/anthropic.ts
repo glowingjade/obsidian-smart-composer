@@ -1,6 +1,9 @@
 import Anthropic from '@anthropic-ai/sdk'
 import {
+  Tool as AnthropicTool,
+  ToolChoice as AnthropicToolChoice,
   Base64ImageSource,
+  ContentBlockParam,
   ImageBlockParam,
   MessageParam,
   MessageStreamEvent,
@@ -13,11 +16,14 @@ import {
   LLMRequestNonStreaming,
   LLMRequestStreaming,
   RequestMessage,
+  RequestTool,
+  RequestToolChoice,
 } from '../../types/llm/request'
 import {
   LLMResponseNonStreaming,
   LLMResponseStreaming,
   ResponseUsage,
+  ToolCall,
 } from '../../types/llm/response'
 import { LLMProvider } from '../../types/provider.types'
 import { parseImageDataUrl } from '../../utils/llm/image'
@@ -70,15 +76,20 @@ export class AnthropicProvider extends BaseLLMProvider<
         {
           model: request.model,
           messages: request.messages
-            .filter((m) => m.role !== 'system')
-            .filter((m) => !AnthropicProvider.isMessageEmpty(m))
-            .map((m) => AnthropicProvider.parseRequestMessage(m)),
+            .map((m) => AnthropicProvider.parseRequestMessage(m))
+            .filter((m) => m !== null),
           system: systemMessage,
           thinking: model.thinking
             ? {
                 type: 'enabled',
                 budget_tokens: model.thinking.budget_tokens,
               }
+            : undefined,
+          tools: request.tools?.map((t) =>
+            AnthropicProvider.parseRequestTool(t),
+          ),
+          tool_choice: request.tool_choice
+            ? AnthropicProvider.parseRequestToolChoice(request.tool_choice)
             : undefined,
           max_tokens:
             request.max_tokens ??
@@ -159,15 +170,20 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
         {
           model: request.model,
           messages: request.messages
-            .filter((m) => m.role !== 'system')
-            .filter((m) => !AnthropicProvider.isMessageEmpty(m))
-            .map((m) => AnthropicProvider.parseRequestMessage(m)),
+            .map((m) => AnthropicProvider.parseRequestMessage(m))
+            .filter((m) => m !== null),
           system: systemMessage,
           thinking: model.thinking
             ? {
                 type: 'enabled',
                 budget_tokens: model.thinking.budget_tokens,
               }
+            : undefined,
+          tools: request.tools?.map((t) =>
+            AnthropicProvider.parseRequestTool(t),
+          ),
+          tool_choice: request.tool_choice
+            ? AnthropicProvider.parseRequestToolChoice(request.tool_choice)
             : undefined,
           max_tokens:
             request.max_tokens ??
@@ -247,12 +263,18 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
             chunk.message.usage.input_tokens +
             chunk.message.usage.output_tokens,
         }
-      } else if (chunk.type === 'content_block_delta') {
-        yield AnthropicProvider.parseStreamingResponseChunk(
+      } else if (
+        chunk.type === 'content_block_start' ||
+        chunk.type === 'content_block_delta'
+      ) {
+        const parsedChunk = AnthropicProvider.parseStreamingResponseChunk(
           chunk,
           messageId,
           model,
         )
+        if (parsedChunk !== null) {
+          yield parsedChunk
+        }
       } else if (chunk.type === 'message_delta') {
         usage = {
           prompt_tokens: usage.prompt_tokens,
@@ -273,49 +295,100 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
     }
   }
 
-  static parseRequestMessage(message: RequestMessage): MessageParam {
-    if (message.role !== 'user' && message.role !== 'assistant') {
-      throw new Error(`Anthropic does not support role: ${message.role}`)
-    }
-
-    if (message.role === 'user' && Array.isArray(message.content)) {
-      const content = message.content.map(
-        (part): TextBlockParam | ImageBlockParam => {
-          switch (part.type) {
-            case 'text':
-              return { type: 'text', text: part.text }
-            case 'image_url': {
-              const { mimeType, base64Data } = parseImageDataUrl(
-                part.image_url.url,
-              )
-              AnthropicProvider.validateImageType(mimeType)
-              return {
-                type: 'image',
-                source: {
-                  data: base64Data,
-                  media_type: mimeType as Base64ImageSource['media_type'],
-                  type: 'base64',
-                },
+  static parseRequestMessage(message: RequestMessage): MessageParam | null {
+    switch (message.role) {
+      case 'user': {
+        if (Array.isArray(message.content)) {
+          const content = message.content.map(
+            (part): TextBlockParam | ImageBlockParam => {
+              switch (part.type) {
+                case 'text':
+                  return { type: 'text', text: part.text }
+                case 'image_url': {
+                  const { mimeType, base64Data } = parseImageDataUrl(
+                    part.image_url.url,
+                  )
+                  AnthropicProvider.validateImageType(mimeType)
+                  return {
+                    type: 'image',
+                    source: {
+                      data: base64Data,
+                      media_type: mimeType as Base64ImageSource['media_type'],
+                      type: 'base64',
+                    },
+                  }
+                }
               }
-            }
-          }
-        },
-      )
-      return { role: 'user', content }
-    }
+            },
+          )
+          return { role: 'user', content }
+        }
+        return { role: 'user', content: message.content }
+      }
+      case 'assistant': {
+        const anthropicToolCalls = message.tool_calls?.map(
+          (toolCall): ContentBlockParam => {
+            const parsedArgs = (() => {
+              if (toolCall.arguments && toolCall.arguments.length > 0) {
+                try {
+                  return JSON.parse(toolCall.arguments) as unknown
+                } catch (error) {
+                  return {}
+                }
+              }
+              return {}
+            })()
 
-    return {
-      role: message.role,
-      content: message.content as string,
+            return {
+              type: 'tool_use' as const,
+              id: toolCall.id,
+              name: toolCall.name,
+              input: parsedArgs,
+            }
+          },
+        )
+
+        const messageContent = [
+          ...(message.content.trim() === ''
+            ? []
+            : [
+                {
+                  type: 'text' as const,
+                  text: message.content,
+                },
+              ]),
+          ...(anthropicToolCalls ? anthropicToolCalls : []),
+        ]
+
+        if (messageContent.length === 0) {
+          // No content or tool calls, skip the message
+          return null
+        }
+
+        return { role: 'assistant', content: messageContent }
+      }
+      case 'system': {
+        // System messages should be extracted and handled separately
+        return null
+      }
+      case 'tool': {
+        return {
+          role: 'user',
+          content: [
+            {
+              type: 'tool_result',
+              tool_use_id: message.tool_call.id,
+              content: message.content,
+            },
+          ],
+        }
+      }
     }
   }
 
   static parseNonStreamingResponse(
     response: Anthropic.Message,
   ): LLMResponseNonStreaming {
-    if (response.content[0].type === 'tool_use') {
-      throw new Error('Unsupported content type: tool_use')
-    }
     const textContent = response.content
       .filter((c) => c.type === 'text')
       .map((c) => c.text)
@@ -327,6 +400,19 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
         .map((c) => c.thinking)
         .join('') || undefined
 
+    const toolCalls: ToolCall[] = response.content
+      .filter((c) => c.type === 'tool_use')
+      .map((c): ToolCall => {
+        return {
+          id: c.id,
+          type: 'function',
+          function: {
+            name: c.name,
+            arguments: JSON.stringify(c.input),
+          },
+        }
+      })
+
     return {
       id: response.id,
       choices: [
@@ -335,6 +421,7 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
           message: {
             content: textContent,
             reasoning: reasoningContent,
+            tool_calls: toolCalls.length > 0 ? toolCalls : undefined,
             role: response.role,
           },
         },
@@ -354,31 +441,95 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
     chunk: MessageStreamEvent,
     messageId: string,
     model: string,
-  ): LLMResponseStreaming {
-    if (chunk.type !== 'content_block_delta') {
+  ): LLMResponseStreaming | null {
+    if (
+      chunk.type !== 'content_block_start' &&
+      chunk.type !== 'content_block_delta'
+    ) {
       throw new Error('Unsupported chunk type')
     }
-    if (chunk.delta.type === 'input_json_delta') {
-      throw new Error('Unsupported content type: input_json_delta')
+
+    if (chunk.type === 'content_block_start') {
+      if (chunk.content_block.type === 'tool_use') {
+        return {
+          id: messageId,
+          choices: [
+            {
+              finish_reason: null,
+              delta: {
+                tool_calls: [
+                  {
+                    index: chunk.index,
+                    id: chunk.content_block.id,
+                    type: 'function',
+                    function: {
+                      name: chunk.content_block.name,
+                      // arguments are not provided in the start event
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+          object: 'chat.completion.chunk',
+          model: model,
+        }
+      }
     }
-    return {
-      id: messageId,
-      choices: [
-        {
-          finish_reason: null,
-          delta: {
-            content:
-              chunk.delta.type === 'text_delta' ? chunk.delta.text : undefined,
-            reasoning:
-              chunk.delta.type === 'thinking_delta'
-                ? chunk.delta.thinking
-                : undefined,
-          },
-        },
-      ],
-      object: 'chat.completion.chunk',
-      model: model,
+
+    if (chunk.type === 'content_block_delta') {
+      if (chunk.delta.type === 'text_delta') {
+        return {
+          id: messageId,
+          choices: [
+            {
+              finish_reason: null,
+              delta: {
+                content: chunk.delta.text,
+              },
+            },
+          ],
+          object: 'chat.completion.chunk',
+          model: model,
+        }
+      } else if (chunk.delta.type === 'thinking_delta') {
+        return {
+          id: messageId,
+          choices: [
+            {
+              finish_reason: null,
+              delta: {
+                reasoning: chunk.delta.thinking,
+              },
+            },
+          ],
+          object: 'chat.completion.chunk',
+          model: model,
+        }
+      } else if (chunk.delta.type === 'input_json_delta') {
+        return {
+          id: messageId,
+          choices: [
+            {
+              finish_reason: null,
+              delta: {
+                tool_calls: [
+                  {
+                    index: chunk.index,
+                    function: {
+                      arguments: chunk.delta.partial_json,
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+          object: 'chat.completion.chunk',
+          model: model,
+        }
+      }
     }
+    return null
   }
 
   private static validateSystemMessages(
@@ -398,13 +549,6 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
     return systemMessage
   }
 
-  private static isMessageEmpty(message: RequestMessage) {
-    if (typeof message.content === 'string') {
-      return message.content.trim() === ''
-    }
-    return message.content.length === 0
-  }
-
   private static validateImageType(mimeType: string) {
     const SUPPORTED_IMAGE_TYPES = [
       'image/jpeg',
@@ -419,6 +563,44 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
         )}`,
       )
     }
+  }
+
+  private static parseRequestTool(tool: RequestTool): AnthropicTool {
+    return {
+      name: tool.function.name,
+      input_schema: {
+        ...tool.function.parameters,
+        type: 'object',
+      },
+      description: tool.function.description,
+    }
+  }
+
+  private static parseRequestToolChoice(
+    toolChoice: RequestToolChoice,
+  ): AnthropicToolChoice {
+    if (toolChoice === 'none') {
+      return {
+        type: 'none',
+      }
+    }
+    if (toolChoice === 'auto') {
+      return {
+        type: 'auto',
+      }
+    }
+    if (toolChoice === 'required') {
+      return {
+        type: 'any',
+      }
+    }
+    if (typeof toolChoice === 'object' && toolChoice.type === 'function') {
+      return {
+        type: 'tool',
+        name: toolChoice.function.name,
+      }
+    }
+    throw new Error(`Unsupported tool choice: ${JSON.stringify(toolChoice)}`)
   }
 
   async getEmbedding(_model: string, _text: string): Promise<number[]> {

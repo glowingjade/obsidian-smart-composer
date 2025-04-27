@@ -161,7 +161,13 @@ button:not(.clickable-icon).smtcmp-chat-list-dropdown {
   .smtcmp-chat-messages-assistant {
     display: flex;
     flex-direction: column;
+  }
+
+  .smtcmp-assistant-tool-message-group {
     padding-bottom: var(--size-4-2);
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-1);
   }
 }
 
@@ -1160,6 +1166,12 @@ button.smtcmp-chat-input-model-select {
   margin: var(--size-4-2) 0;
 }
 
+.smtcmp-settings-sub-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .smtcmp-settings-sub-header {
   color: var(--text-normal);
   font-size: var(--h4-size);
@@ -1394,6 +1406,7 @@ button.smtcmp-chat-input-model-select {
     --heading-spacing: calc(var(--p-spacing) * 2.5);
     --checkbox-size: calc(var(--render-scale) * 1rem);
     --checkbox-radius: calc(var(--render-scale) * var(--radius-s));
+    --icon-size: calc(var(--render-scale) * var(--icon-m));
 
     /* adjust list indent */
     --list-indent: 1.5em;
@@ -1437,11 +1450,6 @@ button.smtcmp-chat-input-model-select {
     border-top: 1px solid var(--background-modifier-border);
     border-bottom: 1px solid var(--background-modifier-border);
   }
-
-  /* Hide copy code buttons */
-  .copy-code-button {
-    display: none !important;
-  }
 }
 
 .smtcmp-mention-popover {
@@ -1458,4 +1466,336 @@ button.smtcmp-chat-input-model-select {
   direction: rtl;
   white-space: nowrap;
   color: var(--text-muted);
+}
+
+.smtcmp-settings-description-preserve-whitespace {
+  .setting-item-description {
+    white-space: pre-wrap;
+  }
+}
+
+.smtcmp-obsidian-code-block {
+  pre {
+    margin: 0;
+  }
+}
+
+.smtcmp-toolcall-container {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background: var(--background-modifier-form-field);
+  border: var(--input-border-width) solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+
+  .smtcmp-toolcall-border-top {
+    border-top: var(--input-border-width) solid
+      var(--background-modifier-border);
+  }
+}
+
+.smtcmp-toolcall {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--size-4-1);
+  background: var(--background-modifier-form-field);
+  padding: var(--size-4-1);
+  font-size: var(--font-ui-small);
+}
+
+.smtcmp-toolcall-header {
+  padding: var(--size-2-3) var(--size-4-1);
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-1);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    background-color: var(--background-modifier-hover);
+  }
+
+  .smtcmp-toolcall-header-content {
+    flex-shrink: 1;
+    word-break: break-word;
+  }
+
+  .smtcmp-toolcall-header-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .smtcmp-toolcall-header-icon--status {
+    margin-left: auto;
+  }
+
+  .smtcmp-toolcall-header-tool-name {
+    font-family: var(--font-monospace);
+    font-weight: 600;
+  }
+}
+
+.smtcmp-toolcall-content {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--size-4-1);
+  max-height: 300px;
+  overflow: auto;
+  padding: var(--size-4-1);
+
+  .smtcmp-toolcall-content-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-1);
+  }
+}
+
+.smtcmp-toolcall-footer {
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  padding: var(--size-4-1);
+
+  .smtcmp-toolcall-footer-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-1);
+
+    button {
+      background-color: var(--background-primary-alt);
+      border: 1px solid var(--background-modifier-border);
+      box-shadow: none;
+
+      &:hover {
+        background-color: var(--background-modifier-hover);
+        border: 1px solid var(--background-modifier-border-hover);
+        box-shadow: none;
+      }
+    }
+  }
+}
+
+.smtcmp-split-button {
+  display: flex;
+  align-items: center;
+
+  .smtcmp-split-button-primary {
+    border-radius: var(--button-radius) 0 0 var(--button-radius) !important;
+  }
+
+  .smtcmp-split-button-toggle {
+    padding: var(--size-4-1);
+    border-radius: 0 var(--button-radius) var(--button-radius) 0 !important;
+    border-left: none !important;
+  }
+}
+
+/* MCP Section Styles */
+.smtcmp-mcp-servers-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.smtcmp-mcp-servers-header {
+  display: grid;
+  grid-template-columns: 1fr 128px 64px 112px; /* Match columns with .smtcmp-mcp-server-row to ensure proper alignment */
+  gap: var(--size-4-4);
+  align-items: center;
+  min-height: var(--size-4-10);
+  border-bottom: var(--border-width) solid var(--background-modifier-border);
+  font-weight: var(--font-medium);
+  color: var(--text-muted);
+
+  & > div {
+    padding: var(--size-4-1);
+  }
+  & > div:nth-child(1) {
+    text-align: left;
+  }
+  & > div:nth-child(2) {
+    text-align: left;
+  }
+  & > div:nth-child(3) {
+    text-align: center;
+  }
+  & > div:nth-child(4) {
+    text-align: center;
+  }
+}
+
+.smtcmp-mcp-servers-empty {
+  padding: var(--size-4-4) 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.smtcmp-mcp-server {
+  border-bottom: var(--border-width) solid var(--background-modifier-border);
+}
+
+.smtcmp-mcp-server-row {
+  display: grid;
+  grid-template-columns: 1fr 128px 64px 112px; /* Match columns with .smtcmp-mcp-servers-header to ensure proper alignment */
+  gap: var(--size-4-4);
+  align-items: center;
+  min-height: var(--size-4-10);
+
+  & > div {
+    padding: var(--size-4-1);
+  }
+}
+
+.smtcmp-mcp-server-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.smtcmp-mcp-server-status {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.smtcmp-mcp-server-toggle {
+  display: flex;
+  justify-content: center;
+}
+
+.smtcmp-mcp-server-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--size-4-2);
+}
+
+.smtcmp-server-expanded-info {
+  margin-bottom: var(--size-4-4);
+  padding-left: var(--size-4-4);
+  border-left: var(--border-width) solid var(--background-modifier-border);
+}
+
+.smtcmp-server-expanded-info-header {
+  font-weight: var(--font-medium);
+  margin-bottom: var(--size-4-3);
+}
+
+.smtcmp-server-tools-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-4);
+}
+
+.smtcmp-server-error-message {
+  color: var(--text-error);
+  font-weight: var(--font-medium);
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-small);
+  user-select: text;
+}
+
+.smtcmp-mcp-server-status-badge {
+  border-radius: 9999px;
+  padding: var(--size-2-1) var(--size-4-2);
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-1);
+  line-height: 1;
+}
+
+.smtcmp-mcp-server-status-badge-label {
+  font-size: var(--font-ui-smaller);
+}
+
+.smtcmp-mcp-server-status-badge--connected {
+  background-color: color-mix(in srgb, var(--text-success) 10%, transparent);
+  color: var(--text-success);
+}
+
+.smtcmp-mcp-server-status-badge--connecting {
+  background-color: color-mix(in srgb, var(--text-muted) 10%, transparent);
+  color: var(--text-muted);
+}
+
+.smtcmp-mcp-server-status-badge--error {
+  background-color: color-mix(in srgb, var(--text-error) 10%, transparent);
+  color: var(--text-error);
+}
+
+.smtcmp-mcp-server-status-badge--disconnected {
+  background-color: color-mix(in srgb, var(--text-muted) 10%, transparent);
+  color: var(--text-muted);
+}
+
+.smtcmp-mcp-tool {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: var(--size-4-4);
+  align-items: center;
+}
+
+.smtcmp-mcp-tool-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.smtcmp-mcp-tool-name {
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-smaller);
+}
+
+.smtcmp-mcp-tool-description {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
+
+.smtcmp-mcp-tool-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+}
+
+.smtcmp-mcp-tool-toggle-label {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
+
+/* MCP Server Modal Styles */
+.smtcmp-mcp-server-modal-textarea {
+  width: 100%;
+  font-family: var(--font-monospace);
+  resize: none;
+  word-break: break-all;
+}
+
+.smtcmp-mcp-server-modal-validation {
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-small);
+  padding: var(--size-4-1) 0;
+  white-space: pre-wrap;
+
+  &.smtcmp-mcp-server-modal-validation--error {
+    color: var(--text-error);
+  }
+
+  &.smtcmp-mcp-server-modal-validation--success {
+    color: var(--text-success);
+  }
+}
+
+.smtcmp-continue-response-button-container {
+  display: flex;
+  justify-content: center;
+  padding: var(--size-4-1) 0;
+}
+
+.smtcmp-continue-response-button {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-1);
 }

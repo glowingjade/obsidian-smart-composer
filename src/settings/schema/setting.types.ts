@@ -7,6 +7,7 @@ import {
 } from '../../constants'
 import { chatModelSchema } from '../../types/chat-model.types'
 import { embeddingModelSchema } from '../../types/embedding-model.types'
+import { mcpServerConfigSchema } from '../../types/mcp.types'
 import { llmProviderSchema } from '../../types/provider.types'
 
 import { SETTINGS_SCHEMA_VERSION } from './migrations'
@@ -58,7 +59,27 @@ export const smartComposerSettingsSchema = z.object({
     includePatterns: [],
   }),
 
-  includeCurrentFileContent: z.boolean().catch(true),
+  // MCP configuration
+  mcp: z
+    .object({
+      servers: z.array(mcpServerConfigSchema).catch([]),
+    })
+    .catch({
+      servers: [],
+    }),
+
+  // Chat options
+  chatOptions: z
+    .object({
+      includeCurrentFileContent: z.boolean(),
+      enableTools: z.boolean(),
+      maxAutoIterations: z.number(),
+    })
+    .catch({
+      includeCurrentFileContent: true,
+      enableTools: true,
+      maxAutoIterations: 1,
+    }),
 })
 export type SmartComposerSettings = z.infer<typeof smartComposerSettingsSchema>
 
