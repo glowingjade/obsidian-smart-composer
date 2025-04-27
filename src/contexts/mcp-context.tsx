@@ -6,7 +6,7 @@ import {
   useMemo,
 } from 'react'
 
-import { McpManager } from '../utils/mcp/mcpManager'
+import { McpManager } from '../core/mcp/mcpManager'
 
 export type McpContextType = {
   getMcpManager: () => Promise<McpManager>

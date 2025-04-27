@@ -6,7 +6,7 @@ import { useApp } from '../../../contexts/app-context'
 import { useMcp } from '../../../contexts/mcp-context'
 import { usePlugin } from '../../../contexts/plugin-context'
 import { useSettings } from '../../../contexts/settings-context'
-import { McpManager } from '../../../utils/mcp/mcpManager'
+import { McpManager } from '../../../core/mcp/mcpManager'
 import { McpSectionModal } from '../../modals/McpSectionModal'
 
 export default function ToolBadge() {

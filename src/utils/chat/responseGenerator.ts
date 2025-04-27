@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'
 
 import { BaseLLMProvider } from '../../core/llm/base'
+import { McpManager } from '../../core/mcp/mcpManager'
 import {
   ChatAssistantMessage,
   ChatMessage,
@@ -16,7 +17,6 @@ import {
   ToolCallDelta,
 } from '../../types/llm/response'
 import { LLMProvider } from '../../types/provider.types'
-import { McpManager } from '../mcp/mcpManager'
 
 import { fetchAnnotationTitles } from './fetch-annotation-titles'
 import { PromptGenerator } from './promptGenerator'

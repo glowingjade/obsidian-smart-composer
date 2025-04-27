@@ -4,13 +4,14 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { useMcp } from '../../contexts/mcp-context'
 import { useSettings } from '../../contexts/settings-context'
+import { InvalidToolNameException } from '../../core/mcp/exception'
+import { parseToolName } from '../../core/mcp/tool-name-utils'
 import {
   ChatToolMessage,
   ToolCallRequest,
   ToolCallResponse,
   ToolCallResponseStatus,
 } from '../../types/chat'
-import { parseToolName } from '../../utils/mcp/tool-name-utils'
 import { SplitButton } from '../common/SplitButton'
 
 import { ObsidianCodeBlock } from './ObsidianMarkdown'
@@ -27,9 +28,18 @@ const STATUS_LABELS: Record<ToolCallResponseStatus, string> = {
 export const getToolMessageContent = (message: ChatToolMessage): string => {
   return message.toolCalls
     ?.map((toolCall) => {
-      const { serverName, toolName } = parseToolName(toolCall.request.name)
+      const { serverName, toolName } = (() => {
+        try {
+          return parseToolName(toolCall.request.name)
+        } catch (error) {
+          if (error instanceof InvalidToolNameException) {
+            return { serverName: null, toolName: toolCall.request.name }
+          }
+          throw error
+        }
+      })()
       return [
-        `${STATUS_LABELS[toolCall.response.status]} ${serverName}:${toolName}`,
+        `${STATUS_LABELS[toolCall.response.status]} ${serverName ? `${serverName}:${toolName}` : toolName}`,
         ...(toolCall.request.arguments
           ? [`Parameters: ${toolCall.request.arguments}`]
           : []),
@@ -97,10 +107,19 @@ function ToolCallItem({
     response.status === ToolCallResponseStatus.PendingApproval,
   )
 
-  const { serverName, toolName } = useMemo(
-    () => parseToolName(request.name),
-    [request.name],
-  )
+  const { serverName, toolName } = useMemo(() => {
+    try {
+      return parseToolName(request.name)
+    } catch (error) {
+      if (error instanceof InvalidToolNameException) {
+        return {
+          serverName: null,
+          toolName: request.name,
+        }
+      }
+      throw error
+    }
+  }, [request.name])
   const parameters = useMemo(() => {
     if (!request.arguments) {
       return 'No parameters'
@@ -125,7 +144,7 @@ function ToolCallItem({
           <span>{STATUS_LABELS[response.status] || 'Unknown'}</span>
           <span>&nbsp;&nbsp;</span>
           <span className="smtcmp-toolcall-header-tool-name">
-            {serverName}:{toolName}
+            {serverName ? `${serverName}:${toolName}` : toolName}
           </span>
         </div>
         <div className="smtcmp-toolcall-header-icon smtcmp-toolcall-header-icon--status">
@@ -233,7 +252,7 @@ function useToolCall(
     const { serverName, toolName } = parseToolName(request.name)
     const server = settings.mcp.servers.find((s) => s.id === serverName)
     if (!server) {
-      return
+      throw new Error(`Server ${serverName} not found`)
     }
     const toolOptions = server.toolOptions
     if (!toolOptions[toolName]) {

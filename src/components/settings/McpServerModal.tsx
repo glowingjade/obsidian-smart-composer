@@ -4,12 +4,12 @@ import { createRoot } from 'react-dom/client'
 import TextareaAutosize from 'react-textarea-autosize'
 import * as z from 'zod'
 
+import { validateServerName } from '../../core/mcp/tool-name-utils'
 import SmartComposerPlugin from '../../main'
 import {
   McpServerParameters,
   mcpServerParametersSchema,
 } from '../../types/mcp.types'
-import { validateServerName } from '../../utils/mcp/tool-name-utils'
 import { ObsidianButton } from '../common/ObsidianButton'
 import { ObsidianSetting } from '../common/ObsidianSetting'
 import { ObsidianTextInput } from '../common/ObsidianTextInput'

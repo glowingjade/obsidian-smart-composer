@@ -11,6 +11,7 @@ import {
   McpToolCallResult,
 } from '../../types/mcp.types'
 
+import { InvalidToolNameException } from './exception'
 import {
   getToolName,
   parseToolName,
@@ -18,6 +19,8 @@ import {
 } from './tool-name-utils'
 
 export class McpManager {
+  static readonly TOOL_NAME_DELIMITER = '__' // Delimiter for tool name construction (serverName__toolName)
+
   private readonly disabled = !Platform.isDesktop // MCP should be disabled on mobile since it doesn't support node.js
 
   private settings: SmartComposerSettings
@@ -299,16 +302,23 @@ export class McpManager {
       }
     }
 
-    const { serverName, toolName } = parseToolName(requestToolName)
-    const server = this.servers.find((server) => server.name === serverName)
-    if (!server) {
-      return false
+    try {
+      const { serverName, toolName } = parseToolName(requestToolName)
+      const server = this.servers.find((server) => server.name === serverName)
+      if (!server) {
+        return false
+      }
+      const toolOption = server.config.toolOptions[toolName]
+      if (!toolOption) {
+        return false
+      }
+      return toolOption.allowAutoExecution ?? false
+    } catch (error) {
+      if (error instanceof InvalidToolNameException) {
+        return false
+      }
+      throw error
     }
-    const toolOption = server.config.toolOptions[toolName]
-    if (!toolOption) {
-      return false
-    }
-    return toolOption.allowAutoExecution ?? false
   }
 
   public async callTool({

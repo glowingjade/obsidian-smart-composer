@@ -12,6 +12,7 @@ import { App } from 'obsidian'
 import { useCallback, useEffect, useState } from 'react'
 
 import { useSettings } from '../../../contexts/settings-context'
+import { McpManager } from '../../../core/mcp/mcpManager'
 import SmartComposerPlugin from '../../../main'
 import { ConfirmModal } from '../../../settings/ConfirmModal'
 import {
@@ -19,7 +20,6 @@ import {
   McpServerStatus,
   McpTool,
 } from '../../../types/mcp.types'
-import { McpManager } from '../../../utils/mcp/mcpManager'
 import { ObsidianButton } from '../../common/ObsidianButton'
 import { ObsidianToggle } from '../../common/ObsidianToggle'
 import { AddMcpServerModal, EditMcpServerModal } from '../McpServerModal'
