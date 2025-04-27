@@ -56,34 +56,47 @@ export function McpSection({ app, plugin }: McpSectionProps) {
   return (
     <div className="smtcmp-settings-section">
       <div className="smtcmp-settings-header">MCP (Model Context Pool)</div>
-      <div className="smtcmp-settings-sub-header-container">
-        <div className="smtcmp-settings-sub-header">MCP Servers</div>
-        <ObsidianButton
-          text="Add MCP Server"
-          onClick={() => new AddMcpServerModal(app, plugin).open()}
-        />
-      </div>
 
-      <div className="smtcmp-mcp-servers-container">
-        <div className="smtcmp-mcp-servers-header">
-          <div>Server</div>
-          <div>Status</div>
-          <div>Enabled</div>
-          <div>Actions</div>
+      {mcpManager?.disabled ? (
+        <div className="smtcmp-settings-sub-header-container">
+          <div className="smtcmp-settings-sub-header">
+            MCP is not supported on mobile devices
+          </div>
         </div>
-        {mcpServers.length > 0 ? (
-          mcpServers.map((server) => (
-            <McpServerComponent
-              key={server.name}
-              server={server}
-              app={app}
-              plugin={plugin}
+      ) : (
+        <>
+          <div className="smtcmp-settings-sub-header-container">
+            <div className="smtcmp-settings-sub-header">MCP Servers</div>
+            <ObsidianButton
+              text="Add MCP Server"
+              onClick={() => new AddMcpServerModal(app, plugin).open()}
             />
-          ))
-        ) : (
-          <div className="smtcmp-mcp-servers-empty">No MCP servers found</div>
-        )}
-      </div>
+          </div>
+
+          <div className="smtcmp-mcp-servers-container">
+            <div className="smtcmp-mcp-servers-header">
+              <div>Server</div>
+              <div>Status</div>
+              <div>Enabled</div>
+              <div>Actions</div>
+            </div>
+            {mcpServers.length > 0 ? (
+              mcpServers.map((server) => (
+                <McpServerComponent
+                  key={server.name}
+                  server={server}
+                  app={app}
+                  plugin={plugin}
+                />
+              ))
+            ) : (
+              <div className="smtcmp-mcp-servers-empty">
+                No MCP servers found
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </div>
   )
 }

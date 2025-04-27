@@ -21,7 +21,7 @@ import {
 export class McpManager {
   static readonly TOOL_NAME_DELIMITER = '__' // Delimiter for tool name construction (serverName__toolName)
 
-  private readonly disabled = !Platform.isDesktop // MCP should be disabled on mobile since it doesn't support node.js
+  public readonly disabled = !Platform.isDesktop // MCP should be disabled on mobile since it doesn't support node.js
 
   private settings: SmartComposerSettings
   private unsubscribeFromSettings: () => void
