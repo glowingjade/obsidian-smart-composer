@@ -359,11 +359,10 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         return
       }
 
-      setChatMessages((prevChatMessages) => {
-        return prevChatMessages.map((message) =>
-          message.id === toolMessage.id ? toolMessage : message,
-        )
-      })
+      const updatedMessages = chatMessages.map((message) =>
+        message.id === toolMessage.id ? toolMessage : message,
+      )
+      setChatMessages(updatedMessages)
 
       // Resume the chat automatically if this tool message is the last message
       // and all tool calls have completed.
@@ -379,9 +378,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         // Using updated toolMessage directly because chatMessages state
         // still contains the old values
         submitChatMutation.mutate({
-          chatMessages: chatMessages.map((message) =>
-            message.id === toolMessage.id ? toolMessage : message,
-          ),
+          chatMessages: updatedMessages,
           conversationId: currentConversationId,
         })
         requestAnimationFrame(() => {
