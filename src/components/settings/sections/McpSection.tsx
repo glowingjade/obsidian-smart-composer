@@ -57,6 +57,14 @@ export function McpSection({ app, plugin }: McpSectionProps) {
     <div className="smtcmp-settings-section">
       <div className="smtcmp-settings-header">MCP (Model Context Pool)</div>
 
+      <div className="smtcmp-settings-desc smtcmp-settings-callout">
+        <strong>Warning:</strong> When using tools, the tool response is passed
+        to the language model (LLM). If the tool result contains a large amount
+        of content, this can significantly increase LLM usage and associated
+        costs. Please be mindful when enabling or using tools that may return
+        long outputs.
+      </div>
+
       {mcpManager?.disabled ? (
         <div className="smtcmp-settings-sub-header-container">
           <div className="smtcmp-settings-sub-header">

@@ -1187,6 +1187,12 @@ button.smtcmp-chat-input-model-select {
   margin: var(--size-4-1) 0;
 }
 
+.smtcmp-settings-callout {
+  padding-inline-start: var(--size-4-2);
+  border-inline-start: var(--blockquote-border-thickness) solid
+    var(--blockquote-border-color);
+}
+
 .smtcmp-settings-required::after {
   color: var(--color-red);
   content: '*';
