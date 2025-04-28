@@ -172,8 +172,8 @@ export class McpManager {
     }
 
     this.servers = nextServers
-    this.notifySubscribers()
     this.availableToolsCache = null // Invalidate available tools cache
+    this.notifySubscribers() // Should call after invalidating the cache
   }
 
   private async connectServer(

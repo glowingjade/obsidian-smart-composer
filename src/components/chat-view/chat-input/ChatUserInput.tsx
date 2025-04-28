@@ -202,43 +202,41 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
 
     return (
       <div className="smtcmp-chat-user-input-container" ref={containerRef}>
-        {mentionables.length > 0 && (
-          <div className="smtcmp-chat-user-input-files">
-            <ToolBadge />
-            {mentionables.map((m) => (
-              <MentionableBadge
-                key={getMentionableKey(serializeMentionable(m))}
-                mentionable={m}
-                onDelete={() => handleMentionableDelete(m)}
-                onClick={() => {
-                  const mentionableKey = getMentionableKey(
-                    serializeMentionable(m),
+        <div className="smtcmp-chat-user-input-files">
+          <ToolBadge />
+          {mentionables.map((m) => (
+            <MentionableBadge
+              key={getMentionableKey(serializeMentionable(m))}
+              mentionable={m}
+              onDelete={() => handleMentionableDelete(m)}
+              onClick={() => {
+                const mentionableKey = getMentionableKey(
+                  serializeMentionable(m),
+                )
+                if (
+                  (m.type === 'current-file' ||
+                    m.type === 'file' ||
+                    m.type === 'block') &&
+                  m.file &&
+                  mentionableKey === displayedMentionableKey
+                ) {
+                  // open file on click again
+                  openMarkdownFile(
+                    app,
+                    m.file.path,
+                    m.type === 'block' ? m.startLine : undefined,
                   )
-                  if (
-                    (m.type === 'current-file' ||
-                      m.type === 'file' ||
-                      m.type === 'block') &&
-                    m.file &&
-                    mentionableKey === displayedMentionableKey
-                  ) {
-                    // open file on click again
-                    openMarkdownFile(
-                      app,
-                      m.file.path,
-                      m.type === 'block' ? m.startLine : undefined,
-                    )
-                  } else {
-                    setDisplayedMentionableKey(mentionableKey)
-                  }
-                }}
-                isFocused={
-                  getMentionableKey(serializeMentionable(m)) ===
-                  displayedMentionableKey
+                } else {
+                  setDisplayedMentionableKey(mentionableKey)
                 }
-              />
-            ))}
-          </div>
-        )}
+              }}
+              isFocused={
+                getMentionableKey(serializeMentionable(m)) ===
+                displayedMentionableKey
+              }
+            />
+          ))}
+        </div>
 
         <MentionableContentPreview
           displayedMentionableKey={displayedMentionableKey}

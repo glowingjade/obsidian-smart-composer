@@ -106,6 +106,6 @@ type FunctionDescription = {
   name: string
   parameters: {
     type: 'object'
-    properties?: Record<string, unknown>
+    properties: Record<string, unknown>
   }
 }

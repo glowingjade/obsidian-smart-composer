@@ -154,7 +154,10 @@ export class ResponseGenerator {
           function: {
             name: tool.name,
             description: tool.description,
-            parameters: tool.inputSchema,
+            parameters: {
+              ...tool.inputSchema,
+              properties: tool.inputSchema.properties ?? {},
+            },
           },
         }))
       : undefined
