@@ -8,6 +8,10 @@
   <a href="https://github.com/glowingjade/obsidian-smart-composer/discussions">Discussions</a>
 </p>
 
+> [!NOTE]
+> **🚀 New Feature: Model Context Protocol (MCP) is now available!**  
+> You can now connect Smart Composer to external AI tools and using the open MCP standard.
+
 ![SC1_Title.gif](https://github.com/user-attachments/assets/a50a1f80-39ff-4eba-8090-e3d75e7be98c)
 
 Everytime we ask ChatGPT, we need to put so much context information for each query. Why spend time putting background infos that are already in your vault?
@@ -20,7 +24,7 @@ Everytime we ask ChatGPT, we need to put so much context information for each qu
 
 ![SC2_ContextChat.gif](https://github.com/user-attachments/assets/8da4c189-399a-450a-9591-95f1c9af1bc8)
 
-> Upgrade your note-taking experience with our Contextual AI Assistant, inspired by Cursor AI. Unlike typical AI plugins, our assistant allows you to **precisely select the context for your conversation.**
+Upgrade your note-taking experience with our Contextual AI Assistant, inspired by Cursor AI. Unlike typical AI plugins, our assistant allows you to **precisely select the context for your conversation.**
 
 - Type `@<fname>` to choose specific files/folders as your conversation context
 - Get responses based on selected vault content
@@ -43,7 +47,7 @@ Now, you can **add website links and images** as additional context for your que
 
 ![SC3_ApplyEdit.gif](https://github.com/user-attachments/assets/35ee03ff-4a61-4d08-8032-ca61fb37dcf1)
 
-> Smart Composer **suggests edits to your document.** You can apply with a single click.
+Smart Composer **suggests edits to your document.** You can apply with a single click.
 
 - Offers document change recommendations
 - Apply suggested changes instantly
@@ -52,12 +56,19 @@ Now, you can **add website links and images** as additional context for your que
 
 ![SC4_RAG-ezgif.com-crop-video.gif](https://github.com/user-attachments/assets/91c3ab8d-56d7-43b8-bb4a-1e73615a40ec)
 
-> **Automatically find and use relevant notes** from your vault to enhance AI responses.
+**Automatically find and use relevant notes** from your vault to enhance AI responses.
 
 - Hit `Cmd+Shift+Enter` to run Vault Search answer
 - Semantic search across your vault to find the most relevant context
 
-#### Additional Features
+### Model Context Protocol (MCP)
+
+![mcp_demo](https://github.com/user-attachments/assets/4c80a1af-4cbf-4aa4-90d2-457499553357)
+
+Connect Smart Composer to external MCP servers.
+MCP lets you use powerful third-party tools and data sources right inside your chat.
+
+### Additional Features
 
 - **Custom Model Selection**: Use your own model by setting your API Key (stored locally). Supported providers:
   - OpenAI
@@ -78,7 +89,8 @@ Now, you can **add website links and images** as additional context for your que
 
 ## Getting Started
 
-> **⚠️ Important: Installer Version Requirement**  
+> [!IMPORTANT]
+> **Installer Version Requirement**  
 > Smart Composer requires a recent version of the Obsidian installer. If you experience issues with the plugin not loading properly:
 > 
 > 1. First, try updating Obsidian normally at `Settings > General > Check for updates`.
@@ -98,7 +110,9 @@ Now, you can **add website links and images** as additional context for your que
    - Gemini : [Gemini API Keys](https://aistudio.google.com/apikey)
    - Groq : [Groq API Keys](https://console.groq.com/keys)
 
-> **💡 Free Option Available**: While rate-limited, Gemini API provides the best performance among free models for Smart Composer. Recommended for users looking for a free option.
+> [!TIP]
+> **Looking for a free option?**  
+> Gemini API provides the best performance among free models for Smart Composer. Recommended for users looking for a free option.
 
 **📚 For detailed setup instructions and documentation, please visit our [Documentation](https://github.com/glowingjade/obsidian-smart-composer/wiki).**
 
