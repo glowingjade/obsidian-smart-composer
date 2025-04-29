@@ -57,6 +57,10 @@ export const embeddingModelSchema = z.discriminatedUnion('providerType', [
     ...baseEmbeddingModelSchema.shape,
   }),
   z.object({
+    providerType: z.literal('mistral'),
+    ...baseEmbeddingModelSchema.shape,
+  }),
+  z.object({
     providerType: z.literal('morph'),
     ...baseEmbeddingModelSchema.shape,
   }),

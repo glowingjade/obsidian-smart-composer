@@ -3,11 +3,14 @@ import {
   ChatCompletion,
   ChatCompletionChunk,
   ChatCompletionContentPart,
+  ChatCompletionCreateParamsNonStreaming,
+  ChatCompletionCreateParamsStreaming,
   ChatCompletionMessageParam,
 } from 'openai/resources/chat/completions'
 
 import {
   LLMOptions,
+  LLMRequest,
   LLMRequestNonStreaming,
   LLMRequestStreaming,
   RequestMessage,
@@ -24,25 +27,10 @@ export class OpenAIMessageAdapter {
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
     const response = await client.chat.completions.create(
-      {
-        model: request.model,
-        tools: request.tools,
-        tool_choice: request.tool_choice,
-        reasoning_effort: request.reasoning_effort,
-        web_search_options: request.web_search_options,
-        messages: request.messages.map((m) => this.parseRequestMessage(m)),
-        // TODO: max_tokens is deprecated in the OpenAI API, with max_completion_tokens being the
-        // recommended replacement. Reasoning models do not support max_tokens at all.
-        // However, many OpenAI-compatible APIs still only support max_tokens.
-        // Consider implementing a solution that works with both OpenAI and compatible APIs.
-        max_tokens: request.max_tokens,
-        temperature: request.temperature,
-        top_p: request.top_p,
-        frequency_penalty: request.frequency_penalty,
-        presence_penalty: request.presence_penalty,
-        logit_bias: request.logit_bias,
-        prediction: request.prediction,
-      },
+      this.buildChatCompletionCreateParams({
+        request,
+        stream: false,
+      }),
       {
         signal: options?.signal,
       },
@@ -56,28 +44,10 @@ export class OpenAIMessageAdapter {
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
     const stream = await client.chat.completions.create(
-      {
-        model: request.model,
-        reasoning_effort: request.reasoning_effort,
-        tools: request.tools,
-        tool_choice: request.tool_choice,
-        web_search_options: request.web_search_options,
-        messages: request.messages.map((m) => this.parseRequestMessage(m)),
-        // TODO: max_tokens is deprecated in the OpenAI API, with max_completion_tokens being the
-        // recommended replacement. Reasoning models do not support max_tokens at all.
-        // However, many OpenAI-compatible APIs still only support max_tokens.
-        // Consider implementing a solution that works with both OpenAI and compatible APIs.
-        max_tokens: request.max_tokens,
-        temperature: request.temperature,
-        top_p: request.top_p,
-        frequency_penalty: request.frequency_penalty,
-        presence_penalty: request.presence_penalty,
-        logit_bias: request.logit_bias,
+      this.buildChatCompletionCreateParams({
+        request,
         stream: true,
-        stream_options: {
-          include_usage: true,
-        },
-      },
+      }),
       {
         signal: options?.signal,
       },
@@ -91,6 +61,50 @@ export class OpenAIMessageAdapter {
   ): AsyncIterable<LLMResponseStreaming> {
     for await (const chunk of stream) {
       yield this.parseStreamingResponseChunk(chunk)
+    }
+  }
+
+  protected buildChatCompletionCreateParams(params: {
+    request: LLMRequest
+    stream: false
+  }): ChatCompletionCreateParamsNonStreaming
+  protected buildChatCompletionCreateParams(params: {
+    request: LLMRequest
+    stream: true
+  }): ChatCompletionCreateParamsStreaming
+  protected buildChatCompletionCreateParams({
+    request,
+    stream,
+  }: {
+    request: LLMRequest
+    stream: boolean
+  }):
+    | ChatCompletionCreateParamsStreaming
+    | ChatCompletionCreateParamsNonStreaming {
+    return {
+      model: request.model,
+      tools: request.tools,
+      tool_choice: request.tool_choice,
+      reasoning_effort: request.reasoning_effort,
+      web_search_options: request.web_search_options,
+      messages: request.messages.map((m) => this.parseRequestMessage(m)),
+      // TODO: max_tokens is deprecated in the OpenAI API, with max_completion_tokens being the
+      // recommended replacement. Reasoning models do not support max_tokens at all.
+      // However, many OpenAI-compatible APIs still only support max_tokens.
+      // Consider implementing a solution that works with both OpenAI and compatible APIs.
+      max_tokens: request.max_tokens,
+      temperature: request.temperature,
+      top_p: request.top_p,
+      frequency_penalty: request.frequency_penalty,
+      presence_penalty: request.presence_penalty,
+      logit_bias: request.logit_bias,
+      prediction: request.prediction,
+      ...(stream && {
+        stream: true,
+        stream_options: {
+          include_usage: true,
+        },
+      }),
     }
   }
 
