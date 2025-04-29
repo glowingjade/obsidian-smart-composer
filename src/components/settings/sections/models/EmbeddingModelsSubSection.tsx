@@ -93,8 +93,9 @@ export function EmbeddingModelsSubSection({
                         onClick={() =>
                           handleDeleteEmbeddingModel(embeddingModel.id)
                         }
+                        className="clickable-icon"
                       >
-                        <Trash2 size={16} />
+                        <Trash2 />
                       </button>
                     )}
                   </div>

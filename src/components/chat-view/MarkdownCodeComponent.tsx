@@ -57,16 +57,18 @@ export default function MarkdownCodeComponent({
             {filename}
           </div>
         )}
-        <div className="smtcmp-code-block-header-button">
-          <button
+        <div className="smtcmp-code-block-header-button-container">
+          <div
+            className="clickable-icon smtcmp-code-block-header-button"
             onClick={() => {
               setIsPreviewMode(!isPreviewMode)
             }}
           >
             <Eye size={12} />
             {isPreviewMode ? 'View Raw Text' : 'View Formatted'}
-          </button>
-          <button
+          </div>
+          <div
+            className="clickable-icon smtcmp-code-block-header-button"
             onClick={() => {
               handleCopy()
             }}
@@ -82,12 +84,17 @@ export default function MarkdownCodeComponent({
                 <span>Copy</span>
               </>
             )}
-          </button>
-          <button
-            onClick={() => {
-              onApply(String(children))
-            }}
-            disabled={isApplying}
+          </div>
+          <div
+            className="clickable-icon smtcmp-code-block-header-button"
+            onClick={
+              isApplying
+                ? undefined
+                : () => {
+                    onApply(String(children))
+                  }
+            }
+            aria-disabled={isApplying}
           >
             {isApplying ? (
               <>
@@ -100,7 +107,7 @@ export default function MarkdownCodeComponent({
                 <span>Apply</span>
               </>
             )}
-          </button>
+          </div>
         </div>
       </div>
       {isPreviewMode ? (

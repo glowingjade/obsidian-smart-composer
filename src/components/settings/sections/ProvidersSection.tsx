@@ -126,12 +126,16 @@ export function ProvidersSection({ app, plugin }: ProvidersSectionProps) {
                       onClick={() => {
                         new EditProviderModal(app, plugin, provider).open()
                       }}
+                      className="clickable-icon"
                     >
-                      <Settings size={16} />
+                      <Settings />
                     </button>
                     {!DEFAULT_PROVIDERS.some((v) => v.id === provider.id) && (
-                      <button onClick={() => handleDeleteProvider(provider)}>
-                        <Trash2 size={16} />
+                      <button
+                        onClick={() => handleDeleteProvider(provider)}
+                        className="clickable-icon"
+                      >
+                        <Trash2 />
                       </button>
                     )}
                   </div>

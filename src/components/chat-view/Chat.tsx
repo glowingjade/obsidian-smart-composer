@@ -561,10 +561,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       <div className="smtcmp-chat-header">
         <h1 className="smtcmp-chat-header-title">Chat</h1>
         <div className="smtcmp-chat-header-buttons">
-          <button
-            onClick={() => handleNewChat()}
-            className="smtcmp-chat-list-dropdown"
-          >
+          <button onClick={() => handleNewChat()} className="clickable-icon">
             <Plus size={18} />
           </button>
           <ChatListDropdown
@@ -590,7 +587,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
             onUpdateTitle={async (conversationId, newTitle) => {
               await updateConversationTitle(conversationId, newTitle)
             }}
-            className="smtcmp-chat-list-dropdown"
+            className="clickable-icon"
           >
             <History size={18} />
           </ChatListDropdown>

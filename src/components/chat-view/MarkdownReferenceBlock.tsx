@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import { Eye } from 'lucide-react'
 import { PropsWithChildren, useEffect, useMemo, useState } from 'react'
 
@@ -53,25 +54,26 @@ export default function MarkdownReferenceBlock({
 
   return (
     blockContent && (
-      <div className={`smtcmp-code-block ${filename ? 'has-filename' : ''}`}>
-        <div className={'smtcmp-code-block-header'}>
+      <div className={clsx('smtcmp-code-block', filename && 'has-filename')}>
+        <div className="smtcmp-code-block-header">
           {filename && (
             <div
-              className={'smtcmp-code-block-header-filename'}
+              className="smtcmp-code-block-header-filename"
               onClick={handleOpenFile}
             >
               {filename}
             </div>
           )}
-          <div className={'smtcmp-code-block-header-button'}>
-            <button
+          <div className="smtcmp-code-block-header-button-container">
+            <div
+              className="clickable-icon smtcmp-code-block-header-button"
               onClick={() => {
                 setIsPreviewMode(!isPreviewMode)
               }}
             >
               <Eye size={12} />
               {isPreviewMode ? 'View Raw Text' : 'View Formatted'}
-            </button>
+            </div>
           </div>
         </div>
         {isPreviewMode ? (
