@@ -83,24 +83,24 @@ function ChatListItem({
         <div className="smtcmp-chat-list-dropdown-item-title">{title}</div>
       )}
       <div className="smtcmp-chat-list-dropdown-item-actions">
-        <div
+        <button
           onClick={(e) => {
             e.stopPropagation()
             onStartEdit()
           }}
-          className="smtcmp-chat-list-dropdown-item-icon"
+          className="clickable-icon smtcmp-chat-list-dropdown-item-icon"
         >
-          <Pencil size={14} />
-        </div>
-        <div
+          <Pencil />
+        </button>
+        <button
           onClick={async (e) => {
             e.stopPropagation()
             await onDelete()
           }}
-          className="smtcmp-chat-list-dropdown-item-icon"
+          className="clickable-icon smtcmp-chat-list-dropdown-item-icon"
         >
-          <Trash2 size={14} />
-        </div>
+          <Trash2 />
+        </button>
       </div>
     </li>
   )
