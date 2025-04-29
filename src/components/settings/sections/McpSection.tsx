@@ -172,27 +172,27 @@ function McpServerComponent({
           />
         </div>
         <div className="smtcmp-mcp-server-actions">
-          <div
+          <button
             onClick={handleEdit}
             className="clickable-icon"
             aria-label="Edit"
           >
             <Edit size={16} />
-          </div>
-          <div
+          </button>
+          <button
             onClick={handleDelete}
             className="clickable-icon"
             aria-label="Delete"
           >
             <Trash2 size={16} />
-          </div>
-          <div
+          </button>
+          <button
             onClick={() => setIsOpen(!isOpen)}
             className="clickable-icon"
             aria-label={isOpen ? 'Collapse' : 'Expand'}
           >
             {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          </div>
+          </button>
         </div>
       </div>
       {isOpen && <ExpandedServerInfo server={server} />}

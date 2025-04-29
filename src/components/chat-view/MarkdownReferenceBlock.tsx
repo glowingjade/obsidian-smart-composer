@@ -65,7 +65,7 @@ export default function MarkdownReferenceBlock({
             </div>
           )}
           <div className="smtcmp-code-block-header-button-container">
-            <div
+            <button
               className="clickable-icon smtcmp-code-block-header-button"
               onClick={() => {
                 setIsPreviewMode(!isPreviewMode)
@@ -73,7 +73,7 @@ export default function MarkdownReferenceBlock({
             >
               <Eye size={12} />
               {isPreviewMode ? 'View Raw Text' : 'View Formatted'}
-            </div>
+            </button>
           </div>
         </div>
         {isPreviewMode ? (

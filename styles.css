@@ -567,6 +567,11 @@ input[type='text'].smtcmp-chat-list-dropdown-item-title-input {
     gap: var(--size-4-1);
     font-size: var(--font-small);
   }
+
+  /* Override clickable-icon color */
+  .smtcmp-code-block-header-button.clickable-icon {
+    color: var(--text-color) !important;
+  }
 }
 
 .smtcmp-code-block-content {
