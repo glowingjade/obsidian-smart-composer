@@ -9,6 +9,7 @@ import { DeepSeekStudioProvider } from './deepseekStudioProvider'
 import { GeminiProvider } from './gemini'
 import { GroqProvider } from './groq'
 import { LmStudioProvider } from './lmStudioProvider'
+import { MistralProvider } from './mistralProvider'
 import { MorphProvider } from './morphProvider'
 import { OllamaProvider } from './ollama'
 import { OpenAIAuthenticatedProvider } from './openai'
@@ -61,6 +62,9 @@ export function getProviderClient({
     }
     case 'perplexity': {
       return new PerplexityProvider(provider)
+    }
+    case 'mistral': {
+      return new MistralProvider(provider)
     }
     case 'morph': {
       return new MorphProvider(provider)
