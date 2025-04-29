@@ -117,8 +117,9 @@ export function ChatModelsSubSection({
                             plugin,
                           ).open()
                         }}
+                        className="clickable-icon"
                       >
-                        <Settings size={16} />
+                        <Settings />
                       </button>
                     )}
                     {!DEFAULT_CHAT_MODELS.some(
@@ -126,8 +127,9 @@ export function ChatModelsSubSection({
                     ) && (
                       <button
                         onClick={() => handleDeleteChatModel(chatModel.id)}
+                        className="clickable-icon"
                       >
-                        <Trash2 size={16} />
+                        <Trash2 />
                       </button>
                     )}
                   </div>

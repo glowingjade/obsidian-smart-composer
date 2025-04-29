@@ -13,7 +13,7 @@ export function VaultChatButton({ onClick }: { onClick: () => void }) {
       <Tooltip.Provider delayDuration={0}>
         <Tooltip.Root>
           <Tooltip.Trigger asChild>
-            <button
+            <div
               className="smtcmp-chat-user-input-submit-button"
               onClick={onClick}
             >
@@ -28,7 +28,7 @@ export function VaultChatButton({ onClick }: { onClick: () => void }) {
                 <CornerDownLeftIcon size={12} />
               </div>
               <div>Vault Chat</div>
-            </button>
+            </div>
           </Tooltip.Trigger>
           <Tooltip.Portal>
             <Tooltip.Content className="smtcmp-tooltip-content" sideOffset={5}>
