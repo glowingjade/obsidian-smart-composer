@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ItemView, WorkspaceLeaf } from 'obsidian'
+import { ItemView, TFile, WorkspaceLeaf } from 'obsidian'
 import React from 'react'
 import { Root, createRoot } from 'react-dom/client'
 
@@ -28,6 +28,8 @@ export class ChatView extends ItemView {
   ) {
     super(leaf)
     this.initialChatProps = plugin.initialChatProps
+    // Store reference to this view in the plugin
+    plugin.chatView = this
   }
 
   getViewType() {
@@ -50,6 +52,9 @@ export class ChatView extends ItemView {
   }
 
   async onClose() {
+    if (this.plugin.chatView === this) {
+      this.plugin.chatView = null
+    }
     this.root?.unmount()
   }
 
@@ -125,5 +130,33 @@ export class ChatView extends ItemView {
 
   focusMessage() {
     this.chatRef.current?.focusMessage()
+  }
+
+  /**
+   * Loads a specific conversation by ID
+   */
+  loadConversation(conversationId: string) {
+    return this.chatRef.current?.loadConversation(conversationId)
+  }
+
+  /**
+   * Creates a new chat with block data and automatically submits it
+   * @param blockData The text block to add to the chat
+   * @returns Promise that resolves to the conversation ID
+   */
+  async createAndSubmitChatFromBlock(blockData: {
+    file: TFile
+    text: string
+    startLine: number
+    endLine: number
+  }): Promise<string | undefined> {
+    // Convert to MentionableBlockData format
+    const mentionableBlock: MentionableBlockData = {
+      file: blockData.file,
+      content: blockData.text,
+      startLine: blockData.startLine,
+      endLine: blockData.endLine,
+    }
+    return this.chatRef.current?.createAndSubmitChat(mentionableBlock)
   }
 }
