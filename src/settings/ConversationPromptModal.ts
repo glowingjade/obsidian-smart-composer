@@ -1,7 +1,7 @@
 import { App, Modal, Setting } from 'obsidian'
 
 export class ConversationPromptModal extends Modal {
-  private conversationId: string = ''
+  private conversationId = ''
   private onSubmit: (result: string | null) => void
 
   constructor(app: App, onSubmit: (result: string | null) => void) {
@@ -11,14 +11,15 @@ export class ConversationPromptModal extends Modal {
 
   onOpen() {
     const { contentEl } = this
-    
+
     contentEl.createEl('h2', { text: 'Enter Conversation ID' })
-    
+
     new Setting(contentEl)
       .setName('Conversation ID')
       .setDesc('Enter the ID of the conversation you want to open')
       .addText((text) => {
-        text.setValue(this.conversationId)
+        text
+          .setValue(this.conversationId)
           .onChange((value) => {
             this.conversationId = value
           })
@@ -28,16 +29,17 @@ export class ConversationPromptModal extends Modal {
               this.onSubmit(this.conversationId)
             }
           })
-        
+
         // Focus the input field
         setTimeout(() => {
           text.inputEl.focus()
         }, 10)
       })
-    
+
     new Setting(contentEl)
       .addButton((btn) => {
-        btn.setButtonText('Open')
+        btn
+          .setButtonText('Open')
           .setCta()
           .onClick(() => {
             this.close()
@@ -45,11 +47,10 @@ export class ConversationPromptModal extends Modal {
           })
       })
       .addButton((btn) => {
-        btn.setButtonText('Cancel')
-          .onClick(() => {
-            this.close()
-            this.onSubmit(null)
-          })
+        btn.setButtonText('Cancel').onClick(() => {
+          this.close()
+          this.onSubmit(null)
+        })
       })
   }
 

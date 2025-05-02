@@ -5,14 +5,14 @@ import { ChatView } from './ChatView'
 import { ChatProps } from './components/chat-view/Chat'
 import { InstallerUpdateRequiredModal } from './components/modals/InstallerUpdateRequiredModal'
 import { APPLY_VIEW_TYPE, CHAT_VIEW_TYPE } from './constants'
-import { ConversationPromptModal } from './settings/ConversationPromptModal'
-import { CreateChatModal } from './settings/CreateChatModal'
 import { ChatService, CreateChatOptions } from './core/chat/ChatService'
 import { McpManager } from './core/mcp/mcpManager'
 import { RAGEngine } from './core/rag/ragEngine'
 import { DatabaseManager } from './database/DatabaseManager'
 import { PGLiteAbortedException } from './database/exception'
 import { migrateToJsonDatabase } from './database/json/migrateToJsonDatabase'
+import { ConversationPromptModal } from './settings/ConversationPromptModal'
+import { CreateChatModal } from './settings/CreateChatModal'
 import {
   SmartComposerSettings,
   smartComposerSettingsSchema,
@@ -31,7 +31,7 @@ export default class SmartComposerPlugin extends Plugin {
   private dbManagerInitPromise: Promise<DatabaseManager> | null = null
   private ragEngineInitPromise: Promise<RAGEngine> | null = null
   private timeoutIds: ReturnType<typeof setTimeout>[] = [] // Use ReturnType instead of number
-  
+
   // Property to store a reference to the ChatView
   chatView: ChatView | null = null
   private chatService: ChatService | null = null
@@ -158,10 +158,10 @@ export default class SmartComposerPlugin extends Plugin {
     // McpManager cleanup
     this.mcpManager?.cleanup()
     this.mcpManager = null
-    
+
     // ChatService cleanup
     this.chatService = null
-    
+
     // Clear chat view reference
     this.chatView = null
   }
@@ -360,20 +360,20 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
   async openConversation(conversationId: string): Promise<void> {
     // Make sure chat view is open
     await this.activateChatView()
-    
+
     // Get the chat view
     const leaf = this.app.workspace.getLeavesOfType(CHAT_VIEW_TYPE)[0]
     if (!leaf || !(leaf.view instanceof ChatView)) {
-      throw new Error("Failed to open chat view")
+      throw new Error('Failed to open chat view')
     }
-    
+
     // Open the conversation
     await leaf.view.loadConversation(conversationId)
-    
+
     // Reveal the leaf
     this.app.workspace.revealLeaf(leaf)
   }
-  
+
   /**
    * Prompts the user to enter a conversation ID
    * @returns Promise that resolves to the entered ID or null if cancelled
@@ -386,12 +386,15 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
       modal.open()
     })
   }
-  
+
   /**
    * Prompts the user to enter information for a new chat
    * @returns Promise that resolves to the message and file or null if cancelled
    */
-  async promptForCreateChat(): Promise<{ message: string; file?: TFile | null } | null> {
+  async promptForCreateChat(): Promise<{
+    message: string
+    file?: TFile | null
+  } | null> {
     return new Promise((resolve) => {
       const modal = new CreateChatModal(this.app, (result) => {
         resolve(result)
@@ -399,31 +402,37 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
       modal.open()
     })
   }
-  
+
   /**
    * Create a new chat with the given text block and automatically submit the message
    * @param blockData The text block to add to the chat
    * @returns Promise that resolves to the ID of the created conversation
    */
-  async createChatWithBlock(blockData: { file: TFile; text: string; startLine: number; endLine: number }): Promise<string> {
+  async createChatWithBlock(blockData: {
+    file: TFile
+    text: string
+    startLine: number
+    endLine: number
+  }): Promise<string> {
     // Make sure chat view is open
     await this.activateChatView()
-    
+
     // Get the chat view
     const leaf = this.app.workspace.getLeavesOfType(CHAT_VIEW_TYPE)[0]
     if (!leaf || !(leaf.view instanceof ChatView)) {
-      throw new Error("Failed to open chat view")
+      throw new Error('Failed to open chat view')
     }
-    
+
     // Create and submit the chat - access via the method we added to ChatView
-    const conversationId = await (leaf.view as ChatView).createAndSubmitChatFromBlock(blockData)
+    const conversationId =
+      await leaf.view.createAndSubmitChatFromBlock(blockData)
     if (!conversationId) {
-      throw new Error("Failed to create chat")
+      throw new Error('Failed to create chat')
     }
-    
+
     // Reveal the leaf
     this.app.workspace.revealLeaf(leaf)
-    
+
     return conversationId
   }
 
@@ -452,7 +461,10 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
   /**
    * Public API for other plugins – create chat quietly and return id.
    */
-  async createChat(initialText: string, opts?: CreateChatOptions): Promise<string> {
+  async createChat(
+    initialText: string,
+    opts?: CreateChatOptions,
+  ): Promise<string> {
     const service = await this.getChatService()
     return service.createChat(initialText, opts)
   }

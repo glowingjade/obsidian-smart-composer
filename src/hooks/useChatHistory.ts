@@ -127,7 +127,9 @@ export function useChatHistory(): UseChatHistory {
   }
 }
 
-export const serializeChatMessage = (message: ChatMessage): SerializedChatMessage => {
+export const serializeChatMessage = (
+  message: ChatMessage,
+): SerializedChatMessage => {
   switch (message.role) {
     case 'user':
       return {

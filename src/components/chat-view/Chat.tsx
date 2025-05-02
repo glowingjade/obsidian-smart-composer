@@ -501,13 +501,15 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     loadConversation: async (conversationId: string) => {
       return handleLoadConversation(conversationId)
     },
-    createAndSubmitChat: async (selectedBlock: MentionableBlockData): Promise<string> => {
+    createAndSubmitChat: async (
+      selectedBlock: MentionableBlockData,
+    ): Promise<string> => {
       // Create a new chat
       handleNewChat(selectedBlock)
-      
+
       // Get the new conversation ID
       const newConversationId = currentConversationId
-      
+
       // Create a new message with the selected block
       const newMessage: ChatUserMessage = {
         role: 'user',
@@ -525,31 +527,31 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           },
         ],
       }
-      
+
       // Compile and submit the message
       const compiledMessage = await promptGenerator.compileUserMessagePrompt({
         message: newMessage,
         useVaultSearch: true,
         onQueryProgressChange: setQueryProgress,
       })
-      
+
       const compiledMessages = [
         {
           ...newMessage,
           promptContent: compiledMessage.promptContent,
           similaritySearchResults: compiledMessage.similaritySearchResults,
-        }
+        },
       ]
-      
+
       // Update the chat messages
       setChatMessages(compiledMessages)
-      
+
       // Submit the message
       submitChatMutation.mutate({
         chatMessages: compiledMessages,
         conversationId: newConversationId,
       })
-      
+
       return newConversationId
     },
     addSelectionToChat: (selectedBlock: MentionableBlockData) => {

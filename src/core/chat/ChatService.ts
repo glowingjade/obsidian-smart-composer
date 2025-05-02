@@ -2,16 +2,16 @@ import { App, TFile } from 'obsidian'
 import { v4 as uuidv4 } from 'uuid'
 
 import { getChatModelClient } from '../../core/llm/manager'
-import { ResponseGenerator } from '../../utils/chat/responseGenerator'
-import { PromptGenerator } from '../../utils/chat/promptGenerator'
-import { plainTextToEditorState } from '../../utils/chat/plain-text-to-editor-state'
-import { serializeChatMessage } from '../../hooks/useChatHistory'
-import { ChatManager } from '../../database/json/chat/ChatManager'
-import { ChatUserMessage, ChatMessage } from '../../types/chat'
-import { MentionableBlockData } from '../../types/mentionable'
-import { SmartComposerSettings } from '../../settings/schema/setting.types'
 import { McpManager } from '../../core/mcp/mcpManager'
 import { RAGEngine } from '../../core/rag/ragEngine'
+import { ChatManager } from '../../database/json/chat/ChatManager'
+import { serializeChatMessage } from '../../hooks/useChatHistory'
+import { SmartComposerSettings } from '../../settings/schema/setting.types'
+import { ChatMessage, ChatUserMessage } from '../../types/chat'
+import { MentionableBlockData } from '../../types/mentionable'
+import { plainTextToEditorState } from '../../utils/chat/plain-text-to-editor-state'
+import { PromptGenerator } from '../../utils/chat/promptGenerator'
+import { ResponseGenerator } from '../../utils/chat/responseGenerator'
 
 export type CreateChatOptions = {
   blocks?: MentionableBlockData[]
@@ -71,7 +71,11 @@ export class ChatService {
       this.settings,
     )
 
-    let compiled
+    type CompilePromptResult = Awaited<
+      ReturnType<PromptGenerator['compileUserMessagePrompt']>
+    >
+
+    let compiled: CompilePromptResult
     try {
       compiled = await promptGenerator.compileUserMessagePrompt({
         message: firstMessage,
@@ -99,7 +103,7 @@ export class ChatService {
             },
           ],
           shouldUseRAG: false,
-        } as any
+        } as CompilePromptResult
       } else {
         throw error
       }
@@ -178,21 +182,20 @@ export class ChatService {
           await this.chatManager.updateChat(conversationId, {
             messages: latestMessages.map(serializeChatMessage),
           })
-        } catch (err: any) {
+        } catch (err) {
+          const typedErr = err as { code?: string } | undefined
           // Rapid successive writes can make the previous file already
           // gone when the internal delete runs; ignore that benign case.
-          if (err?.code !== 'ENOENT') {
+          if (typedErr?.code !== 'ENOENT') {
             throw err
           }
         }
       })
 
       // Run without awaiting – but ensure we handle errors
-      return responseGenerator
-        .run()
-        .catch((err) => {
-          console.error('ChatService stream error', err)
-        })
+      return responseGenerator.run().catch((err) => {
+        console.error('ChatService stream error', err)
+      })
     } catch (error) {
       console.error('Failed to stream chat response', error)
       return
