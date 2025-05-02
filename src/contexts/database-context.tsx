@@ -7,13 +7,13 @@ import {
 } from 'react'
 
 import { DatabaseManager } from '../database/DatabaseManager'
-import { TemplateManager } from '../database/modules/template/TemplateManager'
+import { LegacyTemplateManager } from '../database/modules/template/TemplateManager'
 import { VectorManager } from '../database/modules/vector/VectorManager'
 
 type DatabaseContextType = {
   getDatabaseManager: () => Promise<DatabaseManager>
   getVectorManager: () => Promise<VectorManager>
-  getTemplateManager: () => Promise<TemplateManager>
+  getTemplateManager: () => Promise<LegacyTemplateManager>
 }
 
 const DatabaseContext = createContext<DatabaseContextType | null>(null)

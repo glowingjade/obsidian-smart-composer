@@ -7,7 +7,7 @@ import { InsertTemplate, SelectTemplate } from '../../schema'
 
 import { TemplateRepository } from './TemplateRepository'
 
-export class TemplateManager {
+export class LegacyTemplateManager {
   private app: App
   private repository: TemplateRepository
   private saveCallback: (() => Promise<void>) | null = null

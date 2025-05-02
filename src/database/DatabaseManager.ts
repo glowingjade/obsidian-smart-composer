@@ -6,7 +6,7 @@ import { PGLITE_DB_PATH } from '../constants'
 
 import { PGLiteAbortedException } from './exception'
 import migrations from './migrations.json'
-import { TemplateManager } from './modules/template/TemplateManager'
+import { LegacyTemplateManager } from './modules/template/TemplateManager'
 import { VectorManager } from './modules/vector/VectorManager'
 
 export class DatabaseManager {
@@ -18,7 +18,7 @@ export class DatabaseManager {
   private static managers = new WeakMap<
     DatabaseManager,
     {
-      templateManager?: TemplateManager
+      templateManager?: LegacyTemplateManager
       vectorManager?: VectorManager
     }
   >()
@@ -40,7 +40,7 @@ export class DatabaseManager {
     // WeakMap setup
     const managers = {
       vectorManager: new VectorManager(app, dbManager.db),
-      templateManager: new TemplateManager(app, dbManager.db),
+      templateManager: new LegacyTemplateManager(app, dbManager.db),
     }
 
     // save, vacuum callback setup
@@ -78,11 +78,11 @@ export class DatabaseManager {
     return managers.vectorManager
   }
 
-  getTemplateManager(): TemplateManager {
+  getTemplateManager(): LegacyTemplateManager {
     const managers = DatabaseManager.managers.get(this) ?? {}
     if (!managers.templateManager) {
       if (this.db) {
-        managers.templateManager = new TemplateManager(this.app, this.db)
+        managers.templateManager = new LegacyTemplateManager(this.app, this.db)
         DatabaseManager.managers.set(this, managers)
       } else {
         throw new Error('Database is not initialized')
