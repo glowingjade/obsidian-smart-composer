@@ -76,6 +76,8 @@ export type ChatRef = {
   openNewChat: (selectedBlock?: MentionableBlockData) => void
   addSelectionToChat: (selectedBlock: MentionableBlockData) => void
   focusMessage: () => void
+  loadConversation: (conversationId: string) => Promise<void>
+  createAndSubmitChat: (selectedBlock: MentionableBlockData) => Promise<string>
 }
 
 export type ChatProps = {
@@ -496,6 +498,60 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   useImperativeHandle(ref, () => ({
     openNewChat: (selectedBlock?: MentionableBlockData) =>
       handleNewChat(selectedBlock),
+    loadConversation: async (conversationId: string) => {
+      return handleLoadConversation(conversationId)
+    },
+    createAndSubmitChat: async (selectedBlock: MentionableBlockData): Promise<string> => {
+      // Create a new chat
+      handleNewChat(selectedBlock)
+      
+      // Get the new conversation ID
+      const newConversationId = currentConversationId
+      
+      // Create a new message with the selected block
+      const newMessage: ChatUserMessage = {
+        role: 'user',
+        content: null,
+        promptContent: null,
+        id: uuidv4(),
+        mentionables: [
+          {
+            type: 'current-file',
+            file: app.workspace.getActiveFile(),
+          },
+          {
+            type: 'block',
+            ...selectedBlock,
+          },
+        ],
+      }
+      
+      // Compile and submit the message
+      const compiledMessage = await promptGenerator.compileUserMessagePrompt({
+        message: newMessage,
+        useVaultSearch: true,
+        onQueryProgressChange: setQueryProgress,
+      })
+      
+      const compiledMessages = [
+        {
+          ...newMessage,
+          promptContent: compiledMessage.promptContent,
+          similaritySearchResults: compiledMessage.similaritySearchResults,
+        }
+      ]
+      
+      // Update the chat messages
+      setChatMessages(compiledMessages)
+      
+      // Submit the message
+      submitChatMutation.mutate({
+        chatMessages: compiledMessages,
+        conversationId: newConversationId,
+      })
+      
+      return newConversationId
+    },
     addSelectionToChat: (selectedBlock: MentionableBlockData) => {
       const mentionable: Omit<MentionableBlock, 'id'> = {
         type: 'block',
