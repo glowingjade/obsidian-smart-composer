@@ -1190,8 +1190,10 @@ button.smtcmp-chat-input-model-select {
 .smtcmp-settings-embedding-db-manage-header {
   display: flex;
   align-items: center;
-  gap: var(--size-4-2);
+  justify-content: end;
+  gap: var(--size-4-1);
   font-size: var(--font-ui-small);
+  margin-bottom: var(--size-4-2);
 }
 
 .smtcmp-settings-embedding-db-manage-table {

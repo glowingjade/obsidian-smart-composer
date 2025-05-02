@@ -5,8 +5,8 @@ import { DEFAULT_EMBEDDING_MODELS } from '../../../../constants'
 import { useSettings } from '../../../../contexts/settings-context'
 import { getEmbeddingModelClient } from '../../../../core/rag/embedding'
 import SmartComposerPlugin from '../../../../main'
-import { AddEmbeddingModelModal } from '../../../../settings/AddEmbeddingModelModal'
-import { ConfirmModal } from '../../../../settings/ConfirmModal'
+import { ConfirmModal } from '../../../modals/ConfirmModal'
+import { AddEmbeddingModelModal } from '../../modals/AddEmbeddingModelModal'
 
 type EmbeddingModelsSubSectionProps = {
   app: App
