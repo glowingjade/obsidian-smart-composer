@@ -151,19 +151,20 @@ export class ResponseGenerator {
     const availableTools = this.enableTools
       ? await this.mcpManager.listAvailableTools()
       : []
-    const tools: RequestTool[] | undefined = availableTools.length > 0
-      ? availableTools.map((tool) => ({
-          type: 'function',
-          function: {
-            name: tool.name,
-            description: tool.description,
-            parameters: {
-              ...tool.inputSchema,
-              properties: tool.inputSchema.properties ?? {},
+    const tools: RequestTool[] | undefined =
+      availableTools.length > 0
+        ? availableTools.map((tool) => ({
+            type: 'function',
+            function: {
+              name: tool.name,
+              description: tool.description,
+              parameters: {
+                ...tool.inputSchema,
+                properties: tool.inputSchema.properties ?? {},
+              },
             },
-          },
-        }))
-      : undefined
+          }))
+        : undefined
 
     const stream = await this.providerClient.streamResponse(
       this.model,
