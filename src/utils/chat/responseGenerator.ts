@@ -148,8 +148,11 @@ export class ResponseGenerator {
       messages: [...this.receivedMessages, ...this.responseMessages],
     })
 
-    const tools: RequestTool[] | undefined = this.enableTools
-      ? (await this.mcpManager.listAvailableTools()).map((tool) => ({
+    const availableTools = this.enableTools
+      ? await this.mcpManager.listAvailableTools()
+      : []
+    const tools: RequestTool[] | undefined = availableTools.length > 0
+      ? availableTools.map((tool) => ({
           type: 'function',
           function: {
             name: tool.name,
