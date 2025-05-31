@@ -369,22 +369,47 @@ export class GeminiProvider extends BaseLLMProvider<
     }
   }
 
-  private static parseRequestTool(tool: RequestTool): GeminiTool {
-    return {
-      functionDeclarations: [
-        {
-          name: tool.function.name,
-          description: tool.function.description,
-          parameters: {
-            type: SchemaType.OBJECT,
-            properties: (tool.function.parameters.properties ?? {}) as Record<
-              string,
-              Schema
-            >,
-          },
-        },
-      ],
+private static parseRequestTool(tool: RequestTool): GeminiTool {
+    const originalParameterProperties = tool.function.parameters?.properties ?? {};
+    const sanitizedParameterProperties: Record<string, Schema> = {};
+
+    // Sanitize string formats and handle required properties
+    for (const paramName in originalParameterProperties) {
+      if (Object.prototype.hasOwnProperty.call(originalParameterProperties, paramName)) {
+        const originalParamSchemaSource = originalParameterProperties[paramName] as any;
+        const newParamSchema: Schema = { ...originalParamSchemaSource };
+
+        // Sanitize string 'format' field if it exists
+        if (newParamSchema.type === SchemaType.STRING &&
+            Object.prototype.hasOwnProperty.call(newParamSchema, 'format') &&
+            newParamSchema.format !== undefined && newParamSchema.format !== null) {
+
+          const currentFormat = String(newParamSchema.format).toLowerCase();
+
+          // Keep 'enum' and 'date-time', remove other formats.
+          if (currentFormat !== 'enum' && currentFormat !== 'date-time') {
+            delete newParamSchema.format;
+          }
+        }
+        sanitizedParameterProperties[paramName] = newParamSchema;
+      }
     }
+
+    const requiredParams = tool.function.parameters?.required ?? [];
+
+    const geminiParameters: Schema = {
+      type: SchemaType.OBJECT,
+      properties: sanitizedParameterProperties,
+      required: requiredParams, // Add 'required' property
+    };
+
+    return {
+      functionDeclaration: {
+        name: tool.function.name,
+        description: tool.function.description,
+        parameters: geminiParameters,
+      },
+    };
   }
 
   private static validateImageType(mimeType: string) {
