@@ -369,60 +369,48 @@ export class GeminiProvider extends BaseLLMProvider<
     }
   }
 
- private static parseRequestTool(tool: RequestTool): GeminiTool {
-  // Get the original properties defined in Smart Composer's RequestTool structure.
-  // Default to an empty object if properties are not defined.
-  const originalParameterProperties = tool.function.parameters?.properties ?? {};
-  
-  // Create a new object to hold the sanitized properties that will be sent to Gemini.
-  const sanitizedParameterProperties: Record<string, Schema> = {};
+private static parseRequestTool(tool: RequestTool): GeminiTool {
+    const originalParameterProperties = tool.function.parameters?.properties ?? {};
+    const sanitizedParameterProperties: Record<string, Schema> = {};
 
-  // Iterate over each parameter defined in the original tool properties.
-  for (const paramName in originalParameterProperties) {
-    // Ensure we are only processing own properties of the object.
-    if (Object.prototype.hasOwnProperty.call(originalParameterProperties, paramName)) {
-      
-      const originalParamSchemaSource = originalParameterProperties[paramName] as any; 
-      const newParamSchema: Schema = { ...originalParamSchemaSource }; // Shallow clone
+    // Sanitize string formats and handle required properties
+    for (const paramName in originalParameterProperties) {
+      if (Object.prototype.hasOwnProperty.call(originalParameterProperties, paramName)) {
+        const originalParamSchemaSource = originalParameterProperties[paramName] as any;
+        const newParamSchema: Schema = { ...originalParamSchemaSource };
 
-      // CHECK AND SANITIZE THE 'format' FIELD FOR STRING TYPES:
-      // 1. Ensure the parameter type is STRING.
-      //    (Verify 'SchemaType.STRING' is correct from your '@google/generative-ai' imports; it might be "STRING").
-      // 2. Ensure the 'format' field actually exists on the schema.
-      if (newParamSchema.type === SchemaType.STRING && 
-          Object.prototype.hasOwnProperty.call(newParamSchema, 'format') &&
-          newParamSchema.format !== undefined && newParamSchema.format !== null) {
-        
-        const currentFormat = String(newParamSchema.format).toLowerCase();
+        // Sanitize string 'format' field if it exists
+        if (newParamSchema.type === SchemaType.STRING &&
+            Object.prototype.hasOwnProperty.call(newParamSchema, 'format') &&
+            newParamSchema.format !== undefined && newParamSchema.format !== null) {
 
-        if (currentFormat !== 'enum' && currentFormat !== 'date-time') {
-          // If format exists and is NOT 'enum' or 'date-time', delete it.
-          delete newParamSchema.format;
+          const currentFormat = String(newParamSchema.format).toLowerCase();
+
+          // Keep 'enum' and 'date-time', remove other formats.
+          if (currentFormat !== 'enum' && currentFormat !== 'date-time') {
+            delete newParamSchema.format;
+          }
         }
+        sanitizedParameterProperties[paramName] = newParamSchema;
       }
-      
-      sanitizedParameterProperties[paramName] = newParamSchema;
     }
-  }
 
-  // Get the 'required' parameters list from the original tool definition.
-  const requiredParams = tool.function.parameters?.required ?? [];
+    const requiredParams = tool.function.parameters?.required ?? [];
 
-  // Construct and return the GeminiTool object with the sanitized properties.
-  return {
-    functionDeclarations: [
-      {
+    const geminiParameters: Schema = {
+      type: SchemaType.OBJECT,
+      properties: sanitizedParameterProperties,
+      required: requiredParams, // Add 'required' property
+    };
+
+    return {
+      functionDeclaration: {
         name: tool.function.name,
         description: tool.function.description,
-        parameters: {
-          type: SchemaType.OBJECT, 
-          properties: sanitizedParameterProperties, // Use the sanitized properties.
-          required: requiredParams.length > 0 ? requiredParams : undefined,
-        },
+        parameters: geminiParameters,
       },
-    ],
-  };
-}
+    };
+  }
 
   private static validateImageType(mimeType: string) {
     const SUPPORTED_IMAGE_TYPES = [
