@@ -1,5 +1,5 @@
 import * as Popover from '@radix-ui/react-popover'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 
 import { useSettings } from '../../contexts/settings-context'
@@ -50,10 +50,12 @@ export function AssistantSelector() {
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger asChild>
         <button className="smtcmp-assistant-selector-button">
-          <span className="smtcmp-assistant-selector-current">
+          <div className="smtcmp-assistant-selector-current">
             {currentAssistant ? currentAssistant.name : 'Select Assistant'}
-          </span>
-          <ChevronDown size={16} />
+          </div>
+          <div className="smtcmp-assistant-selector-icon">
+            {open ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+          </div>
         </button>
       </Popover.Trigger>
 
