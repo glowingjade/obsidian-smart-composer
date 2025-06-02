@@ -390,23 +390,14 @@ export function AssistantsSection({ app }: AssistantsSectionProps) {
   };
 
   return (
-    <div className="smtcmp-settings-section" style={{
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '16px'
-    }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
+    <div className="smtcmp-settings-section">
+      <div className="smtcmp-settings-header" style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
         alignItems: 'center',
-        marginBottom: '8px'
+        marginBottom: '16px'
       }}>
-        <h2 className="smtcmp-settings-header" style={{
-          margin: 0,
-          fontSize: '20px',
-          fontWeight: 'bold'
-        }}>Custom Assistants</h2>
-        
+        <div>Custom Assistants</div>
         <button
           onClick={handleAddAssistant}
           aria-label="Add new assistant"
@@ -430,13 +421,9 @@ export function AssistantsSection({ app }: AssistantsSectionProps) {
         </button>
       </div>
       
-      <div style={{
-        fontSize: '14px',
-        color: 'var(--text-muted)',
-        marginBottom: '8px'
-      }}>
-        Create custom assistants with dedicated system prompts for different tasks. Each assistant has its own behavior and capabilities.
-      </div>
+      <ObsidianSetting
+        desc="Create custom assistants with dedicated system prompts for different tasks. Each assistant has its own behavior and capabilities."
+      />
 
       {assistants.length === 0 ? (
         <div className="smtcmp-no-assistants" style={{

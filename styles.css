@@ -1870,34 +1870,40 @@ button.smtcmp-chat-input-model-select {
   gap: var(--size-4-1);
 }
 
-.smtcmp-setting-item--nested {
-  padding-left: var(--size-4-4);
+/* Assistant selector styles - matched with model selector */
+.smtcmp-chat-header-right button.smtcmp-assistant-selector-button {
+  all: unset;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  padding: 0 !important;
+  font-size: var(--font-smallest) !important;
+  font-weight: var(--font-medium) !important;
+  color: var(--text-muted) !important;
+  cursor: pointer !important;
+  height: auto !important;
 }
 
-/* Assistant selector styles */
-.smtcmp-assistant-selector-button {
-  display: flex;
-  align-items: center;
-  gap: var(--size-2-1);
-  padding: var(--size-2-1) var(--size-4-1);
-  border-radius: var(--radius-s);
-  background-color: var(--background-secondary);
-  border: 1px solid var(--background-modifier-border);
-  color: var(--text-normal);
-  font-size: var(--font-ui-small);
-  cursor: pointer;
-  min-width: 120px;
-  justify-content: space-between;
+.smtcmp-chat-header-right button.smtcmp-assistant-selector-button:hover {
+  color: var(--text-normal) !important;
+  background-color: transparent !important;
 }
 
-.smtcmp-assistant-selector-button:hover {
-  background-color: var(--background-modifier-hover);
-}
-
-.smtcmp-assistant-selector-current {
+.smtcmp-chat-header-right .smtcmp-assistant-selector-current {
+  flex-shrink: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.smtcmp-chat-header-right .smtcmp-assistant-selector-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .smtcmp-assistant-selector-content {
