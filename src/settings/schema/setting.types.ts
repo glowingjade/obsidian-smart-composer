@@ -89,10 +89,10 @@ export const smartComposerSettingsSchema = z.object({
       maxAutoIterations: 1,
     }),
     
-  // 助手列表
+  // Assistant list
   assistants: z.array(assistantSchema).catch([]),
   
-  // 当前选择的助手ID
+  // Currently selected assistant ID
   currentAssistantId: z.string().optional(),
 })
 export type SmartComposerSettings = z.infer<typeof smartComposerSettingsSchema>

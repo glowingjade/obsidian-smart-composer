@@ -1874,7 +1874,7 @@ button.smtcmp-chat-input-model-select {
   padding-left: var(--size-4-4);
 }
 
-/* 助手选择器样式 */
+/* Assistant selector styles */
 .smtcmp-assistant-selector-button {
   display: flex;
   align-items: center;
