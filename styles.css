@@ -3,6 +3,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: var(--size-4-2);
+  gap: var(--size-4-2);
 }
 
 .smtcmp-chat-header-title {
@@ -1865,4 +1866,74 @@ button.smtcmp-chat-input-model-select {
 
 .smtcmp-setting-item--nested {
   padding-left: var(--size-4-4);
+}
+
+/* 助手选择器样式 */
+.smtcmp-assistant-selector-button {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2-1);
+  padding: var(--size-2-1) var(--size-4-1);
+  border-radius: var(--radius-s);
+  background-color: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+  cursor: pointer;
+  min-width: 120px;
+  justify-content: space-between;
+}
+
+.smtcmp-assistant-selector-button:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.smtcmp-assistant-selector-current {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smtcmp-assistant-selector-content {
+  padding: var(--size-2-1);
+  min-width: 200px;
+  max-width: 300px;
+}
+
+.smtcmp-assistant-selector-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-2-1);
+}
+
+.smtcmp-assistant-selector-item {
+  padding: var(--size-2-1) var(--size-4-1);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+}
+
+.smtcmp-assistant-selector-item:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.smtcmp-assistant-selector-item.selected {
+  background-color: var(--background-modifier-hover);
+}
+
+.smtcmp-assistant-selector-item-name {
+  font-weight: var(--font-medium);
+  font-size: var(--font-ui-small);
+}
+
+.smtcmp-assistant-selector-item-description {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  margin-top: var(--size-2-1);
+}
+
+.smtcmp-assistant-selector-empty {
+  padding: var(--size-2-1) var(--size-4-1);
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
 }

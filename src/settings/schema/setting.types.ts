@@ -7,6 +7,7 @@ import {
   DEFAULT_EMBEDDING_MODELS,
   DEFAULT_PROVIDERS,
 } from '../../constants'
+import { assistantSchema } from '../../types/assistant.types'
 import { chatModelSchema } from '../../types/chat-model.types'
 import { embeddingModelSchema } from '../../types/embedding-model.types'
 import { mcpServerConfigSchema } from '../../types/mcp.types'
@@ -87,6 +88,12 @@ export const smartComposerSettingsSchema = z.object({
       enableTools: true,
       maxAutoIterations: 1,
     }),
+    
+  // 助手列表
+  assistants: z.array(assistantSchema).catch([]),
+  
+  // 当前选择的助手ID
+  currentAssistantId: z.string().optional(),
 })
 export type SmartComposerSettings = z.infer<typeof smartComposerSettingsSchema>
 
