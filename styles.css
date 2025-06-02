@@ -6,6 +6,12 @@
   gap: var(--size-4-2);
 }
 
+.smtcmp-chat-header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+}
+
 .smtcmp-chat-header-title {
   font-size: var(--font-ui-medium);
   font-weight: var(--font-medium);

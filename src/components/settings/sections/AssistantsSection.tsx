@@ -31,79 +31,210 @@ function AssistantItem({
   isDefault,
   onSetDefault,
 }: AssistantItemProps) {
+  // 使用状态跟踪展开状态
   const [isExpanded, setIsExpanded] = useState(false);
 
+  // 处理删除点击
   const handleDeleteClick = (event: React.MouseEvent) => {
-    event.stopPropagation(); // Prevent click from bubbling to the header
+    event.stopPropagation(); // 防止点击事件冒泡到头部
     onDelete(assistant.id);
+  };
+  
+  // 处理设置为默认助手
+  const handleSetAsDefault = (event: React.MouseEvent) => {
+    event.stopPropagation(); // 防止点击事件冒泡到头部
+    if (!isDefault) { // 只在非默认状态时允许设置为默认
+      onSetDefault(assistant.id);
+    }
+  };
+
+  // 处理展开/折叠
+  const handleToggleExpand = () => {
+    setIsExpanded(!isExpanded);
   };
 
   return (
-    <div className="smtcmp-assistant-item">
+    <div className="smtcmp-assistant-item" style={{
+      border: '1px solid var(--background-modifier-border)',
+      borderRadius: '8px',
+      margin: '12px 0',
+      overflow: 'hidden',
+      backgroundColor: isDefault ? 'var(--background-secondary-alt)' : 'var(--background-secondary)',
+      transition: 'all 0.2s ease'
+    }}>
       <div
         className="smtcmp-assistant-header"
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={handleToggleExpand}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') setIsExpanded(!isExpanded);
+          if (e.key === 'Enter' || e.key === ' ') handleToggleExpand();
         }}
         aria-expanded={isExpanded}
         aria-controls={`assistant-details-${assistant.id}`}
+        style={{
+          padding: '12px 16px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          cursor: 'pointer',
+          borderBottom: isExpanded ? '1px solid var(--background-modifier-border)' : 'none'
+        }}
       >
-        <ObsidianSetting
-          name={assistant.name}
-          desc={assistant.description || '无描述'}
-          className="smtcmp-assistant-item-setting"
-        >
-          <div className="smtcmp-assistant-actions">
-            <ObsidianToggle
-              value={isDefault}
-              onChange={() => onSetDefault(assistant.id)}
-            />
-            <span style={{ marginLeft: '4px', fontSize: '12px' }}>默认</span>
-            <span style={{ display: 'flex', alignItems: 'center' }}>
-              <ObsidianButton
-                aria-label={`删除助手 ${assistant.name}`}
-                onClick={() => handleDeleteClick(new MouseEvent('click') as unknown as React.MouseEvent)}
-                text=""
-              />
-              <Trash2 size={16} style={{ marginLeft: '4px' }} />
-            </span>
+        <div className="smtcmp-assistant-header-info" style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '4px',
+          flex: 1
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <span style={{
+              fontWeight: 'bold',
+              fontSize: '16px'
+            }}>{assistant.name}</span>
+            
+            {isDefault && (
+              <span className="smtcmp-default-badge" style={{ 
+                fontSize: '12px', 
+                backgroundColor: 'var(--interactive-accent)', 
+                color: 'var(--text-on-accent)',
+                padding: '2px 6px',
+                borderRadius: '4px'
+              }}>
+                默认
+              </span>
+            )}
           </div>
-        </ObsidianSetting>
+          
+
+        </div>
+        
+        <div className="smtcmp-assistant-actions" style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          {!isDefault && (
+            <button
+              className="smtcmp-set-default-btn"
+              aria-label={`设置 ${assistant.name} 为默认助手`}
+              onClick={handleSetAsDefault}
+              style={{ 
+                fontSize: '13px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '4px 8px',
+                color: 'var(--interactive-accent)',
+                borderRadius: '4px',
+                transition: 'background-color 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--interactive-accent-hover)';
+                e.currentTarget.style.color = 'var(--text-on-accent)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = 'var(--interactive-accent)';
+              }}
+            >
+              设为默认
+            </button>
+          )}
+          
+          <button 
+            className="smtcmp-delete-assistant-btn" 
+            aria-label={`删除助手 ${assistant.name}`}
+            onClick={handleDeleteClick}
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '4px',
+              borderRadius: '4px',
+              color: 'var(--text-muted)',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--background-modifier-error)';
+              e.currentTarget.style.color = 'var(--text-error)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.color = 'var(--text-muted)';
+            }}
+          >
+            <Trash2 size={16} />
+          </button>
+          
+          <span style={{
+            transform: `rotate(${isExpanded ? '180deg' : '0deg'})`,
+            transition: 'transform 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '24px',
+            height: '24px'
+          }}>
+            ▼
+          </span>
+        </div>
       </div>
 
       {isExpanded && (
-        <div className="smtcmp-assistant-details" id={`assistant-details-${assistant.id}`}>
-          <ObsidianSetting name="名称" desc="助手的名称">
+        <div 
+          className="smtcmp-assistant-details"
+          id={`assistant-details-${assistant.id}`}
+          style={{
+            padding: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            backgroundColor: 'var(--background-primary-alt)',
+            borderRadius: '0 0 8px 8px'
+          }}
+        >
+          <div className="smtcmp-assistant-field" style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px'
+          }}>
+            <label style={{
+              fontWeight: 'bold',
+              fontSize: '14px'
+            }}>名称</label>
             <ObsidianTextInput
               value={assistant.name}
               onChange={(value) => onUpdate({ ...assistant, name: value })}
+              placeholder="输入助手名称"
             />
-          </ObsidianSetting>
+          </div>
 
-          <ObsidianSetting name="描述" desc="助手的简短描述">
-            <ObsidianTextInput
-              value={assistant.description || ''}
-              onChange={(value) =>
-                onUpdate({ ...assistant, description: value })
-              }
-            />
-          </ObsidianSetting>
+
 
           <ObsidianSetting
             name="系统提示词"
-            desc="定义助手的行为和能力的系统提示词"
+            desc="这个提示词将会添加到每次对话的开头。"
             className="smtcmp-settings-textarea-header"
           />
-          <ObsidianTextArea
-            value={assistant.systemPrompt}
-            onChange={(value) =>
-              onUpdate({ ...assistant, systemPrompt: value })
-            }
-            placeholder="输入系统提示词..."
-          />
+          
+          <ObsidianSetting className="smtcmp-settings-textarea">
+            <ObsidianTextArea
+              value={assistant.systemPrompt || ''}
+              onChange={(value) => onUpdate({ ...assistant, systemPrompt: value })}
+              placeholder="输入系统提示词，定义助手的行为和能力"
+            />
+          </ObsidianSetting>
         </div>
       )}
     </div>
@@ -181,81 +312,155 @@ export function AssistantsSection({ app }: AssistantsSectionProps) {
     
     modal.onClose = async () => {
       if (confirmed) {
-        let updatedAssistants = assistants.filter((a) => a.id !== id);
+        // 先过滤掉要删除的助手
+        const updatedAssistants = assistants.filter((a) => a.id !== id);
+        
+        // 确定新的当前助手ID
         let newCurrentAssistantId = settings.currentAssistantId;
-
         if (id === settings.currentAssistantId) {
-          newCurrentAssistantId = updatedAssistants.length > 0 ? updatedAssistants[0]?.id : undefined;
-        }
-
-        if (updatedAssistants.length > 0 && !updatedAssistants.some(a => a.isDefault)) {
-          updatedAssistants[0] = { ...updatedAssistants[0], isDefault: true };
-          if (id === settings.currentAssistantId || !newCurrentAssistantId) {
-             newCurrentAssistantId = updatedAssistants[0].id;
-          }
-        } else if (updatedAssistants.length === 0) {
-          newCurrentAssistantId = undefined;
+          // 如果删除的是当前选中的助手，则选择第一个可用的助手
+          newCurrentAssistantId = updatedAssistants.length > 0 ? updatedAssistants[0].id : undefined;
         }
         
-        let defaultFound = false;
-        updatedAssistants = updatedAssistants.map((a: Assistant) => { // Explicit type
-            if (a.isDefault) {
-                if (defaultFound) return {...a, isDefault: false};
-                defaultFound = true;
-            }
-            return a;
-        });
-        if (!defaultFound && updatedAssistants.length > 0) {
-            updatedAssistants[0] = {...updatedAssistants[0], isDefault: true};
-            if (!newCurrentAssistantId) newCurrentAssistantId = updatedAssistants[0].id;
+        // 处理默认助手逻辑
+        let finalAssistants = [...updatedAssistants];
+        
+        // 检查是否还有默认助手
+        const hasDefault = finalAssistants.some(a => a.isDefault);
+        
+        // 如果没有默认助手且列表不为空，将第一个设为默认
+        if (!hasDefault && finalAssistants.length > 0) {
+          finalAssistants = finalAssistants.map((a, index) => ({
+            ...a,
+            isDefault: index === 0 // 只将第一个设为默认
+          }));
+          
+          // 如果当前没有选中的助手，则选择默认助手
+          if (!newCurrentAssistantId) {
+            newCurrentAssistantId = finalAssistants[0].id;
+          }
         }
-
+        
+        // 一次性更新设置，避免多次渲染导致的闪烁
         await setSettings({
           ...settings,
-          assistants: updatedAssistants,
+          assistants: finalAssistants,
           currentAssistantId: newCurrentAssistantId,
         });
       }
     };
-    // 回调已在创建时设置
+    
+    // 打开确认对话框
     modal.open();
   };
 
+  // 防止重复点击的标记
+  const [isSettingDefault, setIsSettingDefault] = useState(false);
+
   const handleSetDefault = async (id: string) => {
-    await setSettings({
-      ...settings,
-      assistants: assistants.map((assistant: Assistant) => ({ // Explicit type
+    // 如果已经在设置中，则跳过
+    if (isSettingDefault) return;
+    
+    // 设置正在处理标记
+    setIsSettingDefault(true);
+    
+    try {
+      // 检查是否已经是默认助手
+      const targetAssistant = assistants.find(a => a.id === id);
+      if (targetAssistant && targetAssistant.isDefault) {
+        // 如果已经是默认助手，什么也不做
+        setIsSettingDefault(false);
+        return;
+      }
+      
+      // 确保只有一个助手被设置为默认
+      const updatedAssistants = assistants.map((assistant: Assistant) => ({
         ...assistant,
-        isDefault: assistant.id === id,
-      })),
-      currentAssistantId: id, 
-    });
+        isDefault: assistant.id === id
+      }));
+      
+      // 同时更新当前选中的助手
+      await setSettings({
+        ...settings,
+        assistants: updatedAssistants,
+        currentAssistantId: id,
+      });
+    } catch (error) {
+      console.error('设置默认助手时出错:', error);
+    } finally {
+      // 重置处理标记
+      setIsSettingDefault(false);
+    }
   };
 
   return (
-    <div className="smtcmp-settings-section">
-      <h2 className="smtcmp-settings-header">自定义助手</h2>
-      <ObsidianSetting
-        name="添加助手"
-        desc="创建自定义助手，预设不同的系统提示词。"
-      >
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <ObsidianButton
-            onClick={handleAddAssistant}
-            aria-label="添加新助手"
-            text="添加助手"
-          />
-          <Plus size={18} style={{ marginLeft: '8px' }} />
-        </div>
-      </ObsidianSetting>
+    <div className="smtcmp-settings-section" style={{
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px'
+    }}>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '8px'
+      }}>
+        <h2 className="smtcmp-settings-header" style={{
+          margin: 0,
+          fontSize: '20px',
+          fontWeight: 'bold'
+        }}>自定义助手</h2>
+        
+        <button
+          onClick={handleAddAssistant}
+          aria-label="添加新助手"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '6px 12px',
+            borderRadius: '4px',
+            backgroundColor: 'var(--interactive-accent)',
+            color: 'var(--text-on-accent)',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: 'medium',
+            transition: 'background-color 0.2s ease'
+          }}
+        >
+          <Plus size={16} />
+          添加助手
+        </button>
+      </div>
+      
+      <div style={{
+        fontSize: '14px',
+        color: 'var(--text-muted)',
+        marginBottom: '8px'
+      }}>
+        创建自定义助手，为不同的任务设置专属的系统提示词。每个助手都有自己的行为和能力。
+      </div>
 
       {assistants.length === 0 ? (
-        <div className="smtcmp-no-assistants">
-          <p>暂无自定义助手。点击“添加助手”按钮来创建你的第一个助手。</p>
+        <div className="smtcmp-no-assistants" style={{
+          padding: '24px',
+          textAlign: 'center',
+          backgroundColor: 'var(--background-secondary)',
+          borderRadius: '8px',
+          border: '1px dashed var(--background-modifier-border)',
+          color: 'var(--text-muted)',
+          fontSize: '15px'
+        }}>
+          <p style={{ margin: 0 }}>暂无自定义助手。点击上方的“添加助手”按钮来创建你的第一个助手。</p>
         </div>
       ) : (
-        <div className="smtcmp-assistants-list">
-          {assistants.map((assistant: Assistant) => ( // Explicit type
+        <div className="smtcmp-assistants-list" style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '16px'
+        }}>
+          {assistants.map((assistant: Assistant) => (
             <AssistantItem
               key={assistant.id}
               assistant={assistant}
