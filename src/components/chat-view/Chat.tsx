@@ -560,39 +560,41 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   return (
     <div className="smtcmp-chat-container">
       <div className="smtcmp-chat-header">
-        <AssistantSelector />
         <h1 className="smtcmp-chat-header-title">Chat</h1>
-        <div className="smtcmp-chat-header-buttons">
-          <button onClick={() => handleNewChat()} className="clickable-icon">
-            <Plus size={18} />
-          </button>
-          <ChatListDropdown
-            chatList={chatList}
-            currentConversationId={currentConversationId}
-            onSelect={async (conversationId) => {
-              if (conversationId === currentConversationId) return
-              await handleLoadConversation(conversationId)
-            }}
-            onDelete={async (conversationId) => {
-              await deleteConversation(conversationId)
-              if (conversationId === currentConversationId) {
-                const nextConversation = chatList.find(
-                  (chat) => chat.id !== conversationId,
-                )
-                if (nextConversation) {
-                  void handleLoadConversation(nextConversation.id)
-                } else {
-                  handleNewChat()
+        <div className="smtcmp-chat-header-right">
+          <AssistantSelector />
+          <div className="smtcmp-chat-header-buttons">
+            <button onClick={() => handleNewChat()} className="clickable-icon">
+              <Plus size={18} />
+            </button>
+            <ChatListDropdown
+              chatList={chatList}
+              currentConversationId={currentConversationId}
+              onSelect={async (conversationId) => {
+                if (conversationId === currentConversationId) return
+                await handleLoadConversation(conversationId)
+              }}
+              onDelete={async (conversationId) => {
+                await deleteConversation(conversationId)
+                if (conversationId === currentConversationId) {
+                  const nextConversation = chatList.find(
+                    (chat) => chat.id !== conversationId,
+                  )
+                  if (nextConversation) {
+                    void handleLoadConversation(nextConversation.id)
+                  } else {
+                    handleNewChat()
+                  }
                 }
-              }
-            }}
-            onUpdateTitle={async (conversationId, newTitle) => {
-              await updateConversationTitle(conversationId, newTitle)
-            }}
-            className="clickable-icon"
-          >
-            <History size={18} />
-          </ChatListDropdown>
+              }}
+              onUpdateTitle={async (conversationId, newTitle) => {
+                await updateConversationTitle(conversationId, newTitle)
+              }}
+              className="clickable-icon"
+            >
+              <History size={18} />
+            </ChatListDropdown>
+          </div>
         </div>
       </div>
       <div className="smtcmp-chat-messages" ref={chatMessagesRef}>

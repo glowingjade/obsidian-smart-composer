@@ -486,16 +486,45 @@ ${
   }
 
   private getCustomInstructionMessage(): RequestMessage | null {
+    // 获取自定义系统提示词
     const customInstruction = this.settings.systemPrompt.trim()
-    if (!customInstruction) {
+    
+    // 获取当前选中的助手
+    const currentAssistantId = this.settings.currentAssistantId
+    const assistants = this.settings.assistants || []
+    const currentAssistant = currentAssistantId 
+      ? assistants.find(a => a.id === currentAssistantId)
+      : assistants.find(a => a.isDefault) || (assistants.length > 0 ? assistants[0] : null)
+    
+    // 如果没有自定义提示词且没有选中的助手，则返回 null
+    if (!customInstruction && !currentAssistant) {
       return null
     }
-    return {
-      role: 'user',
-      content: `Here are additional instructions to follow in your responses when relevant. There's no need to explicitly acknowledge them:
+    
+    // 构建提示词内容
+    let content = ''
+    
+    // 添加助手的系统提示词（如果有）
+    if (currentAssistant && currentAssistant.systemPrompt) {
+      content += `Here are instructions from the selected assistant (${currentAssistant.name}):
+<assistant_instructions>
+${currentAssistant.systemPrompt}
+</assistant_instructions>
+
+`
+    }
+    
+    // 添加全局自定义提示词（如果有）
+    if (customInstruction) {
+      content += `Here are additional instructions to follow in your responses when relevant. There's no need to explicitly acknowledge them:
 <custom_instructions>
 ${customInstruction}
-</custom_instructions>`,
+</custom_instructions>`
+    }
+    
+    return {
+      role: 'user',
+      content: content,
     }
   }
 
