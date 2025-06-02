@@ -9,15 +9,15 @@ export function AssistantSelector() {
   const { settings, setSettings } = useSettings()
   const [open, setOpen] = useState(false)
   
-  // 获取助手列表和当前选中的助手
+  // Get assistant list and currently selected assistant
   const assistants = settings.assistants || []
   const currentAssistantId = settings.currentAssistantId
   
-  // 获取当前选中的助手对象
+  // Get the current assistant object
   const currentAssistant = assistants.find(a => a.id === currentAssistantId) || 
                           (assistants.length > 0 ? assistants.find(a => a.isDefault) || assistants[0] : null)
 
-  // 当没有选中的助手但有可用助手时，自动选择默认助手或第一个助手
+  // When no assistant is selected but assistants are available, automatically select the default or first assistant
   useEffect(() => {
     if (!currentAssistantId && assistants.length > 0) {
       const defaultAssistant = assistants.find(a => a.isDefault) || assistants[0]
@@ -28,7 +28,7 @@ export function AssistantSelector() {
     }
   }, [currentAssistantId, assistants, settings, setSettings])
 
-  // 选择助手的处理函数
+  // Handler function for selecting an assistant
   const handleSelectAssistant = async (assistant: Assistant) => {
     await setSettings({
       ...settings,
@@ -37,11 +37,11 @@ export function AssistantSelector() {
     setOpen(false)
   }
 
-  // 如果没有助手，显示一个占位符
+  // If there are no assistants, display a placeholder
   if (assistants.length === 0) {
     return (
       <div className="smtcmp-assistant-selector smtcmp-assistant-selector-empty">
-        <span className="smtcmp-assistant-selector-placeholder">无可用助手</span>
+        <span className="smtcmp-assistant-selector-placeholder">No assistants available</span>
       </div>
     )
   }
@@ -51,7 +51,7 @@ export function AssistantSelector() {
       <Popover.Trigger asChild>
         <button className="smtcmp-assistant-selector-button">
           <span className="smtcmp-assistant-selector-current">
-            {currentAssistant ? currentAssistant.name : '选择助手'}
+            {currentAssistant ? currentAssistant.name : 'Select Assistant'}
           </span>
           <ChevronDown size={16} />
         </button>

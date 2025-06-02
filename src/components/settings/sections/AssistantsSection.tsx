@@ -1,7 +1,3 @@
-// TargetFile: /Users/shizhiyun/Documents/textrepo/.obsidian/plugins/obsidian-smart-composer/src/components/settings/sections/AssistantsSection.tsx
-// CodeMarkdownLanguage: typescript
-// Instruction: 修正 AssistantsSection.tsx 中的 lint 错误，特别是 ObsidianButton 的用法和 ConfirmModal 的调用。
-// ReplacementContent:
 import { App } from 'obsidian';
 import { Plus, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
@@ -31,24 +27,24 @@ function AssistantItem({
   isDefault,
   onSetDefault,
 }: AssistantItemProps) {
-  // 使用状态跟踪展开状态
+  // Track expanded state
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // 处理删除点击
+  // Handle delete click
   const handleDeleteClick = (event: React.MouseEvent) => {
-    event.stopPropagation(); // 防止点击事件冒泡到头部
+    event.stopPropagation(); // Prevent event bubbling to header
     onDelete(assistant.id);
   };
   
-  // 处理设置为默认助手
+  // Handle setting as default assistant
   const handleSetAsDefault = (event: React.MouseEvent) => {
-    event.stopPropagation(); // 防止点击事件冒泡到头部
-    if (!isDefault) { // 只在非默认状态时允许设置为默认
+    event.stopPropagation(); // Prevent event bubbling to header
+    if (!isDefault) { // Only allow setting as default when not already default
       onSetDefault(assistant.id);
     }
   };
 
-  // 处理展开/折叠
+  // Handle expand/collapse
   const handleToggleExpand = () => {
     setIsExpanded(!isExpanded);
   };
@@ -105,7 +101,7 @@ function AssistantItem({
                 padding: '2px 6px',
                 borderRadius: '4px'
               }}>
-                默认
+                Default
               </span>
             )}
           </div>
@@ -121,7 +117,7 @@ function AssistantItem({
           {!isDefault && (
             <button
               className="smtcmp-set-default-btn"
-              aria-label={`设置 ${assistant.name} 为默认助手`}
+              aria-label={`Set ${assistant.name} as default assistant`}
               onClick={handleSetAsDefault}
               style={{ 
                 fontSize: '13px',
@@ -145,13 +141,13 @@ function AssistantItem({
                 e.currentTarget.style.color = 'var(--interactive-accent)';
               }}
             >
-              设为默认
+              Set as Default
             </button>
           )}
           
           <button 
             className="smtcmp-delete-assistant-btn" 
-            aria-label={`删除助手 ${assistant.name}`}
+            aria-label={`Delete assistant ${assistant.name}`}
             onClick={handleDeleteClick}
             style={{ 
               display: 'flex', 
@@ -212,19 +208,19 @@ function AssistantItem({
             <label style={{
               fontWeight: 'bold',
               fontSize: '14px'
-            }}>名称</label>
+            }}>Name</label>
             <ObsidianTextInput
               value={assistant.name}
               onChange={(value) => onUpdate({ ...assistant, name: value })}
-              placeholder="输入助手名称"
+              placeholder="Enter assistant name"
             />
           </div>
 
 
 
           <ObsidianSetting
-            name="系统提示词"
-            desc="这个提示词将会添加到每次对话的开头。"
+            name="System Prompt"
+            desc="This prompt will be added to the beginning of every chat."
             className="smtcmp-settings-textarea-header"
           />
           
@@ -232,7 +228,7 @@ function AssistantItem({
             <ObsidianTextArea
               value={assistant.systemPrompt || ''}
               onChange={(value) => onUpdate({ ...assistant, systemPrompt: value })}
-              placeholder="输入系统提示词，定义助手的行为和能力"
+              placeholder="Enter system prompt to define assistant's behavior and capabilities"
             />
           </ObsidianSetting>
         </div>
@@ -252,7 +248,7 @@ export function AssistantsSection({ app }: AssistantsSectionProps) {
   const handleAddAssistant = async () => {
     const newAssistant: Assistant = {
       id: uuidv4(),
-      name: `新助手 ${assistants.length + 1}`,
+      name: `New Assistant ${assistants.length + 1}`,
       description: '',
       systemPrompt: '',
       isDefault: assistants.length === 0,
@@ -294,16 +290,16 @@ export function AssistantsSection({ app }: AssistantsSectionProps) {
     const assistantToDelete = assistants.find((a) => a.id === id);
     if (!assistantToDelete) return;
 
-    // 使用变量跟踪确认状态
+    // Track confirmation status
     let confirmed = false;
     
-    // 创建确认对话框
+    // Create confirmation dialog
     const modal = new ConfirmModal(
       app,
       {
-        title: `确认删除助手`,
-        message: `你确定要删除助手 "${assistantToDelete.name}" 吗？此操作无法撤销。`,
-        ctaText: '删除',
+        title: `Confirm Delete Assistant`,
+        message: `Are you sure you want to delete assistant "${assistantToDelete.name}"? This action cannot be undone.`,
+        ctaText: 'Delete',
         onConfirm: () => {
           confirmed = true;
         }
@@ -312,36 +308,36 @@ export function AssistantsSection({ app }: AssistantsSectionProps) {
     
     modal.onClose = async () => {
       if (confirmed) {
-        // 先过滤掉要删除的助手
+        // First filter out the assistant to be deleted
         const updatedAssistants = assistants.filter((a) => a.id !== id);
         
-        // 确定新的当前助手ID
+        // Determine new current assistant ID
         let newCurrentAssistantId = settings.currentAssistantId;
         if (id === settings.currentAssistantId) {
-          // 如果删除的是当前选中的助手，则选择第一个可用的助手
+          // If the deleted assistant is currently selected, choose the first available assistant
           newCurrentAssistantId = updatedAssistants.length > 0 ? updatedAssistants[0].id : undefined;
         }
         
-        // 处理默认助手逻辑
+        // Handle default assistant logic
         let finalAssistants = [...updatedAssistants];
         
-        // 检查是否还有默认助手
+        // Check if there's still a default assistant
         const hasDefault = finalAssistants.some(a => a.isDefault);
         
-        // 如果没有默认助手且列表不为空，将第一个设为默认
+        // If no default assistant and list is not empty, set the first one as default
         if (!hasDefault && finalAssistants.length > 0) {
           finalAssistants = finalAssistants.map((a, index) => ({
             ...a,
-            isDefault: index === 0 // 只将第一个设为默认
+            isDefault: index === 0 // Only set the first one as default
           }));
           
-          // 如果当前没有选中的助手，则选择默认助手
+          // If no assistant is currently selected, select the default assistant
           if (!newCurrentAssistantId) {
             newCurrentAssistantId = finalAssistants[0].id;
           }
         }
         
-        // 一次性更新设置，避免多次渲染导致的闪烁
+        // Update settings in one go to avoid flickering from multiple renders
         await setSettings({
           ...settings,
           assistants: finalAssistants,
@@ -350,45 +346,45 @@ export function AssistantsSection({ app }: AssistantsSectionProps) {
       }
     };
     
-    // 打开确认对话框
+    // Open confirmation dialog
     modal.open();
   };
 
-  // 防止重复点击的标记
+  // Flag to prevent duplicate clicks
   const [isSettingDefault, setIsSettingDefault] = useState(false);
 
   const handleSetDefault = async (id: string) => {
-    // 如果已经在设置中，则跳过
+    // Skip if already processing
     if (isSettingDefault) return;
     
-    // 设置正在处理标记
+    // Set processing flag
     setIsSettingDefault(true);
     
     try {
-      // 检查是否已经是默认助手
+      // Check if already the default assistant
       const targetAssistant = assistants.find(a => a.id === id);
       if (targetAssistant && targetAssistant.isDefault) {
-        // 如果已经是默认助手，什么也不做
+        // If already default, do nothing
         setIsSettingDefault(false);
         return;
       }
       
-      // 确保只有一个助手被设置为默认
+      // Ensure only one assistant is set as default
       const updatedAssistants = assistants.map((assistant: Assistant) => ({
         ...assistant,
         isDefault: assistant.id === id
       }));
       
-      // 同时更新当前选中的助手
+      // Also update the currently selected assistant
       await setSettings({
         ...settings,
         assistants: updatedAssistants,
         currentAssistantId: id,
       });
     } catch (error) {
-      console.error('设置默认助手时出错:', error);
+      console.error('Error setting default assistant:', error);
     } finally {
-      // 重置处理标记
+      // Reset processing flag
       setIsSettingDefault(false);
     }
   };
@@ -409,11 +405,11 @@ export function AssistantsSection({ app }: AssistantsSectionProps) {
           margin: 0,
           fontSize: '20px',
           fontWeight: 'bold'
-        }}>自定义助手</h2>
+        }}>Custom Assistants</h2>
         
         <button
           onClick={handleAddAssistant}
-          aria-label="添加新助手"
+          aria-label="Add new assistant"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -430,7 +426,7 @@ export function AssistantsSection({ app }: AssistantsSectionProps) {
           }}
         >
           <Plus size={16} />
-          添加助手
+          Add Assistant
         </button>
       </div>
       
@@ -439,7 +435,7 @@ export function AssistantsSection({ app }: AssistantsSectionProps) {
         color: 'var(--text-muted)',
         marginBottom: '8px'
       }}>
-        创建自定义助手，为不同的任务设置专属的系统提示词。每个助手都有自己的行为和能力。
+        Create custom assistants with dedicated system prompts for different tasks. Each assistant has its own behavior and capabilities.
       </div>
 
       {assistants.length === 0 ? (
@@ -452,7 +448,7 @@ export function AssistantsSection({ app }: AssistantsSectionProps) {
           color: 'var(--text-muted)',
           fontSize: '15px'
         }}>
-          <p style={{ margin: 0 }}>暂无自定义助手。点击上方的“添加助手”按钮来创建你的第一个助手。</p>
+          <p style={{ margin: 0 }}>No custom assistants yet. Click the "Add Assistant" button above to create your first assistant.</p>
         </div>
       ) : (
         <div className="smtcmp-assistants-list" style={{

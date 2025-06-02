@@ -1,11 +1,11 @@
 import { z } from 'zod'
 
-// 助手类型定义
+// Assistant type definition
 export const assistantSchema = z.object({
-  id: z.string().min(1, '助手ID不能为空'),
-  name: z.string().min(1, '助手名称不能为空'),
+  id: z.string().min(1, 'Assistant ID cannot be empty'),
+  name: z.string().min(1, 'Assistant name cannot be empty'),
   description: z.string().optional(),
-  systemPrompt: z.string().min(1, '系统提示词不能为空'),
+  systemPrompt: z.string().min(1, 'System prompt cannot be empty'),
   icon: z.string().optional(),
   isDefault: z.boolean().default(false).optional(),
 })
