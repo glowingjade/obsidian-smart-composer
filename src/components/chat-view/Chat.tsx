@@ -48,6 +48,7 @@ import { readTFileContent } from '../../utils/obsidian'
 import { ErrorModal } from '../modals/ErrorModal'
 
 import AssistantToolMessageGroupItem from './AssistantToolMessageGroupItem'
+import { AssistantSelector } from './AssistantSelector'
 import ChatUserInput, { ChatUserInputRef } from './chat-input/ChatUserInput'
 import { editorStateToPlainText } from './chat-input/utils/editor-state-to-plain-text'
 import { ChatListDropdown } from './ChatListDropdown'
@@ -559,6 +560,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   return (
     <div className="smtcmp-chat-container">
       <div className="smtcmp-chat-header">
+        <AssistantSelector />
         <h1 className="smtcmp-chat-header-title">Chat</h1>
         <div className="smtcmp-chat-header-buttons">
           <button onClick={() => handleNewChat()} className="clickable-icon">
