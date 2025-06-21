@@ -1,55 +1,107 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import {
-  $getSelection,
-  $isRangeSelection,
-  $parseSerializedNode,
-  LexicalEditor,
-} from 'lexical'
-import { ChevronDown, ChevronUp, FileText } from 'lucide-react'
-import { RefObject, useCallback, useEffect, useState } from 'react'
+import { ChevronDown, ChevronUp, FileText, Trash2 } from 'lucide-react'
+import { useCallback, useEffect, useState, useMemo } from 'react'
 
 import { Template } from '../../../database/json/template/types'
 import { useTemplateManager } from '../../../hooks/useJsonManagers'
+import { useSettings } from '../../../contexts/settings-context'
+import { SerializedLexicalNode } from 'lexical'
 
-type TemplateSelectButtonProps = {
-  editorRef: RefObject<LexicalEditor | null>
+// Helper function to convert template content to plain text
+function templateContentToPlainText(content: { nodes: SerializedLexicalNode[] }): string {
+  return content.nodes.map(lexicalNodeToPlainText).join('')
 }
 
-export function TemplateSelectButton({ editorRef }: TemplateSelectButtonProps) {
+function lexicalNodeToPlainText(node: SerializedLexicalNode): string {
+  if ('children' in node) {
+    // Process children recursively and join their results
+    return (node.children as SerializedLexicalNode[])
+      .map(lexicalNodeToPlainText)
+      .join('')
+  } else if (node.type === 'linebreak') {
+    return '\n'
+  } else if ('text' in node && typeof node.text === 'string') {
+    return node.text
+  }
+  return ''
+}
+
+export function TemplateSelectButton() {
   const templateManager = useTemplateManager()
+  const { settings, setSettings } = useSettings()
   const [isOpen, setIsOpen] = useState(false)
   const [templates, setTemplates] = useState<Template[]>([])
 
-  // Load all templates when component mounts or dropdown opens
+  // Load all templates when component mounts
+  useEffect(() => {
+    templateManager.searchTemplates('').then(setTemplates)
+  }, [templateManager])
+
+  // Refresh templates when dropdown opens (to get latest changes)
   useEffect(() => {
     if (isOpen) {
       templateManager.searchTemplates('').then(setTemplates)
     }
   }, [isOpen, templateManager])
 
+  // Find current template based on system prompt
+  const currentTemplate = useMemo(() => {
+    if (!settings.systemPrompt.trim()) return null
+
+    return templates.find(template => {
+      const templateText = templateContentToPlainText(template.content).trim()
+      return templateText === settings.systemPrompt.trim()
+    })
+  }, [templates, settings.systemPrompt])
+
   const handleTemplateSelect = useCallback(
-    (template: Template) => {
-      const editor = editorRef.current
-      if (!editor) return
+    async (template: Template) => {
+      const templateText = templateContentToPlainText(template.content).trim()
 
-      editor.update(() => {
-        const selection = $getSelection()
-        if ($isRangeSelection(selection)) {
-          // Parse the template content and insert it
-          const nodes = template.content.nodes.map((serializedNode) =>
-            $parseSerializedNode(serializedNode),
-          )
-
-          // Insert each node
-          nodes.forEach((node) => {
-            selection.insertNodes([node])
-          })
-        }
+      await setSettings({
+        ...settings,
+        systemPrompt: templateText,
       })
+
       setIsOpen(false)
     },
-    [editorRef],
+    [settings, setSettings],
   )
+
+  // Clear system prompt (set to empty)
+  const handleClearSystemPrompt = useCallback(
+    async () => {
+      await setSettings({
+        ...settings,
+        systemPrompt: '',
+      })
+
+      setIsOpen(false)
+    },
+    [settings, setSettings],
+  )
+
+  // Delete template
+  const handleDeleteTemplate = useCallback(
+    async (template: Template) => {
+      await templateManager.deleteTemplate(template.id)
+      // Refresh templates list
+      const updatedTemplates = await templateManager.searchTemplates('')
+      setTemplates(updatedTemplates)
+
+      // If the deleted template was currently selected, clear the system prompt
+      if (currentTemplate?.id === template.id) {
+        await setSettings({
+          ...settings,
+          systemPrompt: '',
+        })
+      }
+    },
+    [templateManager, currentTemplate, settings, setSettings],
+  )
+
+  // Display current template name or "Custom" if no match
+  const displayText = currentTemplate ? currentTemplate.name : (settings.systemPrompt.trim() ? 'Custom' : 'System Prompt')
 
   return (
     <DropdownMenu.Root open={isOpen} onOpenChange={setIsOpen}>
@@ -57,7 +109,7 @@ export function TemplateSelectButton({ editorRef }: TemplateSelectButtonProps) {
         <div className="smtcmp-chat-input-template-select__icon">
           <FileText size={12} />
         </div>
-        <div className="smtcmp-chat-input-template-select__text">Templates</div>
+        <div className="smtcmp-chat-input-template-select__text">{displayText}</div>
         <div className="smtcmp-chat-input-template-select__chevron">
           {isOpen ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
         </div>
@@ -66,6 +118,19 @@ export function TemplateSelectButton({ editorRef }: TemplateSelectButtonProps) {
       <DropdownMenu.Portal>
         <DropdownMenu.Content className="smtcmp-popover">
           <ul>
+            {/* Clear system prompt option */}
+            <DropdownMenu.Item
+              onSelect={handleClearSystemPrompt}
+              asChild
+            >
+              <li style={{
+                fontStyle: 'italic',
+                color: settings.systemPrompt.trim() ? 'var(--text-normal)' : 'var(--text-muted)'
+              }}>
+                {settings.systemPrompt.trim() ? '✓ ' : ''}None
+              </li>
+            </DropdownMenu.Item>
+
             {templates.length === 0 ? (
               <li
                 style={{
@@ -77,15 +142,36 @@ export function TemplateSelectButton({ editorRef }: TemplateSelectButtonProps) {
                 No templates found
               </li>
             ) : (
-              templates.map((template) => (
-                <DropdownMenu.Item
-                  key={template.id}
-                  onSelect={() => handleTemplateSelect(template)}
-                  asChild
-                >
-                  <li>{template.name}</li>
-                </DropdownMenu.Item>
-              ))
+              templates.map((template) => {
+                const isSelected = currentTemplate?.id === template.id
+                return (
+                  <DropdownMenu.Item
+                    key={template.id}
+                    onSelect={() => handleTemplateSelect(template)}
+                    asChild
+                  >
+                    <li style={{
+                      color: isSelected ? 'var(--text-accent)' : 'var(--text-normal)'
+                    }}>
+                      <div className="smtcmp-template-menu-item">
+                        <div className="text">
+                          {isSelected ? '✓ ' : ''}{template.name}
+                        </div>
+                        <div
+                          onClick={(evt) => {
+                            evt.stopPropagation()
+                            evt.preventDefault()
+                            handleDeleteTemplate(template)
+                          }}
+                          className="smtcmp-template-menu-item-delete"
+                        >
+                          <Trash2 size={12} />
+                        </div>
+                      </div>
+                    </li>
+                  </DropdownMenu.Item>
+                )
+              })
             )}
           </ul>
         </DropdownMenu.Content>

@@ -275,7 +275,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
         <div className="smtcmp-chat-user-input-controls">
           <div className="smtcmp-chat-user-input-controls__model-select-container">
             <ModelSelect />
-            <TemplateSelectButton editorRef={editorRef} />
+            <TemplateSelectButton />
           </div>
           <div className="smtcmp-chat-user-input-controls__buttons">
             <ImageUploadButton onUpload={handleUploadImages} />
