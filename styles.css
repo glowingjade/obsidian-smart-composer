@@ -239,6 +239,9 @@
   .smtcmp-chat-user-input-controls__model-select-container {
     flex-shrink: 1;
     overflow: hidden;
+    display: flex;
+    gap: var(--size-4-1);
+    align-items: center;
   }
 
   .smtcmp-chat-user-input-controls__buttons {
@@ -757,6 +760,46 @@ button.smtcmp-chat-input-model-select {
   }
 
   .smtcmp-chat-input-model-select__icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+button.smtcmp-chat-input-template-select {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  padding: 0 !important;
+  font-size: var(--font-smallest) !important;
+  font-weight: var(--font-medium) !important;
+  color: var(--text-muted) !important;
+  cursor: pointer !important;
+  height: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--size-4-1) !important;
+
+  &:hover {
+    color: var(--text-normal) !important;
+  }
+
+  .smtcmp-chat-input-template-select__icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .smtcmp-chat-input-template-select__text {
+    flex-shrink: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .smtcmp-chat-input-template-select__chevron {
     flex-shrink: 0;
     display: flex;
     align-items: center;

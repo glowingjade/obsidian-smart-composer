@@ -32,6 +32,7 @@ import { ModelSelect } from './ModelSelect'
 import { MentionNode } from './plugins/mention/MentionNode'
 import { NodeMutations } from './plugins/on-mutation/OnMutationPlugin'
 import { SubmitButton } from './SubmitButton'
+import { TemplateSelectButton } from './TemplateSelectButton'
 import ToolBadge from './ToolBadge'
 import { VaultChatButton } from './VaultChatButton'
 
@@ -274,6 +275,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
         <div className="smtcmp-chat-user-input-controls">
           <div className="smtcmp-chat-user-input-controls__model-select-container">
             <ModelSelect />
+            <TemplateSelectButton editorRef={editorRef} />
           </div>
           <div className="smtcmp-chat-user-input-controls__buttons">
             <ImageUploadButton onUpload={handleUploadImages} />
