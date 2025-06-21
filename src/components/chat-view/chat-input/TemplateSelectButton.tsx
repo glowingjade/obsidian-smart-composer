@@ -1,5 +1,5 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import { ChevronDown, ChevronUp, FileText, Trash2 } from 'lucide-react'
+import { ChevronDown, ChevronUp, FileText, Trash2, Edit } from 'lucide-react'
 import { useCallback, useEffect, useState, useMemo } from 'react'
 
 import { Template } from '../../../database/json/template/types'
@@ -26,7 +26,11 @@ function lexicalNodeToPlainText(node: SerializedLexicalNode): string {
   return ''
 }
 
-export function TemplateSelectButton() {
+export function TemplateSelectButton({
+  onOpenEditDialog
+}: {
+  onOpenEditDialog: (template: Template) => void
+}) {
   const templateManager = useTemplateManager()
   const { settings, setSettings } = useSettings()
   const [isOpen, setIsOpen] = useState(false)
@@ -100,82 +104,115 @@ export function TemplateSelectButton() {
     [templateManager, currentTemplate, settings, setSettings],
   )
 
+  // Edit template
+  const handleEditTemplate = useCallback(
+    (template: Template) => {
+      setIsOpen(false)
+      // Use setTimeout to ensure dropdown closes before opening dialog
+      setTimeout(() => {
+        onOpenEditDialog(template)
+      }, 100)
+    },
+    [onOpenEditDialog],
+  )
+
   // Display current template name or "Custom" if no match
   const displayText = currentTemplate ? currentTemplate.name : (settings.systemPrompt.trim() ? 'Custom' : 'System Prompt')
 
   return (
     <DropdownMenu.Root open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenu.Trigger className="smtcmp-chat-input-template-select">
-        <div className="smtcmp-chat-input-template-select__icon">
-          <FileText size={12} />
-        </div>
-        <div className="smtcmp-chat-input-template-select__text">{displayText}</div>
-        <div className="smtcmp-chat-input-template-select__chevron">
-          {isOpen ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
-        </div>
-      </DropdownMenu.Trigger>
+        <DropdownMenu.Trigger className="smtcmp-chat-input-template-select">
+          <div className="smtcmp-chat-input-template-select__icon">
+            <FileText size={12} />
+          </div>
+          <div className="smtcmp-chat-input-template-select__text">{displayText}</div>
+          <div className="smtcmp-chat-input-template-select__chevron">
+            {isOpen ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+          </div>
+        </DropdownMenu.Trigger>
 
-      <DropdownMenu.Portal>
-        <DropdownMenu.Content className="smtcmp-popover">
-          <ul>
-            {/* Clear system prompt option */}
-            <DropdownMenu.Item
-              onSelect={handleClearSystemPrompt}
-              asChild
-            >
-              <li style={{
-                fontStyle: 'italic',
-                color: settings.systemPrompt.trim() ? 'var(--text-normal)' : 'var(--text-muted)'
-              }}>
-                {settings.systemPrompt.trim() ? '✓ ' : ''}None
-              </li>
-            </DropdownMenu.Item>
-
-            {templates.length === 0 ? (
-              <li
-                style={{
-                  padding: '8px 12px',
-                  color: 'var(--text-muted)',
-                  fontSize: 'var(--font-ui-small)',
-                }}
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content className="smtcmp-popover">
+            <ul>
+              {/* Clear system prompt option */}
+              <DropdownMenu.Item
+                onSelect={handleClearSystemPrompt}
+                asChild
               >
-                No templates found
-              </li>
-            ) : (
-              templates.map((template) => {
-                const isSelected = currentTemplate?.id === template.id
-                return (
-                  <DropdownMenu.Item
-                    key={template.id}
-                    onSelect={() => handleTemplateSelect(template)}
-                    asChild
-                  >
-                    <li style={{
-                      color: isSelected ? 'var(--text-accent)' : 'var(--text-normal)'
-                    }}>
-                      <div className="smtcmp-template-menu-item">
-                        <div className="text">
-                          {isSelected ? '✓ ' : ''}{template.name}
+                <li style={{
+                  fontStyle: 'italic',
+                  color: settings.systemPrompt.trim() ? 'var(--text-normal)' : 'var(--text-muted)'
+                }}>
+                  {settings.systemPrompt.trim() ? '✓ ' : ''}None
+                </li>
+              </DropdownMenu.Item>
+
+              {templates.length === 0 ? (
+                <li
+                  style={{
+                    padding: '8px 12px',
+                    color: 'var(--text-muted)',
+                    fontSize: 'var(--font-ui-small)',
+                  }}
+                >
+                  No templates found
+                </li>
+              ) : (
+                templates.map((template) => {
+                  const isSelected = currentTemplate?.id === template.id
+                  return (
+                    <DropdownMenu.Item
+                      key={template.id}
+                      onSelect={(event) => {
+                        // Only handle template selection if the click target is not a button
+                        const target = event.target as HTMLElement
+                        if (!target.closest('.smtcmp-template-menu-item-delete')) {
+                          handleTemplateSelect(template)
+                        }
+                      }}
+                      asChild
+                    >
+                      <li style={{
+                        color: isSelected ? 'var(--text-accent)' : 'var(--text-normal)'
+                      }}>
+                        <div className="smtcmp-template-menu-item">
+                          <div
+                            className="text"
+                            onClick={() => handleTemplateSelect(template)}
+                          >
+                            {isSelected ? '✓ ' : ''}{template.name}
+                          </div>
+                          <div style={{ display: 'flex', gap: 'var(--size-4-1)' }}>
+                            <div
+                              className="smtcmp-template-menu-item-delete"
+                              onClick={(evt) => {
+                                evt.stopPropagation()
+                                evt.preventDefault()
+                                handleEditTemplate(template)
+                              }}
+                            >
+                              <Edit size={12} />
+                            </div>
+                            <div
+                              className="smtcmp-template-menu-item-delete"
+                              onClick={(evt) => {
+                                evt.stopPropagation()
+                                evt.preventDefault()
+                                handleDeleteTemplate(template)
+                              }}
+                            >
+                              <Trash2 size={12} />
+                            </div>
+                          </div>
                         </div>
-                        <div
-                          onClick={(evt) => {
-                            evt.stopPropagation()
-                            evt.preventDefault()
-                            handleDeleteTemplate(template)
-                          }}
-                          className="smtcmp-template-menu-item-delete"
-                        >
-                          <Trash2 size={12} />
-                        </div>
-                      </div>
-                    </li>
-                  </DropdownMenu.Item>
-                )
-              })
-            )}
-          </ul>
-        </DropdownMenu.Content>
-      </DropdownMenu.Portal>
-    </DropdownMenu.Root>
+                      </li>
+                    </DropdownMenu.Item>
+                  )
+                })
+              )}
+            </ul>
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </DropdownMenu.Root>
   )
 }

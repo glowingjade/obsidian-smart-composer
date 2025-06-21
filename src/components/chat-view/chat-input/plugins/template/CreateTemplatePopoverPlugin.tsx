@@ -1,7 +1,6 @@
 import { $generateJSONFromSelectedNodes } from '@lexical/clipboard'
 import { BaseSerializedNode } from '@lexical/clipboard/clipboard'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
-import * as Dialog from '@radix-ui/react-dialog'
 import {
   $getSelection,
   COMMAND_PRIORITY_LOW,
@@ -9,23 +8,19 @@ import {
 } from 'lexical'
 import { CSSProperties, useCallback, useEffect, useRef, useState } from 'react'
 
-import CreateTemplateDialogContent from '../../../CreateTemplateDialog'
-
 export default function CreateTemplatePopoverPlugin({
   anchorElement,
   contentEditableElement,
+  onOpenCreateDialog,
 }: {
   anchorElement: HTMLElement | null
   contentEditableElement: HTMLElement | null
+  onOpenCreateDialog: (selectedSerializedNodes: BaseSerializedNode[] | null) => void
 }): JSX.Element | null {
   const [editor] = useLexicalComposerContext()
 
   const [popoverStyle, setPopoverStyle] = useState<CSSProperties | null>(null)
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [selectedSerializedNodes, setSelectedSerializedNodes] = useState<
-    BaseSerializedNode[] | null
-  >(null)
 
   const popoverRef = useRef<HTMLButtonElement>(null)
 
@@ -114,33 +109,20 @@ export default function CreateTemplatePopoverPlugin({
   }, [contentEditableElement, updatePopoverPosition])
 
   return (
-    <Dialog.Root
-      modal={false}
-      open={isDialogOpen}
-      onOpenChange={(open) => {
-        if (open) {
-          setSelectedSerializedNodes(getSelectedSerializedNodes())
-        }
-        setIsDialogOpen(open)
+    <button
+      ref={popoverRef}
+      style={{
+        position: 'absolute',
+        visibility: isPopoverOpen ? 'visible' : 'hidden',
+        ...popoverStyle,
+      }}
+      onClick={() => {
+        const selectedNodes = getSelectedSerializedNodes()
+        onOpenCreateDialog(selectedNodes)
         setIsPopoverOpen(false)
       }}
     >
-      <Dialog.Trigger asChild>
-        <button
-          ref={popoverRef}
-          style={{
-            position: 'absolute',
-            visibility: isPopoverOpen ? 'visible' : 'hidden',
-            ...popoverStyle,
-          }}
-        >
-          Create template
-        </button>
-      </Dialog.Trigger>
-      <CreateTemplateDialogContent
-        selectedSerializedNodes={selectedSerializedNodes}
-        onClose={() => setIsDialogOpen(false)}
-      />
-    </Dialog.Root>
+      Create template
+    </button>
   )
 }

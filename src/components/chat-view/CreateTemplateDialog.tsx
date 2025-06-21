@@ -5,11 +5,12 @@ import * as Dialog from '@radix-ui/react-dialog'
 import { $insertNodes, LexicalEditor } from 'lexical'
 import { X } from 'lucide-react'
 import { Notice } from 'obsidian'
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 
 import { useDialogContainer } from '../../contexts/dialog-container-context'
 import { DuplicateTemplateException } from '../../database/exception'
 import { useTemplateManager } from '../../hooks/useJsonManagers'
+import { Template } from '../../database/json/template/types'
 
 import LexicalContentEditable from './chat-input/LexicalContentEditable'
 
@@ -20,28 +21,49 @@ import LexicalContentEditable from './chat-input/LexicalContentEditable'
  */
 export default function CreateTemplateDialogContent({
   selectedSerializedNodes,
+  editingTemplate,
   onClose,
 }: {
   selectedSerializedNodes?: BaseSerializedNode[] | null
+  editingTemplate?: Template
   onClose: () => void
 }) {
   const templateManager = useTemplateManager()
   const container = useDialogContainer()
 
-  const [templateName, setTemplateName] = useState('')
+  const [templateName, setTemplateName] = useState(editingTemplate?.name || '')
   const editorRef = useRef<LexicalEditor | null>(null)
   const contentEditableRef = useRef<HTMLDivElement>(null)
+
+  // Update template name when editingTemplate changes
+  useEffect(() => {
+    setTemplateName(editingTemplate?.name || '')
+  }, [editingTemplate])
+
+  // Determine if we're in edit mode
+  const isEditMode = !!editingTemplate
+  const dialogTitle = isEditMode ? 'Edit template' : 'Create template'
+  const dialogDescription = isEditMode ? 'Edit template' : 'Create template from selected content'
+  const buttonText = isEditMode ? 'Save template' : 'Create template'
 
   const initialEditorState: InitialEditorStateType = (
     editor: LexicalEditor,
   ) => {
-    if (!selectedSerializedNodes) return
-    editor.update(() => {
-      const parsedNodes = $generateNodesFromSerializedNodes(
-        selectedSerializedNodes,
-      )
-      $insertNodes(parsedNodes)
-    })
+    if (editingTemplate) {
+      editor.update(() => {
+        const parsedNodes = $generateNodesFromSerializedNodes(
+          editingTemplate.content.nodes,
+        )
+        $insertNodes(parsedNodes)
+      })
+    } else if (selectedSerializedNodes) {
+      editor.update(() => {
+        const parsedNodes = $generateNodesFromSerializedNodes(
+          selectedSerializedNodes,
+        )
+        $insertNodes(parsedNodes)
+      })
+    }
   }
 
   const onSubmit = async () => {
@@ -58,12 +80,12 @@ export default function CreateTemplateDialogContent({
         return
       }
 
-      await templateManager.createTemplate({
+      await templateManager.createOrUpdateTemplate({
         name: templateName,
         content: { nodes },
       })
 
-      new Notice(`Template created: ${templateName}`)
+      new Notice(`Template ${isEditMode ? 'updated' : 'created'}: ${templateName}`)
       setTemplateName('')
       onClose()
     } catch (error) {
@@ -81,10 +103,10 @@ export default function CreateTemplateDialogContent({
       <Dialog.Content className="smtcmp-dialog-content">
         <div className="smtcmp-dialog-header">
           <Dialog.Title className="smtcmp-dialog-title">
-            Create template
+            {dialogTitle}
           </Dialog.Title>
           <Dialog.Description className="smtcmp-dialog-description">
-            Create template from selected content
+            {dialogDescription}
           </Dialog.Description>
         </div>
 
@@ -114,7 +136,7 @@ export default function CreateTemplateDialogContent({
         </div>
 
         <div className="smtcmp-dialog-footer">
-          <button onClick={onSubmit}>Create template</button>
+          <button onClick={onSubmit}>{buttonText}</button>
         </div>
 
         <Dialog.Close className="smtcmp-dialog-close" asChild>

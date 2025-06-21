@@ -35,6 +35,10 @@ import { SubmitButton } from './SubmitButton'
 import { TemplateSelectButton } from './TemplateSelectButton'
 import ToolBadge from './ToolBadge'
 import { VaultChatButton } from './VaultChatButton'
+import CreateTemplateDialogContent from '../CreateTemplateDialog'
+import { Template } from '../../../database/json/template/types'
+import { BaseSerializedNode } from '@lexical/clipboard/clipboard'
+import * as Dialog from '@radix-ui/react-dialog'
 
 export type ChatUserInputRef = {
   focus: () => void
@@ -74,6 +78,43 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
     const [displayedMentionableKey, setDisplayedMentionableKey] = useState<
       string | null
     >(addedBlockKey ?? null)
+
+    // Shared template dialog state
+    const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false)
+    const [templateDialogData, setTemplateDialogData] = useState<{
+      selectedSerializedNodes?: BaseSerializedNode[] | null
+      editingTemplate?: Template
+    }>({})
+
+    // Function to open template dialog for creating from selection
+    const openCreateTemplateDialog = useCallback((selectedSerializedNodes: BaseSerializedNode[] | null) => {
+      setTemplateDialogData({ selectedSerializedNodes })
+      setIsTemplateDialogOpen(true)
+    }, [])
+
+    // Function to open template dialog for editing
+    const openEditTemplateDialog = useCallback((template: Template) => {
+      setTemplateDialogData({ editingTemplate: template })
+      setIsTemplateDialogOpen(true)
+    }, [])
+
+    // Function to close template dialog
+    const closeTemplateDialog = useCallback(() => {
+      setIsTemplateDialogOpen(false)
+      setTemplateDialogData({})
+    }, [])
+
+    // Handle dialog open change with better control
+    const handleDialogOpenChange = useCallback((open: boolean) => {
+      // Only allow closing the dialog if it was explicitly requested
+      // This prevents accidental closing from dropdown menu events
+      if (!open) {
+        // Add a small delay to prevent race conditions
+        setTimeout(() => {
+          closeTemplateDialog()
+        }, 50)
+      }
+    }, [closeTemplateDialog])
 
     useEffect(() => {
       if (addedBlockKey) {
@@ -268,6 +309,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
             },
             templatePopover: {
               anchorElement: containerRef.current,
+              onOpenCreateDialog: openCreateTemplateDialog,
             },
           }}
         />
@@ -275,7 +317,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
         <div className="smtcmp-chat-user-input-controls">
           <div className="smtcmp-chat-user-input-controls__model-select-container">
             <ModelSelect />
-            <TemplateSelectButton />
+            <TemplateSelectButton onOpenEditDialog={openEditTemplateDialog} />
           </div>
           <div className="smtcmp-chat-user-input-controls__buttons">
             <ImageUploadButton onUpload={handleUploadImages} />
@@ -287,6 +329,15 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
             />
           </div>
         </div>
+
+        {/* Shared Template Dialog */}
+        <Dialog.Root modal={false} open={isTemplateDialogOpen} onOpenChange={handleDialogOpenChange}>
+          <CreateTemplateDialogContent
+            selectedSerializedNodes={templateDialogData.selectedSerializedNodes}
+            editingTemplate={templateDialogData.editingTemplate}
+            onClose={closeTemplateDialog}
+          />
+        </Dialog.Root>
       </div>
     )
   },

@@ -28,6 +28,7 @@ import OnMutationPlugin, {
 } from './plugins/on-mutation/OnMutationPlugin'
 import CreateTemplatePopoverPlugin from './plugins/template/CreateTemplatePopoverPlugin'
 import TemplatePlugin from './plugins/template/TemplatePlugin'
+import { BaseSerializedNode } from '@lexical/clipboard/clipboard'
 
 export type LexicalContentEditableProps = {
   editorRef: RefObject<LexicalEditor>
@@ -45,6 +46,7 @@ export type LexicalContentEditableProps = {
     }
     templatePopover?: {
       anchorElement: HTMLElement | null
+      onOpenCreateDialog: (selectedSerializedNodes: BaseSerializedNode[] | null) => void
     }
   }
 }
@@ -146,6 +148,7 @@ export default function LexicalContentEditable({
         <CreateTemplatePopoverPlugin
           anchorElement={plugins.templatePopover.anchorElement}
           contentEditableElement={contentEditableRef.current}
+          onOpenCreateDialog={plugins.templatePopover.onOpenCreateDialog}
         />
       )}
     </LexicalComposer>

@@ -908,7 +908,7 @@ button.smtcmp-chat-input-template-select {
   position: fixed;
   left: calc(50% - var(--size-4-4));
   top: 50%;
-  z-index: 50;
+  z-index: 1001;
   display: grid;
   width: calc(100% - var(--size-4-8));
   max-width: 32rem;

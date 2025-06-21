@@ -65,6 +65,37 @@ export class TemplateManager extends AbstractJsonRepository<
     return newTemplate
   }
 
+  public async createOrUpdateTemplate(
+    template: Omit<
+      Template,
+      'id' | 'createdAt' | 'updatedAt' | 'schemaVersion'
+    >,
+  ): Promise<Template> {
+    if (template.name !== undefined && template.name.length === 0) {
+      throw new EmptyTemplateNameException()
+    }
+
+    const existingTemplate = await this.findByName(template.name)
+    if (existingTemplate) {
+      const updatedTemplate = await this.updateTemplate(existingTemplate.id, template)
+      if (!updatedTemplate) {
+        throw new Error('Failed to update template')
+      }
+      return updatedTemplate
+    } else {
+      const newTemplate: Template = {
+        id: uuidv4(),
+        ...template,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        schemaVersion: TEMPLATE_SCHEMA_VERSION,
+      }
+
+      await this.create(newTemplate)
+      return newTemplate
+    }
+  }
+
   public async findById(id: string): Promise<Template | null> {
     const allMetadata = await this.listMetadata()
     const targetMetadata = allMetadata.find((meta) => meta.id === id)
