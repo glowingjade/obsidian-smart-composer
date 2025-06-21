@@ -1,6 +1,7 @@
 import { SettingMigration } from '../setting.types'
 
 import { migrateFrom0To1 } from './0_to_1'
+import { migrateFrom10To11 } from './10_to_11'
 import { migrateFrom1To2 } from './1_to_2'
 import { migrateFrom2To3 } from './2_to_3'
 import { migrateFrom3To4 } from './3_to_4'
@@ -11,7 +12,7 @@ import { migrateFrom7To8 } from './7_to_8'
 import { migrateFrom8To9 } from './8_to_9'
 import { migrateFrom9To10 } from './9_to_10'
 
-export const SETTINGS_SCHEMA_VERSION = 10
+export const SETTINGS_SCHEMA_VERSION = 11
 
 export const SETTING_MIGRATIONS: SettingMigration[] = [
   {
@@ -63,5 +64,10 @@ export const SETTING_MIGRATIONS: SettingMigration[] = [
     fromVersion: 9,
     toVersion: 10,
     migrate: migrateFrom9To10,
+  },
+  {
+    fromVersion: 10,
+    toVersion: 11,
+    migrate: migrateFrom10To11,
   },
 ]
