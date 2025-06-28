@@ -1,3 +1,5 @@
+// src/components/chat-view/chat-input/UserMessageItem.tsx
+
 import { SerializedEditorState } from 'lexical'
 
 import { ChatUserMessage } from '../../types/chat'
@@ -13,6 +15,7 @@ export type UserMessageItemProps = {
   onSubmit: (content: SerializedEditorState, useVaultSearch: boolean) => void
   onFocus: () => void
   onMentionablesChange: (mentionables: Mentionable[]) => void
+  onDepthChange: (mentionableKey: string, forward: number, backward: number) => void;
 }
 
 export default function UserMessageItem({
@@ -22,6 +25,7 @@ export default function UserMessageItem({
   onSubmit,
   onFocus,
   onMentionablesChange,
+  onDepthChange,
 }: UserMessageItemProps) {
   return (
     <div className="smtcmp-chat-messages-user">
@@ -33,6 +37,7 @@ export default function UserMessageItem({
         onFocus={onFocus}
         mentionables={message.mentionables}
         setMentionables={onMentionablesChange}
+        onDepthChange={onDepthChange}
       />
       {message.similaritySearchResults && (
         <SimilaritySearchResults

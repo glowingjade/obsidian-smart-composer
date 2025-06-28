@@ -1,3 +1,5 @@
+// src/settings/schema/setting.types.ts
+
 import { z } from 'zod'
 
 import {
@@ -74,11 +76,23 @@ export const smartComposerSettingsSchema = z.object({
       includeCurrentFileContent: z.boolean(),
       enableTools: z.boolean(),
       maxAutoIterations: z.number(),
+      enableForwardLinks: z.boolean().default(false),
+      forwardLinkDepth: z.number().min(0).max(5).default(0),
+      enableBackwardLinks: z.boolean().default(false),
+      backwardLinkDepth: z.number().min(0).max(5).default(0),
+      activeFileForwardLinkDepth: z.number().min(0).max(5).default(0),
+      activeFileBackwardLinkDepth: z.number().min(0).max(5).default(0),
     })
     .catch({
       includeCurrentFileContent: true,
       enableTools: true,
       maxAutoIterations: 1,
+      enableForwardLinks: false,
+      forwardLinkDepth: 0,
+      enableBackwardLinks: false,
+      backwardLinkDepth: 0,
+      activeFileForwardLinkDepth: 0,
+      activeFileBackwardLinkDepth: 0,
     }),
 })
 export type SmartComposerSettings = z.infer<typeof smartComposerSettingsSchema>

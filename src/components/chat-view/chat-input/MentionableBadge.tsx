@@ -1,5 +1,7 @@
+// src/components/chat-view/chat-input/MentionableBadge.tsx
+
 import clsx from 'clsx'
-import { Eye, EyeOff, X } from 'lucide-react'
+import { Eye, EyeOff, X, ArrowLeft, ArrowRight, Plus, Minus } from 'lucide-react'
 import { PropsWithChildren, useCallback } from 'react'
 
 import { useSettings } from '../../../contexts/settings-context'
@@ -50,27 +52,52 @@ function FileBadge({
   onDelete,
   onClick,
   isFocused,
+  onDepthChange,
 }: {
-  mentionable: MentionableFile
-  onDelete: () => void
-  onClick: () => void
-  isFocused: boolean
+  mentionable: MentionableFile;
+  onDelete: () => void;
+  onClick: () => void;
+  isFocused: boolean;
+  onDepthChange: (forward: number, backward: number) => void;
 }) {
-  const Icon = getMentionableIcon(mentionable)
+  const Icon = getMentionableIcon(mentionable);
+  const { settings } = useSettings();
+
+  const forwardDepth = mentionable.forwardDepth ?? settings.chatOptions.forwardLinkDepth;
+  const backwardDepth = mentionable.backwardDepth ?? settings.chatOptions.backwardLinkDepth;
+
+  const handleIncrement = (type: 'f' | 'b') => {
+    if (type === 'f' && forwardDepth < 5) onDepthChange(forwardDepth + 1, backwardDepth);
+    if (type === 'b' && backwardDepth < 5) onDepthChange(forwardDepth, backwardDepth + 1);
+  };
+
+  const handleDecrement = (type: 'f' | 'b') => {
+    if (type === 'f' && forwardDepth > 0) onDepthChange(forwardDepth - 1, backwardDepth);
+    if (type === 'b' && backwardDepth > 0) onDepthChange(forwardDepth, backwardDepth - 1);
+  };
+
   return (
     <BadgeBase onDelete={onDelete} onClick={onClick} isFocused={isFocused}>
-      <div className="smtcmp-chat-user-input-file-badge-name">
-        {Icon && (
-          <Icon
-            size={12}
-            className="smtcmp-chat-user-input-file-badge-name-icon"
-          />
-        )}
-        <span>{mentionable.file.name}</span>
-      </div>
+        <div className="smtcmp-chat-user-input-file-badge-name">
+            <div className="smtcmp-depth-controls compact">
+                <ArrowLeft size={10} />
+                <button className="clickable-icon" onClick={(e) => { e.stopPropagation(); handleDecrement('b'); }}><Minus size={10} /></button>
+                <span>{backwardDepth}</span>
+                <button className="clickable-icon" onClick={(e) => { e.stopPropagation(); handleIncrement('b'); }}><Plus size={10} /></button>
+            </div>
+            {Icon && <Icon size={12} className="smtcmp-chat-user-input-file-badge-name-icon" />}
+            <span>{mentionable.file.name}</span>
+             <div className="smtcmp-depth-controls compact">
+                <button className="clickable-icon" onClick={(e) => { e.stopPropagation(); handleDecrement('f'); }}><Minus size={10} /></button>
+                <span>{forwardDepth}</span>
+                <button className="clickable-icon" onClick={(e) => { e.stopPropagation(); handleIncrement('f'); }}><Plus size={10} /></button>
+                 <ArrowRight size={10} />
+            </div>
+        </div>
     </BadgeBase>
-  )
+  );
 }
+
 
 function FolderBadge({
   mentionable,
@@ -100,7 +127,6 @@ function FolderBadge({
 }
 
 function VaultBadge({
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mentionable,
   onDelete,
   onClick,
@@ -154,6 +180,21 @@ function CurrentFileBadge({
     },
     [settings, setSettings],
   )
+  
+    const handleDepthChange = (
+    value: number,
+    field: 'activeFileForwardLinkDepth' | 'activeFileBackwardLinkDepth'
+  ) => {
+      if(value >= 0 && value <= 5) {
+          setSettings({
+              ...settings,
+              chatOptions: {
+                  ...settings.chatOptions,
+                  [field]: value
+              }
+          })
+      }
+  };
 
   const Icon = getMentionableIcon(mentionable)
   return mentionable.file ? (
@@ -173,15 +214,18 @@ function CurrentFileBadge({
         >
           {mentionable.file.name}
         </span>
-      </div>
-      <div
-        className={clsx(
-          'smtcmp-chat-user-input-file-badge-name-suffix',
-          !settings.chatOptions.includeCurrentFileContent &&
-            'smtcmp-excluded-content',
-        )}
-      >
-        {' (Current File)'}
+        <div className="smtcmp-depth-controls compact">
+            <ArrowLeft size={10} />
+            <button className="clickable-icon" onClick={(e) => { e.stopPropagation(); handleDepthChange(settings.chatOptions.activeFileBackwardLinkDepth - 1, 'activeFileBackwardLinkDepth'); }}><Minus size={10} /></button>
+            <span>{settings.chatOptions.activeFileBackwardLinkDepth}</span>
+            <button className="clickable-icon" onClick={(e) => { e.stopPropagation(); handleDepthChange(settings.chatOptions.activeFileBackwardLinkDepth + 1, 'activeFileBackwardLinkDepth'); }}><Plus size={10} /></button>
+        </div>
+         <div className="smtcmp-depth-controls compact">
+            <button className="clickable-icon" onClick={(e) => { e.stopPropagation(); handleDepthChange(settings.chatOptions.activeFileForwardLinkDepth - 1, 'activeFileForwardLinkDepth'); }}><Minus size={10} /></button>
+            <span>{settings.chatOptions.activeFileForwardLinkDepth}</span>
+            <button className="clickable-icon" onClick={(e) => { e.stopPropagation(); handleDepthChange(settings.chatOptions.activeFileForwardLinkDepth + 1, 'activeFileForwardLinkDepth'); }}><Plus size={10} /></button>
+            <ArrowRight size={10} />
+        </div>
       </div>
       <div
         className="smtcmp-chat-user-input-file-badge-eye"
@@ -286,20 +330,23 @@ export default function MentionableBadge({
   onDelete,
   onClick,
   isFocused = false,
+  onDepthChange,
 }: {
-  mentionable: Mentionable
-  onDelete: () => void
-  onClick: () => void
-  isFocused?: boolean
+  mentionable: Mentionable;
+  onDelete: () => void;
+  onClick: () => void;
+  isFocused?: boolean;
+  onDepthChange?: (forward: number, backward: number) => void;
 }) {
   switch (mentionable.type) {
     case 'file':
       return (
         <FileBadge
-          mentionable={mentionable}
+          mentionable={mentionable as MentionableFile}
           onDelete={onDelete}
           onClick={onClick}
           isFocused={isFocused}
+          onDepthChange={onDepthChange || (() => {})}
         />
       )
     case 'folder':
@@ -356,5 +403,7 @@ export default function MentionableBadge({
           isFocused={isFocused}
         />
       )
+    default:
+        return null;
   }
 }
