@@ -1,8 +1,12 @@
+// src/types/mentionable.ts
+
 import { TFile, TFolder } from 'obsidian'
 
 export type MentionableFile = {
   type: 'file'
   file: TFile
+  forwardDepth?: number
+  backwardDepth?: number
 }
 export type MentionableFolder = {
   type: 'folder'
@@ -45,6 +49,8 @@ export type Mentionable =
 export type SerializedMentionableFile = {
   type: 'file'
   file: string
+  forwardDepth?: number
+  backwardDepth?: number
 }
 export type SerializedMentionableFolder = {
   type: 'folder'

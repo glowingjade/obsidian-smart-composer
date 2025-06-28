@@ -1,3 +1,5 @@
+// src/components/chat-view/QueryProgress.tsx
+
 import { SelectEmbedding } from '../../database/schema'
 import DotLoader from '../common/DotLoader'
 
@@ -17,6 +19,9 @@ export type QueryProgressState =
       queryResult: (Omit<SelectEmbedding, 'embedding'> & {
         similarity: number
       })[]
+    }
+  | {
+      type: 'fetching-links' // New state
     }
   | {
       type: 'idle'
@@ -84,6 +89,15 @@ export default function QueryProgress({
               <p>{result.similarity}</p>
             </div>
           ))}
+        </div>
+      )
+    case 'fetching-links': // New case
+      return (
+        <div className="smtcmp-query-progress">
+          <p>
+            Fetching linked notes
+            <DotLoader />
+          </p>
         </div>
       )
   }

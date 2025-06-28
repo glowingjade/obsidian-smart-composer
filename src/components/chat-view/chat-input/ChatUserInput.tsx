@@ -1,3 +1,5 @@
+// src/components/chat-view/chat-input/ChatUserInput.tsx
+
 import { useQuery } from '@tanstack/react-query'
 import { $nodesOfType, LexicalEditor, SerializedEditorState } from 'lexical'
 import {
@@ -46,6 +48,7 @@ export type ChatUserInputProps = {
   onFocus: () => void
   mentionables: Mentionable[]
   setMentionables: (mentionables: Mentionable[]) => void
+  onDepthChange: (mentionableKey: string, forward: number, backward: number) => void;
   autoFocus?: boolean
   addedBlockKey?: string | null
 }
@@ -59,6 +62,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
       onFocus,
       mentionables,
       setMentionables,
+      onDepthChange,
       autoFocus = false,
       addedBlockKey,
     },
@@ -220,7 +224,6 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
                   m.file &&
                   mentionableKey === displayedMentionableKey
                 ) {
-                  // open file on click again
                   openMarkdownFile(
                     app,
                     m.file.path,
@@ -234,6 +237,7 @@ const ChatUserInput = forwardRef<ChatUserInputRef, ChatUserInputProps>(
                 getMentionableKey(serializeMentionable(m)) ===
                 displayedMentionableKey
               }
+              onDepthChange={(f, b) => onDepthChange(getMentionableKey(serializeMentionable(m)), f, b)}
             />
           ))}
         </div>
@@ -316,7 +320,7 @@ function MentionableContentPreview({
     queryKey: [
       'file',
       displayedMentionableKey,
-      mentionables.map((m) => getMentionableKey(serializeMentionable(m))), // should be updated when mentionables change (especially on delete)
+      mentionables.map((m) => getMentionableKey(serializeMentionable(m))),
     ],
     queryFn: async () => {
       if (!displayedMentionable) return null

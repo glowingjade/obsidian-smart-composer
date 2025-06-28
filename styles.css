@@ -1,3 +1,5 @@
+/* styles.css */
+
 .smtcmp-chat-header {
   display: flex;
   justify-content: space-between;
@@ -323,10 +325,6 @@
   flex-grow: 1;
   overflow: hidden;
   align-items: center;
-}
-
-.smtcmp-chat-user-input-file-badge-name-icon {
-  color: var(--text-muted);
 }
 
 .smtcmp-chat-user-input-file-badge-name span {
@@ -952,28 +950,6 @@ button.smtcmp-chat-input-model-select {
   display: flex;
   align-items: center;
   justify-content: end;
-
-  /* button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 20px;
-    width: 20px;
-    padding: 0;
-    background-color: transparent;
-    border-color: transparent;
-    box-shadow: none;
-    color: var(--text-faint);
-    cursor: pointer;
-
-    &:hover {
-      background-color: var(--background-modifier-hover);
-    }
-  }
-
-  .smtcmp-assistant-message-actions-icon--copied {
-    color: var(--text-muted);
-  } */
 }
 
 .smtcmp-popover-content {
@@ -1788,6 +1764,12 @@ button.smtcmp-chat-input-model-select {
 
 .smtcmp-continue-response-button {
   display: flex;
+  align-items: center;
+  gap: var(--size-4-1);
+}
+
+.smtcmp-depth-controls.compact {
+  display: inline-flex;
   align-items: center;
   gap: var(--size-4-1);
 }

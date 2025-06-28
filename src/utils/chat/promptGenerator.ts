@@ -1,3 +1,5 @@
+// src/utils/chat/promptGenerator.ts
+
 import { App, TFile, htmlToMarkdown, requestUrl } from 'obsidian'
 
 import { editorStateToPlainText } from '../../components/chat-view/chat-input/utils/editor-state-to-plain-text'
@@ -30,6 +32,7 @@ import {
 } from '../obsidian'
 
 import { YoutubeTranscript, isYoutubeUrl } from './youtube-transcript'
+import { fetchLinkedNotes } from './linkFetcher'
 
 export class PromptGenerator {
   private getRagEngine: () => Promise<RAGEngine>
@@ -56,8 +59,6 @@ export class PromptGenerator {
       throw new Error('No messages provided')
     }
 
-    // Ensure all user messages have prompt content
-    // This is a fallback for cases where compilation was missed earlier in the process
     const compiledMessages = await Promise.all(
       messages.map(async (message) => {
         if (message.role === 'user' && !message.promptContent) {
@@ -75,7 +76,6 @@ export class PromptGenerator {
       }),
     )
 
-    // find last user message
     let lastUserMessage: ChatUserMessage | undefined = undefined
     for (let i = compiledMessages.length - 1; i >= 0; --i) {
       if (compiledMessages[i].role === 'user') {
@@ -92,13 +92,7 @@ export class PromptGenerator {
 
     const customInstructionMessage = this.getCustomInstructionMessage()
 
-    const currentFile = lastUserMessage.mentionables.find(
-      (m) => m.type === 'current-file',
-    )?.file
-    const currentFileMessage =
-      currentFile && this.settings.chatOptions.includeCurrentFileContent
-        ? await this.getCurrentFileMessage(currentFile)
-        : undefined
+    const currentFileMessage = await this.getCurrentFileMessage(lastUserMessage)
 
     const requestMessages: RequestMessage[] = [
       systemMessage,
@@ -118,12 +112,10 @@ export class PromptGenerator {
   }: {
     messages: ChatMessage[]
   }): RequestMessage[] {
-    // Get the last MAX_CONTEXT_MESSAGES messages and parse them into request messages
     const requestMessages: RequestMessage[] = messages
       .slice(-this.MAX_CONTEXT_MESSAGES)
       .flatMap((message): RequestMessage[] => {
         if (message.role === 'user') {
-          // We assume that all user messages have been compiled
           return [
             {
               role: 'user',
@@ -133,19 +125,16 @@ export class PromptGenerator {
         } else if (message.role === 'assistant') {
           return this.parseAssistantMessage({ message })
         } else {
-          // message.role === 'tool'
           return this.parseToolMessage({ message })
         }
       })
 
-    // TODO: Also verify that tool messages appear right after their corresponding assistant tool calls
     const filteredRequestMessages: RequestMessage[] = requestMessages
       .map((msg) => {
         switch (msg.role) {
           case 'user':
             return msg
           case 'assistant': {
-            // Filter out tool calls that don't have a corresponding tool message
             const filteredToolCalls = msg.tool_calls?.filter((t) =>
               requestMessages.some(
                 (rm) => rm.role === 'tool' && rm.tool_call.id === t.id,
@@ -160,7 +149,6 @@ export class PromptGenerator {
             }
           }
           case 'tool': {
-            // Filter out tool messages that don't have a corresponding assistant message
             const assistantMessage = requestMessages.find(
               (rm) =>
                 rm.role === 'assistant' &&
@@ -246,10 +234,12 @@ ${message.annotations
   public async compileUserMessagePrompt({
     message,
     useVaultSearch,
+    additionalContent,
     onQueryProgressChange,
   }: {
     message: ChatUserMessage
     useVaultSearch?: boolean
+    additionalContent?: string[]
     onQueryProgressChange?: (queryProgress: QueryProgressState) => void
   }): Promise<{
     promptContent: ChatUserMessage['promptContent']
@@ -269,7 +259,6 @@ ${message.annotations
       let similaritySearchResults = undefined
 
       useVaultSearch =
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         useVaultSearch ||
         message.mentionables.some(
           (m): m is MentionableVault => m.type === 'vault',
@@ -290,7 +279,6 @@ ${message.annotations
       const allFiles = [...files, ...nestedFiles]
       const fileContents = await readMultipleTFiles(allFiles, this.app.vault)
 
-      // Count tokens incrementally to avoid long processing times on large content sets
       const exceedsTokenThreshold = async () => {
         let accTokenCount = 0
         for (const content of fileContents) {
@@ -312,7 +300,7 @@ ${message.annotations
             ).processQuery({
               query,
               onQueryProgressChange: onQueryProgressChange,
-            }) // TODO: Add similarity boosting for mentioned files or folders
+            }) 
           : await (
               await this.getRagEngine()
             ).processQuery({
@@ -342,6 +330,11 @@ ${similaritySearchResults
             return `\`\`\`${file.path}\n${fileContents[index]}\n\`\`\`\n`
           })
           .join('')
+      }
+      
+      let linkedNotesPrompt = '';
+      if (additionalContent && additionalContent.length > 0) {
+          linkedNotesPrompt = `## Linked Notes Content\n${additionalContent.map(content => `\`\`\`\n${content}\n\`\`\``).join('\n')}\n`;
       }
 
       const blocks = message.mentionables.filter(
@@ -378,7 +371,6 @@ ${await this.getWebsiteContent(url)}
         .filter((m): m is MentionableImage => m.type === 'image')
         .map(({ data }) => data)
 
-      // Reset query progress
       onQueryProgressChange?.({
         type: 'idle',
       })
@@ -395,7 +387,7 @@ ${await this.getWebsiteContent(url)}
           ),
           {
             type: 'text',
-            text: `${filePrompt}${blockPrompt}${urlPrompt}\n\n${query}\n\n`,
+            text: `${linkedNotesPrompt}${filePrompt}${blockPrompt}${urlPrompt}\n\n${query}\n\n`,
           },
         ],
         shouldUseRAG,
@@ -439,11 +431,8 @@ ${
 
 7. When the user is asking for edits to their markdown, please provide a simplified version of the markdown block emphasizing only the changes. Use comments to show where unchanged content has been skipped. Wrap the markdown block with <smtcmp_block> tags. Add filename and language attributes to the <smtcmp_block> tags. For example:
 <smtcmp_block filename="path/to/file.md" language="markdown">
-<!-- ... existing content ... -->
 {{ edit_1 }}
-<!-- ... existing content ... -->
 {{ edit_2 }}
-<!-- ... existing content ... -->
 </smtcmp_block>
 The user has full access to the file, so they prefer seeing only the changes in the markdown. Often this will mean that the start/end of the file will be skipped, but that's okay! Rewrite the entire file only if specifically requested. Always provide a brief explanation of the updates, except when the user specifically asks for just the content.
 `
@@ -474,7 +463,7 @@ ${
   {{ content }}
   </smtcmp_block>
 
-  d. When referencing a markdown block the user gives you, only add the startLine and endLine attributes to the <smtcmp_block> tags. Write related content outside of the <smtcmp_block> tags. The content inside the <smtcmp_block> tags will be ignored and replaced with the actual content of the markdown block. For example:
+  d. When referencing a markdown block the user gives you, only add the startLine and endLine attributes to the <smtcmp_block> tags without any content inside. For example:
   <smtcmp_block filename="path/to/file.md" language="markdown" startLine="2" endLine="30"></smtcmp_block>`
     : ''
 }`
@@ -500,9 +489,41 @@ ${customInstruction}
   }
 
   private async getCurrentFileMessage(
-    currentFile: TFile,
-  ): Promise<RequestMessage> {
-    const fileContent = await readTFileContent(currentFile, this.app.vault)
+    lastUserMessage: ChatUserMessage,
+  ): Promise<RequestMessage | null> {
+    const currentFileMentionable = lastUserMessage.mentionables.find(
+      (m) => m.type === 'current-file',
+    );
+  
+    if (!currentFileMentionable || !currentFileMentionable.file) return null;
+  
+    const currentFile = currentFileMentionable.file;
+    const {
+      includeCurrentFileContent,
+      activeFileForwardLinkDepth,
+      activeFileBackwardLinkDepth,
+    } = this.settings.chatOptions;
+  
+    let fileContent = '';
+    if (includeCurrentFileContent) {
+      fileContent = await readTFileContent(currentFile, this.app.vault);
+    }
+  
+    let linkedNotesContent = '';
+    if (activeFileForwardLinkDepth > 0 || activeFileBackwardLinkDepth > 0) {
+      const linkedFilePaths = await fetchLinkedNotes(
+        currentFile.path,
+        activeFileForwardLinkDepth,
+        activeFileBackwardLinkDepth,
+        this.app
+      );
+      const linkedFiles = linkedFilePaths
+        .map(p => this.app.vault.getAbstractFileByPath(p))
+        .filter((f): f is TFile => f instanceof TFile);
+      const contents = await readMultipleTFiles(linkedFiles, this.app.vault);
+      linkedNotesContent = `## Linked Notes Content for Active File\n${contents.map(content => `\`\`\`\n${content}\n\`\`\``).join('\n')}\n`;
+    }
+  
     return {
       role: 'user',
       content: `# Inputs
@@ -510,9 +531,11 @@ ${customInstruction}
 Here is the file I'm looking at.
 \`\`\`${currentFile.path}
 ${fileContent}
-\`\`\`\n\n`,
-    }
+\`\`\`
+${linkedNotesContent}\n\n`,
+    };
   }
+  
 
   private getRagInstructionMessage(): RequestMessage {
     return {
@@ -538,15 +561,9 @@ When writing out new markdown blocks, remember not to include "line_number|" at 
     return linesWithNumbers.join('\n')
   }
 
-  /**
-   * TODO: Improve markdown conversion logic
-   * - filter visually hidden elements
-   * ...
-   */
   private async getWebsiteContent(url: string): Promise<string> {
     if (isYoutubeUrl(url)) {
       try {
-        // TODO: pass language based on user preferences
         const { title, transcript } =
           await YoutubeTranscript.fetchTranscriptAndMetadata(url)
 

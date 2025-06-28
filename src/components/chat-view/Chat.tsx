@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import { CircleStop, History, Plus } from 'lucide-react'
-import { App, Notice } from 'obsidian'
+import { App, Notice, TFile } from 'obsidian'
 import {
   forwardRef,
   useCallback,
@@ -32,20 +32,24 @@ import {
   ChatUserMessage,
 } from '../../types/chat'
 import {
+  Mentionable,
   MentionableBlock,
   MentionableBlockData,
   MentionableCurrentFile,
+  MentionableFile,
 } from '../../types/mentionable'
 import { ToolCallResponseStatus } from '../../types/tool-call.types'
 import { applyChangesToFile } from '../../utils/chat/apply'
+import { parseLinkDepthCommand } from '../../utils/chat/commandParser'
 import {
   getMentionableKey,
   serializeMentionable,
 } from '../../utils/chat/mentionable'
 import { groupAssistantAndToolMessages } from '../../utils/chat/message-groups'
 import { PromptGenerator } from '../../utils/chat/promptGenerator'
-import { readTFileContent } from '../../utils/obsidian'
+import { readTFileContent, readMultipleTFiles } from '../../utils/obsidian'
 import { ErrorModal } from '../modals/ErrorModal'
+import { fetchLinkedNotes } from '../../utils/chat/linkFetcher';
 
 import AssistantToolMessageGroupItem from './AssistantToolMessageGroupItem'
 import ChatUserInput, { ChatUserInputRef } from './chat-input/ChatUserInput'
@@ -56,7 +60,6 @@ import { useAutoScroll } from './useAutoScroll'
 import { useChatStreamManager } from './useChatStreamManager'
 import UserMessageItem from './UserMessageItem'
 
-// Add an empty line here
 const getNewInputMessage = (app: App): ChatUserMessage => {
   return {
     role: 'user',
@@ -218,7 +221,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         type: 'idle',
       })
 
-      // Update the chat history to show the new user message
       setChatMessages(inputChatMessages)
       requestAnimationFrame(() => {
         forceScrollToBottom()
@@ -229,6 +231,32 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         throw new Error('Last message is not a user message')
       }
 
+    let linkedNotesContent: string[] = [];
+    const fileMentionables = lastMessage.mentionables.filter(
+      (m): m is MentionableFile => m.type === 'file'
+    );
+
+    if (fileMentionables.length > 0) {
+        setQueryProgress({ type: 'fetching-links' });
+        for (const mentionable of fileMentionables) {
+            const forwardDepth = mentionable.forwardDepth ?? (settings.chatOptions.enableForwardLinks ? settings.chatOptions.forwardLinkDepth : 0);
+            const backwardDepth = mentionable.backwardDepth ?? (settings.chatOptions.enableBackwardLinks ? settings.chatOptions.backwardLinkDepth : 0);
+
+            if(forwardDepth > 0 || backwardDepth > 0) {
+                const linkedFilePaths = await fetchLinkedNotes(
+                    mentionable.file.path,
+                    forwardDepth,
+                    backwardDepth,
+                    app
+                );
+                
+                const linkedFiles = linkedFilePaths.map(p => app.vault.getAbstractFileByPath(p)).filter((f): f is TFile => f instanceof TFile);
+                const contents = await readMultipleTFiles(linkedFiles, app.vault);
+                linkedNotesContent.push(...contents);
+            }
+        }
+    }
+
       const compiledMessages = await Promise.all(
         inputChatMessages.map(async (message) => {
           if (message.role === 'user' && message.id === lastMessage.id) {
@@ -236,6 +264,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
               await promptGenerator.compileUserMessagePrompt({
                 message,
                 useVaultSearch,
+                additionalContent: linkedNotesContent,
                 onQueryProgressChange: setQueryProgress,
               })
             return {
@@ -244,8 +273,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
               similaritySearchResults,
             }
           } else if (message.role === 'user' && !message.promptContent) {
-            // Ensure all user messages have prompt content
-            // This is a fallback for cases where compilation was missed earlier in the process
             const { promptContent, similaritySearchResults } =
               await promptGenerator.compileUserMessagePrompt({
                 message,
@@ -272,6 +299,8 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       promptGenerator,
       abortActiveStreams,
       forceScrollToBottom,
+      settings,
+      app
     ],
   )
 
@@ -347,9 +376,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         (message) => message.id === toolMessage.id,
       )
       if (toolMessageIndex === -1) {
-        // The tool message no longer exists in the chat history.
-        // This likely means a new message was submitted while this stream was running.
-        // Abort the tool calls and keep the current chat history.
         void (async () => {
           const mcpManager = await getMcpManager()
           toolMessage.toolCalls.forEach((toolCall) => {
@@ -364,8 +390,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       )
       setChatMessages(updatedMessages)
 
-      // Resume the chat automatically if this tool message is the last message
-      // and all tool calls have completed.
       if (
         toolMessageIndex === chatMessages.length - 1 &&
         toolMessage.toolCalls.every((toolCall) =>
@@ -375,8 +399,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           ].includes(toolCall.response.status),
         )
       ) {
-        // Using updated toolMessage directly because chatMessages state
-        // still contains the old values
         submitChatMutation.mutate({
           chatMessages: updatedMessages,
           conversationId: currentConversationId,
@@ -397,13 +419,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   )
 
   const showContinueResponseButton = useMemo(() => {
-    /**
-     * Display the button to continue response when:
-     * 1. There is no ongoing generation
-     * 2. The most recent message is a tool message
-     * 3. All tool calls within that message have completed
-     */
-
     if (submitChatMutation.isPending) return false
 
     const lastMessage = chatMessages.at(-1)
@@ -428,7 +443,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
 
   useEffect(() => {
     setFocusedMessageId(inputMessage.id)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -445,8 +459,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     updateConversationAsync()
   }, [currentConversationId, chatMessages, createOrUpdateConversation])
 
-  // Updates the currentFile of the focused message (input or chat history)
-  // This happens when active file changes or focused message changes
   const handleActiveLeafChange = useCallback(() => {
     const activeFile = app.workspace.getActiveFile()
     if (!activeFile) return
@@ -509,7 +521,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           const mentionableKey = getMentionableKey(
             serializeMentionable(mentionable),
           )
-          // Check if mentionable already exists
           if (
             prevInputMessage.mentionables.some(
               (m) =>
@@ -530,7 +541,6 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
               const mentionableKey = getMentionableKey(
                 serializeMentionable(mentionable),
               )
-              // Check if mentionable already exists
               if (
                 message.mentionables.some(
                   (m) =>
@@ -555,6 +565,69 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       chatUserInputRefs.current.get(focusedMessageId)?.focus()
     },
   }))
+  
+  const handleMentionablesChange = (
+    messageId: string,
+    newMentionables: Mentionable[]
+  ) => {
+    const updater = (prev: ChatUserMessage): ChatUserMessage => {
+        const updatedMentionables = newMentionables.map(m => {
+            if (m.type === 'file' && m.file.name.includes(':')) {
+                const { cleanName, forward, backward } = parseLinkDepthCommand(m.file.name);
+                const file = app.vault.getAbstractFileByPath(m.file.path)
+                if (file instanceof TFile) {
+                    return {
+                        ...m,
+                        file: file,
+                        forwardDepth: forward,
+                        backwardDepth: backward,
+                    };
+                }
+            }
+            return m;
+        });
+        return { ...prev, mentionables: updatedMentionables };
+    };
+
+    if (messageId === inputMessage.id) {
+        setInputMessage(updater);
+    } else {
+        setChatMessages(prev =>
+            prev.map(msg =>
+                msg.id === messageId ? updater(msg as ChatUserMessage) : msg
+            )
+        );
+    }
+  };
+  
+  const handleDepthChange = (
+    messageId: string,
+    mentionableKey: string,
+    forward: number,
+    backward: number
+  ) => {
+      const updater = (mentionables: Mentionable[]) => 
+          mentionables.map(m => {
+              if (m.type === 'file' && getMentionableKey(serializeMentionable(m)) === mentionableKey) {
+                  return { ...m, forwardDepth: forward, backwardDepth: backward };
+              }
+              return m;
+          });
+
+      if (messageId === inputMessage.id) {
+          setInputMessage(prev => ({ ...prev, mentionables: updater(prev.mentionables) }));
+      } else {
+          setChatMessages(prev =>
+              prev.map(msg => {
+                  if (msg.id === messageId && msg.role === 'user') {
+                      return { ...msg, mentionables: updater(msg.mentionables) };
+                  }
+                  return msg;
+              })
+          );
+      }
+  };
+
 
   return (
     <div className="smtcmp-chat-container">
@@ -640,15 +713,8 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
               onFocus={() => {
                 setFocusedMessageId(messageOrGroup.id)
               }}
-              onMentionablesChange={(mentionables) => {
-                setChatMessages((prevChatHistory) =>
-                  prevChatHistory.map((msg) =>
-                    msg.id === messageOrGroup.id
-                      ? { ...msg, mentionables }
-                      : msg,
-                  ),
-                )
-              }}
+              onMentionablesChange={(mentionables) => handleMentionablesChange(messageOrGroup.id, mentionables)}
+              onDepthChange={(key, f, b) => handleDepthChange(messageOrGroup.id, key, f, b)}
             />
           ) : (
             <AssistantToolMessageGroupItem
@@ -687,7 +753,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         )}
       </div>
       <ChatUserInput
-        key={inputMessage.id} // this is needed to clear the editor when the user submits a new message
+        key={inputMessage.id}
         ref={(ref) => registerChatUserInputRef(inputMessage.id, ref)}
         initialSerializedEditorState={inputMessage.content}
         onChange={(content) => {
@@ -708,12 +774,8 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           setFocusedMessageId(inputMessage.id)
         }}
         mentionables={inputMessage.mentionables}
-        setMentionables={(mentionables) => {
-          setInputMessage((prevInputMessage) => ({
-            ...prevInputMessage,
-            mentionables,
-          }))
-        }}
+        setMentionables={(mentionables) => handleMentionablesChange(inputMessage.id, mentionables)}
+        onDepthChange={(key, f, b) => handleDepthChange(inputMessage.id, key, f, b)}
         autoFocus
         addedBlockKey={addedBlockKey}
       />
