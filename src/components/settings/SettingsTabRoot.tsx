@@ -34,12 +34,12 @@ export function SettingsTabRoot({ app, plugin }: SettingsTabRootProps) {
           cta
         />
       </ObsidianSetting>
-      <TemplateSection app={app} />
       <ChatSection />
       <ProvidersSection app={app} plugin={plugin} />
       <ModelsSection app={app} plugin={plugin} />
       <RAGSection app={app} plugin={plugin} />
       <McpSection app={app} plugin={plugin} />
+      <TemplateSection app={app} />
       <EtcSection app={app} plugin={plugin} />
     </>
   )
