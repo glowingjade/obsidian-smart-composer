@@ -1,10 +1,11 @@
 import { Edit, Trash2 } from 'lucide-react'
-import { App } from 'obsidian'
+import { App, Notice } from 'obsidian'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { TemplateManager } from '../../../database/json/template/TemplateManager'
 import { TemplateMetadata } from '../../../database/json/template/types'
 import { ObsidianButton } from '../../common/ObsidianButton'
+import { ConfirmModal } from '../../modals/ConfirmModal'
 import {
   CreateTemplateModal,
   EditTemplateModal,
@@ -18,9 +19,21 @@ export function TemplateSection({ app }: TemplateSectionProps) {
   const templateManager = useMemo(() => new TemplateManager(app), [app])
 
   const [templateList, setTemplateList] = useState<TemplateMetadata[]>([])
+  const [isLoading, setIsLoading] = useState(false)
 
   const fetchTemplateList = useCallback(async () => {
-    setTemplateList(await templateManager.listMetadata())
+    setIsLoading(true)
+    try {
+      setTemplateList(await templateManager.listMetadata())
+    } catch (error) {
+      console.error('Failed to fetch template list:', error)
+      new Notice(
+        'Failed to load templates. Please try refreshing the settings.',
+      )
+      setTemplateList([])
+    } finally {
+      setIsLoading(false)
+    }
   }, [templateManager])
 
   const handleCreate = useCallback(() => {
@@ -43,11 +56,24 @@ export function TemplateSection({ app }: TemplateSectionProps) {
   )
 
   const handleDelete = useCallback(
-    async (template: TemplateMetadata) => {
-      await templateManager.deleteTemplate(template.id)
-      fetchTemplateList()
+    (template: TemplateMetadata) => {
+      const message = `Are you sure you want to delete template "${template.name}"?`
+      new ConfirmModal(app, {
+        title: 'Delete Template',
+        message: message,
+        ctaText: 'Delete',
+        onConfirm: async () => {
+          try {
+            await templateManager.deleteTemplate(template.id)
+            fetchTemplateList()
+          } catch (error) {
+            console.error('Failed to delete template:', error)
+            new Notice('Failed to delete template. Please try again.')
+          }
+        },
+      }).open()
     },
-    [templateManager, fetchTemplateList],
+    [templateManager, fetchTemplateList, app],
   )
 
   useEffect(() => {
@@ -76,10 +102,12 @@ export function TemplateSection({ app }: TemplateSectionProps) {
           <div>Name</div>
           <div>Actions</div>
         </div>
-        {templateList.length > 0 ? (
+        {isLoading ? (
+          <div className="smtcmp-templates-empty">Loading templates...</div>
+        ) : templateList.length > 0 ? (
           templateList.map((template) => (
             <TemplateItem
-              key={template.name}
+              key={template.id}
               template={template}
               onDelete={() => {
                 handleDelete(template)

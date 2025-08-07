@@ -165,15 +165,20 @@ function TemplateFormComponent({
     isMountedRef.current = true
 
     async function fetchExistingTemplate(templateId: string) {
-      const existingTemplate = await templateManager.findById(templateId)
-      if (existingTemplate && isMountedRef.current) {
-        setTemplateName(existingTemplate.name)
-        editorRef.current?.update(() => {
-          const parsedNodes = $generateNodesFromSerializedNodes(
-            existingTemplate.content.nodes,
-          )
-          $insertNodes(parsedNodes)
-        })
+      try {
+        const existingTemplate = await templateManager.findById(templateId)
+        if (existingTemplate && isMountedRef.current) {
+          setTemplateName(existingTemplate.name)
+          editorRef.current?.update(() => {
+            const parsedNodes = $generateNodesFromSerializedNodes(
+              existingTemplate.content.nodes,
+            )
+            $insertNodes(parsedNodes)
+          })
+        }
+      } catch (error) {
+        console.error('Failed to fetch existing template:', error)
+        new Notice('Failed to load template. Please try again.')
       }
     }
     if (templateId) {
