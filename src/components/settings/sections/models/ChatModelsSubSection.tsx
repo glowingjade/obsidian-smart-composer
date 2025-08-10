@@ -5,7 +5,8 @@ import { ObsidianToggle } from 'src/components/common/ObsidianToggle'
 import { DEFAULT_CHAT_MODELS } from '../../../../constants'
 import { useSettings } from '../../../../contexts/settings-context'
 import SmartComposerPlugin from '../../../../main'
-import { AddChatModelModal } from '../../../../settings/AddChatModelModal'
+import { ConfirmModal } from '../../../modals/ConfirmModal'
+import { AddChatModelModal } from '../../modals/AddChatModelModal'
 
 import {
   ChatModelSettingsModal,
@@ -33,10 +34,18 @@ export function ChatModelsSubSection({
       return
     }
 
-    await setSettings({
-      ...settings,
-      chatModels: [...settings.chatModels].filter((v) => v.id !== modelId),
-    })
+    const message = `Are you sure you want to delete model "${modelId}"?`
+    new ConfirmModal(app, {
+      title: 'Delete Chat Model',
+      message: message,
+      ctaText: 'Delete',
+      onConfirm: async () => {
+        await setSettings({
+          ...settings,
+          chatModels: [...settings.chatModels].filter((v) => v.id !== modelId),
+        })
+      },
+    }).open()
   }
 
   const handleToggleEnableChatModel = async (

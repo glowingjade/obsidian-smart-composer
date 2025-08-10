@@ -6,10 +6,12 @@ import { DEFAULT_PROVIDERS, PROVIDER_TYPES_INFO } from '../../../constants'
 import { useSettings } from '../../../contexts/settings-context'
 import { getEmbeddingModelClient } from '../../../core/rag/embedding'
 import SmartComposerPlugin from '../../../main'
-import { AddProviderModal } from '../../../settings/AddProviderModal'
-import { ConfirmModal } from '../../../settings/ConfirmModal'
-import { EditProviderModal } from '../../../settings/EditProviderModal'
 import { LLMProvider } from '../../../types/provider.types'
+import { ConfirmModal } from '../../modals/ConfirmModal'
+import {
+  AddProviderModal,
+  EditProviderModal,
+} from '../modals/ProviderFormModal'
 
 type ProvidersSectionProps = {
   app: App

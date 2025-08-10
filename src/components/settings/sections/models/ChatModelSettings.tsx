@@ -1,6 +1,5 @@
-import { App, Modal, Notice } from 'obsidian'
+import { App, Notice } from 'obsidian'
 import { useState } from 'react'
-import { createRoot } from 'react-dom/client'
 
 import SmartComposerPlugin from '../../../../main'
 import { ChatModel, chatModelSchema } from '../../../../types/chat-model.types'
@@ -8,11 +7,28 @@ import { ObsidianButton } from '../../../common/ObsidianButton'
 import { ObsidianDropdown } from '../../../common/ObsidianDropdown'
 import { ObsidianSetting } from '../../../common/ObsidianSetting'
 import { ObsidianTextInput } from '../../../common/ObsidianTextInput'
+import { ReactModal } from '../../../common/ReactModal'
 
 type SettingsComponentProps = {
   model: ChatModel
   plugin: SmartComposerPlugin
   onClose: () => void
+}
+
+export class ChatModelSettingsModal extends ReactModal<SettingsComponentProps> {
+  constructor(model: ChatModel, app: App, plugin: SmartComposerPlugin) {
+    const modelSettings = getModelSettings(model)
+    super({
+      app: app,
+      Component: modelSettings
+        ? modelSettings.SettingsComponent
+        : () => <div>No settings available for this model</div>,
+      props: { model, plugin },
+      options: {
+        title: `Edit Chat Model: ${model.id}`,
+      },
+    })
+  }
 }
 
 type ModelSettingsRegistry = {
@@ -228,57 +244,10 @@ const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
   },
 ]
 
-// Function to find settings for a specific model
 function getModelSettings(model: ChatModel): ModelSettingsRegistry | undefined {
   return MODEL_SETTINGS_REGISTRY.find((registry) => registry.check(model))
 }
 
-// Check if a model has settings
 export function hasChatModelSettings(model: ChatModel): boolean {
   return !!getModelSettings(model)
-}
-
-// Modal component for chat model settings
-export class ChatModelSettingsModal extends Modal {
-  private plugin: SmartComposerPlugin
-  private model: ChatModel
-  private root: ReturnType<typeof createRoot> | null = null
-
-  constructor(model: ChatModel, app: App, plugin: SmartComposerPlugin) {
-    super(app)
-    this.plugin = plugin
-    this.model = model
-  }
-
-  onOpen() {
-    const { contentEl } = this
-    contentEl.empty()
-    this.titleEl.setText(`Edit Chat Model: ${this.model.id}`)
-
-    this.root = createRoot(contentEl)
-
-    const modelSettings = getModelSettings(this.model)
-    if (!modelSettings) {
-      contentEl.setText('No settings available for this model')
-      return
-    }
-
-    const { SettingsComponent } = modelSettings
-    this.root.render(
-      <SettingsComponent
-        model={this.model}
-        plugin={this.plugin}
-        onClose={() => this.close()}
-      />,
-    )
-  }
-
-  onClose() {
-    if (this.root) {
-      this.root.unmount()
-      this.root = null
-    }
-    const { contentEl } = this
-    contentEl.empty()
-  }
 }

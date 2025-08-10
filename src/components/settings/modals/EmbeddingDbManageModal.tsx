@@ -1,21 +1,83 @@
-import * as Tooltip from '@radix-ui/react-tooltip'
-import { useQuery } from '@tanstack/react-query'
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from '@tanstack/react-query'
+import clsx from 'clsx'
 import dayjs from 'dayjs'
 import { Loader2, PickaxeIcon, RefreshCw, Trash2 } from 'lucide-react'
-import { Notice } from 'obsidian'
+import { App, Notice } from 'obsidian'
 import { useState } from 'react'
 
-import { useDatabase } from '../../contexts/database-context'
-import { useSettings } from '../../contexts/settings-context'
-import { getEmbeddingModelClient } from '../../core/rag/embedding'
-import { EmbeddingDbStats } from '../../types/embedding'
-import { IndexProgress } from '../chat-view/QueryProgress'
+import { AppProvider } from '../../../contexts/app-context'
+import {
+  DatabaseProvider,
+  useDatabase,
+} from '../../../contexts/database-context'
+import {
+  SettingsProvider,
+  useSettings,
+} from '../../../contexts/settings-context'
+import { getEmbeddingModelClient } from '../../../core/rag/embedding'
+import SmartComposerPlugin from '../../../main'
+import { EmbeddingDbStats } from '../../../types/embedding'
+import { IndexProgress } from '../../chat-view/QueryProgress'
+import { ReactModal } from '../../common/ReactModal'
 
-export default function EmbeddingDbManageRoot({
-  contentEl,
-}: {
-  contentEl: HTMLElement
-}) {
+type EmbeddingDbManagerModalComponentWrapperProps = {
+  app: App
+  plugin: SmartComposerPlugin
+}
+
+export class EmbeddingDbManageModal extends ReactModal<EmbeddingDbManagerModalComponentWrapperProps> {
+  constructor(app: App, plugin: SmartComposerPlugin) {
+    super({
+      app: app,
+      Component: EmbeddingDbManagerModalComponentWrapper,
+      props: { app, plugin },
+      options: {
+        title: 'Manage Embedding Database',
+      },
+    })
+    this.modalEl.style.width = '720px'
+  }
+}
+
+function EmbeddingDbManagerModalComponentWrapper({
+  app,
+  plugin,
+}: EmbeddingDbManagerModalComponentWrapperProps) {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        gcTime: 0, // Immediately garbage collect queries. It prevents memory leak on ChatView close.
+      },
+      mutations: {
+        gcTime: 0, // Immediately garbage collect mutations. It prevents memory leak on ChatView close.
+      },
+    },
+  })
+
+  return (
+    <AppProvider app={app}>
+      <SettingsProvider
+        settings={plugin.settings}
+        setSettings={(newSettings) => plugin.setSettings(newSettings)}
+        addSettingsChangeListener={(listener) =>
+          plugin.addSettingsChangeListener(listener)
+        }
+      >
+        <DatabaseProvider getDatabaseManager={() => plugin.getDbManager()}>
+          <QueryClientProvider client={queryClient}>
+            <EmbeddingDbManageModalComponent />
+          </QueryClientProvider>
+        </DatabaseProvider>
+      </SettingsProvider>
+    </AppProvider>
+  )
+}
+
+function EmbeddingDbManageModalComponent() {
   const { getVectorManager } = useDatabase()
   const { settings } = useSettings()
   const [indexProgressMap, setIndexProgressMap] = useState<
@@ -103,24 +165,14 @@ export default function EmbeddingDbManageRoot({
   return (
     <div className="smtcmp-settings-embedding-db-manage-root">
       <div className="smtcmp-settings-embedding-db-manage-header">
-        <Tooltip.Provider delayDuration={0}>
-          <Tooltip.Root>
-            <Tooltip.Trigger asChild>
-              <button
-                onClick={() => refetch()}
-                disabled={isFetching}
-                className="smtcmp-settings-embedding-db-manage-refresh"
-              >
-                <RefreshCw size={16} className={isFetching ? 'spinner' : ''} />
-              </button>
-            </Tooltip.Trigger>
-            <Tooltip.Portal container={contentEl}>
-              <Tooltip.Content className="smtcmp-tooltip-content">
-                Refresh
-              </Tooltip.Content>
-            </Tooltip.Portal>
-          </Tooltip.Root>
-        </Tooltip.Provider>
+        <button
+          className="clickable-icon"
+          aria-label="Refresh"
+          onClick={() => refetch()}
+          disabled={isFetching}
+        >
+          <RefreshCw size={16} className={clsx(isFetching && 'spinner')} />
+        </button>
 
         <span className="smtcmp-settings-embedding-db-manage-last-updated">
           Last updated: {dayjs(dataUpdatedAt).format('YYYY-MM-DD HH:mm:ss')}
@@ -156,34 +208,20 @@ export default function EmbeddingDbManageRoot({
                 </td>
               ) : (
                 <td className="smtcmp-settings-embedding-db-manage-actions">
-                  <Tooltip.Provider delayDuration={0}>
-                    <Tooltip.Root>
-                      <Tooltip.Trigger asChild>
-                        <button onClick={() => handleRebuildIndex(stat.model)}>
-                          <PickaxeIcon size={16} />
-                        </button>
-                      </Tooltip.Trigger>
-                      <Tooltip.Portal container={contentEl}>
-                        <Tooltip.Content className="smtcmp-tooltip-content">
-                          Rebuild Index
-                        </Tooltip.Content>
-                      </Tooltip.Portal>
-                    </Tooltip.Root>
-                  </Tooltip.Provider>
-                  <Tooltip.Provider delayDuration={0}>
-                    <Tooltip.Root>
-                      <Tooltip.Trigger asChild>
-                        <button onClick={() => handleRemoveIndex(stat.model)}>
-                          <Trash2 size={16} />
-                        </button>
-                      </Tooltip.Trigger>
-                      <Tooltip.Portal container={contentEl}>
-                        <Tooltip.Content className="smtcmp-tooltip-content">
-                          Remove Index
-                        </Tooltip.Content>
-                      </Tooltip.Portal>
-                    </Tooltip.Root>
-                  </Tooltip.Provider>
+                  <button
+                    className="clickable-icon"
+                    aria-label="Rebuild index"
+                    onClick={() => handleRebuildIndex(stat.model)}
+                  >
+                    <PickaxeIcon size={16} />
+                  </button>
+                  <button
+                    className="clickable-icon"
+                    aria-label="Remove index"
+                    onClick={() => handleRemoveIndex(stat.model)}
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </td>
               )}
             </tr>

@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
-import { CircleStop, History, Plus } from 'lucide-react'
+import { Book, CircleStop, History, Plus } from 'lucide-react'
 import { App, Notice } from 'obsidian'
 import {
   forwardRef,
@@ -46,6 +46,7 @@ import { groupAssistantAndToolMessages } from '../../utils/chat/message-groups'
 import { PromptGenerator } from '../../utils/chat/promptGenerator'
 import { readTFileContent } from '../../utils/obsidian'
 import { ErrorModal } from '../modals/ErrorModal'
+import { TemplateSectionModal } from '../modals/TemplateSectionModal'
 
 import AssistantToolMessageGroupItem from './AssistantToolMessageGroupItem'
 import ChatUserInput, { ChatUserInputRef } from './chat-input/ChatUserInput'
@@ -561,7 +562,11 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       <div className="smtcmp-chat-header">
         <h1 className="smtcmp-chat-header-title">Chat</h1>
         <div className="smtcmp-chat-header-buttons">
-          <button onClick={() => handleNewChat()} className="clickable-icon">
+          <button
+            onClick={() => handleNewChat()}
+            className="clickable-icon"
+            aria-label="New Chat"
+          >
             <Plus size={18} />
           </button>
           <ChatListDropdown
@@ -587,10 +592,18 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
             onUpdateTitle={async (conversationId, newTitle) => {
               await updateConversationTitle(conversationId, newTitle)
             }}
-            className="clickable-icon"
           >
             <History size={18} />
           </ChatListDropdown>
+          <button
+            onClick={() => {
+              new TemplateSectionModal(app).open()
+            }}
+            className="clickable-icon"
+            aria-label="Prompt Templates"
+          >
+            <Book size={18} />
+          </button>
         </div>
       </div>
       <div className="smtcmp-chat-messages" ref={chatMessagesRef}>

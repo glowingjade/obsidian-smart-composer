@@ -1,29 +1,43 @@
-import { Notice } from 'obsidian'
+import { App, Notice } from 'obsidian'
 import { useState } from 'react'
 
-import { DEFAULT_PROVIDERS, PROVIDER_TYPES_INFO } from '../../constants'
-import { getProviderClient } from '../../core/llm/manager'
-import { supportedDimensionsForIndex } from '../../database/schema'
-import SmartComposerPlugin from '../../main'
-import { ConfirmModal } from '../../settings/ConfirmModal'
+import { DEFAULT_PROVIDERS, PROVIDER_TYPES_INFO } from '../../../constants'
+import { getProviderClient } from '../../../core/llm/manager'
+import { supportedDimensionsForIndex } from '../../../database/schema'
+import SmartComposerPlugin from '../../../main'
 import {
   EmbeddingModel,
   embeddingModelSchema,
-} from '../../types/embedding-model.types'
-import { ObsidianButton } from '../common/ObsidianButton'
-import { ObsidianDropdown } from '../common/ObsidianDropdown'
-import { ObsidianSetting } from '../common/ObsidianSetting'
-import { ObsidianTextInput } from '../common/ObsidianTextInput'
+} from '../../../types/embedding-model.types'
+import { ObsidianButton } from '../../common/ObsidianButton'
+import { ObsidianDropdown } from '../../common/ObsidianDropdown'
+import { ObsidianSetting } from '../../common/ObsidianSetting'
+import { ObsidianTextInput } from '../../common/ObsidianTextInput'
+import { ReactModal } from '../../common/ReactModal'
+import { ConfirmModal } from '../../modals/ConfirmModal'
 
-type AddEmbeddingModelModalRootProps = {
+type AddEmbeddingModelModalComponentProps = {
   plugin: SmartComposerPlugin
   onClose: () => void
 }
 
-export default function AddEmbeddingModelModalRoot({
+export class AddEmbeddingModelModal extends ReactModal<AddEmbeddingModelModalComponentProps> {
+  constructor(app: App, plugin: SmartComposerPlugin) {
+    super({
+      app: app,
+      Component: AddEmbeddingModelModalComponent,
+      props: { plugin },
+      options: {
+        title: 'Add Custom Embedding Model',
+      },
+    })
+  }
+}
+
+function AddEmbeddingModelModalComponent({
   plugin,
   onClose,
-}: AddEmbeddingModelModalRootProps) {
+}: AddEmbeddingModelModalComponentProps) {
   const [formData, setFormData] = useState<Omit<EmbeddingModel, 'dimension'>>({
     providerId: DEFAULT_PROVIDERS[0].id,
     providerType: DEFAULT_PROVIDERS[0].type,

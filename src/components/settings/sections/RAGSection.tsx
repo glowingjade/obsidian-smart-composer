@@ -3,15 +3,15 @@ import { App } from 'obsidian'
 import { RECOMMENDED_MODELS_FOR_EMBEDDING } from '../../../constants'
 import { useSettings } from '../../../contexts/settings-context'
 import SmartComposerPlugin from '../../../main'
-import { EmbeddingDbManageModal } from '../../../settings/EmbeddingDbManageModal'
-import { ExcludedFilesModal } from '../../../settings/ExcludedFilesModal'
-import { IncludedFilesModal } from '../../../settings/IncludedFilesModal'
 import { findFilesMatchingPatterns } from '../../../utils/glob-utils'
 import { ObsidianButton } from '../../common/ObsidianButton'
 import { ObsidianDropdown } from '../../common/ObsidianDropdown'
 import { ObsidianSetting } from '../../common/ObsidianSetting'
 import { ObsidianTextArea } from '../../common/ObsidianTextArea'
 import { ObsidianTextInput } from '../../common/ObsidianTextInput'
+import { EmbeddingDbManageModal } from '../modals/EmbeddingDbManageModal'
+import { ExcludedFilesModal } from '../modals/ExcludedFilesModal'
+import { IncludedFilesModal } from '../modals/IncludedFilesModal'
 
 type RAGSectionProps = {
   app: App

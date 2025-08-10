@@ -5,7 +5,6 @@ import {
   COMMAND_PRIORITY_NORMAL,
   TextNode,
 } from 'lexical'
-import { Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -32,14 +31,12 @@ function TemplateMenuItem({
   index,
   isSelected,
   onClick,
-  onDelete,
   onMouseEnter,
   option,
 }: {
   index: number
   isSelected: boolean
   onClick: () => void
-  onDelete: () => void
   onMouseEnter: () => void
   option: TemplateTypeaheadOption
 }) {
@@ -57,16 +54,6 @@ function TemplateMenuItem({
     >
       <div className="smtcmp-template-menu-item">
         <div className="text">{option.name}</div>
-        <div
-          onClick={(evt) => {
-            evt.stopPropagation()
-            evt.preventDefault()
-            onDelete()
-          }}
-          className="smtcmp-template-menu-item-delete"
-        >
-          <Trash2 size={12} />
-        </div>
       </div>
     </li>
   )
@@ -118,18 +105,6 @@ export default function TemplatePlugin() {
     [editor],
   )
 
-  const handleDelete = useCallback(
-    async (option: TemplateTypeaheadOption) => {
-      await templateManager.deleteTemplate(option.template.id)
-      if (queryString !== null) {
-        const updatedResults =
-          await templateManager.searchTemplates(queryString)
-        setSearchResults(updatedResults)
-      }
-    },
-    [templateManager, queryString],
-  )
-
   return (
     <LexicalTypeaheadMenuPlugin<TemplateTypeaheadOption>
       onQueryChange={setQueryString}
@@ -157,9 +132,6 @@ export default function TemplatePlugin() {
                       onClick={() => {
                         setHighlightedIndex(i)
                         selectOptionAndCleanUp(option)
-                      }}
-                      onDelete={() => {
-                        handleDelete(option)
                       }}
                       onMouseEnter={() => {
                         setHighlightedIndex(i)

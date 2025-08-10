@@ -144,6 +144,7 @@ export default function LexicalContentEditable({
       <TemplatePlugin />
       {plugins?.templatePopover && (
         <CreateTemplatePopoverPlugin
+          app={app}
           anchorElement={plugins.templatePopover.anchorElement}
           contentEditableElement={contentEditableRef.current}
         />

@@ -112,7 +112,6 @@ export function ChatListDropdown({
   onSelect,
   onDelete,
   onUpdateTitle,
-  className,
   children,
 }: {
   chatList: ChatConversationMetadata[]
@@ -120,7 +119,6 @@ export function ChatListDropdown({
   onSelect: (conversationId: string) => Promise<void>
   onDelete: (conversationId: string) => Promise<void>
   onUpdateTitle: (conversationId: string, newTitle: string) => Promise<void>
-  className?: string
   children: React.ReactNode
 }) {
   const [open, setOpen] = useState(false)
@@ -154,7 +152,9 @@ export function ChatListDropdown({
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger asChild>
-        <button className={className}>{children}</button>
+        <button className="clickable-icon" aria-label="Chat History">
+          {children}
+        </button>
       </Popover.Trigger>
 
       <Popover.Portal>

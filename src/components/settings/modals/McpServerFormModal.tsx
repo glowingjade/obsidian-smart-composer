@@ -1,28 +1,56 @@
-import { App, Modal, Notice } from 'obsidian'
+import { App, Notice } from 'obsidian'
 import { useCallback, useEffect, useState } from 'react'
-import { createRoot } from 'react-dom/client'
 import TextareaAutosize from 'react-textarea-autosize'
 import * as z from 'zod'
 
-import { validateServerName } from '../../core/mcp/tool-name-utils'
-import SmartComposerPlugin from '../../main'
+import { validateServerName } from '../../../core/mcp/tool-name-utils'
+import SmartComposerPlugin from '../../../main'
 import {
   McpServerParameters,
   mcpServerParametersSchema,
-} from '../../types/mcp.types'
-import { ObsidianButton } from '../common/ObsidianButton'
-import { ObsidianSetting } from '../common/ObsidianSetting'
-import { ObsidianTextInput } from '../common/ObsidianTextInput'
+} from '../../../types/mcp.types'
+import { ObsidianButton } from '../../common/ObsidianButton'
+import { ObsidianSetting } from '../../common/ObsidianSetting'
+import { ObsidianTextInput } from '../../common/ObsidianTextInput'
+import { ReactModal } from '../../common/ReactModal'
+
+type McpServerFormComponentProps = {
+  plugin: SmartComposerPlugin
+  onClose: () => void
+  serverId?: string
+}
+
+export class AddMcpServerModal extends ReactModal<McpServerFormComponentProps> {
+  constructor(app: App, plugin: SmartComposerPlugin) {
+    super({
+      app: app,
+      Component: McpServerFormComponent,
+      props: { plugin },
+      options: {
+        title: 'Add MCP Server',
+      },
+    })
+  }
+}
+
+export class EditMcpServerModal extends ReactModal<McpServerFormComponentProps> {
+  constructor(app: App, plugin: SmartComposerPlugin, editServerId: string) {
+    super({
+      app: app,
+      Component: McpServerFormComponent,
+      props: { plugin, serverId: editServerId },
+      options: {
+        title: 'Edit MCP Server',
+      },
+    })
+  }
+}
 
 function McpServerFormComponent({
   plugin,
   onClose,
   serverId,
-}: {
-  plugin: SmartComposerPlugin
-  onClose: () => void
-  serverId?: string
-}) {
+}: McpServerFormComponentProps) {
   const existingServer = serverId
     ? plugin.settings.mcp.servers.find((server) => server.id === serverId)
     : undefined
@@ -191,75 +219,4 @@ function McpServerFormComponent({
       </ObsidianSetting>
     </>
   )
-}
-
-export class AddMcpServerModal extends Modal {
-  private plugin: SmartComposerPlugin
-  private root: ReturnType<typeof createRoot> | null = null
-
-  constructor(app: App, plugin: SmartComposerPlugin) {
-    super(app)
-    this.plugin = plugin
-  }
-
-  onOpen() {
-    const { contentEl } = this
-    contentEl.empty()
-    this.titleEl.setText(`Add MCP Server`)
-
-    this.root = createRoot(contentEl)
-
-    this.root.render(
-      <McpServerFormComponent
-        plugin={this.plugin}
-        onClose={() => this.close()}
-      />,
-    )
-  }
-
-  onClose() {
-    if (this.root) {
-      this.root.unmount()
-      this.root = null
-    }
-    const { contentEl } = this
-    contentEl.empty()
-  }
-}
-
-export class EditMcpServerModal extends Modal {
-  private plugin: SmartComposerPlugin
-  private root: ReturnType<typeof createRoot> | null = null
-  private editServerId: string
-
-  constructor(app: App, plugin: SmartComposerPlugin, editServerId: string) {
-    super(app)
-    this.plugin = plugin
-    this.editServerId = editServerId
-  }
-
-  onOpen() {
-    const { contentEl } = this
-    contentEl.empty()
-    this.titleEl.setText(`Edit MCP Server`)
-
-    this.root = createRoot(contentEl)
-
-    this.root.render(
-      <McpServerFormComponent
-        plugin={this.plugin}
-        onClose={() => this.close()}
-        serverId={this.editServerId}
-      />,
-    )
-  }
-
-  onClose() {
-    if (this.root) {
-      this.root.unmount()
-      this.root = null
-    }
-    const { contentEl } = this
-    contentEl.empty()
-  }
 }

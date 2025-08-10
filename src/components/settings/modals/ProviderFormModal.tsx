@@ -1,24 +1,53 @@
-import { Notice } from 'obsidian'
+import { App, Notice } from 'obsidian'
 import { useState } from 'react'
 
-import { PROVIDER_TYPES_INFO } from '../../constants'
-import SmartComposerPlugin from '../../main'
-import { LLMProvider, llmProviderSchema } from '../../types/provider.types'
-import { ObsidianButton } from '../common/ObsidianButton'
-import { ObsidianDropdown } from '../common/ObsidianDropdown'
-import { ObsidianSetting } from '../common/ObsidianSetting'
-import { ObsidianTextInput } from '../common/ObsidianTextInput'
-import { ObsidianToggle } from '../common/ObsidianToggle'
+import { PROVIDER_TYPES_INFO } from '../../../constants'
+import SmartComposerPlugin from '../../../main'
+import { LLMProvider, llmProviderSchema } from '../../../types/provider.types'
+import { ObsidianButton } from '../../common/ObsidianButton'
+import { ObsidianDropdown } from '../../common/ObsidianDropdown'
+import { ObsidianSetting } from '../../common/ObsidianSetting'
+import { ObsidianTextInput } from '../../common/ObsidianTextInput'
+import { ObsidianToggle } from '../../common/ObsidianToggle'
+import { ReactModal } from '../../common/ReactModal'
 
-export default function ProviderFormModalRoot({
-  plugin,
-  provider,
-  onClose,
-}: {
+type ProviderFormComponentProps = {
   plugin: SmartComposerPlugin
   provider: LLMProvider | null // null for new provider
   onClose: () => void
-}) {
+}
+
+export class AddProviderModal extends ReactModal<ProviderFormComponentProps> {
+  constructor(app: App, plugin: SmartComposerPlugin) {
+    super({
+      app: app,
+      Component: ProviderFormComponent,
+      props: { plugin, provider: null },
+      options: {
+        title: 'Add Custom Provider',
+      },
+    })
+  }
+}
+
+export class EditProviderModal extends ReactModal<ProviderFormComponentProps> {
+  constructor(app: App, plugin: SmartComposerPlugin, provider: LLMProvider) {
+    super({
+      app: app,
+      Component: ProviderFormComponent,
+      props: { plugin, provider },
+      options: {
+        title: `Edit Provider: ${provider.id}`,
+      },
+    })
+  }
+}
+
+function ProviderFormComponent({
+  plugin,
+  provider,
+  onClose,
+}: ProviderFormComponentProps) {
   const [formData, setFormData] = useState<LLMProvider>(
     provider
       ? { ...provider }
