@@ -37,15 +37,7 @@ export const ANTHROPIC_PRICES: Record<string, ModelPricing> = {
 }
 
 // Gemini is currently free for low rate limits
-export const GEMINI_PRICES: Record<string, ModelPricing> = {
-  'gemini-1.5-pro': { input: 0, output: 0 },
-  'gemini-1.5-flash': { input: 0, output: 0 },
-}
-
-export const GROQ_PRICES: Record<string, ModelPricing> = {
-  'llama-3.1-70b-versatile': { input: 0.59, output: 0.79 },
-  'llama-3.1-8b-instant': { input: 0.05, output: 0.08 },
-}
+export const GEMINI_PRICES: Record<string, ModelPricing> = {}
 
 export const PGLITE_DB_PATH = '.smtcmp_vector_db.tar.gz'
 
@@ -357,7 +349,19 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerType: 'gemini',
     providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
     id: 'gemini-2.5-pro',
-    model: 'gemini-2.5-pro-exp-03-25',
+    model: 'gemini-2.5-pro',
+  },
+  {
+    providerType: 'gemini',
+    providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
+    id: 'gemini-2.5-flash',
+    model: 'gemini-2.5-flash',
+  },
+  {
+    providerType: 'gemini',
+    providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
+    id: 'gemini-2.5-flash-lite',
+    model: 'gemini-2.5-flash-lite',
   },
   {
     providerType: 'gemini',
@@ -368,26 +372,8 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
   {
     providerType: 'gemini',
     providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
-    id: 'gemini-2.0-flash-thinking',
-    model: 'gemini-2.0-flash-thinking-exp',
-  },
-  {
-    providerType: 'gemini',
-    providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
     id: 'gemini-2.0-flash-lite',
     model: 'gemini-2.0-flash-lite',
-  },
-  {
-    providerType: 'gemini',
-    providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
-    id: 'gemini-1.5-pro',
-    model: 'gemini-1.5-pro',
-  },
-  {
-    providerType: 'gemini',
-    providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
-    id: 'gemini-1.5-flash',
-    model: 'gemini-1.5-flash',
   },
   {
     providerType: 'deepseek',
