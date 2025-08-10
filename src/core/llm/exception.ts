@@ -37,3 +37,13 @@ export class LLMRateLimitExceededException extends Error {
     this.name = 'LLMRateLimitExceededException'
   }
 }
+
+export class LLMModelNotFoundException extends Error {
+  constructor(
+    message: string,
+    public rawError?: Error,
+  ) {
+    super(message)
+    this.name = 'LLMModelNotFoundException'
+  }
+}

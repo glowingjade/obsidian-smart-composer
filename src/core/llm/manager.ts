@@ -6,6 +6,7 @@ import { AnthropicProvider } from './anthropic'
 import { AzureOpenAIProvider } from './azureOpenaiProvider'
 import { BaseLLMProvider } from './base'
 import { DeepSeekStudioProvider } from './deepseekStudioProvider'
+import { LLMModelNotFoundException } from './exception'
 import { GeminiProvider } from './gemini'
 import { GroqProvider } from './groq'
 import { LmStudioProvider } from './lmStudioProvider'
@@ -90,7 +91,7 @@ export function getChatModelClient({
 } {
   const chatModel = settings.chatModels.find((model) => model.id === modelId)
   if (!chatModel) {
-    throw new Error(`Chat model ${modelId} not found`)
+    throw new LLMModelNotFoundException(`Chat model ${modelId} not found`)
   }
 
   const providerClient = getProviderClient({

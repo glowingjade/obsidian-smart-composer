@@ -9,6 +9,7 @@ import {
   LLMAPIKeyInvalidException,
   LLMAPIKeyNotSetException,
   LLMBaseUrlNotSetException,
+  LLMModelNotFoundException,
 } from '../../core/llm/exception'
 import { getChatModelClient } from '../../core/llm/manager'
 import { ChatMessage } from '../../types/chat'
@@ -37,7 +38,7 @@ export function useChatStreamManager({
   promptGenerator,
 }: UseChatStreamManagerParams): UseChatStreamManager {
   const app = useApp()
-  const { settings } = useSettings()
+  const { settings, setSettings } = useSettings()
   const { getMcpManager } = useMcp()
 
   const activeStreamAbortControllersRef = useRef<AbortController[]>([])
@@ -50,11 +51,35 @@ export function useChatStreamManager({
   }, [])
 
   const { providerClient, model } = useMemo(() => {
-    return getChatModelClient({
-      settings,
-      modelId: settings.chatModelId,
-    })
-  }, [settings])
+    try {
+      return getChatModelClient({
+        settings,
+        modelId: settings.chatModelId,
+      })
+    } catch (error) {
+      if (error instanceof LLMModelNotFoundException) {
+        // Fallback to the first chat model if the selected chat model is not found
+        const firstChatModel = settings.chatModels[0]
+        setSettings({
+          ...settings,
+          chatModelId: firstChatModel.id,
+          chatModels: settings.chatModels.map((model) =>
+            model.id === firstChatModel.id
+              ? {
+                  ...model,
+                  enable: true,
+                }
+              : model,
+          ),
+        })
+        return getChatModelClient({
+          settings,
+          modelId: firstChatModel.id,
+        })
+      }
+      throw error
+    }
+  }, [settings, setSettings])
 
   const submitChatMutation = useMutation({
     mutationFn: async ({
