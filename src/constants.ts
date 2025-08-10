@@ -5,41 +5,18 @@ import { LLMProvider, LLMProviderType } from './types/provider.types'
 export const CHAT_VIEW_TYPE = 'smtcmp-chat-view'
 export const APPLY_VIEW_TYPE = 'smtcmp-apply-view'
 
-// Pricing in dollars per million tokens
-type ModelPricing = {
-  input: number
-  output: number
-}
-
-export const OPENAI_PRICES: Record<string, ModelPricing> = {
-  'gpt-5': { input: 1.25, output: 10 },
-  'gpt-5-mini': { input: 0.25, output: 2 },
-  'gpt-5-nano': { input: 0.05, output: 0.4 },
-  'gpt-4.1': { input: 2.0, output: 8.0 },
-  'gpt-4.1-mini': { input: 0.4, output: 1.6 },
-  'gpt-4.1-nano': { input: 0.1, output: 0.4 },
-  'gpt-4o': { input: 2.5, output: 10 },
-  'gpt-4o-mini': { input: 0.15, output: 0.6 },
-  o3: { input: 10, output: 40 },
-  o1: { input: 15, output: 60 },
-  'o4-mini': { input: 1.1, output: 4.4 },
-  'o3-mini': { input: 1.1, output: 4.4 },
-  'o1-mini': { input: 1.1, output: 4.4 },
-}
-
-export const ANTHROPIC_PRICES: Record<string, ModelPricing> = {
-  'claude-opus-4-1': { input: 15, output: 75 },
-  'claude-opus-4-0': { input: 15, output: 75 },
-  'claude-sonnet-4-0': { input: 3, output: 15 },
-  'claude-3-5-sonnet-latest': { input: 3, output: 15 },
-  'claude-3-7-sonnet-latest': { input: 3, output: 15 },
-  'claude-3-5-haiku-latest': { input: 1, output: 5 },
-}
-
-// Gemini is currently free for low rate limits
-export const GEMINI_PRICES: Record<string, ModelPricing> = {}
-
 export const PGLITE_DB_PATH = '.smtcmp_vector_db.tar.gz'
+
+// Default model ids
+export const DEFAULT_CHAT_MODEL_ID = 'claude-sonnet-4.0'
+export const DEFAULT_APPLY_MODEL_ID = 'gpt-4.1-mini'
+
+// Recommended model ids
+export const RECOMMENDED_MODELS_FOR_CHAT = ['claude-sonnet-4.0', 'gpt-4.1']
+export const RECOMMENDED_MODELS_FOR_APPLY = ['gpt-4.1-mini']
+export const RECOMMENDED_MODELS_FOR_EMBEDDING = [
+  'openai/text-embedding-3-small',
+]
 
 export const PROVIDER_TYPES_INFO = {
   openai: {
@@ -490,13 +467,36 @@ export const DEFAULT_EMBEDDING_MODELS: readonly EmbeddingModel[] = [
   },
 ]
 
-// use ids
-export const RECOMMENDED_MODELS_FOR_CHAT = [
-  'claude-3.7-sonnet',
-  'gpt-4o',
-  'gpt-4.1',
-]
-export const RECOMMENDED_MODELS_FOR_APPLY = ['gpt-4o-mini']
-export const RECOMMENDED_MODELS_FOR_EMBEDDING = [
-  'openai/text-embedding-3-small',
-]
+// Pricing in dollars per million tokens
+type ModelPricing = {
+  input: number
+  output: number
+}
+
+export const OPENAI_PRICES: Record<string, ModelPricing> = {
+  'gpt-5': { input: 1.25, output: 10 },
+  'gpt-5-mini': { input: 0.25, output: 2 },
+  'gpt-5-nano': { input: 0.05, output: 0.4 },
+  'gpt-4.1': { input: 2.0, output: 8.0 },
+  'gpt-4.1-mini': { input: 0.4, output: 1.6 },
+  'gpt-4.1-nano': { input: 0.1, output: 0.4 },
+  'gpt-4o': { input: 2.5, output: 10 },
+  'gpt-4o-mini': { input: 0.15, output: 0.6 },
+  o3: { input: 10, output: 40 },
+  o1: { input: 15, output: 60 },
+  'o4-mini': { input: 1.1, output: 4.4 },
+  'o3-mini': { input: 1.1, output: 4.4 },
+  'o1-mini': { input: 1.1, output: 4.4 },
+}
+
+export const ANTHROPIC_PRICES: Record<string, ModelPricing> = {
+  'claude-opus-4-1': { input: 15, output: 75 },
+  'claude-opus-4-0': { input: 15, output: 75 },
+  'claude-sonnet-4-0': { input: 3, output: 15 },
+  'claude-3-5-sonnet-latest': { input: 3, output: 15 },
+  'claude-3-7-sonnet-latest': { input: 3, output: 15 },
+  'claude-3-5-haiku-latest': { input: 1, output: 5 },
+}
+
+// Gemini is currently free for low rate limits
+export const GEMINI_PRICES: Record<string, ModelPricing> = {}
