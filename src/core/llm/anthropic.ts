@@ -79,7 +79,7 @@ export class AnthropicProvider extends BaseLLMProvider<
             .map((m) => AnthropicProvider.parseRequestMessage(m))
             .filter((m) => m !== null),
           system: systemMessage,
-          thinking: model.thinking
+          thinking: model.thinking?.enabled
             ? {
                 type: 'enabled',
                 budget_tokens: model.thinking.budget_tokens,
@@ -93,7 +93,7 @@ export class AnthropicProvider extends BaseLLMProvider<
             : undefined,
           max_tokens:
             request.max_tokens ??
-            (model.thinking
+            (model.thinking?.enabled
               ? model.thinking?.budget_tokens +
                 AnthropicProvider.DEFAULT_MAX_TOKENS
               : AnthropicProvider.DEFAULT_MAX_TOKENS),
@@ -173,7 +173,7 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
             .map((m) => AnthropicProvider.parseRequestMessage(m))
             .filter((m) => m !== null),
           system: systemMessage,
-          thinking: model.thinking
+          thinking: model.thinking?.enabled
             ? {
                 type: 'enabled',
                 budget_tokens: model.thinking.budget_tokens,
@@ -187,7 +187,7 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
             : undefined,
           max_tokens:
             request.max_tokens ??
-            (model.thinking
+            (model.thinking?.enabled
               ? model.thinking?.budget_tokens +
                 AnthropicProvider.DEFAULT_MAX_TOKENS
               : AnthropicProvider.DEFAULT_MAX_TOKENS),

@@ -25,6 +25,9 @@ export const OPENAI_PRICES: Record<string, ModelPricing> = {
 }
 
 export const ANTHROPIC_PRICES: Record<string, ModelPricing> = {
+  'claude-opus-4-1': { input: 15, output: 75 },
+  'claude-opus-4-0': { input: 15, output: 75 },
+  'claude-sonnet-4-0': { input: 3, output: 15 },
   'claude-3-5-sonnet-latest': { input: 3, output: 15 },
   'claude-3-7-sonnet-latest': { input: 3, output: 15 },
   'claude-3-5-haiku-latest': { input: 1, output: 5 },
@@ -252,17 +255,20 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
   {
     providerType: 'anthropic',
     providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
-    id: 'claude-3.7-sonnet',
-    model: 'claude-3-7-sonnet-latest',
+    id: 'claude-sonnet-4.0',
+    model: 'claude-sonnet-4-0',
   },
   {
     providerType: 'anthropic',
     providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
-    id: 'claude-3.7-sonnet-thinking',
+    id: 'claude-opus-4.1',
+    model: 'claude-opus-4-1',
+  },
+  {
+    providerType: 'anthropic',
+    providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
+    id: 'claude-3.7-sonnet',
     model: 'claude-3-7-sonnet-latest',
-    thinking: {
-      budget_tokens: 8192,
-    },
   },
   {
     providerType: 'anthropic',

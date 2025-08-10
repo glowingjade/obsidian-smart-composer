@@ -36,6 +36,7 @@ export const chatModelSchema = z.discriminatedUnion('providerType', [
     ...baseChatModelSchema.shape,
     thinking: z
       .object({
+        enabled: z.boolean(), // FIXME: Migration required
         budget_tokens: z.number(),
       })
       .optional(),
