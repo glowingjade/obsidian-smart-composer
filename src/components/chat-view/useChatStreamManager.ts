@@ -58,6 +58,9 @@ export function useChatStreamManager({
       })
     } catch (error) {
       if (error instanceof LLMModelNotFoundException) {
+        if (settings.chatModels.length === 0) {
+          throw error
+        }
         // Fallback to the first chat model if the selected chat model is not found
         const firstChatModel = settings.chatModels[0]
         setSettings({

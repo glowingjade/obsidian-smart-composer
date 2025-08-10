@@ -73,6 +73,15 @@ const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
             reasoning_effort: reasoningEffort,
           },
         }
+
+        const validationResult = chatModelSchema.safeParse(updatedModel)
+        if (!validationResult.success) {
+          new Notice(
+            validationResult.error.issues.map((v) => v.message).join('\n'),
+          )
+          return
+        }
+
         await plugin.setSettings({
           ...plugin.settings,
           chatModels: plugin.settings.chatModels.map((m) =>
