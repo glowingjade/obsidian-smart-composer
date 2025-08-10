@@ -12,6 +12,9 @@ type ModelPricing = {
 }
 
 export const OPENAI_PRICES: Record<string, ModelPricing> = {
+  'gpt-5': { input: 1.25, output: 10 },
+  'gpt-5-mini': { input: 0.25, output: 2 },
+  'gpt-5-nano': { input: 0.05, output: 0.4 },
   'gpt-4.1': { input: 2.0, output: 8.0 },
   'gpt-4.1-mini': { input: 0.4, output: 1.6 },
   'gpt-4.1-nano': { input: 0.1, output: 0.4 },
@@ -285,6 +288,24 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
   {
     providerType: 'openai',
     providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
+    id: 'gpt-5',
+    model: 'gpt-5',
+  },
+  {
+    providerType: 'openai',
+    providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
+    id: 'gpt-5-mini',
+    model: 'gpt-5-mini',
+  },
+  {
+    providerType: 'openai',
+    providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
+    id: 'gpt-5-nano',
+    model: 'gpt-5-nano',
+  },
+  {
+    providerType: 'openai',
+    providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
     id: 'gpt-4.1',
     model: 'gpt-4.1',
   },
@@ -317,14 +338,20 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
     id: 'o4-mini',
     model: 'o4-mini',
-    reasoning_effort: 'medium',
+    reasoning: {
+      enabled: true,
+      reasoning_effort: 'medium',
+    },
   },
   {
     providerType: 'openai',
     providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
     id: 'o3',
     model: 'o3',
-    reasoning_effort: 'medium',
+    reasoning: {
+      enabled: true,
+      reasoning_effort: 'medium',
+    },
   },
   {
     providerType: 'gemini',

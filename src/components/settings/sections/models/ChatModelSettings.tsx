@@ -37,27 +37,27 @@ type ModelSettingsRegistry = {
   SettingsComponent: React.FC<SettingsComponentProps>
 }
 
-const OPEN_AI_REASONING_MODEL_IDS = [
-  'o1',
-  'o1-mini',
-  'o3',
-  'o3-mini',
-  'o4-mini',
-]
-
-// Registry of available model settings
+/**
+ * Registry of available model settings.
+ *
+ * The check function is used to determine if the model settings should be displayed.
+ * The SettingsComponent is the component that will be displayed when the model settings are opened.
+ */
 const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
-  // OpenAI reasoning model settings
+  /**
+   * OpenAI model settings
+   */
   {
-    check: (model) =>
-      model.providerType === 'openai' &&
-      OPEN_AI_REASONING_MODEL_IDS.includes(model.model),
+    check: (model) => model.providerType === 'openai',
 
     SettingsComponent: (props: SettingsComponentProps) => {
       const { model, plugin, onClose } = props
       const typedModel = model as ChatModel & { providerType: 'openai' }
+      const [reasoningEnabled, setReasoningEnabled] = useState<boolean>(
+        typedModel.reasoning?.enabled ?? false,
+      )
       const [reasoningEffort, setReasoningEffort] = useState<string>(
-        typedModel.reasoning_effort ?? 'medium',
+        typedModel.reasoning?.reasoning_effort ?? 'medium',
       )
 
       const handleSubmit = async () => {
@@ -68,7 +68,10 @@ const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
 
         const updatedModel = {
           ...typedModel,
-          reasoning_effort: reasoningEffort,
+          reasoning: {
+            enabled: reasoningEnabled,
+            reasoning_effort: reasoningEffort,
+          },
         }
         await plugin.setSettings({
           ...plugin.settings,
@@ -82,19 +85,32 @@ const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
       return (
         <>
           <ObsidianSetting
-            name="Reasoning Effort"
-            desc={`Controls how much thinking the model does before responding. Default is "medium".`}
+            name="Reasoning"
+            desc="Enable reasoning for the model. Available for o-series models (e.g., o3, o4-mini) and GPT-5 models."
           >
-            <ObsidianDropdown
-              value={reasoningEffort}
-              options={{
-                low: 'low',
-                medium: 'medium',
-                high: 'high',
-              }}
-              onChange={(value: string) => setReasoningEffort(value)}
+            <ObsidianToggle
+              value={reasoningEnabled}
+              onChange={(value: boolean) => setReasoningEnabled(value)}
             />
           </ObsidianSetting>
+          {reasoningEnabled && (
+            <ObsidianSetting
+              name="Reasoning Effort"
+              desc={`Controls how much thinking the model does before responding. Default is "medium".`}
+              className="smtcmp-setting-item--nested"
+              required
+            >
+              <ObsidianDropdown
+                value={reasoningEffort}
+                options={{
+                  low: 'low',
+                  medium: 'medium',
+                  high: 'high',
+                }}
+                onChange={(value: string) => setReasoningEffort(value)}
+              />
+            </ObsidianSetting>
+          )}
 
           <ObsidianSetting>
             <ObsidianButton text="Save" onClick={handleSubmit} cta />
@@ -106,7 +122,9 @@ const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
   },
 
   /**
-   * Claude extended thinking settings
+   * Claude model settings
+   *
+   * For extended thinking, see:
    * @see https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking
    */
   {

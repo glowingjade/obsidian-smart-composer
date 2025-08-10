@@ -58,7 +58,9 @@ export class OpenAIAuthenticatedProvider extends BaseLLMProvider<
         this.client,
         {
           ...request,
-          reasoning_effort: model.reasoning_effort as ReasoningEffort,
+          reasoning_effort: model.reasoning?.enabled
+            ? (model.reasoning.reasoning_effort as ReasoningEffort)
+            : undefined,
         },
         options,
       )
@@ -117,7 +119,9 @@ export class OpenAIAuthenticatedProvider extends BaseLLMProvider<
         this.client,
         {
           ...request,
-          reasoning_effort: model.reasoning_effort as ReasoningEffort,
+          reasoning_effort: model.reasoning?.enabled
+            ? (model.reasoning.reasoning_effort as ReasoningEffort)
+            : undefined,
         },
         options,
       )
