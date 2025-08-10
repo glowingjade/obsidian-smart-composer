@@ -7,6 +7,7 @@ import { ObsidianButton } from '../../../common/ObsidianButton'
 import { ObsidianDropdown } from '../../../common/ObsidianDropdown'
 import { ObsidianSetting } from '../../../common/ObsidianSetting'
 import { ObsidianTextInput } from '../../../common/ObsidianTextInput'
+import { ObsidianToggle } from '../../../common/ObsidianToggle'
 import { ReactModal } from '../../../common/ReactModal'
 
 type SettingsComponentProps = {
@@ -36,27 +37,27 @@ type ModelSettingsRegistry = {
   SettingsComponent: React.FC<SettingsComponentProps>
 }
 
-const OPEN_AI_REASONING_MODEL_IDS = [
-  'o1',
-  'o1-mini',
-  'o3',
-  'o3-mini',
-  'o4-mini',
-]
-
-// Registry of available model settings
+/**
+ * Registry of available model settings.
+ *
+ * The check function is used to determine if the model settings should be displayed.
+ * The SettingsComponent is the component that will be displayed when the model settings are opened.
+ */
 const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
-  // OpenAI reasoning model settings
+  /**
+   * OpenAI model settings
+   */
   {
-    check: (model) =>
-      model.providerType === 'openai' &&
-      OPEN_AI_REASONING_MODEL_IDS.includes(model.model),
+    check: (model) => model.providerType === 'openai',
 
     SettingsComponent: (props: SettingsComponentProps) => {
       const { model, plugin, onClose } = props
       const typedModel = model as ChatModel & { providerType: 'openai' }
+      const [reasoningEnabled, setReasoningEnabled] = useState<boolean>(
+        typedModel.reasoning?.enabled ?? false,
+      )
       const [reasoningEffort, setReasoningEffort] = useState<string>(
-        typedModel.reasoning_effort ?? 'medium',
+        typedModel.reasoning?.reasoning_effort ?? 'medium',
       )
 
       const handleSubmit = async () => {
@@ -67,71 +68,10 @@ const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
 
         const updatedModel = {
           ...typedModel,
-          reasoning_effort: reasoningEffort,
-        }
-        await plugin.setSettings({
-          ...plugin.settings,
-          chatModels: plugin.settings.chatModels.map((m) =>
-            m.id === model.id ? updatedModel : m,
-          ),
-        })
-        onClose()
-      }
-
-      return (
-        <>
-          <ObsidianSetting
-            name="Reasoning Effort"
-            desc={`Controls how much thinking the model does before responding. Default is "medium".`}
-          >
-            <ObsidianDropdown
-              value={reasoningEffort}
-              options={{
-                low: 'low',
-                medium: 'medium',
-                high: 'high',
-              }}
-              onChange={(value: string) => setReasoningEffort(value)}
-            />
-          </ObsidianSetting>
-
-          <ObsidianSetting>
-            <ObsidianButton text="Save" onClick={handleSubmit} cta />
-            <ObsidianButton text="Cancel" onClick={onClose} />
-          </ObsidianSetting>
-        </>
-      )
-    },
-  },
-
-  // Claude 3.7 Sonnet Thinking settings
-  {
-    check: (model) =>
-      model.providerType === 'anthropic' &&
-      model.id === 'claude-3.7-sonnet-thinking',
-
-    SettingsComponent: (props: SettingsComponentProps) => {
-      const { model, plugin, onClose } = props
-      const typedModel = model as ChatModel & { providerType: 'anthropic' }
-      const [budgetTokens, setBudgetTokens] = useState(
-        (typedModel.thinking?.budget_tokens ?? 8192).toString(),
-      )
-
-      const handleSubmit = async () => {
-        const parsedTokens = parseInt(budgetTokens, 10)
-        if (isNaN(parsedTokens)) {
-          new Notice('Please enter a valid number')
-          return
-        }
-
-        if (parsedTokens < 1024) {
-          new Notice('Budget tokens must be at least 1024')
-          return
-        }
-
-        const updatedModel = {
-          ...typedModel,
-          thinking: { budget_tokens: parsedTokens },
+          reasoning: {
+            enabled: reasoningEnabled,
+            reasoning_effort: reasoningEffort,
+          },
         }
 
         const validationResult = chatModelSchema.safeParse(updatedModel)
@@ -154,16 +94,127 @@ const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
       return (
         <>
           <ObsidianSetting
-            name="Budget Tokens"
-            desc="The maximum number of tokens that Claude can use for thinking. Must be at least 1024."
-            required
+            name="Reasoning"
+            desc="Enable reasoning for the model. Available for o-series models (e.g., o3, o4-mini) and GPT-5 models."
           >
-            <ObsidianTextInput
-              value={budgetTokens}
-              placeholder="Number of tokens"
-              onChange={(value: string) => setBudgetTokens(value)}
+            <ObsidianToggle
+              value={reasoningEnabled}
+              onChange={(value: boolean) => setReasoningEnabled(value)}
             />
           </ObsidianSetting>
+          {reasoningEnabled && (
+            <ObsidianSetting
+              name="Reasoning Effort"
+              desc={`Controls how much thinking the model does before responding. Default is "medium".`}
+              className="smtcmp-setting-item--nested"
+              required
+            >
+              <ObsidianDropdown
+                value={reasoningEffort}
+                options={{
+                  low: 'low',
+                  medium: 'medium',
+                  high: 'high',
+                }}
+                onChange={(value: string) => setReasoningEffort(value)}
+              />
+            </ObsidianSetting>
+          )}
+
+          <ObsidianSetting>
+            <ObsidianButton text="Save" onClick={handleSubmit} cta />
+            <ObsidianButton text="Cancel" onClick={onClose} />
+          </ObsidianSetting>
+        </>
+      )
+    },
+  },
+
+  /**
+   * Claude model settings
+   *
+   * For extended thinking, see:
+   * @see https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking
+   */
+  {
+    check: (model) => model.providerType === 'anthropic',
+    SettingsComponent: (props: SettingsComponentProps) => {
+      const DEFAULT_THINKING_BUDGET_TOKENS = 8192
+
+      const { model, plugin, onClose } = props
+      const typedModel = model as ChatModel & { providerType: 'anthropic' }
+      const [thinkingEnabled, setThinkingEnabled] = useState<boolean>(
+        typedModel.thinking?.enabled ?? false,
+      )
+      const [budgetTokens, setBudgetTokens] = useState(
+        (
+          typedModel.thinking?.budget_tokens ?? DEFAULT_THINKING_BUDGET_TOKENS
+        ).toString(),
+      )
+
+      const handleSubmit = async () => {
+        const parsedTokens = parseInt(budgetTokens, 10)
+        if (isNaN(parsedTokens)) {
+          new Notice('Please enter a valid number')
+          return
+        }
+
+        if (parsedTokens < 1024) {
+          new Notice('Budget tokens must be at least 1024')
+          return
+        }
+
+        const updatedModel = {
+          ...typedModel,
+          thinking: {
+            enabled: thinkingEnabled,
+            budget_tokens: parsedTokens,
+          },
+        }
+
+        const validationResult = chatModelSchema.safeParse(updatedModel)
+        if (!validationResult.success) {
+          new Notice(
+            validationResult.error.issues.map((v) => v.message).join('\n'),
+          )
+          return
+        }
+
+        await plugin.setSettings({
+          ...plugin.settings,
+          chatModels: plugin.settings.chatModels.map((m) =>
+            m.id === model.id ? updatedModel : m,
+          ),
+        })
+        onClose()
+      }
+
+      return (
+        <>
+          <ObsidianSetting
+            name="Extended Thinking"
+            desc="Enable extended thinking for Claude. Available for Claude Sonnet 3.7+ and Claude Opus 4.0+."
+          >
+            <ObsidianToggle
+              value={thinkingEnabled}
+              onChange={(value: boolean) => setThinkingEnabled(value)}
+            />
+          </ObsidianSetting>
+          {thinkingEnabled && (
+            <ObsidianSetting
+              name="Budget Tokens"
+              desc="The maximum number of tokens that Claude can use for thinking. Must be at least 1024."
+              className="smtcmp-setting-item--nested"
+              required
+            >
+              <ObsidianTextInput
+                value={budgetTokens}
+                placeholder="Number of tokens"
+                onChange={(value: string) => setBudgetTokens(value)}
+                type="number"
+              />
+            </ObsidianSetting>
+          )}
 
           <ObsidianSetting>
             <ObsidianButton text="Save" onClick={handleSubmit} cta />

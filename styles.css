@@ -1862,3 +1862,7 @@ button.smtcmp-chat-input-model-select {
   align-items: center;
   gap: var(--size-4-1);
 }
+
+.smtcmp-setting-item--nested {
+  padding-left: var(--size-4-4);
+}
