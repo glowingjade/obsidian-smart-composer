@@ -26,6 +26,7 @@ export function ObsidianButton({
   const { setting } = useObsidianSetting()
   const [buttonComponent, setButtonComponent] =
     useState<ButtonComponent | null>(null)
+  const onClickRef = useRef(onClick)
 
   useEffect(() => {
     if (setting) {
@@ -49,6 +50,15 @@ export function ObsidianButton({
   }, [setting])
 
   useEffect(() => {
+    onClickRef.current = onClick
+  }, [onClick])
+
+  useEffect(() => {
+    if (!buttonComponent) return
+    buttonComponent.onClick(() => onClickRef.current())
+  }, [buttonComponent])
+
+  useEffect(() => {
     if (!buttonComponent) return
 
     if (text) buttonComponent.setButtonText(text)
@@ -57,8 +67,7 @@ export function ObsidianButton({
     if (cta) buttonComponent.setCta()
     if (warning) buttonComponent.setWarning()
     buttonComponent.setDisabled(!!disabled)
-    buttonComponent.onClick(onClick)
-  }, [buttonComponent, text, icon, tooltip, onClick, cta, warning, disabled])
+  }, [buttonComponent, text, icon, tooltip, cta, warning, disabled])
 
   return <div ref={containerRef} />
 }
