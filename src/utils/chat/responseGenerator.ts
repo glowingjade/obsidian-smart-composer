@@ -148,19 +148,26 @@ export class ResponseGenerator {
       messages: [...this.receivedMessages, ...this.responseMessages],
     })
 
-    const tools: RequestTool[] | undefined = this.enableTools
-      ? (await this.mcpManager.listAvailableTools()).map((tool) => ({
-          type: 'function',
-          function: {
-            name: tool.name,
-            description: tool.description,
-            parameters: {
-              ...tool.inputSchema,
-              properties: tool.inputSchema.properties ?? {},
+    const availableTools = this.enableTools
+      ? await this.mcpManager.listAvailableTools()
+      : []
+
+    // Set tools to undefined when no tools are available since some providers
+    // reject empty tools arrays.
+    const tools: RequestTool[] | undefined =
+      availableTools.length > 0
+        ? availableTools.map((tool) => ({
+            type: 'function',
+            function: {
+              name: tool.name,
+              description: tool.description,
+              parameters: {
+                ...tool.inputSchema,
+                properties: tool.inputSchema.properties ?? {},
+              },
             },
-          },
-        }))
-      : undefined
+          }))
+        : undefined
 
     const stream = await this.providerClient.streamResponse(
       this.model,
