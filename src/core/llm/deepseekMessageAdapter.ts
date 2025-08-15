@@ -28,6 +28,7 @@ export class DeepSeekMessageAdapter extends OpenAIMessageAdapter {
             choice.message as unknown as { reasoning_content?: string }
           ).reasoning_content,
           role: choice.message.role,
+          tool_calls: choice.message.tool_calls,
         },
       })),
       created: response.created,
@@ -50,6 +51,7 @@ export class DeepSeekMessageAdapter extends OpenAIMessageAdapter {
           reasoning: (choice.delta as unknown as { reasoning_content?: string })
             .reasoning_content,
           role: choice.delta.role,
+          tool_calls: choice.delta.tool_calls,
         },
       })),
       created: chunk.created,

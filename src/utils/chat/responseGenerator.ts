@@ -151,6 +151,9 @@ export class ResponseGenerator {
     const availableTools = this.enableTools
       ? await this.mcpManager.listAvailableTools()
       : []
+
+    // Set tools to undefined when no tools are available since some providers
+    // reject empty tools arrays.
     const tools: RequestTool[] | undefined =
       availableTools.length > 0
         ? availableTools.map((tool) => ({
