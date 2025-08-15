@@ -1190,8 +1190,10 @@ button.smtcmp-chat-input-model-select {
 .smtcmp-settings-embedding-db-manage-header {
   display: flex;
   align-items: center;
-  gap: var(--size-4-2);
+  justify-content: end;
+  gap: var(--size-4-1);
   font-size: var(--font-ui-small);
+  margin-bottom: var(--size-4-2);
 }
 
 .smtcmp-settings-embedding-db-manage-table {
@@ -1780,6 +1782,75 @@ button.smtcmp-chat-input-model-select {
   }
 }
 
+/* Template Section Styles */
+.smtcmp-templates-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.smtcmp-templates-header {
+  display: grid;
+  grid-template-columns: 1fr 112px; /* Name and Actions columns */
+  gap: var(--size-4-4);
+  align-items: center;
+  min-height: var(--size-4-10);
+  border-bottom: var(--border-width) solid var(--background-modifier-border);
+  font-weight: var(--font-medium);
+  color: var(--text-muted);
+
+  & > div {
+    padding: var(--size-4-1);
+  }
+  & > div:nth-child(1) {
+    text-align: left;
+  }
+  & > div:nth-child(2) {
+    text-align: center;
+  }
+}
+
+.smtcmp-templates-empty {
+  padding: var(--size-4-4) 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.smtcmp-template {
+  border-bottom: var(--border-width) solid var(--background-modifier-border);
+}
+
+.smtcmp-template-row {
+  display: grid;
+  grid-template-columns: 1fr 112px; /* Match columns with .smtcmp-templates-header */
+  gap: var(--size-4-4);
+  align-items: center;
+  min-height: var(--size-4-10);
+
+  & > div {
+    padding: var(--size-4-1);
+  }
+}
+
+.smtcmp-template-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.smtcmp-template-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--size-4-1);
+
+  svg {
+    height: var(--icon-l);
+    width: var(--icon-l);
+    stroke-width: var(--icon-stroke);
+  }
+}
+
 .smtcmp-continue-response-button-container {
   display: flex;
   justify-content: center;
@@ -1790,4 +1861,8 @@ button.smtcmp-chat-input-model-select {
   display: flex;
   align-items: center;
   gap: var(--size-4-1);
+}
+
+.smtcmp-setting-item--nested {
+  padding-left: var(--size-4-4);
 }

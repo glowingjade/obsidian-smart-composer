@@ -1,24 +1,38 @@
-import { Notice } from 'obsidian'
+import { App, Notice } from 'obsidian'
 import { useState } from 'react'
 
-import { DEFAULT_PROVIDERS } from '../../constants'
-import SmartComposerPlugin from '../../main'
-import { ChatModel, chatModelSchema } from '../../types/chat-model.types'
-import { PromptLevel } from '../../types/prompt-level.types'
-import { ObsidianButton } from '../common/ObsidianButton'
-import { ObsidianDropdown } from '../common/ObsidianDropdown'
-import { ObsidianSetting } from '../common/ObsidianSetting'
-import { ObsidianTextInput } from '../common/ObsidianTextInput'
+import { DEFAULT_PROVIDERS } from '../../../constants'
+import SmartComposerPlugin from '../../../main'
+import { ChatModel, chatModelSchema } from '../../../types/chat-model.types'
+import { PromptLevel } from '../../../types/prompt-level.types'
+import { ObsidianButton } from '../../common/ObsidianButton'
+import { ObsidianDropdown } from '../../common/ObsidianDropdown'
+import { ObsidianSetting } from '../../common/ObsidianSetting'
+import { ObsidianTextInput } from '../../common/ObsidianTextInput'
+import { ReactModal } from '../../common/ReactModal'
 
-type AddChatModelModalRootProps = {
+type AddChatModelModalComponentProps = {
   plugin: SmartComposerPlugin
   onClose: () => void
 }
 
-export default function AddChatModelModalRoot({
+export class AddChatModelModal extends ReactModal<AddChatModelModalComponentProps> {
+  constructor(app: App, plugin: SmartComposerPlugin) {
+    super({
+      app: app,
+      Component: AddChatModelModalComponent,
+      props: { plugin },
+      options: {
+        title: 'Add Custom Chat Model',
+      },
+    })
+  }
+}
+
+function AddChatModelModalComponent({
   plugin,
   onClose,
-}: AddChatModelModalRootProps) {
+}: AddChatModelModalComponentProps) {
   const [formData, setFormData] = useState<ChatModel>({
     providerId: DEFAULT_PROVIDERS[0].id,
     providerType: DEFAULT_PROVIDERS[0].type,

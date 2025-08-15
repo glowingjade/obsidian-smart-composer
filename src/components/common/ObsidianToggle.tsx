@@ -13,6 +13,7 @@ export function ObsidianToggle({ value, onChange }: ObsidianToggleProps) {
   const { setting } = useObsidianSetting()
   const [toggleComponent, setToggleComponent] =
     useState<ToggleComponent | null>(null)
+  const onChangeRef = useRef(onChange)
 
   useEffect(() => {
     if (setting) {
@@ -36,11 +37,18 @@ export function ObsidianToggle({ value, onChange }: ObsidianToggleProps) {
   }, [setting])
 
   useEffect(() => {
-    if (!toggleComponent) return
+    onChangeRef.current = onChange
+  }, [onChange])
 
+  useEffect(() => {
+    if (!toggleComponent) return
+    toggleComponent.onChange((v) => onChangeRef.current(v))
+  }, [toggleComponent])
+
+  useEffect(() => {
+    if (!toggleComponent) return
     toggleComponent.setValue(value)
-    toggleComponent.onChange(onChange)
-  }, [toggleComponent, value, onChange])
+  }, [toggleComponent, value])
 
   return <div ref={containerRef} style={{ display: 'contents' }} />
 }

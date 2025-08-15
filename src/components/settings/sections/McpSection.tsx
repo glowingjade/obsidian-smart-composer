@@ -14,7 +14,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { useSettings } from '../../../contexts/settings-context'
 import { McpManager } from '../../../core/mcp/mcpManager'
 import SmartComposerPlugin from '../../../main'
-import { ConfirmModal } from '../../../settings/ConfirmModal'
 import {
   McpServerState,
   McpServerStatus,
@@ -22,7 +21,11 @@ import {
 } from '../../../types/mcp.types'
 import { ObsidianButton } from '../../common/ObsidianButton'
 import { ObsidianToggle } from '../../common/ObsidianToggle'
-import { AddMcpServerModal, EditMcpServerModal } from '../McpServerModal'
+import { ConfirmModal } from '../../modals/ConfirmModal'
+import {
+  AddMcpServerModal,
+  EditMcpServerModal,
+} from '../modals/McpServerFormModal'
 
 type McpSectionProps = {
   app: App

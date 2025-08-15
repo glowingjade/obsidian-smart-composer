@@ -18,6 +18,7 @@ export function ObsidianDropdown({
   const { setting } = useObsidianSetting()
   const [dropdownComponent, setDropdownComponent] =
     useState<DropdownComponent | null>(null)
+  const onChangeRef = useRef(onChange)
 
   useEffect(() => {
     if (setting) {
@@ -41,13 +42,21 @@ export function ObsidianDropdown({
   }, [setting])
 
   useEffect(() => {
+    onChangeRef.current = onChange
+  }, [onChange])
+
+  useEffect(() => {
+    if (!dropdownComponent) return
+    dropdownComponent.onChange((v) => onChangeRef.current(v))
+  }, [dropdownComponent])
+
+  useEffect(() => {
     if (!dropdownComponent) return
 
     dropdownComponent.selectEl.empty()
     dropdownComponent.addOptions(options)
     dropdownComponent.setValue(value)
-    dropdownComponent.onChange(onChange)
-  }, [dropdownComponent, options, value, onChange])
+  }, [dropdownComponent, options, value])
 
   return <div ref={containerRef} />
 }

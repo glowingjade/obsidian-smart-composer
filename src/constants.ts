@@ -5,43 +5,18 @@ import { LLMProvider, LLMProviderType } from './types/provider.types'
 export const CHAT_VIEW_TYPE = 'smtcmp-chat-view'
 export const APPLY_VIEW_TYPE = 'smtcmp-apply-view'
 
-// Pricing in dollars per million tokens
-type ModelPricing = {
-  input: number
-  output: number
-}
-
-export const OPENAI_PRICES: Record<string, ModelPricing> = {
-  'gpt-4.1': { input: 2.0, output: 8.0 },
-  'gpt-4.1-mini': { input: 0.4, output: 1.6 },
-  'gpt-4.1-nano': { input: 0.1, output: 0.4 },
-  'gpt-4o': { input: 2.5, output: 10 },
-  'gpt-4o-mini': { input: 0.15, output: 0.6 },
-  o3: { input: 10, output: 40 },
-  o1: { input: 15, output: 60 },
-  'o4-mini': { input: 1.1, output: 4.4 },
-  'o3-mini': { input: 1.1, output: 4.4 },
-  'o1-mini': { input: 1.1, output: 4.4 },
-}
-
-export const ANTHROPIC_PRICES: Record<string, ModelPricing> = {
-  'claude-3-5-sonnet-latest': { input: 3, output: 15 },
-  'claude-3-7-sonnet-latest': { input: 3, output: 15 },
-  'claude-3-5-haiku-latest': { input: 1, output: 5 },
-}
-
-// Gemini is currently free for low rate limits
-export const GEMINI_PRICES: Record<string, ModelPricing> = {
-  'gemini-1.5-pro': { input: 0, output: 0 },
-  'gemini-1.5-flash': { input: 0, output: 0 },
-}
-
-export const GROQ_PRICES: Record<string, ModelPricing> = {
-  'llama-3.1-70b-versatile': { input: 0.59, output: 0.79 },
-  'llama-3.1-8b-instant': { input: 0.05, output: 0.08 },
-}
-
 export const PGLITE_DB_PATH = '.smtcmp_vector_db.tar.gz'
+
+// Default model ids
+export const DEFAULT_CHAT_MODEL_ID = 'claude-sonnet-4.0'
+export const DEFAULT_APPLY_MODEL_ID = 'gpt-4.1-mini'
+
+// Recommended model ids
+export const RECOMMENDED_MODELS_FOR_CHAT = ['claude-sonnet-4.0', 'gpt-4.1']
+export const RECOMMENDED_MODELS_FOR_APPLY = ['gpt-4.1-mini']
+export const RECOMMENDED_MODELS_FOR_EMBEDDING = [
+  'openai/text-embedding-3-small',
+]
 
 export const PROVIDER_TYPES_INFO = {
   openai: {
@@ -252,17 +227,20 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
   {
     providerType: 'anthropic',
     providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
-    id: 'claude-3.7-sonnet',
-    model: 'claude-3-7-sonnet-latest',
+    id: 'claude-sonnet-4.0',
+    model: 'claude-sonnet-4-0',
   },
   {
     providerType: 'anthropic',
     providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
-    id: 'claude-3.7-sonnet-thinking',
+    id: 'claude-opus-4.1',
+    model: 'claude-opus-4-1',
+  },
+  {
+    providerType: 'anthropic',
+    providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
+    id: 'claude-3.7-sonnet',
     model: 'claude-3-7-sonnet-latest',
-    thinking: {
-      budget_tokens: 8192,
-    },
   },
   {
     providerType: 'anthropic',
@@ -275,6 +253,24 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
     id: 'claude-3.5-haiku',
     model: 'claude-3-5-haiku-latest',
+  },
+  {
+    providerType: 'openai',
+    providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
+    id: 'gpt-5',
+    model: 'gpt-5',
+  },
+  {
+    providerType: 'openai',
+    providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
+    id: 'gpt-5-mini',
+    model: 'gpt-5-mini',
+  },
+  {
+    providerType: 'openai',
+    providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
+    id: 'gpt-5-nano',
+    model: 'gpt-5-nano',
   },
   {
     providerType: 'openai',
@@ -311,20 +307,38 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
     id: 'o4-mini',
     model: 'o4-mini',
-    reasoning_effort: 'medium',
+    reasoning: {
+      enabled: true,
+      reasoning_effort: 'medium',
+    },
   },
   {
     providerType: 'openai',
     providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
     id: 'o3',
     model: 'o3',
-    reasoning_effort: 'medium',
+    reasoning: {
+      enabled: true,
+      reasoning_effort: 'medium',
+    },
   },
   {
     providerType: 'gemini',
     providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
     id: 'gemini-2.5-pro',
-    model: 'gemini-2.5-pro-exp-03-25',
+    model: 'gemini-2.5-pro',
+  },
+  {
+    providerType: 'gemini',
+    providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
+    id: 'gemini-2.5-flash',
+    model: 'gemini-2.5-flash',
+  },
+  {
+    providerType: 'gemini',
+    providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
+    id: 'gemini-2.5-flash-lite',
+    model: 'gemini-2.5-flash-lite',
   },
   {
     providerType: 'gemini',
@@ -335,26 +349,8 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
   {
     providerType: 'gemini',
     providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
-    id: 'gemini-2.0-flash-thinking',
-    model: 'gemini-2.0-flash-thinking-exp',
-  },
-  {
-    providerType: 'gemini',
-    providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
     id: 'gemini-2.0-flash-lite',
     model: 'gemini-2.0-flash-lite',
-  },
-  {
-    providerType: 'gemini',
-    providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
-    id: 'gemini-1.5-pro',
-    model: 'gemini-1.5-pro',
-  },
-  {
-    providerType: 'gemini',
-    providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
-    id: 'gemini-1.5-flash',
-    model: 'gemini-1.5-flash',
   },
   {
     providerType: 'deepseek',
@@ -471,13 +467,36 @@ export const DEFAULT_EMBEDDING_MODELS: readonly EmbeddingModel[] = [
   },
 ]
 
-// use ids
-export const RECOMMENDED_MODELS_FOR_CHAT = [
-  'claude-3.7-sonnet',
-  'gpt-4o',
-  'gpt-4.1',
-]
-export const RECOMMENDED_MODELS_FOR_APPLY = ['gpt-4o-mini']
-export const RECOMMENDED_MODELS_FOR_EMBEDDING = [
-  'openai/text-embedding-3-small',
-]
+// Pricing in dollars per million tokens
+type ModelPricing = {
+  input: number
+  output: number
+}
+
+export const OPENAI_PRICES: Record<string, ModelPricing> = {
+  'gpt-5': { input: 1.25, output: 10 },
+  'gpt-5-mini': { input: 0.25, output: 2 },
+  'gpt-5-nano': { input: 0.05, output: 0.4 },
+  'gpt-4.1': { input: 2.0, output: 8.0 },
+  'gpt-4.1-mini': { input: 0.4, output: 1.6 },
+  'gpt-4.1-nano': { input: 0.1, output: 0.4 },
+  'gpt-4o': { input: 2.5, output: 10 },
+  'gpt-4o-mini': { input: 0.15, output: 0.6 },
+  o3: { input: 10, output: 40 },
+  o1: { input: 15, output: 60 },
+  'o4-mini': { input: 1.1, output: 4.4 },
+  'o3-mini': { input: 1.1, output: 4.4 },
+  'o1-mini': { input: 1.1, output: 4.4 },
+}
+
+export const ANTHROPIC_PRICES: Record<string, ModelPricing> = {
+  'claude-opus-4-1': { input: 15, output: 75 },
+  'claude-opus-4-0': { input: 15, output: 75 },
+  'claude-sonnet-4-0': { input: 3, output: 15 },
+  'claude-3-5-sonnet-latest': { input: 3, output: 15 },
+  'claude-3-7-sonnet-latest': { input: 3, output: 15 },
+  'claude-3-5-haiku-latest': { input: 1, output: 5 },
+}
+
+// Gemini is currently free for low rate limits
+export const GEMINI_PRICES: Record<string, ModelPricing> = {}

@@ -1,5 +1,7 @@
 import {
+  DEFAULT_APPLY_MODEL_ID,
   DEFAULT_CHAT_MODELS,
+  DEFAULT_CHAT_MODEL_ID,
   DEFAULT_EMBEDDING_MODELS,
   DEFAULT_PROVIDERS,
 } from '../../constants'
@@ -18,8 +20,8 @@ describe('parseSmartComposerSettings', () => {
       chatModels: [...DEFAULT_CHAT_MODELS],
       embeddingModels: [...DEFAULT_EMBEDDING_MODELS],
 
-      chatModelId: 'claude-3.7-sonnet',
-      applyModelId: 'gpt-4o-mini',
+      chatModelId: DEFAULT_CHAT_MODEL_ID,
+      applyModelId: DEFAULT_APPLY_MODEL_ID,
       embeddingModelId: 'openai/text-embedding-3-small',
 
       systemPrompt: '',

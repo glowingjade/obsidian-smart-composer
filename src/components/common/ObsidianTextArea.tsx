@@ -18,6 +18,7 @@ export function ObsidianTextArea({
   const { setting } = useObsidianSetting()
   const [textAreaComponent, setTextAreaComponent] =
     useState<TextAreaComponent | null>(null)
+  const onChangeRef = useRef(onChange)
 
   useEffect(() => {
     if (setting) {
@@ -41,12 +42,19 @@ export function ObsidianTextArea({
   }, [setting])
 
   useEffect(() => {
-    if (!textAreaComponent) return
+    onChangeRef.current = onChange
+  }, [onChange])
 
-    textAreaComponent.setValue(value)
+  useEffect(() => {
+    if (!textAreaComponent) return
+    textAreaComponent.onChange((v) => onChangeRef.current(v))
+  }, [textAreaComponent])
+
+  useEffect(() => {
+    if (!textAreaComponent) return
     if (placeholder) textAreaComponent.setPlaceholder(placeholder)
-    textAreaComponent.onChange(onChange)
-  }, [textAreaComponent, value, onChange, placeholder])
+    textAreaComponent.setValue(value)
+  }, [textAreaComponent, value, placeholder])
 
   return <div ref={containerRef} />
 }
