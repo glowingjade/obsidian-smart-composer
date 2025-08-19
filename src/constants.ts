@@ -19,6 +19,14 @@ export const RECOMMENDED_MODELS_FOR_EMBEDDING = [
 ]
 
 export const PROVIDER_TYPES_INFO = {
+  copilot: {
+    label: 'GitHub Copilot',
+    defaultProviderId: 'copilot',
+    requireApiKey: true,
+    requireBaseUrl: false,
+    supportEmbedding: false,
+    additionalSettings: [],
+  },
   openai: {
     label: 'OpenAI',
     defaultProviderId: 'openai',
@@ -173,6 +181,10 @@ export const PROVIDER_TYPES_INFO = {
  */
 export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
   {
+    type: 'copilot',
+    id: PROVIDER_TYPES_INFO.copilot.defaultProviderId,
+  },
+  {
     type: 'openai',
     id: PROVIDER_TYPES_INFO.openai.defaultProviderId,
   },
@@ -224,6 +236,12 @@ export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
  * 2. If there's same model id in user's settings, it's data should be overwritten by default model
  */
 export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
+  {
+    providerType: 'copilot',
+    providerId: PROVIDER_TYPES_INFO.copilot.defaultProviderId,
+    id: 'copilot-gpt-4.1',
+    model: 'gpt-4.1',
+  },
   {
     providerType: 'anthropic',
     providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
