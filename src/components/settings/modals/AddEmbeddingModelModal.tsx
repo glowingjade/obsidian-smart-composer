@@ -38,12 +38,9 @@ function AddEmbeddingModelModalComponent({
   plugin,
   onClose,
 }: AddEmbeddingModelModalComponentProps) {
-  const embeddingProvider = DEFAULT_PROVIDERS.find(
-    (p) => PROVIDER_TYPES_INFO[p.type].supportEmbedding
-  )
   const [formData, setFormData] = useState<Omit<EmbeddingModel, 'dimension'>>({
-    providerId: embeddingProvider?.id ?? '',
-    providerType: embeddingProvider?.type ?? 'openai',
+    providerId: DEFAULT_PROVIDERS[0].id,
+    providerType: DEFAULT_PROVIDERS[0].type,
     id: '',
     model: '',
   })

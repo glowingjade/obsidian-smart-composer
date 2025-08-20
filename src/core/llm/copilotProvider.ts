@@ -17,9 +17,6 @@ import {
   LLMAPIKeyNotSetException,
 } from './exception'
 
-var import_obsidian = require("obsidian");
-
-// CopilotProvider logic adapted from copilot.ts
 export class CopilotProvider extends BaseLLMProvider<Extract<LLMProvider, { type: 'copilot' }>> {
   private apiKey: string
 
@@ -34,12 +31,9 @@ export class CopilotProvider extends BaseLLMProvider<Extract<LLMProvider, { type
       const raw = window?.localStorage?.getItem?.('copilot.session')
       return raw ? JSON.parse(raw) : { token: null, exp: null }
     }
-    const isValid = (token: string | null, exp: number | null) => token && exp && exp > now + 60
+    const isValid = (token: string | null, exp: number | null) => token && exp && exp > now + 1000
     const { token: cachedToken, exp: cachedExp } = getSession()
-    // if (isValid(cachedToken, cachedExp)) return cachedToken
-    if (cachedExp) {
-      // new import_obsidian.Notice('Copilot token expiration: ' + new Date(cachedExp * 1000).toLocaleString())
-    }
+    if (isValid(cachedToken, cachedExp)) return cachedToken
 
     if (!this.apiKey) throw new LLMAPIKeyNotSetException('Copilot API key (GitHub token) is not set.')
     let headers: Record<string, string> = {
@@ -47,12 +41,9 @@ export class CopilotProvider extends BaseLLMProvider<Extract<LLMProvider, { type
       'content-type': 'application/json',
       authorization: `token ${this.apiKey}`,
     }
-    const resp = await fetch('https://api.github.com/copilot_internal/v2/token', {
-      method: 'GET',
-      headers,
-    })
-    if (resp.status === 401 || resp.status === 403) throw new LLMAPIKeyInvalidException('GitHub access token is invalid or lacks permissions for Copilot token exchange.')
-    const data = await resp.json()
+    const resp = await requestUrl({url: 'https://api.github.com/copilot_internal/v2/token',method: 'GET',headers,})
+    if (resp.status === 401 || resp.status === 403) throw new LLMAPIKeyInvalidException('Invalid token')
+    const data = await resp.json
     const newToken = data.token ?? data.access_token ?? undefined
     const newExp = (data.exp && Number.isFinite(data.exp)) ? data.exp : now + 3600
     if (!newToken) throw new Error('Failed to obtain Copilot session token from GitHub')
@@ -80,29 +71,29 @@ export class CopilotProvider extends BaseLLMProvider<Extract<LLMProvider, { type
     if (model.providerType !== 'copilot') {
       throw new Error('Model is not a Copilot model')
     }
-    const sessionToken = await this.getCopilotToken()
+    let sessionToken = await this.getCopilotToken();
     const payload: Record<string, unknown> = {
       model: request.model,
       messages: request.messages.map((m) => ({ role: m.role, content: m.content })),
       temperature: request.temperature,
       top_p: request.top_p,
       stream: false,
+    };
+    let headers = this.getHeaders(sessionToken);
+    headers['copilot-vision-request'] = 'true';
+    let resp = await requestUrl({url: 'https://api.githubcopilot.com/chat/completions',method: 'POST',headers,body: JSON.stringify(payload)});
+    if (resp.status === 401) {
+      window?.localStorage?.removeItem?.('copilot.session');
+      sessionToken = await this.getCopilotToken();
+      headers.authorization = `Bearer ${sessionToken}`
+      resp = await requestUrl({url: 'https://api.githubcopilot.com/chat/completions',method: 'POST',headers,body: JSON.stringify(payload)});
     }
-    let headers = this.getHeaders(sessionToken)
-    headers['copilot-vision-request'] = 'true'
-    const resp = await requestUrl({
-      url: 'https://api.githubcopilot.com/chat/completions',
-      method: 'POST',
-      headers,
-      body: JSON.stringify(payload),
-    })
     if (resp.status === 401 || resp.status === 403) {
       window?.localStorage?.removeItem?.('copilot.session');
-      throw new LLMAPIKeyInvalidException('Copilot token is invalid or expired. Please update it in settings menu and try again.')
+      throw new Error('Invalid token')
     }
     if (!(resp.status >= 200 && resp.status < 300)) {
-      const text = await resp.text
-      throw new Error(`Copilot API error: HTTP ${resp.status} - ${String(text)}`)
+      throw new Error(`Copilot API error: HTTP ${resp.status} - ${resp.text}`)
     }
     
     let data: any;
@@ -132,55 +123,29 @@ export class CopilotProvider extends BaseLLMProvider<Extract<LLMProvider, { type
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
     if (model.providerType !== 'copilot') {
-      throw new Error('Model is not a Copilot model')
+      throw new Error('Model is not a Copilot model');
     }
-    const sessionToken = await this.getCopilotToken()
-    const payload: Record<string, unknown> = {
-      model: request.model,
-      messages: request.messages.map((m) => ({ role: m.role, content: m.content })),
-      temperature: request.temperature,
-      top_p: request.top_p,
-      stream: false,
-    }
-    let headers = this.getHeaders(sessionToken)
-    // headers['copilot-vision-request'] = 'true'
-    const resp = await requestUrl({
-      url: 'https://api.githubcopilot.com/chat/completions',
-      method: 'POST',
-      headers,
-      body: JSON.stringify(payload),
-    })
-    
-    if (resp.status === 401 || resp.status === 403) {
-      window?.localStorage?.removeItem?.('copilot.session');
-      throw new LLMAPIKeyInvalidException('Copilot token is invalid or expired. Please update it in settings menu and try again.')
-    }
-    if (!(resp.status >= 200 && resp.status < 300)) {
-      throw new Error(`Copilot API error (stream): HTTP ${resp.status} - ${resp.text}`)
-    }
-
+    // Convert request to non-streaming
+    const nonStreamingRequest: LLMRequestNonStreaming = {...request,stream: false};
+    const response = await this.generateResponse(model, nonStreamingRequest, options);
     async function* streamGenerator(): AsyncIterable<LLMResponseStreaming> {
-      let content = '';
-      try {
-        const data = JSON.parse(resp.text);
-        content = data?.choices?.[0]?.message?.content ?? '';
-      } catch {
-        content = resp.text;
-      }
-      yield {
-        id: '',
-        model: request.model,
-        choices: [
-          {
-            finish_reason: null,
-            delta: {
-              content,
-              role: 'assistant',
+      for (const choice of response.choices) {
+        yield {
+          id: response.id ?? '',
+          model: response.model ?? model.model,
+          choices: [
+            {
+              finish_reason: choice.finish_reason ?? null,
+              delta: {
+                content: choice.message?.content ?? '',
+                role: choice.message?.role ?? 'assistant',
+              },
             },
-          },
-        ],
-        object: 'chat.completion.chunk',
-      } as LLMResponseStreaming;
+          ],
+          object: 'chat.completion.chunk',
+          usage: response.usage,
+        } as LLMResponseStreaming;
+      }
     }
     return streamGenerator();
   }
