@@ -369,7 +369,35 @@ export class GeminiProvider extends BaseLLMProvider<
     }
   }
 
+  private static removeAdditionalProperties(schema: unknown): unknown {
+    // TODO: Remove this function when Gemini supports additionalProperties field in JSON schema
+    if (typeof schema !== 'object' || schema === null) {
+      return schema
+    }
+
+    if (Array.isArray(schema)) {
+      return schema.map((item) => this.removeAdditionalProperties(item))
+    }
+
+    const { additionalProperties: _, ...rest } = schema as Record<
+      string,
+      unknown
+    >
+
+    return Object.fromEntries(
+      Object.entries(rest).map(([key, value]) => [
+        key,
+        this.removeAdditionalProperties(value),
+      ]),
+    )
+  }
+
   private static parseRequestTool(tool: RequestTool): GeminiTool {
+    // Gemini does not support additionalProperties field in JSON schema, so we need to clean it
+    const cleanedParameters = this.removeAdditionalProperties(
+      tool.function.parameters,
+    ) as Record<string, unknown>
+
     return {
       functionDeclarations: [
         {
@@ -377,7 +405,7 @@ export class GeminiProvider extends BaseLLMProvider<
           description: tool.function.description,
           parameters: {
             type: SchemaType.OBJECT,
-            properties: (tool.function.parameters.properties ?? {}) as Record<
+            properties: (cleanedParameters.properties ?? {}) as Record<
               string,
               Schema
             >,
