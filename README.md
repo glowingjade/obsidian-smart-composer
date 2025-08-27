@@ -113,6 +113,7 @@ MCP lets you use powerful third-party tools and data sources right inside your c
 > [!TIP]
 > **Looking for a free option?**  
 > Gemini API provides the best performance among free models for Smart Composer. Recommended for users looking for a free option.
+> _When using free APIs, please review the provider’s privacy policy before sending sensitive data._
 
 **📚 For detailed setup instructions and documentation, please visit our [Documentation](https://github.com/glowingjade/obsidian-smart-composer/wiki).**
 
