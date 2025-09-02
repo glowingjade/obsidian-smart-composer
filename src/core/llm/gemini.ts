@@ -55,12 +55,17 @@ export class GeminiProvider extends BaseLLMProvider<
 
   constructor(provider: Extract<LLMProvider, { type: 'gemini' }>) {
     super(provider)
-    if (provider.baseUrl) {
-      throw new Error('Gemini does not support custom base URL')
-    }
-
+    // Gemini supports custom base URL through RequestOptions
     this.client = new GoogleGenerativeAI(provider.apiKey ?? '')
     this.apiKey = provider.apiKey ?? ''
+  }
+
+  private getRequestOptions(): any {
+    const options: any = {}
+    if (this.provider.baseUrl) {
+      options.baseUrl = this.provider.baseUrl
+    }
+    return options
   }
 
   async generateResponse(
@@ -95,7 +100,7 @@ export class GeminiProvider extends BaseLLMProvider<
           frequencyPenalty: request.frequency_penalty,
         },
         systemInstruction: systemInstruction,
-      })
+      }, this.getRequestOptions())
 
       const result = await model.generateContent(
         {
@@ -166,7 +171,7 @@ export class GeminiProvider extends BaseLLMProvider<
           frequencyPenalty: request.frequency_penalty,
         },
         systemInstruction: systemInstruction,
-      })
+      }, this.getRequestOptions())
 
       const stream = await model.generateContentStream(
         {
@@ -441,7 +446,7 @@ export class GeminiProvider extends BaseLLMProvider<
 
     try {
       const response = await this.client
-        .getGenerativeModel({ model: model })
+        .getGenerativeModel({ model: model }, this.getRequestOptions())
         .embedContent(text)
       return response.embedding.values
     } catch (error) {
