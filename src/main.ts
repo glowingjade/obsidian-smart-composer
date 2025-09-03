@@ -4,6 +4,7 @@ import { ApplyView } from './ApplyView'
 import { ChatView } from './ChatView'
 import { ChatProps } from './components/chat-view/Chat'
 import { InstallerUpdateRequiredModal } from './components/modals/InstallerUpdateRequiredModal'
+import { RAGSearchModal } from './components/modals/RAGSearchModal'
 import { APPLY_VIEW_TYPE, CHAT_VIEW_TYPE } from './constants'
 import { McpManager } from './core/mcp/mcpManager'
 import { RAGEngine } from './core/rag/ragEngine'
@@ -122,6 +123,14 @@ export default class SmartComposerPlugin extends Plugin {
             notice.hide()
           }, 1000)
         }
+      },
+    })
+
+    this.addCommand({
+      id: 'open-rag-search',
+      name: 'Open RAG search',
+      callback: () => {
+        new RAGSearchModal(this.app, () => this.getRAGEngine()).open()
       },
     })
 
