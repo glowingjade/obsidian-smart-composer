@@ -1,3 +1,4 @@
+window?.localStorage?.removeItem?.('copilot.session');
 import { requestUrl } from 'obsidian'
 import { ChatModel } from '../../types/chat-model.types'
 import {
@@ -26,14 +27,15 @@ export class CopilotProvider extends BaseLLMProvider<Extract<LLMProvider, { type
   }
 
   private async getCopilotToken(): Promise<string> {
-    const now = Math.floor(Date.now() / 1000)
+    const now = Math.floor(Date.now() / 1000);
+    const HK_TIMEZONE_OFFSET = 28800; // 8 hours in seconds
     const getSession = () => {
-      const raw = window?.localStorage?.getItem?.('copilot.session')
-      return raw ? JSON.parse(raw) : { token: null, exp: null }
-    }
-    const isValid = (token: string | null, exp: number | null) => token && exp && exp > now + 1000
-    const { token: cachedToken, exp: cachedExp } = getSession()
-    if (isValid(cachedToken, cachedExp)) return cachedToken
+      const raw = window?.localStorage?.getItem?.('copilot.session');
+      return raw ? JSON.parse(raw) : { token: null, exp: null };
+    };
+    const isValid = (token: string | null, exp: number | null) => token && exp && exp > now + HK_TIMEZONE_OFFSET;
+    const { token: cachedToken, exp: cachedExp } = getSession();
+    if (isValid(cachedToken, cachedExp)) return cachedToken;
 
     if (!this.apiKey) throw new LLMAPIKeyNotSetException('Copilot API key (GitHub token) is not set.')
     let headers: Record<string, string> = {
