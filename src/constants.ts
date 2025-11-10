@@ -8,11 +8,11 @@ export const APPLY_VIEW_TYPE = 'smtcmp-apply-view'
 export const PGLITE_DB_PATH = '.smtcmp_vector_db.tar.gz'
 
 // Default model ids
-export const DEFAULT_CHAT_MODEL_ID = 'claude-sonnet-4.0'
+export const DEFAULT_CHAT_MODEL_ID = 'claude-sonnet-4.5'
 export const DEFAULT_APPLY_MODEL_ID = 'gpt-4.1-mini'
 
 // Recommended model ids
-export const RECOMMENDED_MODELS_FOR_CHAT = ['claude-sonnet-4.0', 'gpt-4.1']
+export const RECOMMENDED_MODELS_FOR_CHAT = ['claude-sonnet-4.5', 'gpt-4.1']
 export const RECOMMENDED_MODELS_FOR_APPLY = ['gpt-4.1-mini']
 export const RECOMMENDED_MODELS_FOR_EMBEDDING = [
   'openai/text-embedding-3-small',
@@ -227,32 +227,20 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
   {
     providerType: 'anthropic',
     providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
-    id: 'claude-sonnet-4.0',
-    model: 'claude-sonnet-4-0',
-  },
-  {
-    providerType: 'anthropic',
-    providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
     id: 'claude-opus-4.1',
     model: 'claude-opus-4-1',
   },
   {
     providerType: 'anthropic',
     providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
-    id: 'claude-3.7-sonnet',
-    model: 'claude-3-7-sonnet-latest',
+    id: 'claude-sonnet-4.5',
+    model: 'claude-sonnet-4-5',
   },
   {
     providerType: 'anthropic',
     providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
-    id: 'claude-3.5-sonnet',
-    model: 'claude-3-5-sonnet-latest',
-  },
-  {
-    providerType: 'anthropic',
-    providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
-    id: 'claude-3.5-haiku',
-    model: 'claude-3-5-haiku-latest',
+    id: 'claude-haiku-4.5',
+    model: 'claude-haiku-4-5',
   },
   {
     providerType: 'openai',
@@ -492,9 +480,11 @@ export const OPENAI_PRICES: Record<string, ModelPricing> = {
 export const ANTHROPIC_PRICES: Record<string, ModelPricing> = {
   'claude-opus-4-1': { input: 15, output: 75 },
   'claude-opus-4-0': { input: 15, output: 75 },
+  'claude-sonnet-4-5': { input: 3, output: 15 },
   'claude-sonnet-4-0': { input: 3, output: 15 },
   'claude-3-5-sonnet-latest': { input: 3, output: 15 },
   'claude-3-7-sonnet-latest': { input: 3, output: 15 },
+  'claude-haiku-4-5': { input: 1, output: 5 },
   'claude-3-5-haiku-latest': { input: 1, output: 5 },
 }
 
