@@ -8,8 +8,18 @@
   <a href="https://github.com/glowingjade/obsidian-smart-composer/discussions">Discussions</a>
 </p>
 
+> [!WARNING]
+> **⚠️ Maintenance Notice**
+>
+> This plugin is currently maintained by a single developer and is **not under active development**.  
+> Occasional updates or bug fixes may still be released, but **issues and feature requests may not be reviewed promptly**.
+>
+> **Interested in helping?**  
+> If you'd like to contribute or are maintaining an updated fork, please get in touch.  
+> I’d be happy to add collaborators or highlight community-maintained versions.
+
 > [!NOTE]
-> **🚀 New Feature: Model Context Protocol (MCP) is now available!**  
+> **🚀 New Feature: Model Context Protocol (MCP) is now available!**
 > You can now connect Smart Composer to external AI tools and using the open MCP standard.
 
 ![SC1_Title.gif](https://github.com/user-attachments/assets/a50a1f80-39ff-4eba-8090-e3d75e7be98c)
