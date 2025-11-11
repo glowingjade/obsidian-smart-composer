@@ -147,6 +147,14 @@ export const PROVIDER_TYPES_INFO = {
       },
     ],
   },
+  copilot: {
+    label: 'GitHub Copilot',
+    defaultProviderId: 'copilot',
+    requireApiKey: true,
+    requireBaseUrl: false,
+    supportEmbedding: false,
+    additionalSettings: [],
+  },
 } as const satisfies Record<
   LLMProviderType,
   {
@@ -215,6 +223,10 @@ export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
   {
     type: 'morph',
     id: PROVIDER_TYPES_INFO.morph.defaultProviderId,
+  },
+  {
+    type: 'copilot',
+    id: PROVIDER_TYPES_INFO.copilot.defaultProviderId,
   },
 ]
 
@@ -402,6 +414,18 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: PROVIDER_TYPES_INFO.morph.defaultProviderId,
     id: 'morph-v0',
     model: 'morph-v0',
+  },
+  {
+    providerType: 'copilot',
+    providerId: PROVIDER_TYPES_INFO.copilot.defaultProviderId,
+    id: 'copilot-gpt-4.1',
+    model: 'gpt-4.1',
+  },
+  {
+    providerType: 'copilot',
+    providerId: PROVIDER_TYPES_INFO.copilot.defaultProviderId,
+    id: 'copilot-gpt-5-mini',
+    model: 'gpt-5-mini',
   },
 ]
 

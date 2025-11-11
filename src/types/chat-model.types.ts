@@ -27,6 +27,10 @@ const baseChatModelSchema = z.object({
 
 export const chatModelSchema = z.discriminatedUnion('providerType', [
   z.object({
+    providerType: z.literal('copilot'),
+    ...baseChatModelSchema.shape,
+  }),
+  z.object({
     providerType: z.literal('openai'),
     ...baseChatModelSchema.shape,
     reasoning: z
