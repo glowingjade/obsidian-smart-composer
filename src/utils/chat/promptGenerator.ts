@@ -486,16 +486,45 @@ ${
   }
 
   private getCustomInstructionMessage(): RequestMessage | null {
+    // Get custom system prompt
     const customInstruction = this.settings.systemPrompt.trim()
-    if (!customInstruction) {
+    
+    // Get currently selected assistant
+    const currentAssistantId = this.settings.currentAssistantId
+    const assistants = this.settings.assistants || []
+    const currentAssistant = currentAssistantId 
+      ? assistants.find(a => a.id === currentAssistantId)
+      : assistants.find(a => a.isDefault) || (assistants.length > 0 ? assistants[0] : null)
+    
+    // If there's no custom prompt and no selected assistant, return null
+    if (!customInstruction && !currentAssistant) {
       return null
     }
-    return {
-      role: 'user',
-      content: `Here are additional instructions to follow in your responses when relevant. There's no need to explicitly acknowledge them:
+    
+    // Build prompt content
+    let content = ''
+    
+    // Add assistant's system prompt (if available)
+    if (currentAssistant && currentAssistant.systemPrompt) {
+      content += `Here are instructions from the selected assistant (${currentAssistant.name}):
+<assistant_instructions>
+${currentAssistant.systemPrompt}
+</assistant_instructions>
+
+`
+    }
+    
+    // Add global custom instructions (if available)
+    if (customInstruction) {
+      content += `Here are additional instructions to follow in your responses when relevant. There's no need to explicitly acknowledge them:
 <custom_instructions>
 ${customInstruction}
-</custom_instructions>`,
+</custom_instructions>`
+    }
+    
+    return {
+      role: 'user',
+      content: content,
     }
   }
 
