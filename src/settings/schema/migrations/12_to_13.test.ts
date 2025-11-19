@@ -118,4 +118,79 @@ describe('Migration from v12 to v13', () => {
       model: 'gpt-5.1',
     })
   })
+
+  it('should preserve gpt-4.1 models as custom models when migrating', () => {
+    const oldSettings = {
+      version: 12,
+      chatModels: [
+        {
+          id: 'gpt-4.1',
+          providerType: 'openai',
+          providerId: 'openai',
+          model: 'gpt-4.1',
+          enable: true,
+        },
+        {
+          id: 'gpt-4.1-mini',
+          providerType: 'openai',
+          providerId: 'openai',
+          model: 'gpt-4.1-mini',
+        },
+        {
+          id: 'gpt-4.1-nano',
+          providerType: 'openai',
+          providerId: 'openai',
+          model: 'gpt-4.1-nano',
+        },
+        {
+          id: 'gpt-4o',
+          providerType: 'openai',
+          providerId: 'openai',
+          model: 'gpt-4o',
+        },
+      ],
+    }
+    const result = migrateFrom12To13(oldSettings)
+
+    const chatModels = result.chatModels as { id: string }[]
+    const gpt41 = chatModels.find((m) => m.id === 'gpt-4.1')
+    const gpt41Mini = chatModels.find((m) => m.id === 'gpt-4.1-mini')
+    const gpt41Nano = chatModels.find((m) => m.id === 'gpt-4.1-nano')
+    const gpt51 = chatModels.find((m) => m.id === 'gpt-5.1')
+
+    // gpt-4.1 models should be preserved as custom models
+    expect(gpt41).toBeDefined()
+    expect(gpt41).toEqual({
+      id: 'gpt-4.1',
+      providerType: 'openai',
+      providerId: 'openai',
+      model: 'gpt-4.1',
+      enable: true,
+    })
+
+    expect(gpt41Mini).toBeDefined()
+    expect(gpt41Mini).toEqual({
+      id: 'gpt-4.1-mini',
+      providerType: 'openai',
+      providerId: 'openai',
+      model: 'gpt-4.1-mini',
+    })
+
+    expect(gpt41Nano).toBeDefined()
+    expect(gpt41Nano).toEqual({
+      id: 'gpt-4.1-nano',
+      providerType: 'openai',
+      providerId: 'openai',
+      model: 'gpt-4.1-nano',
+    })
+
+    // gpt-5.1 should be added as new default
+    expect(gpt51).toBeDefined()
+    expect(gpt51).toEqual({
+      id: 'gpt-5.1',
+      providerType: 'openai',
+      providerId: 'openai',
+      model: 'gpt-5.1',
+    })
+  })
 })

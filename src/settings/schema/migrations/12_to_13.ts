@@ -8,6 +8,9 @@ import { getMigratedChatModels } from './migrationUtils'
  *   - gpt-5.1
  * - Remove following models from defaults:
  *   - gpt-5
+ *   - gpt-4.1
+ *   - gpt-4.1-mini
+ *   - gpt-4.1-nano
  */
 export const migrateFrom12To13: SettingMigration['migrate'] = (data) => {
   const newData = { ...data }
@@ -73,24 +76,6 @@ export const DEFAULT_CHAT_MODELS_V13: DefaultChatModelsV13 = [
     providerId: 'openai',
     id: 'gpt-5-nano',
     model: 'gpt-5-nano',
-  },
-  {
-    providerType: 'openai',
-    providerId: 'openai',
-    id: 'gpt-4.1',
-    model: 'gpt-4.1',
-  },
-  {
-    providerType: 'openai',
-    providerId: 'openai',
-    id: 'gpt-4.1-mini',
-    model: 'gpt-4.1-mini',
-  },
-  {
-    providerType: 'openai',
-    providerId: 'openai',
-    id: 'gpt-4.1-nano',
-    model: 'gpt-4.1-nano',
   },
   {
     providerType: 'openai',
