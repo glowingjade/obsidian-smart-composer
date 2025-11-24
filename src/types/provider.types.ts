@@ -16,6 +16,10 @@ export const baseLlmProviderSchema = z.object({
  */
 export const llmProviderSchema = z.discriminatedUnion('type', [
   z.object({
+    type: z.literal('copilot'),
+    ...baseLlmProviderSchema.shape,
+  }),
+  z.object({
     type: z.literal('openai'),
     ...baseLlmProviderSchema.shape,
   }),
