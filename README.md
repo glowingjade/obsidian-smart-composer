@@ -14,9 +14,8 @@
 > This plugin is currently maintained by a single developer and is **not under active development**.  
 > Occasional updates or bug fixes may still be released, but **issues and feature requests may not be reviewed promptly**.
 >
-> **Interested in helping?**  
-> If you'd like to contribute or are maintaining an updated fork, please get in touch.  
-> I’d be happy to add collaborators or highlight community-maintained versions.
+> **🔗 Community Forks**  
+> If you maintain a fork, please share it in the [Community Fork Collection](https://github.com/glowingjade/obsidian-smart-composer/discussions/496).
 
 > [!NOTE]
 > **🚀 New Feature: Model Context Protocol (MCP) is now available!**
