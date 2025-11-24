@@ -3,6 +3,13 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: var(--size-4-2);
+  gap: var(--size-4-2);
+}
+
+.smtcmp-chat-header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
 }
 
 .smtcmp-chat-header-title {
@@ -1863,6 +1870,82 @@ button.smtcmp-chat-input-model-select {
   gap: var(--size-4-1);
 }
 
-.smtcmp-setting-item--nested {
-  padding-left: var(--size-4-4);
+/* Assistant selector styles - matched with model selector */
+.smtcmp-chat-header-right button.smtcmp-assistant-selector-button {
+  all: unset;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  padding: 0 !important;
+  font-size: var(--font-smallest) !important;
+  font-weight: var(--font-medium) !important;
+  color: var(--text-muted) !important;
+  cursor: pointer !important;
+  height: auto !important;
+}
+
+.smtcmp-chat-header-right button.smtcmp-assistant-selector-button:hover {
+  color: var(--text-normal) !important;
+  background-color: transparent !important;
+}
+
+.smtcmp-chat-header-right .smtcmp-assistant-selector-current {
+  flex-shrink: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smtcmp-chat-header-right .smtcmp-assistant-selector-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.smtcmp-assistant-selector-content {
+  padding: var(--size-2-1);
+  min-width: 200px;
+  max-width: 300px;
+}
+
+.smtcmp-assistant-selector-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-2-1);
+}
+
+.smtcmp-assistant-selector-item {
+  padding: var(--size-2-1) var(--size-4-1);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+}
+
+.smtcmp-assistant-selector-item:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.smtcmp-assistant-selector-item.selected {
+  background-color: var(--background-modifier-hover);
+}
+
+.smtcmp-assistant-selector-item-name {
+  font-weight: var(--font-medium);
+  font-size: var(--font-ui-small);
+}
+
+.smtcmp-assistant-selector-item-description {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  margin-top: var(--size-2-1);
+}
+
+.smtcmp-assistant-selector-empty {
+  padding: var(--size-2-1) var(--size-4-1);
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
 }
