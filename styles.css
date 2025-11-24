@@ -1866,3 +1866,112 @@ button.smtcmp-chat-input-model-select {
 .smtcmp-setting-item--nested {
   padding-left: var(--size-4-4);
 }
+
+/* RAG Search Modal Styles */
+.smtcmp-rag-search-modal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-2);
+  padding: var(--size-4-2);
+  height: 100%;
+}
+
+.smtcmp-rag-search-modal__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-2-1);
+}
+
+.smtcmp-rag-search-modal__header h2 {
+  font-size: var(--font-ui-medium);
+  font-weight: var(--font-medium);
+  margin: 0;
+  color: var(--text-normal);
+}
+
+.smtcmp-rag-search-modal__header p {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.smtcmp-rag-search-modal__search-container {
+  display: flex;
+  gap: var(--size-4-3);
+  align-items: stretch;
+  width: 100%;
+}
+
+.smtcmp-rag-search-modal__search-input {
+  flex: 1;
+  padding: var(--size-2-3);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+  outline: none;
+  transition: border-color 0.15s ease-in-out;
+  box-sizing: border-box;
+}
+
+.smtcmp-rag-search-modal__search-input:focus {
+  border-color: var(--interactive-accent);
+}
+
+
+
+.smtcmp-rag-search-modal__search-button {
+  padding: var(--size-2-3) var(--size-4-2);
+  border: 1px solid var(--interactive-accent);
+  border-radius: var(--radius-s);
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  font-size: var(--font-ui-small);
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: fit-content;
+}
+
+.smtcmp-rag-search-modal__search-button:hover:not(:disabled) {
+  background: var(--interactive-accent-hover);
+  border-color: var(--interactive-accent-hover);
+}
+
+.smtcmp-rag-search-modal__search-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.smtcmp-rag-search-modal__progress {
+  padding: var(--size-2-3);
+  background: var(--background-secondary);
+  border-radius: var(--radius-s);
+  border: 1px solid var(--background-modifier-border);
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.smtcmp-rag-search-modal__results {
+  flex-grow: 1;
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--background-primary);
+}
+
+.smtcmp-rag-search-modal__no-results {
+  padding: var(--size-4-4);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.smtcmp-rag-search-results-list {
+  display: flex;
+  flex-direction: column;
+  padding: var(--size-4-1);
+}

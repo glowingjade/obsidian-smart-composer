@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
-import { Book, CircleStop, History, Plus } from 'lucide-react'
+import { Book, CircleStop, History, Plus, Search } from 'lucide-react'
 import { App, Notice } from 'obsidian'
 import {
   forwardRef,
@@ -46,6 +46,7 @@ import { groupAssistantAndToolMessages } from '../../utils/chat/message-groups'
 import { PromptGenerator } from '../../utils/chat/promptGenerator'
 import { readTFileContent } from '../../utils/obsidian'
 import { ErrorModal } from '../modals/ErrorModal'
+import { RAGSearchModal } from '../modals/RAGSearchModal'
 import { TemplateSectionModal } from '../modals/TemplateSectionModal'
 
 import AssistantToolMessageGroupItem from './AssistantToolMessageGroupItem'
@@ -595,6 +596,15 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           >
             <History size={18} />
           </ChatListDropdown>
+          <button
+            onClick={() => {
+              new RAGSearchModal(app, getRAGEngine).open()
+            }}
+            className="clickable-icon"
+            aria-label="RAG Search"
+          >
+            <Search size={18} />
+          </button>
           <button
             onClick={() => {
               new TemplateSectionModal(app).open()

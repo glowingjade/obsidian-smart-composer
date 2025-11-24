@@ -35,12 +35,14 @@ function SimiliartySearchItem({
 
 export default function SimilaritySearchResults({
   similaritySearchResults,
+  autoOpen = false,
 }: {
   similaritySearchResults: (Omit<SelectEmbedding, 'embedding'> & {
     similarity: number
   })[]
+  autoOpen?: boolean
 }) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(autoOpen)
 
   return (
     <div className="smtcmp-similarity-search-results">
