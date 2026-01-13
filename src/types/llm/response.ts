@@ -27,6 +27,12 @@ export type ResponseUsage = {
   total_tokens: number
 }
 
+export type ResponseProviderMetadata = {
+  gemini?: {
+    thoughtSignature?: string
+  }
+}
+
 type NonStreamingChoice = {
   finish_reason: string | null // Depends on the model. Ex: 'stop' | 'length' | 'content_filter' | 'tool_calls' | 'function_call'
   message: {
@@ -35,6 +41,7 @@ type NonStreamingChoice = {
     role: string
     annotations?: Annotation[]
     tool_calls?: ToolCall[]
+    providerMetadata?: ResponseProviderMetadata
   }
   error?: Error
 }
@@ -47,6 +54,7 @@ type StreamingChoice = {
     role?: string
     annotations?: Annotation[]
     tool_calls?: ToolCallDelta[]
+    providerMetadata?: ResponseProviderMetadata
   }
   error?: Error
 }

@@ -147,6 +147,7 @@ const serializeChatMessage = (message: ChatMessage): SerializedChatMessage => {
         toolCallRequests: message.toolCallRequests,
         id: message.id,
         metadata: message.metadata,
+        providerMetadata: message.providerMetadata,
       }
     case 'tool':
       return {
@@ -183,6 +184,7 @@ const deserializeChatMessage = (
         toolCallRequests: message.toolCallRequests,
         id: message.id,
         metadata: message.metadata,
+        providerMetadata: message.providerMetadata,
       }
     case 'tool':
       return {

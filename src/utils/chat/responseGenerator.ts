@@ -279,6 +279,8 @@ export class ResponseGenerator {
       })
     }
 
+    const providerMetadata = chunk.choices[0]?.delta?.providerMetadata
+
     this.updateResponseMessages((messages) =>
       messages.map((message) =>
         message.id === responseMessageId && message.role === 'assistant'
@@ -296,6 +298,8 @@ export class ResponseGenerator {
                 ...message.metadata,
                 usage: chunk.usage ?? message.metadata?.usage,
               },
+              // Keep the first providerMetadata received (signature is sent once)
+              providerMetadata: message.providerMetadata ?? providerMetadata,
             }
           : message,
       ),
