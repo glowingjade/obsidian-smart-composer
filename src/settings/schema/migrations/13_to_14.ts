@@ -6,6 +6,7 @@ import { getMigratedChatModels } from './migrationUtils'
  * Migration from version 13 to version 14
  * - Add following models:
  *   - gpt-5.2
+ *   - gpt-4.1-mini
  */
 export const migrateFrom13To14: SettingMigration['migrate'] = (data) => {
   const newData = { ...data }
@@ -69,36 +70,14 @@ export const DEFAULT_CHAT_MODELS_V14: DefaultChatModelsV14 = [
   {
     providerType: 'openai',
     providerId: 'openai',
-    id: 'gpt-5-nano',
-    model: 'gpt-5-nano',
-  },
-  {
-    providerType: 'openai',
-    providerId: 'openai',
-    id: 'gpt-4o',
-    model: 'gpt-4o',
-  },
-  {
-    providerType: 'openai',
-    providerId: 'openai',
-    id: 'gpt-4o-mini',
-    model: 'gpt-4o-mini',
+    id: 'gpt-4.1-mini',
+    model: 'gpt-4.1-mini',
   },
   {
     providerType: 'openai',
     providerId: 'openai',
     id: 'o4-mini',
     model: 'o4-mini',
-    reasoning: {
-      enabled: true,
-      reasoning_effort: 'medium',
-    },
-  },
-  {
-    providerType: 'openai',
-    providerId: 'openai',
-    id: 'o3',
-    model: 'o3',
     reasoning: {
       enabled: true,
       reasoning_effort: 'medium',

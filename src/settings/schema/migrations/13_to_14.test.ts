@@ -14,10 +14,10 @@ describe('Migration from v13 to v14', () => {
       version: 13,
       chatModels: [
         {
-          id: 'gpt-4o',
+          id: 'gpt-5-mini',
           providerType: 'openai',
           providerId: 'openai',
-          model: 'gpt-4o',
+          model: 'gpt-5-mini',
           enable: false,
         },
         {
@@ -32,7 +32,7 @@ describe('Migration from v13 to v14', () => {
 
     expect(result.chatModels).toEqual([
       ...DEFAULT_CHAT_MODELS_V14.map((model) =>
-        model.id === 'gpt-4o'
+        model.id === 'gpt-5-mini'
           ? {
               ...model,
               enable: false,
@@ -53,10 +53,10 @@ describe('Migration from v13 to v14', () => {
       version: 13,
       chatModels: [
         {
-          id: 'gpt-4o',
+          id: 'gpt-5-mini',
           providerType: 'openai',
           providerId: 'openai',
-          model: 'gpt-4o',
+          model: 'gpt-5-mini',
         },
       ],
     }
@@ -74,6 +74,32 @@ describe('Migration from v13 to v14', () => {
     })
   })
 
+  it('should add new gpt-4.1-mini model', () => {
+    const oldSettings = {
+      version: 13,
+      chatModels: [
+        {
+          id: 'gpt-5-mini',
+          providerType: 'openai',
+          providerId: 'openai',
+          model: 'gpt-5-mini',
+        },
+      ],
+    }
+    const result = migrateFrom13To14(oldSettings)
+
+    const chatModels = result.chatModels as { id: string }[]
+    const gpt41mini = chatModels.find((m) => m.id === 'gpt-4.1-mini')
+
+    expect(gpt41mini).toBeDefined()
+    expect(gpt41mini).toEqual({
+      id: 'gpt-4.1-mini',
+      providerType: 'openai',
+      providerId: 'openai',
+      model: 'gpt-4.1-mini',
+    })
+  })
+
   it('should preserve gpt-5.1 as custom model when migrating', () => {
     const oldSettings = {
       version: 13,
@@ -86,10 +112,10 @@ describe('Migration from v13 to v14', () => {
           enable: true,
         },
         {
-          id: 'gpt-4o',
+          id: 'gpt-5-mini',
           providerType: 'openai',
           providerId: 'openai',
-          model: 'gpt-4o',
+          model: 'gpt-5-mini',
         },
       ],
     }
