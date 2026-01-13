@@ -9,6 +9,8 @@ export const PGLITE_DB_PATH = '.smtcmp_vector_db.tar.gz'
 
 // Default model ids
 export const DEFAULT_CHAT_MODEL_ID = 'claude-sonnet-4.5'
+// gpt-4.1-mini is preferred over gpt-5-mini because gpt-5 models do not support
+// predicted outputs, making them significantly slower for apply tasks.
 export const DEFAULT_APPLY_MODEL_ID = 'gpt-4.1-mini'
 
 // Recommended model ids
