@@ -7,6 +7,8 @@ import { getMigratedChatModels } from './migrationUtils'
  * - Add following models:
  *   - gpt-5.2
  *   - gpt-4.1-mini
+ *   - gemini-3-pro-preview
+ *   - gemini-3-flash-preview
  * - Update following models:
  *   - claude-opus-4.1 -> claude-opus-4.5
  * - Remove following models from defaults:
@@ -15,6 +17,11 @@ import { getMigratedChatModels } from './migrationUtils'
  *   - gpt-4o
  *   - gpt-4o-mini
  *   - o3
+ *   - gemini-2.5-pro
+ *   - gemini-2.5-flash
+ *   - gemini-2.5-flash-lite
+ *   - gemini-2.0-flash
+ *   - gemini-2.0-flash-lite
  */
 export const migrateFrom13To14: SettingMigration['migrate'] = (data) => {
   const newData = { ...data }
@@ -94,32 +101,14 @@ export const DEFAULT_CHAT_MODELS_V14: DefaultChatModelsV14 = [
   {
     providerType: 'gemini',
     providerId: 'gemini',
-    id: 'gemini-2.5-pro',
-    model: 'gemini-2.5-pro',
+    id: 'gemini-3-pro-preview',
+    model: 'gemini-3-pro-preview',
   },
   {
     providerType: 'gemini',
     providerId: 'gemini',
-    id: 'gemini-2.5-flash',
-    model: 'gemini-2.5-flash',
-  },
-  {
-    providerType: 'gemini',
-    providerId: 'gemini',
-    id: 'gemini-2.5-flash-lite',
-    model: 'gemini-2.5-flash-lite',
-  },
-  {
-    providerType: 'gemini',
-    providerId: 'gemini',
-    id: 'gemini-2.0-flash',
-    model: 'gemini-2.0-flash',
-  },
-  {
-    providerType: 'gemini',
-    providerId: 'gemini',
-    id: 'gemini-2.0-flash-lite',
-    model: 'gemini-2.0-flash-lite',
+    id: 'gemini-3-flash-preview',
+    model: 'gemini-3-flash-preview',
   },
   {
     providerType: 'deepseek',

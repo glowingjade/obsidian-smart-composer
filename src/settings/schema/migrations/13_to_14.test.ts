@@ -210,4 +210,82 @@ describe('Migration from v13 to v14', () => {
       model: 'claude-opus-4-5',
     })
   })
+
+  it('should add gemini-3-pro-preview and gemini-3-flash-preview as new default models', () => {
+    const oldSettings = {
+      version: 13,
+      chatModels: [
+        {
+          id: 'gpt-5-mini',
+          providerType: 'openai',
+          providerId: 'openai',
+          model: 'gpt-5-mini',
+        },
+      ],
+    }
+    const result = migrateFrom13To14(oldSettings)
+
+    const chatModels = result.chatModels as { id: string }[]
+    const gemini3Pro = chatModels.find((m) => m.id === 'gemini-3-pro-preview')
+    const gemini3Flash = chatModels.find(
+      (m) => m.id === 'gemini-3-flash-preview',
+    )
+
+    // gemini-3-pro-preview should be added as new default
+    expect(gemini3Pro).toBeDefined()
+    expect(gemini3Pro).toEqual({
+      id: 'gemini-3-pro-preview',
+      providerType: 'gemini',
+      providerId: 'gemini',
+      model: 'gemini-3-pro-preview',
+    })
+
+    // gemini-3-flash-preview should be added as new default
+    expect(gemini3Flash).toBeDefined()
+    expect(gemini3Flash).toEqual({
+      id: 'gemini-3-flash-preview',
+      providerType: 'gemini',
+      providerId: 'gemini',
+      model: 'gemini-3-flash-preview',
+    })
+  })
+
+  it('should preserve gemini-2.5-pro as custom model when migrating', () => {
+    const oldSettings = {
+      version: 13,
+      chatModels: [
+        {
+          id: 'gemini-2.5-pro',
+          providerType: 'gemini',
+          providerId: 'gemini',
+          model: 'gemini-2.5-pro',
+          enable: true,
+        },
+      ],
+    }
+    const result = migrateFrom13To14(oldSettings)
+
+    const chatModels = result.chatModels as { id: string }[]
+    const gemini25Pro = chatModels.find((m) => m.id === 'gemini-2.5-pro')
+    const gemini3Pro = chatModels.find((m) => m.id === 'gemini-3-pro-preview')
+
+    // gemini-2.5-pro should be preserved as custom model
+    expect(gemini25Pro).toBeDefined()
+    expect(gemini25Pro).toEqual({
+      id: 'gemini-2.5-pro',
+      providerType: 'gemini',
+      providerId: 'gemini',
+      model: 'gemini-2.5-pro',
+      enable: true,
+    })
+
+    // gemini-3-pro-preview should be added as new default
+    expect(gemini3Pro).toBeDefined()
+    expect(gemini3Pro).toEqual({
+      id: 'gemini-3-pro-preview',
+      providerType: 'gemini',
+      providerId: 'gemini',
+      model: 'gemini-3-pro-preview',
+    })
+  })
 })

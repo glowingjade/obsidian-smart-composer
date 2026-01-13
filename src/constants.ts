@@ -275,32 +275,14 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
   {
     providerType: 'gemini',
     providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
-    id: 'gemini-2.5-pro',
-    model: 'gemini-2.5-pro',
+    id: 'gemini-3-pro-preview',
+    model: 'gemini-3-pro-preview',
   },
   {
     providerType: 'gemini',
     providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
-    id: 'gemini-2.5-flash',
-    model: 'gemini-2.5-flash',
-  },
-  {
-    providerType: 'gemini',
-    providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
-    id: 'gemini-2.5-flash-lite',
-    model: 'gemini-2.5-flash-lite',
-  },
-  {
-    providerType: 'gemini',
-    providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
-    id: 'gemini-2.0-flash',
-    model: 'gemini-2.0-flash',
-  },
-  {
-    providerType: 'gemini',
-    providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
-    id: 'gemini-2.0-flash-lite',
-    model: 'gemini-2.0-flash-lite',
+    id: 'gemini-3-flash-preview',
+    model: 'gemini-3-flash-preview',
   },
   {
     providerType: 'deepseek',
