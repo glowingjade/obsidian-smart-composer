@@ -144,4 +144,70 @@ describe('Migration from v13 to v14', () => {
       model: 'gpt-5.2',
     })
   })
+
+  it('should add claude-opus-4.5 as new default model', () => {
+    const oldSettings = {
+      version: 13,
+      chatModels: [
+        {
+          id: 'claude-sonnet-4.5',
+          providerType: 'anthropic',
+          providerId: 'anthropic',
+          model: 'claude-sonnet-4-5',
+        },
+      ],
+    }
+    const result = migrateFrom13To14(oldSettings)
+
+    const chatModels = result.chatModels as { id: string }[]
+    const opus45 = chatModels.find((m) => m.id === 'claude-opus-4.5')
+
+    // claude-opus-4.5 should be added as new default
+    expect(opus45).toBeDefined()
+    expect(opus45).toEqual({
+      id: 'claude-opus-4.5',
+      providerType: 'anthropic',
+      providerId: 'anthropic',
+      model: 'claude-opus-4-5',
+    })
+  })
+
+  it('should preserve claude-opus-4.1 as custom model when migrating', () => {
+    const oldSettings = {
+      version: 13,
+      chatModels: [
+        {
+          id: 'claude-opus-4.1',
+          providerType: 'anthropic',
+          providerId: 'anthropic',
+          model: 'claude-opus-4-1',
+          enable: true,
+        },
+      ],
+    }
+    const result = migrateFrom13To14(oldSettings)
+
+    const chatModels = result.chatModels as { id: string }[]
+    const opus41 = chatModels.find((m) => m.id === 'claude-opus-4.1')
+    const opus45 = chatModels.find((m) => m.id === 'claude-opus-4.5')
+
+    // claude-opus-4.1 should be preserved as custom model
+    expect(opus41).toBeDefined()
+    expect(opus41).toEqual({
+      id: 'claude-opus-4.1',
+      providerType: 'anthropic',
+      providerId: 'anthropic',
+      model: 'claude-opus-4-1',
+      enable: true,
+    })
+
+    // claude-opus-4.5 should be added as new default
+    expect(opus45).toBeDefined()
+    expect(opus45).toEqual({
+      id: 'claude-opus-4.5',
+      providerType: 'anthropic',
+      providerId: 'anthropic',
+      model: 'claude-opus-4-5',
+    })
+  })
 })

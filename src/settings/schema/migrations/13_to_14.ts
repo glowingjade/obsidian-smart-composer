@@ -7,6 +7,14 @@ import { getMigratedChatModels } from './migrationUtils'
  * - Add following models:
  *   - gpt-5.2
  *   - gpt-4.1-mini
+ * - Update following models:
+ *   - claude-opus-4.1 -> claude-opus-4.5
+ * - Remove following models from defaults:
+ *   - gpt-5.1
+ *   - gpt-5-nano
+ *   - gpt-4o
+ *   - gpt-4o-mini
+ *   - o3
  */
 export const migrateFrom13To14: SettingMigration['migrate'] = (data) => {
   const newData = { ...data }
@@ -40,8 +48,8 @@ export const DEFAULT_CHAT_MODELS_V14: DefaultChatModelsV14 = [
   {
     providerType: 'anthropic',
     providerId: 'anthropic',
-    id: 'claude-opus-4.1',
-    model: 'claude-opus-4-1',
+    id: 'claude-opus-4.5',
+    model: 'claude-opus-4-5',
   },
   {
     providerType: 'anthropic',
