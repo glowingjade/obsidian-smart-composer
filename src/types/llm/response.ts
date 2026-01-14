@@ -31,6 +31,9 @@ export type ResponseProviderMetadata = {
   gemini?: {
     thoughtSignature?: string
   }
+  deepseek?: {
+    reasoningContent?: string
+  }
 }
 
 type NonStreamingChoice = {
