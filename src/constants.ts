@@ -109,6 +109,14 @@ export const PROVIDER_TYPES_INFO = {
     supportEmbedding: false,
     additionalSettings: [],
   },
+  xai: {
+    label: 'xAI',
+    defaultProviderId: 'xai',
+    requireApiKey: true,
+    requireBaseUrl: false,
+    supportEmbedding: false,
+    additionalSettings: [],
+  },
   'azure-openai': {
     label: 'Azure OpenAI',
     defaultProviderId: null, // no default provider for this type
@@ -217,6 +225,10 @@ export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
   {
     type: 'morph',
     id: PROVIDER_TYPES_INFO.morph.defaultProviderId,
+  },
+  {
+    type: 'xai',
+    id: PROVIDER_TYPES_INFO.xai.defaultProviderId,
   },
 ]
 
@@ -347,6 +359,18 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     id: 'morph-v0',
     model: 'morph-v0',
   },
+  {
+    providerType: 'xai',
+    providerId: PROVIDER_TYPES_INFO.xai.defaultProviderId,
+    id: 'grok-4-1-fast',
+    model: 'grok-4-1-fast',
+  },
+  {
+    providerType: 'xai',
+    providerId: PROVIDER_TYPES_INFO.xai.defaultProviderId,
+    id: 'grok-4-1-fast-non-reasoning',
+    model: 'grok-4-1-fast-non-reasoning',
+  },
 ]
 
 /**
@@ -437,3 +461,8 @@ export const ANTHROPIC_PRICES: Record<string, ModelPricing> = {
 
 // Gemini is currently free for low rate limits
 export const GEMINI_PRICES: Record<string, ModelPricing> = {}
+
+export const XAI_PRICES: Record<string, ModelPricing> = {
+  'grok-4-1-fast': { input: 0.2, output: 0.5 },
+  'grok-4-1-fast-non-reasoning': { input: 0.2, output: 0.5 },
+}

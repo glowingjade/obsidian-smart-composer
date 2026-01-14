@@ -17,6 +17,7 @@ import { OpenAIAuthenticatedProvider } from './openai'
 import { OpenAICompatibleProvider } from './openaiCompatibleProvider'
 import { OpenRouterProvider } from './openRouterProvider'
 import { PerplexityProvider } from './perplexityProvider'
+import { XaiProvider } from './xaiProvider'
 
 /*
  * OpenAI, OpenAI-compatible, and Anthropic providers include token usage statistics
@@ -69,6 +70,9 @@ export function getProviderClient({
     }
     case 'morph': {
       return new MorphProvider(provider)
+    }
+    case 'xai': {
+      return new XaiProvider(provider)
     }
     case 'azure-openai': {
       return new AzureOpenAIProvider(provider)
