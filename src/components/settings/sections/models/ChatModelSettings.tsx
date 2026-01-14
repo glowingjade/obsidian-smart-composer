@@ -225,6 +225,158 @@ const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
     },
   },
 
+  /**
+   * Gemini model settings
+   *
+   * For thinking, see:
+   * @see https://ai.google.dev/gemini-api/docs/thinking
+   */
+  {
+    check: (model) => model.providerType === 'gemini',
+    SettingsComponent: (props: SettingsComponentProps) => {
+      const { model, plugin, onClose } = props
+      const typedModel = model as ChatModel & { providerType: 'gemini' }
+      const [thinkingEnabled, setThinkingEnabled] = useState<boolean>(
+        typedModel.thinking?.enabled ?? false,
+      )
+      const [controlMode, setControlMode] = useState<'level' | 'budget'>(
+        typedModel.thinking?.control_mode ?? 'level',
+      )
+      const [thinkingLevel, setThinkingLevel] = useState<string>(
+        String(typedModel.thinking?.thinking_level ?? 'high'),
+      )
+      const [thinkingBudget, setThinkingBudget] = useState<string>(
+        String(typedModel.thinking?.thinking_budget ?? -1),
+      )
+      const [includeThoughts, setIncludeThoughts] = useState<boolean>(
+        Boolean(typedModel.thinking?.include_thoughts ?? false),
+      )
+
+      const handleSubmit = async () => {
+        let parsedBudget: number | undefined
+        if (controlMode === 'budget') {
+          parsedBudget = parseInt(thinkingBudget, 10)
+          if (isNaN(parsedBudget)) {
+            new Notice('Please enter a valid number for thinking budget')
+            return
+          }
+        }
+
+        const updatedModel = {
+          ...typedModel,
+          thinking: {
+            enabled: thinkingEnabled,
+            control_mode: controlMode,
+            thinking_level:
+              controlMode === 'level'
+                ? (thinkingLevel as 'minimal' | 'low' | 'medium' | 'high')
+                : undefined,
+            thinking_budget:
+              controlMode === 'budget' ? parsedBudget : undefined,
+            include_thoughts: includeThoughts,
+          },
+        }
+
+        const validationResult = chatModelSchema.safeParse(updatedModel)
+        if (!validationResult.success) {
+          new Notice(
+            validationResult.error.issues.map((v) => v.message).join('\n'),
+          )
+          return
+        }
+
+        await plugin.setSettings({
+          ...plugin.settings,
+          chatModels: plugin.settings.chatModels.map((m) =>
+            m.id === model.id ? updatedModel : m,
+          ),
+        })
+        onClose()
+      }
+
+      return (
+        <>
+          <ObsidianSetting
+            name="Thinking Settings"
+            desc="Customize thinking level or budget. When disabled, the model follows its default behavior (dynamic thinking for most Gemini 2.5 and 3 models)."
+          >
+            <ObsidianToggle
+              value={thinkingEnabled}
+              onChange={(value: boolean) => setThinkingEnabled(value)}
+            />
+          </ObsidianSetting>
+          {thinkingEnabled && (
+            <>
+              <ObsidianSetting
+                name="Control Mode"
+                desc="Use 'Level' for Gemini 3 models, 'Budget' for Gemini 2.5 models."
+                className="smtcmp-setting-item--nested"
+              >
+                <ObsidianDropdown
+                  value={controlMode}
+                  options={{
+                    level: 'Level (Gemini 3)',
+                    budget: 'Budget (Gemini 2.5)',
+                  }}
+                  onChange={(value: string) =>
+                    setControlMode(value as 'level' | 'budget')
+                  }
+                />
+              </ObsidianSetting>
+              {controlMode === 'level' && (
+                <ObsidianSetting
+                  name="Thinking Level"
+                  desc="Controls reasoning depth. 'high' is default for Gemini 3."
+                  className="smtcmp-setting-item--nested"
+                >
+                  <ObsidianDropdown
+                    value={thinkingLevel}
+                    options={{
+                      minimal: 'minimal',
+                      low: 'low',
+                      medium: 'medium',
+                      high: 'high',
+                    }}
+                    onChange={(value: string) => setThinkingLevel(value)}
+                  />
+                </ObsidianSetting>
+              )}
+              {controlMode === 'budget' && (
+                <ObsidianSetting
+                  name="Thinking Budget"
+                  desc="Token budget for thinking. Use -1 for dynamic, 0 to disable."
+                  className="smtcmp-setting-item--nested"
+                >
+                  <ObsidianTextInput
+                    value={thinkingBudget}
+                    placeholder="-1 for dynamic"
+                    onChange={(value: string) => setThinkingBudget(value)}
+                    type="number"
+                  />
+                </ObsidianSetting>
+              )}
+              <ObsidianSetting
+                name="Include Thought Summaries"
+                desc="Shows a summary of the model's reasoning process. Enabling this can increase token usage."
+                className="smtcmp-setting-item--nested"
+              >
+                <ObsidianToggle
+                  value={includeThoughts}
+                  onChange={(value: boolean) => setIncludeThoughts(value)}
+                />
+              </ObsidianSetting>
+            </>
+          )}
+
+          <ObsidianSetting>
+            <ObsidianButton text="Save" onClick={handleSubmit} cta />
+            <ObsidianButton text="Cancel" onClick={onClose} />
+          </ObsidianSetting>
+        </>
+      )
+    },
+  },
+
   // Perplexity settings
   {
     check: (model) =>

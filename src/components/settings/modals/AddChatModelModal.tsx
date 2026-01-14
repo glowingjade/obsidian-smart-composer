@@ -103,11 +103,15 @@ function AddChatModelModalComponent({
               new Notice(`Provider with ID ${value} not found`)
               return
             }
-            setFormData((prev) => ({
-              ...prev,
-              providerId: value,
-              providerType: provider.type,
-            }))
+            // Cast required because we're changing the discriminant field
+            setFormData(
+              (prev) =>
+                ({
+                  ...prev,
+                  providerId: value,
+                  providerType: provider.type,
+                }) as ChatModel,
+            )
           }}
         />
       </ObsidianSetting>

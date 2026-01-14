@@ -5,6 +5,8 @@ import {
   GoogleGenAI,
   Part,
   Schema,
+  ThinkingConfig,
+  ThinkingLevel,
   Tool,
   Type,
 } from '@google/genai'
@@ -93,6 +95,7 @@ export class GeminiProvider extends BaseLLMProvider<
           tools: request.tools?.map((tool) =>
             GeminiProvider.parseRequestTool(tool),
           ),
+          thinkingConfig: GeminiProvider.buildThinkingConfig(model),
         },
       })
 
@@ -156,6 +159,7 @@ export class GeminiProvider extends BaseLLMProvider<
           tools: request.tools?.map((tool) =>
             GeminiProvider.parseRequestTool(tool),
           ),
+          thinkingConfig: GeminiProvider.buildThinkingConfig(model),
         },
       })
 
@@ -293,9 +297,9 @@ export class GeminiProvider extends BaseLLMProvider<
     model: string,
     messageId: string,
   ): LLMResponseNonStreaming {
-    const thoughtSignature = GeminiProvider.extractThoughtSignature(
-      response.candidates?.[0]?.content?.parts,
-    )
+    const parts = response.candidates?.[0]?.content?.parts
+    const thoughtSignature = GeminiProvider.extractThoughtSignature(parts)
+    const reasoning = GeminiProvider.extractThoughtSummaries(parts)
 
     return {
       id: messageId,
@@ -304,6 +308,7 @@ export class GeminiProvider extends BaseLLMProvider<
           finish_reason: response.candidates?.[0]?.finishReason ?? null,
           message: {
             content: response.text ?? '',
+            reasoning: reasoning,
             role: 'assistant',
             tool_calls: GeminiProvider.parseFunctionCalls(
               response.functionCalls,
@@ -332,9 +337,9 @@ export class GeminiProvider extends BaseLLMProvider<
     model: string,
     messageId: string,
   ): LLMResponseStreaming {
-    const thoughtSignature = GeminiProvider.extractThoughtSignature(
-      chunk.candidates?.[0]?.content?.parts,
-    )
+    const parts = chunk.candidates?.[0]?.content?.parts
+    const thoughtSignature = GeminiProvider.extractThoughtSignature(parts)
+    const reasoning = GeminiProvider.extractThoughtSummaries(parts)
 
     return {
       id: messageId,
@@ -343,6 +348,7 @@ export class GeminiProvider extends BaseLLMProvider<
           finish_reason: chunk.candidates?.[0]?.finishReason ?? null,
           delta: {
             content: chunk.text,
+            reasoning: reasoning,
             tool_calls: GeminiProvider.parseFunctionCallsForStreaming(
               chunk.functionCalls,
             ),
@@ -417,6 +423,25 @@ export class GeminiProvider extends BaseLLMProvider<
     }
   }
 
+  /**
+   * Extracts thought summaries from Gemini response parts.
+   * Thought summaries are parts with thought: true and contain reasoning text.
+   */
+  private static extractThoughtSummaries(
+    parts: Part[] | undefined,
+  ): string | undefined {
+    if (!parts || parts.length === 0) {
+      return undefined
+    }
+
+    const thoughtParts = parts.filter((part) => part.thought && part.text)
+    if (thoughtParts.length === 0) {
+      return undefined
+    }
+
+    return thoughtParts.map((part) => part.text).join('')
+  }
+
   private static removeAdditionalProperties(schema: unknown): unknown {
     // TODO: Remove this function when Gemini supports additionalProperties field in JSON schema
     if (typeof schema !== 'object' || schema === null) {
@@ -475,6 +500,45 @@ export class GeminiProvider extends BaseLLMProvider<
         )}`,
       )
     }
+  }
+
+  private static readonly THINKING_LEVEL_MAP: Record<string, ThinkingLevel> = {
+    minimal: ThinkingLevel.MINIMAL,
+    low: ThinkingLevel.LOW,
+    medium: ThinkingLevel.MEDIUM,
+    high: ThinkingLevel.HIGH,
+  }
+
+  /**
+   * Builds the thinking config for Gemini API based on model settings.
+   * - Gemini 3 models use thinkingLevel
+   * - Gemini 2.5 models use thinkingBudget
+   */
+  private static buildThinkingConfig(
+    model: ChatModel & { providerType: 'gemini' },
+  ): ThinkingConfig | undefined {
+    if (!model.thinking?.enabled) {
+      return undefined
+    }
+
+    const config: ThinkingConfig = {}
+
+    if (model.thinking.thinking_level) {
+      const level = this.THINKING_LEVEL_MAP[model.thinking.thinking_level]
+      if (level) {
+        config.thinkingLevel = level
+      }
+    }
+
+    if (model.thinking.thinking_budget !== undefined) {
+      config.thinkingBudget = model.thinking.thinking_budget
+    }
+
+    if (model.thinking.include_thoughts) {
+      config.includeThoughts = model.thinking.include_thoughts
+    }
+
+    return config
   }
 
   async getEmbedding(model: string, text: string): Promise<number[]> {
