@@ -347,7 +347,7 @@ export class GeminiProvider extends BaseLLMProvider<
         {
           finish_reason: chunk.candidates?.[0]?.finishReason ?? null,
           delta: {
-            content: chunk.text,
+            content: chunk.text ?? null,
             reasoning: reasoning,
             tool_calls: GeminiProvider.parseFunctionCallsForStreaming(
               chunk.functionCalls,
