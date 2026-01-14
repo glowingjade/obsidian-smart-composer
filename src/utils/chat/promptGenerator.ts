@@ -207,6 +207,7 @@ ${message.annotations
           ...(citationContent ? [citationContent] : []),
         ].join('\n'),
         tool_calls: message.toolCallRequests,
+        providerMetadata: message.providerMetadata,
       },
     ]
   }

@@ -15,20 +15,20 @@ import { LLMProvider } from '../../types/provider.types'
 import { BaseLLMProvider } from './base'
 import { OpenAIMessageAdapter } from './openaiMessageAdapter'
 
-export class GroqProvider extends BaseLLMProvider<
-  Extract<LLMProvider, { type: 'groq' }>
+export class XaiProvider extends BaseLLMProvider<
+  Extract<LLMProvider, { type: 'xai' }>
 > {
   private adapter: OpenAIMessageAdapter
   private client: OpenAI
 
-  constructor(provider: Extract<LLMProvider, { type: 'groq' }>) {
+  constructor(provider: Extract<LLMProvider, { type: 'xai' }>) {
     super(provider)
     this.adapter = new OpenAIMessageAdapter()
     this.client = new OpenAI({
       apiKey: provider.apiKey ?? '',
       baseURL: provider.baseUrl
-        ? provider.baseUrl?.replace(/\/+$/, '')
-        : 'https://api.groq.com/openai/v1',
+        ? provider.baseUrl.replace(/\/+$/, '')
+        : 'https://api.x.ai/v1',
       dangerouslyAllowBrowser: true,
     })
   }
@@ -38,8 +38,8 @@ export class GroqProvider extends BaseLLMProvider<
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
-    if (model.providerType !== 'groq') {
-      throw new Error('Model is not a Groq model')
+    if (model.providerType !== 'xai') {
+      throw new Error('Model is not an xAI model')
     }
 
     return this.adapter.generateResponse(this.client, request, options)
@@ -50,8 +50,8 @@ export class GroqProvider extends BaseLLMProvider<
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
-    if (model.providerType !== 'groq') {
-      throw new Error('Model is not a Groq model')
+    if (model.providerType !== 'xai') {
+      throw new Error('Model is not an xAI model')
     }
 
     return this.adapter.streamResponse(this.client, request, options)
@@ -59,7 +59,7 @@ export class GroqProvider extends BaseLLMProvider<
 
   async getEmbedding(_model: string, _text: string): Promise<number[]> {
     throw new Error(
-      `Provider ${this.provider.id} does not support embeddings. Please use a different provider.`,
+      `Provider ${String(this.provider.id)} does not support embeddings. Please use a different provider.`,
     )
   }
 }

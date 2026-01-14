@@ -33,19 +33,7 @@ export const embeddingModelSchema = z.discriminatedUnion('providerType', [
     ...baseEmbeddingModelSchema.shape,
   }),
   z.object({
-    providerType: z.literal('groq'),
-    ...baseEmbeddingModelSchema.shape,
-  }),
-  z.object({
-    providerType: z.literal('openrouter'),
-    ...baseEmbeddingModelSchema.shape,
-  }),
-  z.object({
-    providerType: z.literal('ollama'),
-    ...baseEmbeddingModelSchema.shape,
-  }),
-  z.object({
-    providerType: z.literal('lm-studio'),
+    providerType: z.literal('xai'),
     ...baseEmbeddingModelSchema.shape,
   }),
   z.object({
@@ -61,7 +49,15 @@ export const embeddingModelSchema = z.discriminatedUnion('providerType', [
     ...baseEmbeddingModelSchema.shape,
   }),
   z.object({
-    providerType: z.literal('morph'),
+    providerType: z.literal('openrouter'),
+    ...baseEmbeddingModelSchema.shape,
+  }),
+  z.object({
+    providerType: z.literal('ollama'),
+    ...baseEmbeddingModelSchema.shape,
+  }),
+  z.object({
+    providerType: z.literal('lm-studio'),
     ...baseEmbeddingModelSchema.shape,
   }),
   z.object({

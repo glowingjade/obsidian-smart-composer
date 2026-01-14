@@ -3,7 +3,7 @@ import { SerializedEditorState } from 'lexical'
 import { SelectEmbedding } from '../database/schema'
 
 import { ChatModel } from './chat-model.types'
-import { ContentPart } from './llm/request'
+import { ContentPart, RequestProviderMetadata } from './llm/request'
 import { Annotation, ResponseUsage } from './llm/response'
 import { Mentionable, SerializedMentionable } from './mentionable'
 import { ToolCallRequest, ToolCallResponse } from './tool-call.types'
@@ -29,6 +29,7 @@ export type ChatAssistantMessage = {
     usage?: ResponseUsage
     model?: ChatModel // TODO: migrate legacy data to new model type
   }
+  providerMetadata?: RequestProviderMetadata
 }
 export type ChatToolMessage = {
   role: 'tool'
@@ -70,6 +71,7 @@ export type SerializedChatAssistantMessage = {
     usage?: ResponseUsage
     model?: ChatModel // TODO: migrate legacy data to new model type
   }
+  providerMetadata?: RequestProviderMetadata
 }
 export type SerializedChatToolMessage = {
   role: 'tool'

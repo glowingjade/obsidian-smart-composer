@@ -1,9 +1,14 @@
 import { z } from 'zod'
 
-import { ChatModel } from '../../../types/chat-model.types'
-import { EmbeddingModel } from '../../../types/embedding-model.types'
-import { LLMProvider } from '../../../types/provider.types'
 import { SettingMigration } from '../setting.types'
+
+// Migration-local types (frozen at v2 state to avoid breaking changes when main types change)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type V2LLMProvider = any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type V2ChatModel = any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type V2EmbeddingModel = any
 
 type NativeLLMModel = {
   provider: 'openai' | 'anthropic' | 'gemini' | 'groq'
@@ -427,7 +432,7 @@ export const V2_PROVIDER_TYPES_INFO = {
   },
 } as const
 
-export const V2_DEFAULT_PROVIDERS: readonly LLMProvider[] = [
+export const V2_DEFAULT_PROVIDERS: readonly V2LLMProvider[] = [
   {
     type: 'openai',
     id: V2_PROVIDER_TYPES_INFO.openai.defaultProviderId,
@@ -454,7 +459,7 @@ export const V2_DEFAULT_PROVIDERS: readonly LLMProvider[] = [
   },
 ]
 
-export const V2_DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
+export const V2_DEFAULT_CHAT_MODELS: readonly V2ChatModel[] = [
   {
     providerType: 'anthropic',
     providerId: V2_PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
@@ -508,7 +513,6 @@ export const V2_DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: V2_PROVIDER_TYPES_INFO.openai.defaultProviderId,
     id: 'o1',
     model: 'o1',
-    // @ts-expect-error: streamingDisabled is deprecated
     streamingDisabled: true, // currently, o1 API doesn't support streaming
   },
   {
@@ -531,7 +535,7 @@ export const V2_DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
   },
 ]
 
-export const V2_DEFAULT_EMBEDDING_MODELS: readonly EmbeddingModel[] = [
+export const V2_DEFAULT_EMBEDDING_MODELS: readonly V2EmbeddingModel[] = [
   {
     providerType: 'openai',
     providerId: V2_PROVIDER_TYPES_INFO.openai.defaultProviderId,
@@ -579,8 +583,8 @@ export const V2_DEFAULT_EMBEDDING_MODELS: readonly EmbeddingModel[] = [
 export const migrateFrom1To2: SettingMigration['migrate'] = (
   data: SmartComposerSettingsV1,
 ) => {
-  const providers: LLMProvider[] = [...V2_DEFAULT_PROVIDERS]
-  const chatModels: ChatModel[] = [...V2_DEFAULT_CHAT_MODELS]
+  const providers: V2LLMProvider[] = [...V2_DEFAULT_PROVIDERS]
+  const chatModels: V2ChatModel[] = [...V2_DEFAULT_CHAT_MODELS]
 
   // Map old model IDs to new model IDs
   const MODEL_ID_MAP: Record<string, string> = {
@@ -659,7 +663,7 @@ export const migrateFrom1To2: SettingMigration['migrate'] = (
     (v) => v.type === 'ollama' && v.baseUrl === data.ollamaApplyModel.baseUrl,
   )
 
-  let ollamaApplyProviderId
+  let ollamaApplyProviderId: string
   if (
     !existingSameOllamaProviderForApplyModel &&
     data.ollamaApplyModel.baseUrl
@@ -735,7 +739,7 @@ export const migrateFrom1To2: SettingMigration['migrate'] = (
         v.apiKey === data.openAICompatibleApplyModel.apiKey,
     )
 
-    let customProviderId
+    let customProviderId: string
     if (existingSameProvider) {
       // if the same provider is already exists, don't create a new one
       customProviderId = existingSameProvider.id

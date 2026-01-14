@@ -65,10 +65,20 @@ type RequestUserMessage = {
   role: 'user'
   content: string | ContentPart[]
 }
+export type RequestProviderMetadata = {
+  gemini?: {
+    thoughtSignature?: string
+  }
+  deepseek?: {
+    reasoningContent?: string
+  }
+}
+
 type RequestAssistantMessage = {
   role: 'assistant'
   content: string
   tool_calls?: ToolCallRequest[]
+  providerMetadata?: RequestProviderMetadata
 }
 type RequestToolMessage = {
   role: 'tool'

@@ -9,10 +9,12 @@ export const PGLITE_DB_PATH = '.smtcmp_vector_db.tar.gz'
 
 // Default model ids
 export const DEFAULT_CHAT_MODEL_ID = 'claude-sonnet-4.5'
+// gpt-4.1-mini is preferred over gpt-5-mini because gpt-5 models do not support
+// predicted outputs, making them significantly slower for apply tasks.
 export const DEFAULT_APPLY_MODEL_ID = 'gpt-4.1-mini'
 
 // Recommended model ids
-export const RECOMMENDED_MODELS_FOR_CHAT = ['claude-sonnet-4.5', 'gpt-4.1']
+export const RECOMMENDED_MODELS_FOR_CHAT = ['claude-sonnet-4.5', 'gpt-5.2']
 export const RECOMMENDED_MODELS_FOR_APPLY = ['gpt-4.1-mini']
 export const RECOMMENDED_MODELS_FOR_EMBEDDING = [
   'openai/text-embedding-3-small',
@@ -43,9 +45,33 @@ export const PROVIDER_TYPES_INFO = {
     supportEmbedding: true,
     additionalSettings: [],
   },
-  groq: {
-    label: 'Groq',
-    defaultProviderId: 'groq',
+  xai: {
+    label: 'xAI',
+    defaultProviderId: 'xai',
+    requireApiKey: true,
+    requireBaseUrl: false,
+    supportEmbedding: false,
+    additionalSettings: [],
+  },
+  deepseek: {
+    label: 'DeepSeek',
+    defaultProviderId: 'deepseek',
+    requireApiKey: true,
+    requireBaseUrl: false,
+    supportEmbedding: false,
+    additionalSettings: [],
+  },
+  mistral: {
+    label: 'Mistral',
+    defaultProviderId: 'mistral',
+    requireApiKey: true,
+    requireBaseUrl: false,
+    supportEmbedding: false,
+    additionalSettings: [],
+  },
+  perplexity: {
+    label: 'Perplexity',
+    defaultProviderId: 'perplexity',
     requireApiKey: true,
     requireBaseUrl: false,
     supportEmbedding: false,
@@ -73,38 +99,6 @@ export const PROVIDER_TYPES_INFO = {
     requireApiKey: false,
     requireBaseUrl: false,
     supportEmbedding: true,
-    additionalSettings: [],
-  },
-  deepseek: {
-    label: 'DeepSeek',
-    defaultProviderId: 'deepseek',
-    requireApiKey: true,
-    requireBaseUrl: false,
-    supportEmbedding: false,
-    additionalSettings: [],
-  },
-  perplexity: {
-    label: 'Perplexity',
-    defaultProviderId: 'perplexity',
-    requireApiKey: true,
-    requireBaseUrl: false,
-    supportEmbedding: false,
-    additionalSettings: [],
-  },
-  mistral: {
-    label: 'Mistral',
-    defaultProviderId: 'mistral',
-    requireApiKey: true,
-    requireBaseUrl: false,
-    supportEmbedding: false,
-    additionalSettings: [],
-  },
-  morph: {
-    label: 'Morph',
-    defaultProviderId: 'morph',
-    requireApiKey: true,
-    requireBaseUrl: false,
-    supportEmbedding: false,
     additionalSettings: [],
   },
   'azure-openai': {
@@ -185,20 +179,20 @@ export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
     id: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
   },
   {
+    type: 'xai',
+    id: PROVIDER_TYPES_INFO.xai.defaultProviderId,
+  },
+  {
     type: 'deepseek',
     id: PROVIDER_TYPES_INFO.deepseek.defaultProviderId,
   },
   {
-    type: 'perplexity',
-    id: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
-  },
-  {
-    type: 'groq',
-    id: PROVIDER_TYPES_INFO.groq.defaultProviderId,
-  },
-  {
     type: 'mistral',
     id: PROVIDER_TYPES_INFO.mistral.defaultProviderId,
+  },
+  {
+    type: 'perplexity',
+    id: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
   },
   {
     type: 'openrouter',
@@ -212,10 +206,6 @@ export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
     type: 'lm-studio',
     id: PROVIDER_TYPES_INFO['lm-studio'].defaultProviderId,
   },
-  {
-    type: 'morph',
-    id: PROVIDER_TYPES_INFO.morph.defaultProviderId,
-  },
 ]
 
 /**
@@ -227,8 +217,8 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
   {
     providerType: 'anthropic',
     providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
-    id: 'claude-opus-4.1',
-    model: 'claude-opus-4-1',
+    id: 'claude-opus-4.5',
+    model: 'claude-opus-4-5',
   },
   {
     providerType: 'anthropic',
@@ -245,8 +235,8 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
   {
     providerType: 'openai',
     providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
-    id: 'gpt-5',
-    model: 'gpt-5',
+    id: 'gpt-5.2',
+    model: 'gpt-5.2',
   },
   {
     providerType: 'openai',
@@ -257,38 +247,8 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
   {
     providerType: 'openai',
     providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
-    id: 'gpt-5-nano',
-    model: 'gpt-5-nano',
-  },
-  {
-    providerType: 'openai',
-    providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
-    id: 'gpt-4.1',
-    model: 'gpt-4.1',
-  },
-  {
-    providerType: 'openai',
-    providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
     id: 'gpt-4.1-mini',
     model: 'gpt-4.1-mini',
-  },
-  {
-    providerType: 'openai',
-    providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
-    id: 'gpt-4.1-nano',
-    model: 'gpt-4.1-nano',
-  },
-  {
-    providerType: 'openai',
-    providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
-    id: 'gpt-4o',
-    model: 'gpt-4o',
-  },
-  {
-    providerType: 'openai',
-    providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
-    id: 'gpt-4o-mini',
-    model: 'gpt-4o-mini',
   },
   {
     providerType: 'openai',
@@ -301,44 +261,16 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     },
   },
   {
-    providerType: 'openai',
-    providerId: PROVIDER_TYPES_INFO.openai.defaultProviderId,
-    id: 'o3',
-    model: 'o3',
-    reasoning: {
-      enabled: true,
-      reasoning_effort: 'medium',
-    },
+    providerType: 'gemini',
+    providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
+    id: 'gemini-3-pro-preview',
+    model: 'gemini-3-pro-preview',
   },
   {
     providerType: 'gemini',
     providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
-    id: 'gemini-2.5-pro',
-    model: 'gemini-2.5-pro',
-  },
-  {
-    providerType: 'gemini',
-    providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
-    id: 'gemini-2.5-flash',
-    model: 'gemini-2.5-flash',
-  },
-  {
-    providerType: 'gemini',
-    providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
-    id: 'gemini-2.5-flash-lite',
-    model: 'gemini-2.5-flash-lite',
-  },
-  {
-    providerType: 'gemini',
-    providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
-    id: 'gemini-2.0-flash',
-    model: 'gemini-2.0-flash',
-  },
-  {
-    providerType: 'gemini',
-    providerId: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
-    id: 'gemini-2.0-flash-lite',
-    model: 'gemini-2.0-flash-lite',
+    id: 'gemini-3-flash-preview',
+    model: 'gemini-3-flash-preview',
   },
   {
     providerType: 'deepseek',
@@ -353,55 +285,16 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     model: 'deepseek-reasoner',
   },
   {
-    providerType: 'perplexity',
-    providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
-    id: 'sonar',
-    model: 'sonar',
-    web_search_options: {
-      search_context_size: 'low',
-    },
+    providerType: 'xai',
+    providerId: PROVIDER_TYPES_INFO.xai.defaultProviderId,
+    id: 'grok-4-1-fast',
+    model: 'grok-4-1-fast',
   },
   {
-    providerType: 'perplexity',
-    providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
-    id: 'sonar-pro',
-    model: 'sonar',
-    web_search_options: {
-      search_context_size: 'low',
-    },
-  },
-  {
-    providerType: 'perplexity',
-    providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
-    id: 'sonar-deep-research',
-    model: 'sonar-deep-research',
-    web_search_options: {
-      search_context_size: 'low',
-    },
-  },
-  {
-    providerType: 'perplexity',
-    providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
-    id: 'sonar-reasoning',
-    model: 'sonar',
-    web_search_options: {
-      search_context_size: 'low',
-    },
-  },
-  {
-    providerType: 'perplexity',
-    providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
-    id: 'sonar-reasoning-pro',
-    model: 'sonar',
-    web_search_options: {
-      search_context_size: 'low',
-    },
-  },
-  {
-    providerType: 'morph',
-    providerId: PROVIDER_TYPES_INFO.morph.defaultProviderId,
-    id: 'morph-v0',
-    model: 'morph-v0',
+    providerType: 'xai',
+    providerId: PROVIDER_TYPES_INFO.xai.defaultProviderId,
+    id: 'grok-4-1-fast-non-reasoning',
+    model: 'grok-4-1-fast-non-reasoning',
   },
 ]
 
@@ -462,6 +355,8 @@ type ModelPricing = {
 }
 
 export const OPENAI_PRICES: Record<string, ModelPricing> = {
+  'gpt-5.2': { input: 1.75, output: 14 },
+  'gpt-5.1': { input: 1.25, output: 10 },
   'gpt-5': { input: 1.25, output: 10 },
   'gpt-5-mini': { input: 0.25, output: 2 },
   'gpt-5-nano': { input: 0.05, output: 0.4 },
@@ -478,6 +373,7 @@ export const OPENAI_PRICES: Record<string, ModelPricing> = {
 }
 
 export const ANTHROPIC_PRICES: Record<string, ModelPricing> = {
+  'claude-opus-4-5': { input: 5, output: 25 },
   'claude-opus-4-1': { input: 15, output: 75 },
   'claude-opus-4-0': { input: 15, output: 75 },
   'claude-sonnet-4-5': { input: 3, output: 15 },
@@ -490,3 +386,14 @@ export const ANTHROPIC_PRICES: Record<string, ModelPricing> = {
 
 // Gemini is currently free for low rate limits
 export const GEMINI_PRICES: Record<string, ModelPricing> = {}
+
+export const XAI_PRICES: Record<string, ModelPricing> = {
+  'grok-4-1-fast': { input: 0.2, output: 0.5 },
+  'grok-4-1-fast-non-reasoning': { input: 0.2, output: 0.5 },
+}
+
+export const DEEPSEEK_PRICES: Record<string, ModelPricing> = {
+  // Model version: DeepSeek-V3.2
+  'deepseek-chat': { input: 0.28, output: 0.42 },
+  'deepseek-reasoner': { input: 0.28, output: 0.42 },
+}

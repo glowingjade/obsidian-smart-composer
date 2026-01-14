@@ -1,39 +1,45 @@
-import { PROVIDER_TYPES_INFO } from '../../../constants'
-import { ChatModel } from '../../../types/chat-model.types'
-import { LLMProvider } from '../../../types/provider.types'
 import { SettingMigration } from '../setting.types'
 
-export const NEW_DEFAULT_PROVIDERS: LLMProvider[] = [
+// Provider IDs at version 3 (hardcoded to avoid dependency on current constants)
+const V3_PROVIDER_IDS = {
+  'lm-studio': 'lm-studio',
+  deepseek: 'deepseek',
+  morph: 'morph',
+} as const
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const NEW_DEFAULT_PROVIDERS: any[] = [
   {
     type: 'lm-studio',
-    id: PROVIDER_TYPES_INFO['lm-studio'].defaultProviderId,
+    id: V3_PROVIDER_IDS['lm-studio'],
   },
   {
     type: 'deepseek',
-    id: PROVIDER_TYPES_INFO.deepseek.defaultProviderId,
+    id: V3_PROVIDER_IDS.deepseek,
   },
   {
     type: 'morph',
-    id: PROVIDER_TYPES_INFO.morph.defaultProviderId,
+    id: V3_PROVIDER_IDS.morph,
   },
 ]
 
-export const NEW_DEFAULT_CHAT_MODELS: ChatModel[] = [
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const NEW_DEFAULT_CHAT_MODELS: any[] = [
   {
     providerType: 'deepseek',
-    providerId: PROVIDER_TYPES_INFO.deepseek.defaultProviderId,
+    providerId: V3_PROVIDER_IDS.deepseek,
     id: 'deepseek-chat',
     model: 'deepseek-chat',
   },
   {
     providerType: 'deepseek',
-    providerId: PROVIDER_TYPES_INFO.deepseek.defaultProviderId,
+    providerId: V3_PROVIDER_IDS.deepseek,
     id: 'deepseek-reasoner',
     model: 'deepseek-reasoner',
   },
   {
     providerType: 'morph',
-    providerId: PROVIDER_TYPES_INFO.morph.defaultProviderId,
+    providerId: V3_PROVIDER_IDS.morph,
     id: 'morph-v0',
     model: 'morph-v0',
   },

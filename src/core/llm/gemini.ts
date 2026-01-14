@@ -1,15 +1,15 @@
 import {
   Content,
-  EnhancedGenerateContentResponse,
-  FunctionCallPart,
-  Tool as GeminiTool,
-  GenerateContentResult,
-  GenerateContentStreamResult,
-  GoogleGenerativeAI,
+  FunctionCall,
+  GenerateContentResponse,
+  GoogleGenAI,
   Part,
   Schema,
-  SchemaType,
-} from '@google/generative-ai'
+  ThinkingConfig,
+  ThinkingLevel,
+  Tool,
+  Type,
+} from '@google/genai'
 import { v4 as uuidv4 } from 'uuid'
 
 import { ChatModel } from '../../types/chat-model.types'
@@ -35,12 +35,6 @@ import {
 } from './exception'
 
 /**
- * TODO: Consider future migration from '@google/generative-ai' to '@google/genai' (https://github.com/googleapis/js-genai)
- * - Current '@google/generative-ai' library will not support newest models and features
- * - Not migrating yet as '@google/genai' is still in preview status
- */
-
-/**
  * Note on OpenAI Compatibility API:
  * Gemini provides an OpenAI-compatible endpoint (https://ai.google.dev/gemini-api/docs/openai)
  * which allows using the OpenAI SDK with Gemini models. However, there are currently CORS issues
@@ -50,7 +44,7 @@ import {
 export class GeminiProvider extends BaseLLMProvider<
   Extract<LLMProvider, { type: 'gemini' }>
 > {
-  private client: GoogleGenerativeAI
+  private client: GoogleGenAI
   private apiKey: string
 
   constructor(provider: Extract<LLMProvider, { type: 'gemini' }>) {
@@ -59,7 +53,7 @@ export class GeminiProvider extends BaseLLMProvider<
       throw new Error('Gemini does not support custom base URL')
     }
 
-    this.client = new GoogleGenerativeAI(provider.apiKey ?? '')
+    this.client = new GoogleGenAI({ apiKey: provider.apiKey ?? '' })
     this.apiKey = provider.apiKey ?? ''
   }
 
@@ -85,32 +79,25 @@ export class GeminiProvider extends BaseLLMProvider<
         : undefined
 
     try {
-      const model = this.client.getGenerativeModel({
+      const result = await this.client.models.generateContent({
         model: request.model,
-        generationConfig: {
+        contents: request.messages
+          .map((message) => GeminiProvider.parseRequestMessage(message))
+          .filter((m): m is Content => m !== null),
+        config: {
           maxOutputTokens: request.max_tokens,
           temperature: request.temperature,
           topP: request.top_p,
           presencePenalty: request.presence_penalty,
           frequencyPenalty: request.frequency_penalty,
-        },
-        systemInstruction: systemInstruction,
-      })
-
-      const result = await model.generateContent(
-        {
           systemInstruction: systemInstruction,
-          contents: request.messages
-            .map((message) => GeminiProvider.parseRequestMessage(message))
-            .filter((m): m is Content => m !== null),
+          abortSignal: options?.signal,
           tools: request.tools?.map((tool) =>
             GeminiProvider.parseRequestTool(tool),
           ),
+          thinkingConfig: GeminiProvider.buildThinkingConfig(model),
         },
-        {
-          signal: options?.signal,
-        },
-      )
+      })
 
       const messageId = crypto.randomUUID() // Gemini does not return a message id
       return GeminiProvider.parseNonStreamingResponse(
@@ -156,32 +143,25 @@ export class GeminiProvider extends BaseLLMProvider<
         : undefined
 
     try {
-      const model = this.client.getGenerativeModel({
+      const stream = await this.client.models.generateContentStream({
         model: request.model,
-        generationConfig: {
+        contents: request.messages
+          .map((message) => GeminiProvider.parseRequestMessage(message))
+          .filter((m): m is Content => m !== null),
+        config: {
           maxOutputTokens: request.max_tokens,
           temperature: request.temperature,
           topP: request.top_p,
           presencePenalty: request.presence_penalty,
           frequencyPenalty: request.frequency_penalty,
-        },
-        systemInstruction: systemInstruction,
-      })
-
-      const stream = await model.generateContentStream(
-        {
           systemInstruction: systemInstruction,
-          contents: request.messages
-            .map((message) => GeminiProvider.parseRequestMessage(message))
-            .filter((m): m is Content => m !== null),
+          abortSignal: options?.signal,
           tools: request.tools?.map((tool) =>
             GeminiProvider.parseRequestTool(tool),
           ),
+          thinkingConfig: GeminiProvider.buildThinkingConfig(model),
         },
-        {
-          signal: options?.signal,
-        },
-      )
+      })
 
       const messageId = crypto.randomUUID() // Gemini does not return a message id
       return this.streamResponseGenerator(stream, request.model, messageId)
@@ -202,11 +182,11 @@ export class GeminiProvider extends BaseLLMProvider<
   }
 
   private async *streamResponseGenerator(
-    stream: GenerateContentStreamResult,
+    stream: AsyncGenerator<GenerateContentResponse>,
     model: string,
     messageId: string,
   ): AsyncIterable<LLMResponseStreaming> {
-    for await (const chunk of stream.stream) {
+    for await (const chunk of stream) {
       yield GeminiProvider.parseStreamingResponseChunk(chunk, model, messageId)
     }
   }
@@ -245,28 +225,47 @@ export class GeminiProvider extends BaseLLMProvider<
         }
       }
       case 'assistant': {
-        const contentParts: Part[] = [
-          ...(message.content === '' ? [] : [{ text: message.content }]),
-          ...(message.tool_calls?.map((toolCall): FunctionCallPart => {
+        const thoughtSignature =
+          message.providerMetadata?.gemini?.thoughtSignature
+        const hasToolCalls = message.tool_calls && message.tool_calls.length > 0
+
+        const contentParts: Part[] = []
+
+        // Add text content part
+        if (message.content !== '') {
+          // If no tool calls and we have a signature, attach it to the text part
+          if (!hasToolCalls && thoughtSignature) {
+            contentParts.push({ text: message.content, thoughtSignature })
+          } else {
+            contentParts.push({ text: message.content })
+          }
+        }
+
+        // Add function call parts
+        if (message.tool_calls) {
+          message.tool_calls.forEach((toolCall, index) => {
+            let args: Record<string, unknown>
             try {
-              const args = JSON.parse(toolCall.arguments ?? '{}')
-              return {
-                functionCall: {
-                  name: toolCall.name,
-                  args,
-                },
-              }
-            } catch (error) {
-              // If the arguments are not valid JSON, return an empty object
-              return {
-                functionCall: {
-                  name: toolCall.name,
-                  args: {},
-                },
-              }
+              args = JSON.parse(toolCall.arguments ?? '{}')
+            } catch {
+              args = {}
             }
-          }) ?? []),
-        ]
+
+            const part: Part = {
+              functionCall: {
+                name: toolCall.name,
+                args,
+              },
+            }
+
+            // Attach signature to the first function call part
+            if (index === 0 && thoughtSignature) {
+              part.thoughtSignature = thoughtSignature
+            }
+
+            contentParts.push(part)
+          })
+        }
 
         if (contentParts.length === 0) {
           return null
@@ -294,65 +293,68 @@ export class GeminiProvider extends BaseLLMProvider<
   }
 
   static parseNonStreamingResponse(
-    response: GenerateContentResult,
+    response: GenerateContentResponse,
     model: string,
     messageId: string,
   ): LLMResponseNonStreaming {
+    const parts = response.candidates?.[0]?.content?.parts
+    const thoughtSignature = GeminiProvider.extractThoughtSignature(parts)
+    const reasoning = GeminiProvider.extractThoughtSummaries(parts)
+
     return {
       id: messageId,
       choices: [
         {
-          finish_reason:
-            response.response.candidates?.[0]?.finishReason ?? null,
+          finish_reason: response.candidates?.[0]?.finishReason ?? null,
           message: {
-            content: response.response.text(),
+            content: response.text ?? '',
+            reasoning: reasoning,
             role: 'assistant',
-            tool_calls: response.response.functionCalls()?.map((f) => ({
-              id: uuidv4(),
-              type: 'function',
-              function: {
-                name: f.name,
-                arguments: JSON.stringify(f.args),
-              },
-            })),
+            tool_calls: GeminiProvider.parseFunctionCalls(
+              response.functionCalls,
+            ),
+            providerMetadata: thoughtSignature
+              ? { gemini: { thoughtSignature } }
+              : undefined,
           },
         },
       ],
       created: Date.now(),
       model: model,
       object: 'chat.completion',
-      usage: response.response.usageMetadata
+      usage: response.usageMetadata
         ? {
-            prompt_tokens: response.response.usageMetadata.promptTokenCount,
-            completion_tokens:
-              response.response.usageMetadata.candidatesTokenCount,
-            total_tokens: response.response.usageMetadata.totalTokenCount,
+            prompt_tokens: response.usageMetadata.promptTokenCount ?? 0,
+            completion_tokens: response.usageMetadata.candidatesTokenCount ?? 0,
+            total_tokens: response.usageMetadata.totalTokenCount ?? 0,
           }
         : undefined,
     }
   }
 
   static parseStreamingResponseChunk(
-    chunk: EnhancedGenerateContentResponse,
+    chunk: GenerateContentResponse,
     model: string,
     messageId: string,
   ): LLMResponseStreaming {
+    const parts = chunk.candidates?.[0]?.content?.parts
+    const thoughtSignature = GeminiProvider.extractThoughtSignature(parts)
+    const reasoning = GeminiProvider.extractThoughtSummaries(parts)
+
     return {
       id: messageId,
       choices: [
         {
           finish_reason: chunk.candidates?.[0]?.finishReason ?? null,
           delta: {
-            content: chunk.text(),
-            tool_calls: chunk.functionCalls()?.map((f, index) => ({
-              index,
-              id: uuidv4(),
-              type: 'function',
-              function: {
-                name: f.name,
-                arguments: JSON.stringify(f.args),
-              },
-            })),
+            content: chunk.text ?? null,
+            reasoning: reasoning,
+            tool_calls: GeminiProvider.parseFunctionCallsForStreaming(
+              chunk.functionCalls,
+            ),
+            providerMetadata: thoughtSignature
+              ? { gemini: { thoughtSignature } }
+              : undefined,
           },
         },
       ],
@@ -361,12 +363,83 @@ export class GeminiProvider extends BaseLLMProvider<
       object: 'chat.completion.chunk',
       usage: chunk.usageMetadata
         ? {
-            prompt_tokens: chunk.usageMetadata.promptTokenCount,
-            completion_tokens: chunk.usageMetadata.candidatesTokenCount,
-            total_tokens: chunk.usageMetadata.totalTokenCount,
+            prompt_tokens: chunk.usageMetadata.promptTokenCount ?? 0,
+            completion_tokens: chunk.usageMetadata.candidatesTokenCount ?? 0,
+            total_tokens: chunk.usageMetadata.totalTokenCount ?? 0,
           }
         : undefined,
     }
+  }
+
+  private static parseFunctionCalls(functionCalls: FunctionCall[] | undefined) {
+    return functionCalls?.map((f) => ({
+      id: f.id ?? uuidv4(),
+      type: 'function' as const,
+      function: {
+        name: f.name ?? '',
+        arguments: JSON.stringify(f.args ?? {}),
+      },
+    }))
+  }
+
+  private static parseFunctionCallsForStreaming(
+    functionCalls: FunctionCall[] | undefined,
+  ) {
+    return functionCalls?.map((f, index) => ({
+      index,
+      id: f.id ?? uuidv4(),
+      type: 'function' as const,
+      function: {
+        name: f.name ?? '',
+        arguments: JSON.stringify(f.args ?? {}),
+      },
+    }))
+  }
+
+  /**
+   * Extracts the thought signature from Gemini response parts.
+   * Per Gemini docs:
+   * - With function calls: signature is on the first functionCall part
+   * - Without function calls: signature is on the last part
+   */
+  private static extractThoughtSignature(
+    parts: Part[] | undefined,
+  ): string | undefined {
+    if (!parts || parts.length === 0) {
+      return undefined
+    }
+
+    // Check if there are function calls
+    const hasFunctionCalls = parts.some((part) => part.functionCall)
+
+    if (hasFunctionCalls) {
+      // Signature is on the first function call part
+      const firstFcPart = parts.find((part) => part.functionCall)
+      return firstFcPart?.thoughtSignature
+    } else {
+      // Signature is on the last part
+      const lastPart = parts[parts.length - 1]
+      return lastPart?.thoughtSignature
+    }
+  }
+
+  /**
+   * Extracts thought summaries from Gemini response parts.
+   * Thought summaries are parts with thought: true and contain reasoning text.
+   */
+  private static extractThoughtSummaries(
+    parts: Part[] | undefined,
+  ): string | undefined {
+    if (!parts || parts.length === 0) {
+      return undefined
+    }
+
+    const thoughtParts = parts.filter((part) => part.thought && part.text)
+    if (thoughtParts.length === 0) {
+      return undefined
+    }
+
+    return thoughtParts.map((part) => part.text).join('')
   }
 
   private static removeAdditionalProperties(schema: unknown): unknown {
@@ -392,7 +465,7 @@ export class GeminiProvider extends BaseLLMProvider<
     )
   }
 
-  private static parseRequestTool(tool: RequestTool): GeminiTool {
+  private static parseRequestTool(tool: RequestTool): Tool {
     // Gemini does not support additionalProperties field in JSON schema, so we need to clean it
     const cleanedParameters = this.removeAdditionalProperties(
       tool.function.parameters,
@@ -404,11 +477,8 @@ export class GeminiProvider extends BaseLLMProvider<
           name: tool.function.name,
           description: tool.function.description,
           parameters: {
-            type: SchemaType.OBJECT,
-            properties: (cleanedParameters.properties ?? {}) as Record<
-              string,
-              Schema
-            >,
+            type: Type.OBJECT,
+            properties: cleanedParameters.properties as Record<string, Schema>,
           },
         },
       ],
@@ -432,6 +502,45 @@ export class GeminiProvider extends BaseLLMProvider<
     }
   }
 
+  private static readonly THINKING_LEVEL_MAP: Record<string, ThinkingLevel> = {
+    minimal: ThinkingLevel.MINIMAL,
+    low: ThinkingLevel.LOW,
+    medium: ThinkingLevel.MEDIUM,
+    high: ThinkingLevel.HIGH,
+  }
+
+  /**
+   * Builds the thinking config for Gemini API based on model settings.
+   * - Gemini 3 models use thinkingLevel
+   * - Gemini 2.5 models use thinkingBudget
+   */
+  private static buildThinkingConfig(
+    model: ChatModel & { providerType: 'gemini' },
+  ): ThinkingConfig | undefined {
+    if (!model.thinking?.enabled) {
+      return undefined
+    }
+
+    const config: ThinkingConfig = {}
+
+    if (model.thinking.thinking_level) {
+      const level = this.THINKING_LEVEL_MAP[model.thinking.thinking_level]
+      if (level) {
+        config.thinkingLevel = level
+      }
+    }
+
+    if (model.thinking.thinking_budget !== undefined) {
+      config.thinkingBudget = model.thinking.thinking_budget
+    }
+
+    if (model.thinking.include_thoughts) {
+      config.includeThoughts = model.thinking.include_thoughts
+    }
+
+    return config
+  }
+
   async getEmbedding(model: string, text: string): Promise<number[]> {
     if (!this.apiKey) {
       throw new LLMAPIKeyNotSetException(
@@ -440,10 +549,11 @@ export class GeminiProvider extends BaseLLMProvider<
     }
 
     try {
-      const response = await this.client
-        .getGenerativeModel({ model: model })
-        .embedContent(text)
-      return response.embedding.values
+      const response = await this.client.models.embedContent({
+        model: model,
+        contents: text,
+      })
+      return response.embeddings?.[0]?.values ?? []
     } catch (error) {
       if (error.status === 429) {
         throw new LLMRateLimitExceededException(

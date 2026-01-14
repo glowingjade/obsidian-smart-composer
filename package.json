@@ -47,7 +47,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
     "@electric-sql/pglite": "0.2.12",
-    "@google/generative-ai": "^0.24.0",
+    "@google/genai": "^1.35.0",
     "@lexical/clipboard": "^0.17.1",
     "@lexical/react": "^0.17.1",
     "@modelcontextprotocol/sdk": "^1.9.0",
