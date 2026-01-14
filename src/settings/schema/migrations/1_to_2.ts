@@ -663,7 +663,7 @@ export const migrateFrom1To2: SettingMigration['migrate'] = (
     (v) => v.type === 'ollama' && v.baseUrl === data.ollamaApplyModel.baseUrl,
   )
 
-  let ollamaApplyProviderId
+  let ollamaApplyProviderId: string
   if (
     !existingSameOllamaProviderForApplyModel &&
     data.ollamaApplyModel.baseUrl
@@ -739,7 +739,7 @@ export const migrateFrom1To2: SettingMigration['migrate'] = (
         v.apiKey === data.openAICompatibleApplyModel.apiKey,
     )
 
-    let customProviderId
+    let customProviderId: string
     if (existingSameProvider) {
       // if the same provider is already exists, don't create a new one
       customProviderId = existingSameProvider.id
