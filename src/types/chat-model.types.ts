@@ -64,23 +64,15 @@ export const chatModelSchema = z.discriminatedUnion('providerType', [
       .optional(),
   }),
   z.object({
-    providerType: z.literal('groq'),
-    ...baseChatModelSchema.shape,
-  }),
-  z.object({
-    providerType: z.literal('openrouter'),
-    ...baseChatModelSchema.shape,
-  }),
-  z.object({
-    providerType: z.literal('ollama'),
-    ...baseChatModelSchema.shape,
-  }),
-  z.object({
-    providerType: z.literal('lm-studio'),
+    providerType: z.literal('xai'),
     ...baseChatModelSchema.shape,
   }),
   z.object({
     providerType: z.literal('deepseek'),
+    ...baseChatModelSchema.shape,
+  }),
+  z.object({
+    providerType: z.literal('mistral'),
     ...baseChatModelSchema.shape,
   }),
   z.object({
@@ -93,15 +85,15 @@ export const chatModelSchema = z.discriminatedUnion('providerType', [
       .optional(),
   }),
   z.object({
-    providerType: z.literal('mistral'),
+    providerType: z.literal('openrouter'),
     ...baseChatModelSchema.shape,
   }),
   z.object({
-    providerType: z.literal('morph'),
+    providerType: z.literal('ollama'),
     ...baseChatModelSchema.shape,
   }),
   z.object({
-    providerType: z.literal('xai'),
+    providerType: z.literal('lm-studio'),
     ...baseChatModelSchema.shape,
   }),
   z.object({

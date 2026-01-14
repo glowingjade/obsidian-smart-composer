@@ -8,10 +8,8 @@ import { BaseLLMProvider } from './base'
 import { DeepSeekStudioProvider } from './deepseekStudioProvider'
 import { LLMModelNotFoundException } from './exception'
 import { GeminiProvider } from './gemini'
-import { GroqProvider } from './groq'
 import { LmStudioProvider } from './lmStudioProvider'
 import { MistralProvider } from './mistralProvider'
-import { MorphProvider } from './morphProvider'
 import { OllamaProvider } from './ollama'
 import { OpenAIAuthenticatedProvider } from './openai'
 import { OpenAICompatibleProvider } from './openaiCompatibleProvider'
@@ -22,7 +20,6 @@ import { XaiProvider } from './xaiProvider'
 /*
  * OpenAI, OpenAI-compatible, and Anthropic providers include token usage statistics
  * in the final chunk of the stream (following OpenAI's behavior).
- * Groq and Ollama currently do not support usage statistics for streaming responses.
  */
 
 export function getProviderClient({
@@ -47,9 +44,6 @@ export function getProviderClient({
     case 'gemini': {
       return new GeminiProvider(provider)
     }
-    case 'groq': {
-      return new GroqProvider(provider)
-    }
     case 'openrouter': {
       return new OpenRouterProvider(provider)
     }
@@ -67,9 +61,6 @@ export function getProviderClient({
     }
     case 'mistral': {
       return new MistralProvider(provider)
-    }
-    case 'morph': {
-      return new MorphProvider(provider)
     }
     case 'xai': {
       return new XaiProvider(provider)

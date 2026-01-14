@@ -45,9 +45,33 @@ export const PROVIDER_TYPES_INFO = {
     supportEmbedding: true,
     additionalSettings: [],
   },
-  groq: {
-    label: 'Groq',
-    defaultProviderId: 'groq',
+  xai: {
+    label: 'xAI',
+    defaultProviderId: 'xai',
+    requireApiKey: true,
+    requireBaseUrl: false,
+    supportEmbedding: false,
+    additionalSettings: [],
+  },
+  deepseek: {
+    label: 'DeepSeek',
+    defaultProviderId: 'deepseek',
+    requireApiKey: true,
+    requireBaseUrl: false,
+    supportEmbedding: false,
+    additionalSettings: [],
+  },
+  mistral: {
+    label: 'Mistral',
+    defaultProviderId: 'mistral',
+    requireApiKey: true,
+    requireBaseUrl: false,
+    supportEmbedding: false,
+    additionalSettings: [],
+  },
+  perplexity: {
+    label: 'Perplexity',
+    defaultProviderId: 'perplexity',
     requireApiKey: true,
     requireBaseUrl: false,
     supportEmbedding: false,
@@ -75,46 +99,6 @@ export const PROVIDER_TYPES_INFO = {
     requireApiKey: false,
     requireBaseUrl: false,
     supportEmbedding: true,
-    additionalSettings: [],
-  },
-  deepseek: {
-    label: 'DeepSeek',
-    defaultProviderId: 'deepseek',
-    requireApiKey: true,
-    requireBaseUrl: false,
-    supportEmbedding: false,
-    additionalSettings: [],
-  },
-  perplexity: {
-    label: 'Perplexity',
-    defaultProviderId: 'perplexity',
-    requireApiKey: true,
-    requireBaseUrl: false,
-    supportEmbedding: false,
-    additionalSettings: [],
-  },
-  mistral: {
-    label: 'Mistral',
-    defaultProviderId: 'mistral',
-    requireApiKey: true,
-    requireBaseUrl: false,
-    supportEmbedding: false,
-    additionalSettings: [],
-  },
-  morph: {
-    label: 'Morph',
-    defaultProviderId: 'morph',
-    requireApiKey: true,
-    requireBaseUrl: false,
-    supportEmbedding: false,
-    additionalSettings: [],
-  },
-  xai: {
-    label: 'xAI',
-    defaultProviderId: 'xai',
-    requireApiKey: true,
-    requireBaseUrl: false,
-    supportEmbedding: false,
     additionalSettings: [],
   },
   'azure-openai': {
@@ -195,20 +179,20 @@ export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
     id: PROVIDER_TYPES_INFO.gemini.defaultProviderId,
   },
   {
+    type: 'xai',
+    id: PROVIDER_TYPES_INFO.xai.defaultProviderId,
+  },
+  {
     type: 'deepseek',
     id: PROVIDER_TYPES_INFO.deepseek.defaultProviderId,
   },
   {
-    type: 'perplexity',
-    id: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
-  },
-  {
-    type: 'groq',
-    id: PROVIDER_TYPES_INFO.groq.defaultProviderId,
-  },
-  {
     type: 'mistral',
     id: PROVIDER_TYPES_INFO.mistral.defaultProviderId,
+  },
+  {
+    type: 'perplexity',
+    id: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
   },
   {
     type: 'openrouter',
@@ -221,14 +205,6 @@ export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
   {
     type: 'lm-studio',
     id: PROVIDER_TYPES_INFO['lm-studio'].defaultProviderId,
-  },
-  {
-    type: 'morph',
-    id: PROVIDER_TYPES_INFO.morph.defaultProviderId,
-  },
-  {
-    type: 'xai',
-    id: PROVIDER_TYPES_INFO.xai.defaultProviderId,
   },
 ]
 
@@ -307,57 +283,6 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: PROVIDER_TYPES_INFO.deepseek.defaultProviderId,
     id: 'deepseek-reasoner',
     model: 'deepseek-reasoner',
-  },
-  {
-    providerType: 'perplexity',
-    providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
-    id: 'sonar',
-    model: 'sonar',
-    web_search_options: {
-      search_context_size: 'low',
-    },
-  },
-  {
-    providerType: 'perplexity',
-    providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
-    id: 'sonar-pro',
-    model: 'sonar',
-    web_search_options: {
-      search_context_size: 'low',
-    },
-  },
-  {
-    providerType: 'perplexity',
-    providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
-    id: 'sonar-deep-research',
-    model: 'sonar-deep-research',
-    web_search_options: {
-      search_context_size: 'low',
-    },
-  },
-  {
-    providerType: 'perplexity',
-    providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
-    id: 'sonar-reasoning',
-    model: 'sonar',
-    web_search_options: {
-      search_context_size: 'low',
-    },
-  },
-  {
-    providerType: 'perplexity',
-    providerId: PROVIDER_TYPES_INFO.perplexity.defaultProviderId,
-    id: 'sonar-reasoning-pro',
-    model: 'sonar',
-    web_search_options: {
-      search_context_size: 'low',
-    },
-  },
-  {
-    providerType: 'morph',
-    providerId: PROVIDER_TYPES_INFO.morph.defaultProviderId,
-    id: 'morph-v0',
-    model: 'morph-v0',
   },
   {
     providerType: 'xai',
@@ -465,4 +390,10 @@ export const GEMINI_PRICES: Record<string, ModelPricing> = {}
 export const XAI_PRICES: Record<string, ModelPricing> = {
   'grok-4-1-fast': { input: 0.2, output: 0.5 },
   'grok-4-1-fast-non-reasoning': { input: 0.2, output: 0.5 },
+}
+
+export const DEEPSEEK_PRICES: Record<string, ModelPricing> = {
+  // Model version: DeepSeek-V3.2
+  'deepseek-chat': { input: 0.28, output: 0.42 },
+  'deepseek-reasoner': { input: 0.28, output: 0.42 },
 }
