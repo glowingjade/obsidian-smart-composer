@@ -7,6 +7,14 @@ export const APPLY_VIEW_TYPE = 'smtcmp-apply-view'
 
 export const PGLITE_DB_PATH = '.smtcmp_vector_db.tar.gz'
 
+export const CODEX_CLIENT_ID = 'app_EMoamEEZ73f0CkXaXp7hrann'
+export const CODEX_ISSUER = 'https://auth.openai.com'
+export const CODEX_REDIRECT_PORT = 1455 // Other ports are blocked by OpenAI
+export const CODEX_REDIRECT_URI = `http://localhost:${CODEX_REDIRECT_PORT}/auth/callback`
+export const CODEX_AUTH_CLAIMS_URL = 'https://api.openai.com/auth'
+export const CODEX_RESPONSES_ENDPOINT =
+  'https://chatgpt.com/backend-api/codex/responses'
+
 // Default model ids
 export const DEFAULT_CHAT_MODEL_ID = 'claude-sonnet-4.5'
 // gpt-4.1-mini is preferred over gpt-5-mini because gpt-5 models do not support
@@ -27,6 +35,14 @@ export const PROVIDER_TYPES_INFO = {
     requireApiKey: true,
     requireBaseUrl: false,
     supportEmbedding: true,
+    additionalSettings: [],
+  },
+  'openai-codex': {
+    label: 'OpenAI Codex (OAuth)',
+    defaultProviderId: 'openai-codex',
+    requireApiKey: false,
+    requireBaseUrl: false,
+    supportEmbedding: false,
     additionalSettings: [],
   },
   anthropic: {
@@ -169,6 +185,10 @@ export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
   {
     type: 'openai',
     id: PROVIDER_TYPES_INFO.openai.defaultProviderId,
+  },
+  {
+    type: 'openai-codex',
+    id: PROVIDER_TYPES_INFO['openai-codex'].defaultProviderId,
   },
   {
     type: 'anthropic',

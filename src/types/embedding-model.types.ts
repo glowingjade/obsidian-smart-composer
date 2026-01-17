@@ -19,9 +19,14 @@ const baseEmbeddingModelSchema = z.object({
   dimension: z.number(),
 })
 
+// TODO: De-duplicate provider lists; embedding providers should be a subset of LLM providers.
 export const embeddingModelSchema = z.discriminatedUnion('providerType', [
   z.object({
     providerType: z.literal('openai'),
+    ...baseEmbeddingModelSchema.shape,
+  }),
+  z.object({
+    providerType: z.literal('openai-codex'),
     ...baseEmbeddingModelSchema.shape,
   }),
   z.object({

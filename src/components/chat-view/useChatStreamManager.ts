@@ -53,8 +53,9 @@ export function useChatStreamManager({
   const { providerClient, model } = useMemo(() => {
     try {
       return getChatModelClient({
-        settings,
         modelId: settings.chatModelId,
+        settings,
+        setSettings,
       })
     } catch (error) {
       if (error instanceof LLMModelNotFoundException) {
@@ -76,8 +77,9 @@ export function useChatStreamManager({
           ),
         })
         return getChatModelClient({
-          settings,
           modelId: firstChatModel.id,
+          settings,
+          setSettings,
         })
       }
       throw error

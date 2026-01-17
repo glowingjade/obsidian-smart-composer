@@ -20,6 +20,18 @@ export const llmProviderSchema = z.discriminatedUnion('type', [
     ...baseLlmProviderSchema.shape,
   }),
   z.object({
+    type: z.literal('openai-codex'),
+    ...baseLlmProviderSchema.shape,
+    oauth: z
+      .object({
+        accessToken: z.string(),
+        refreshToken: z.string(),
+        expiresAt: z.number(),
+        accountId: z.string().optional(),
+      })
+      .optional(),
+  }),
+  z.object({
     type: z.literal('anthropic'),
     ...baseLlmProviderSchema.shape,
   }),

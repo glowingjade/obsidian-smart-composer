@@ -82,7 +82,9 @@ export function ProvidersSection({ app, plugin }: ProvidersSectionProps) {
       <div className="smtcmp-settings-header">Providers</div>
 
       <div className="smtcmp-settings-desc">
-        <span>Enter your API keys for the providers you want to use</span>
+        <span>
+          Enter your API keys or connect OAuth for the providers you want to use
+        </span>
         <br />
         <a
           href="https://github.com/glowingjade/obsidian-smart-composer/wiki/1.2-Initial-Setup#getting-your-api-key"
@@ -105,7 +107,7 @@ export function ProvidersSection({ app, plugin }: ProvidersSectionProps) {
             <tr>
               <th>ID</th>
               <th>Type</th>
-              <th>API Key</th>
+              <th>Credential</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -120,7 +122,13 @@ export function ProvidersSection({ app, plugin }: ProvidersSectionProps) {
                     new EditProviderModal(app, plugin, provider).open()
                   }}
                 >
-                  {provider.apiKey ? '••••••••' : 'Set API key'}
+                  {provider.type === 'openai-codex'
+                    ? provider.oauth?.accessToken
+                      ? 'OAuth connected'
+                      : 'Connect OAuth'
+                    : provider.apiKey
+                      ? '••••••••'
+                      : 'Set API key'}
                 </td>
                 <td>
                   <div className="smtcmp-settings-actions">
