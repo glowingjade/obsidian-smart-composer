@@ -44,7 +44,7 @@ export class PerplexityMessageAdapter extends OpenAIMessageAdapter {
           content: choice.message.content,
           role: choice.message.role,
           annotations: annotations,
-          tool_calls: choice.message.tool_calls,
+          tool_calls: this.normalizeToolCalls(choice.message.tool_calls),
         },
       })),
       created: response.created,
