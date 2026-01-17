@@ -1,5 +1,7 @@
 import type { Server } from 'http'
 
+import { Platform } from 'obsidian'
+
 import {
   CODEX_AUTH_CLAIMS_URL,
   CODEX_CLIENT_ID,
@@ -101,6 +103,10 @@ export async function startCodexCallbackServer(params: {
   redirectUri?: string
   timeoutMs?: number
 }): Promise<string> {
+  if (!Platform.isDesktop) {
+    throw new Error('Codex callback server is not supported on mobile')
+  }
+
   const { state, redirectUri, timeoutMs } = params
   const { hostname, port, path, origin } = parseCodexRedirectUri(redirectUri)
 

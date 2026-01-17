@@ -1,5 +1,13 @@
-import http from 'http'
-import https from 'https'
+/*
+ * Codex endpoints block direct fetch with CORS, so we use Node's http/https on
+ * desktop. Obsidian's requestUrl can bypass CORS but does not support streaming
+ * today; Codex requires stream: true, so a non-streaming fallback needs more
+ * work and is not worth it for now. Mobile has no Node APIs, so Node modules are
+ * loaded at runtime only when running on desktop.
+ */
+import type { IncomingMessage } from 'http'
+
+import { Platform } from 'obsidian'
 
 export type StreamSource = ReadableStream<Uint8Array> | NodeJS.ReadableStream
 
@@ -81,12 +89,20 @@ export async function postStream(
   return response
 }
 
-function nodePost(
+async function nodePost(
   endpoint: string,
   body: string,
   headers?: Record<string, string>,
   signal?: AbortSignal,
-): Promise<http.IncomingMessage> {
+): Promise<IncomingMessage> {
+  if (!Platform.isDesktop) {
+    throw new Error('HTTP transport is not available on mobile')
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const http = require('http') as typeof import('http')
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const https = require('https') as typeof import('https')
   const url = new URL(endpoint)
   const client = url.protocol === 'https:' ? https : http
   const payloadLength = Buffer.byteLength(body)
