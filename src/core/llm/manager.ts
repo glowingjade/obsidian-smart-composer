@@ -3,6 +3,7 @@ import { ChatModel } from '../../types/chat-model.types'
 import { LLMProvider } from '../../types/provider.types'
 
 import { AnthropicProvider } from './anthropic'
+import { AnthropicClaudeCodeProvider } from './anthropicClaudeCodeProvider'
 import { AzureOpenAIProvider } from './azureOpenaiProvider'
 import { BaseLLMProvider } from './base'
 import { DeepSeekStudioProvider } from './deepseekStudioProvider'
@@ -58,6 +59,9 @@ export function getProviderClient({
     }
     case 'openai-codex': {
       return new OpenAICodexProvider(provider, onProviderUpdate)
+    }
+    case 'anthropic-claude-code': {
+      return new AnthropicClaudeCodeProvider(provider, onProviderUpdate)
     }
     case 'anthropic': {
       return new AnthropicProvider(provider)

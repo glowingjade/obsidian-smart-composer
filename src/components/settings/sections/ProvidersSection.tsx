@@ -122,7 +122,8 @@ export function ProvidersSection({ app, plugin }: ProvidersSectionProps) {
                     new EditProviderModal(app, plugin, provider).open()
                   }}
                 >
-                  {provider.type === 'openai-codex'
+                  {provider.type === 'openai-codex' ||
+                  provider.type === 'anthropic-claude-code'
                     ? provider.oauth?.accessToken
                       ? 'OAuth connected'
                       : 'Connect OAuth'

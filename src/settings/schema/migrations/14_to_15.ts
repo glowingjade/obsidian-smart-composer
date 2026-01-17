@@ -6,6 +6,7 @@ import { getMigratedChatModels, getMigratedProviders } from './migrationUtils'
 const DEFAULT_PROVIDERS_V15 = [
   { type: 'openai', id: 'openai' },
   { type: 'openai-codex', id: 'openai-codex' },
+  { type: 'anthropic-claude-code', id: 'anthropic-claude-code' },
   { type: 'anthropic', id: 'anthropic' },
   { type: 'gemini', id: 'gemini' },
   { type: 'xai', id: 'xai' },

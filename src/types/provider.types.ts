@@ -32,6 +32,18 @@ export const llmProviderSchema = z.discriminatedUnion('type', [
       .optional(),
   }),
   z.object({
+    type: z.literal('anthropic-claude-code'),
+    ...baseLlmProviderSchema.shape,
+    oauth: z
+      .object({
+        accessToken: z.string(),
+        refreshToken: z.string(),
+        expiresAt: z.number(),
+        accountId: z.string().optional(),
+      })
+      .optional(),
+  }),
+  z.object({
     type: z.literal('anthropic'),
     ...baseLlmProviderSchema.shape,
   }),

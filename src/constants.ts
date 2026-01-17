@@ -15,6 +15,24 @@ export const CODEX_AUTH_CLAIMS_URL = 'https://api.openai.com/auth'
 export const CODEX_RESPONSES_ENDPOINT =
   'https://chatgpt.com/backend-api/codex/responses'
 
+export const CLAUDE_CODE_CLIENT_ID = '9d1c250a-e61b-44d9-88ed-5944d1962f5e'
+export const CLAUDE_CODE_AUTHORIZE_BASE_URL = 'https://claude.ai'
+export const CLAUDE_CODE_CONSOLE_BASE_URL = 'https://console.anthropic.com'
+export const CLAUDE_CODE_OAUTH_TOKEN_ENDPOINT =
+  'https://console.anthropic.com/v1/oauth/token'
+export const CLAUDE_CODE_REDIRECT_URI =
+  'https://console.anthropic.com/oauth/code/callback'
+export const CLAUDE_CODE_MESSAGES_ENDPOINT =
+  'https://api.anthropic.com/v1/messages'
+export const CLAUDE_CODE_DEFAULT_BETAS = [
+  'oauth-2025-04-20',
+  'interleaved-thinking-2025-05-14',
+  'claude-code-20250219',
+]
+export const CLAUDE_CODE_SYSTEM_MESSAGE =
+  "You are Claude Code, Anthropic's official CLI for Claude."
+export const CLAUDE_CODE_USER_AGENT = 'claude-cli/2.1.2 (external, cli)'
+
 // Default model ids
 export const DEFAULT_CHAT_MODEL_ID = 'claude-sonnet-4.5'
 // gpt-4.1-mini is preferred over gpt-5-mini because gpt-5 models do not support
@@ -40,6 +58,14 @@ export const PROVIDER_TYPES_INFO = {
   'openai-codex': {
     label: 'OpenAI Codex (OAuth)',
     defaultProviderId: 'openai-codex',
+    requireApiKey: false,
+    requireBaseUrl: false,
+    supportEmbedding: false,
+    additionalSettings: [],
+  },
+  'anthropic-claude-code': {
+    label: 'Claude Code (OAuth)',
+    defaultProviderId: 'anthropic-claude-code',
     requireApiKey: false,
     requireBaseUrl: false,
     supportEmbedding: false,
@@ -189,6 +215,10 @@ export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
   {
     type: 'openai-codex',
     id: PROVIDER_TYPES_INFO['openai-codex'].defaultProviderId,
+  },
+  {
+    type: 'anthropic-claude-code',
+    id: PROVIDER_TYPES_INFO['anthropic-claude-code'].defaultProviderId,
   },
   {
     type: 'anthropic',

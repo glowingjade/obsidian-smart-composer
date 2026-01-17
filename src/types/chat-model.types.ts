@@ -47,6 +47,16 @@ export const chatModelSchema = z.discriminatedUnion('providerType', [
       .optional(),
   }),
   z.object({
+    providerType: z.literal('anthropic-claude-code'),
+    ...baseChatModelSchema.shape,
+    thinking: z
+      .object({
+        enabled: z.boolean(),
+        budget_tokens: z.number(),
+      })
+      .optional(),
+  }),
+  z.object({
     providerType: z.literal('anthropic'),
     ...baseChatModelSchema.shape,
     thinking: z

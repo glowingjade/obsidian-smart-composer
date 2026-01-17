@@ -9,7 +9,7 @@ describe('Migration from v14 to v15', () => {
     expect(result.version).toBe(15)
   })
 
-  it('should add openai-codex provider', () => {
+  it('should add oauth providers', () => {
     const oldSettings = {
       version: 14,
       providers: [
@@ -22,5 +22,8 @@ describe('Migration from v14 to v15', () => {
     const result = migrateFrom14To15(oldSettings)
     const providers = result.providers as { type: string; id: string }[]
     expect(providers.find((p) => p.type === 'openai-codex')).toBeDefined()
+    expect(
+      providers.find((p) => p.type === 'anthropic-claude-code'),
+    ).toBeDefined()
   })
 })
