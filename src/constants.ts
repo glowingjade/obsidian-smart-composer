@@ -47,14 +47,6 @@ export const RECOMMENDED_MODELS_FOR_EMBEDDING = [
 ]
 
 export const PROVIDER_TYPES_INFO = {
-  openai: {
-    label: 'OpenAI',
-    defaultProviderId: 'openai',
-    requireApiKey: true,
-    requireBaseUrl: false,
-    supportEmbedding: true,
-    additionalSettings: [],
-  },
   'openai-codex': {
     label: 'OpenAI Codex (OAuth)',
     defaultProviderId: 'openai-codex',
@@ -69,6 +61,14 @@ export const PROVIDER_TYPES_INFO = {
     requireApiKey: false,
     requireBaseUrl: false,
     supportEmbedding: false,
+    additionalSettings: [],
+  },
+  openai: {
+    label: 'OpenAI',
+    defaultProviderId: 'openai',
+    requireApiKey: true,
+    requireBaseUrl: false,
+    supportEmbedding: true,
     additionalSettings: [],
   },
   anthropic: {
@@ -209,16 +209,16 @@ export const PROVIDER_TYPES_INFO = {
  */
 export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
   {
-    type: 'openai',
-    id: PROVIDER_TYPES_INFO.openai.defaultProviderId,
-  },
-  {
     type: 'openai-codex',
     id: PROVIDER_TYPES_INFO['openai-codex'].defaultProviderId,
   },
   {
     type: 'anthropic-claude-code',
     id: PROVIDER_TYPES_INFO['anthropic-claude-code'].defaultProviderId,
+  },
+  {
+    type: 'openai',
+    id: PROVIDER_TYPES_INFO.openai.defaultProviderId,
   },
   {
     type: 'anthropic',
@@ -264,6 +264,32 @@ export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
  * 2. If there's same model id in user's settings, it's data should be overwritten by default model
  */
 export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
+  {
+    providerType: 'openai-codex',
+    providerId: PROVIDER_TYPES_INFO['openai-codex'].defaultProviderId,
+    id: 'codex-gpt-5.2',
+    model: 'gpt-5.2',
+  },
+  {
+    providerType: 'anthropic-claude-code',
+    providerId: PROVIDER_TYPES_INFO['anthropic-claude-code'].defaultProviderId,
+    id: 'claude-code-opus-4.5',
+    model: 'claude-opus-4-5',
+    thinking: {
+      enabled: true,
+      budget_tokens: 8192,
+    },
+  },
+  {
+    providerType: 'anthropic-claude-code',
+    providerId: PROVIDER_TYPES_INFO['anthropic-claude-code'].defaultProviderId,
+    id: 'claude-code-sonnet-4.5',
+    model: 'claude-sonnet-4-5',
+    thinking: {
+      enabled: true,
+      budget_tokens: 8192,
+    },
+  },
   {
     providerType: 'anthropic',
     providerId: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
