@@ -134,11 +134,11 @@ const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
    * OpenAI Codex model settings
    */
   {
-    check: (model) => model.providerType === 'openai-codex',
+    check: (model) => model.providerType === 'openai-plan',
 
     SettingsComponent: (props: SettingsComponentProps) => {
       const { model, plugin, onClose } = props
-      const typedModel = model as ChatModel & { providerType: 'openai-codex' }
+      const typedModel = model as ChatModel & { providerType: 'openai-plan' }
       const [reasoningEffort, setReasoningEffort] = useState<string>(
         typedModel.reasoning?.reasoning_effort ?? '',
       )
@@ -229,7 +229,9 @@ const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
    * @see https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking
    */
   {
-    check: (model) => model.providerType === 'anthropic' || model.providerType === 'anthropic-claude-code',
+    check: (model) =>
+      model.providerType === 'anthropic' ||
+      model.providerType === 'anthropic-plan',
     SettingsComponent: (props: SettingsComponentProps) => {
       const DEFAULT_THINKING_BUDGET_TOKENS = 8192
 

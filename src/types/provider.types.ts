@@ -16,11 +16,7 @@ export const baseLlmProviderSchema = z.object({
  */
 export const llmProviderSchema = z.discriminatedUnion('type', [
   z.object({
-    type: z.literal('openai'),
-    ...baseLlmProviderSchema.shape,
-  }),
-  z.object({
-    type: z.literal('openai-codex'),
+    type: z.literal('anthropic-plan'),
     ...baseLlmProviderSchema.shape,
     oauth: z
       .object({
@@ -32,7 +28,7 @@ export const llmProviderSchema = z.discriminatedUnion('type', [
       .optional(),
   }),
   z.object({
-    type: z.literal('anthropic-claude-code'),
+    type: z.literal('openai-plan'),
     ...baseLlmProviderSchema.shape,
     oauth: z
       .object({
@@ -45,6 +41,10 @@ export const llmProviderSchema = z.discriminatedUnion('type', [
   }),
   z.object({
     type: z.literal('anthropic'),
+    ...baseLlmProviderSchema.shape,
+  }),
+  z.object({
+    type: z.literal('openai'),
     ...baseLlmProviderSchema.shape,
   }),
   z.object({

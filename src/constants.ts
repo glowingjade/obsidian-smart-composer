@@ -47,18 +47,26 @@ export const RECOMMENDED_MODELS_FOR_EMBEDDING = [
 ]
 
 export const PROVIDER_TYPES_INFO = {
-  'openai-codex': {
-    label: 'OpenAI Codex (OAuth)',
-    defaultProviderId: 'openai-codex',
+  'anthropic-plan': {
+    label: 'Claude Plan',
+    defaultProviderId: 'anthropic-plan',
     requireApiKey: false,
     requireBaseUrl: false,
     supportEmbedding: false,
     additionalSettings: [],
   },
-  'anthropic-claude-code': {
-    label: 'Claude Code (OAuth)',
-    defaultProviderId: 'anthropic-claude-code',
+  'openai-plan': {
+    label: 'OpenAI Plan',
+    defaultProviderId: 'openai-plan',
     requireApiKey: false,
+    requireBaseUrl: false,
+    supportEmbedding: false,
+    additionalSettings: [],
+  },
+  anthropic: {
+    label: 'Anthropic',
+    defaultProviderId: 'anthropic',
+    requireApiKey: true,
     requireBaseUrl: false,
     supportEmbedding: false,
     additionalSettings: [],
@@ -69,14 +77,6 @@ export const PROVIDER_TYPES_INFO = {
     requireApiKey: true,
     requireBaseUrl: false,
     supportEmbedding: true,
-    additionalSettings: [],
-  },
-  anthropic: {
-    label: 'Anthropic',
-    defaultProviderId: 'anthropic',
-    requireApiKey: true,
-    requireBaseUrl: false,
-    supportEmbedding: false,
     additionalSettings: [],
   },
   gemini: {
@@ -209,20 +209,20 @@ export const PROVIDER_TYPES_INFO = {
  */
 export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
   {
-    type: 'openai-codex',
-    id: PROVIDER_TYPES_INFO['openai-codex'].defaultProviderId,
+    type: 'anthropic-plan',
+    id: PROVIDER_TYPES_INFO['anthropic-plan'].defaultProviderId,
   },
   {
-    type: 'anthropic-claude-code',
-    id: PROVIDER_TYPES_INFO['anthropic-claude-code'].defaultProviderId,
-  },
-  {
-    type: 'openai',
-    id: PROVIDER_TYPES_INFO.openai.defaultProviderId,
+    type: 'openai-plan',
+    id: PROVIDER_TYPES_INFO['openai-plan'].defaultProviderId,
   },
   {
     type: 'anthropic',
     id: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
+  },
+  {
+    type: 'openai',
+    id: PROVIDER_TYPES_INFO.openai.defaultProviderId,
   },
   {
     type: 'gemini',
@@ -265,15 +265,9 @@ export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
  */
 export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
   {
-    providerType: 'openai-codex',
-    providerId: PROVIDER_TYPES_INFO['openai-codex'].defaultProviderId,
-    id: 'codex-gpt-5.2',
-    model: 'gpt-5.2',
-  },
-  {
-    providerType: 'anthropic-claude-code',
-    providerId: PROVIDER_TYPES_INFO['anthropic-claude-code'].defaultProviderId,
-    id: 'claude-code-opus-4.5',
+    providerType: 'anthropic-plan',
+    providerId: PROVIDER_TYPES_INFO['anthropic-plan'].defaultProviderId,
+    id: 'claude-opus-4.5 (plan)',
     model: 'claude-opus-4-5',
     thinking: {
       enabled: true,
@@ -281,14 +275,20 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     },
   },
   {
-    providerType: 'anthropic-claude-code',
-    providerId: PROVIDER_TYPES_INFO['anthropic-claude-code'].defaultProviderId,
-    id: 'claude-code-sonnet-4.5',
+    providerType: 'anthropic-plan',
+    providerId: PROVIDER_TYPES_INFO['anthropic-plan'].defaultProviderId,
+    id: 'claude-sonnet-4.5 (plan)',
     model: 'claude-sonnet-4-5',
     thinking: {
       enabled: true,
       budget_tokens: 8192,
     },
+  },
+  {
+    providerType: 'openai-plan',
+    providerId: PROVIDER_TYPES_INFO['openai-plan'].defaultProviderId,
+    id: 'gpt-5.2 (plan)',
+    model: 'gpt-5.2',
   },
   {
     providerType: 'anthropic',

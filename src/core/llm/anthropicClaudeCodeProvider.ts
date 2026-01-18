@@ -23,7 +23,7 @@ import {
 } from './exception'
 
 export class AnthropicClaudeCodeProvider extends BaseLLMProvider<
-  Extract<LLMProvider, { type: 'anthropic-claude-code' }>
+  Extract<LLMProvider, { type: 'anthropic-plan' }>
 > {
   private adapter: ClaudeCodeMessageAdapter
   private onProviderUpdate?: (
@@ -32,7 +32,7 @@ export class AnthropicClaudeCodeProvider extends BaseLLMProvider<
   ) => void | Promise<void>
 
   constructor(
-    provider: Extract<LLMProvider, { type: 'anthropic-claude-code' }>,
+    provider: Extract<LLMProvider, { type: 'anthropic-plan' }>,
     onProviderUpdate?: (
       providerId: string,
       update: Partial<LLMProvider>,
@@ -48,7 +48,7 @@ export class AnthropicClaudeCodeProvider extends BaseLLMProvider<
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
-    if (model.providerType !== 'anthropic-claude-code') {
+    if (model.providerType !== 'anthropic-plan') {
       throw new Error('Model is not a Claude Code model')
     }
     const headers = await this.getAuthHeaders()
@@ -65,7 +65,7 @@ export class AnthropicClaudeCodeProvider extends BaseLLMProvider<
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
-    if (model.providerType !== 'anthropic-claude-code') {
+    if (model.providerType !== 'anthropic-plan') {
       throw new Error('Model is not a Claude Code model')
     }
     const headers = await this.getAuthHeaders()

@@ -13,17 +13,15 @@ describe('Migration from v14 to v15', () => {
     const oldSettings = {
       version: 14,
       providers: [
-        { type: 'openai', id: 'openai', apiKey: 'openai-key' },
         { type: 'anthropic', id: 'anthropic', apiKey: 'anthropic-key' },
+        { type: 'openai', id: 'openai', apiKey: 'openai-key' },
       ],
       chatModels: [],
     }
 
     const result = migrateFrom14To15(oldSettings)
     const providers = result.providers as { type: string; id: string }[]
-    expect(providers.find((p) => p.type === 'openai-codex')).toBeDefined()
-    expect(
-      providers.find((p) => p.type === 'anthropic-claude-code'),
-    ).toBeDefined()
+    expect(providers.find((p) => p.type === 'anthropic-plan')).toBeDefined()
+    expect(providers.find((p) => p.type === 'openai-plan')).toBeDefined()
   })
 })

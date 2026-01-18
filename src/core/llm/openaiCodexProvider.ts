@@ -21,7 +21,7 @@ import {
 } from './exception'
 
 export class OpenAICodexProvider extends BaseLLMProvider<
-  Extract<LLMProvider, { type: 'openai-codex' }>
+  Extract<LLMProvider, { type: 'openai-plan' }>
 > {
   private adapter: CodexMessageAdapter
   private onProviderUpdate?: (
@@ -30,7 +30,7 @@ export class OpenAICodexProvider extends BaseLLMProvider<
   ) => void | Promise<void>
 
   constructor(
-    provider: Extract<LLMProvider, { type: 'openai-codex' }>,
+    provider: Extract<LLMProvider, { type: 'openai-plan' }>,
     onProviderUpdate?: (
       providerId: string,
       update: Partial<LLMProvider>,
@@ -46,7 +46,7 @@ export class OpenAICodexProvider extends BaseLLMProvider<
     request: LLMRequestNonStreaming,
     options?: LLMOptions,
   ): Promise<LLMResponseNonStreaming> {
-    if (model.providerType !== 'openai-codex') {
+    if (model.providerType !== 'openai-plan') {
       throw new Error('Model is not an OpenAI Codex model')
     }
 
@@ -64,17 +64,13 @@ export class OpenAICodexProvider extends BaseLLMProvider<
     request: LLMRequestStreaming,
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>> {
-    if (model.providerType !== 'openai-codex') {
+    if (model.providerType !== 'openai-plan') {
       throw new Error('Model is not an OpenAI Codex model')
     }
 
     const authHeaders = await this.getAuthHeaders()
     const normalizedRequest = this.normalizeRequest(model, request)
-    return this.adapter.streamResponse(
-      normalizedRequest,
-      options,
-      authHeaders,
-    )
+    return this.adapter.streamResponse(normalizedRequest, options, authHeaders)
   }
 
   async getEmbedding(_model: string, _text: string): Promise<number[]> {
@@ -128,10 +124,9 @@ export class OpenAICodexProvider extends BaseLLMProvider<
     return headers
   }
 
-  private normalizeRequest<T extends LLMRequestNonStreaming | LLMRequestStreaming>(
-    model:Extract<ChatModel, { providerType: 'openai-codex' }>,
-    request: T,
-  ): T {
+  private normalizeRequest<
+    T extends LLMRequestNonStreaming | LLMRequestStreaming,
+  >(model: Extract<ChatModel, { providerType: 'openai-plan' }>, request: T): T {
     const reasoningEffort = model.reasoning?.reasoning_effort
     const reasoningSummary = model.reasoning?.reasoning_summary
     return {

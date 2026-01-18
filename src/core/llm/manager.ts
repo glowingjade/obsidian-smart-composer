@@ -54,17 +54,17 @@ export function getProviderClient({
     : undefined
 
   switch (provider.type) {
-    case 'openai': {
-      return new OpenAIAuthenticatedProvider(provider)
-    }
-    case 'openai-codex': {
-      return new OpenAICodexProvider(provider, onProviderUpdate)
-    }
-    case 'anthropic-claude-code': {
+    case 'anthropic-plan': {
       return new AnthropicClaudeCodeProvider(provider, onProviderUpdate)
+    }
+    case 'openai-plan': {
+      return new OpenAICodexProvider(provider, onProviderUpdate)
     }
     case 'anthropic': {
       return new AnthropicProvider(provider)
+    }
+    case 'openai': {
+      return new OpenAIAuthenticatedProvider(provider)
     }
     case 'gemini': {
       return new GeminiProvider(provider)

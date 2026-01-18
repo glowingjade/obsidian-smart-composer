@@ -4,10 +4,10 @@ import { DEFAULT_CHAT_MODELS_V14 } from './13_to_14'
 import { getMigratedChatModels, getMigratedProviders } from './migrationUtils'
 
 const DEFAULT_PROVIDERS_V15 = [
-  { type: 'openai-codex', id: 'openai-codex' },
-  { type: 'anthropic-claude-code', id: 'anthropic-claude-code' },
-  { type: 'openai', id: 'openai' },
+  { type: 'anthropic-plan', id: 'anthropic-plan' },
+  { type: 'openai-plan', id: 'openai-plan' },
   { type: 'anthropic', id: 'anthropic' },
+  { type: 'openai', id: 'openai' },
   { type: 'gemini', id: 'gemini' },
   { type: 'xai', id: 'xai' },
   { type: 'deepseek', id: 'deepseek' },
@@ -20,15 +20,9 @@ const DEFAULT_PROVIDERS_V15 = [
 
 const DEFAULT_CHAT_MODELS_V15 = [
   {
-    providerType: 'openai-codex',
-    providerId: 'openai-codex',
-    id: 'codex-gpt-5.2',
-    model: 'gpt-5.2',
-  },
-  {
-    providerType: 'anthropic-claude-code',
-    providerId: 'anthropic-claude-code',
-    id: 'claude-code-opus-4.5',
+    providerType: 'anthropic-plan',
+    providerId: 'anthropic-plan',
+    id: 'claude-opus-4.5 (plan)',
     model: 'claude-opus-4-5',
     thinking: {
       enabled: true,
@@ -36,14 +30,20 @@ const DEFAULT_CHAT_MODELS_V15 = [
     },
   },
   {
-    providerType: 'anthropic-claude-code',
-    providerId: 'anthropic-claude-code',
-    id: 'claude-code-sonnet-4.5',
+    providerType: 'anthropic-plan',
+    providerId: 'anthropic-plan',
+    id: 'claude-sonnet-4.5 (plan)',
     model: 'claude-sonnet-4-5',
     thinking: {
       enabled: true,
       budget_tokens: 8192,
     },
+  },
+  {
+    providerType: 'openai-plan',
+    providerId: 'openai-plan',
+    id: 'gpt-5.2 (plan)',
+    model: 'gpt-5.2',
   },
   ...DEFAULT_CHAT_MODELS_V14,
 ]

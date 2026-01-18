@@ -154,7 +154,7 @@ function ProviderFormComponent({
     })
     const accountId = extractCodexAccountId(tokens)
     setFormData((prev) => {
-      if (prev.type !== 'openai-codex') {
+      if (prev.type !== 'openai-plan') {
         return prev
       }
 
@@ -176,7 +176,7 @@ function ProviderFormComponent({
       pkceVerifier,
     })
     setFormData((prev) => {
-      if (prev.type !== 'anthropic-claude-code') {
+      if (prev.type !== 'anthropic-plan') {
         return prev
       }
 
@@ -233,8 +233,8 @@ function ProviderFormComponent({
         </>
       )}
 
-      {formData.type !== 'openai-codex' &&
-        formData.type !== 'anthropic-claude-code' && (
+      {formData.type !== 'openai-plan' &&
+        formData.type !== 'anthropic-plan' && (
           <>
             <ObsidianSetting
               name="API Key"
@@ -266,7 +266,7 @@ function ProviderFormComponent({
           </>
         )}
 
-      {formData.type === 'openai-codex' && (
+      {formData.type === 'openai-plan' && (
         <>
           <ObsidianSetting
             name="OAuth Status"
@@ -369,7 +369,7 @@ function ProviderFormComponent({
         </>
       )}
 
-      {formData.type === 'anthropic-claude-code' && (
+      {formData.type === 'anthropic-plan' && (
         <>
           <ObsidianSetting
             name="OAuth Status"
