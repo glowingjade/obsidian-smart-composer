@@ -229,7 +229,7 @@ const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
    * @see https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking
    */
   {
-    check: (model) => model.providerType === 'anthropic',
+    check: (model) => model.providerType === 'anthropic' || model.providerType === 'anthropic-claude-code',
     SettingsComponent: (props: SettingsComponentProps) => {
       const DEFAULT_THINKING_BUDGET_TOKENS = 8192
 
