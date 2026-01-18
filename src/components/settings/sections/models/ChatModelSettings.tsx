@@ -131,6 +131,98 @@ const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
   },
 
   /**
+   * OpenAI Codex model settings
+   */
+  {
+    check: (model) => model.providerType === 'openai-codex',
+
+    SettingsComponent: (props: SettingsComponentProps) => {
+      const { model, plugin, onClose } = props
+      const typedModel = model as ChatModel & { providerType: 'openai-codex' }
+      const [reasoningEffort, setReasoningEffort] = useState<string>(
+        typedModel.reasoning?.reasoning_effort ?? '',
+      )
+      const [reasoningSummary, setReasoningSummary] = useState<string>(
+        typedModel.reasoning?.reasoning_summary ?? '',
+      )
+
+      const handleSubmit = async () => {
+        const updatedReasoning = {
+          reasoning_effort: reasoningEffort || undefined,
+          reasoning_summary: reasoningSummary || undefined,
+        }
+        const updatedModel = {
+          ...typedModel,
+          reasoning:
+            updatedReasoning.reasoning_effort ||
+            updatedReasoning.reasoning_summary
+              ? updatedReasoning
+              : undefined,
+        }
+
+        const validationResult = chatModelSchema.safeParse(updatedModel)
+        if (!validationResult.success) {
+          new Notice(
+            validationResult.error.issues.map((v) => v.message).join('\n'),
+          )
+          return
+        }
+
+        await plugin.setSettings({
+          ...plugin.settings,
+          chatModels: plugin.settings.chatModels.map((m) =>
+            m.id === model.id ? updatedModel : m,
+          ),
+        })
+        onClose()
+      }
+
+      return (
+        <>
+          <ObsidianSetting
+            name="Reasoning Effort"
+            desc="Controls how much thinking the model does before responding."
+          >
+            <ObsidianDropdown
+              value={reasoningEffort}
+              options={{
+                '': 'Not set (OpenAI default)',
+                none: 'none',
+                minimal: 'minimal',
+                low: 'low',
+                medium: 'medium',
+                high: 'high',
+                xhigh: 'xhigh',
+              }}
+              onChange={(value: string) => setReasoningEffort(value)}
+            />
+          </ObsidianSetting>
+          <ObsidianSetting
+            name="Reasoning Summary"
+            desc="Optional summary of reasoning."
+          >
+            <ObsidianDropdown
+              value={reasoningSummary}
+              options={{
+                '': 'Not set (OpenAI default)',
+                auto: 'auto',
+                concise: 'concise',
+                detailed: 'detailed',
+              }}
+              onChange={(value: string) => setReasoningSummary(value)}
+            />
+          </ObsidianSetting>
+
+          <ObsidianSetting>
+            <ObsidianButton text="Save" onClick={handleSubmit} cta />
+            <ObsidianButton text="Cancel" onClick={onClose} />
+          </ObsidianSetting>
+        </>
+      )
+    },
+  },
+
+  /**
    * Claude model settings
    *
    * For extended thinking, see:

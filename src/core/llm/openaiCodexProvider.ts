@@ -1,3 +1,5 @@
+import { Reasoning, ReasoningEffort } from 'openai/resources/shared'
+
 import { ChatModel } from '../../types/chat-model.types'
 import {
   LLMOptions,
@@ -49,7 +51,12 @@ export class OpenAICodexProvider extends BaseLLMProvider<
     }
 
     const authHeaders = await this.getAuthHeaders()
-    return this.adapter.generateResponse(request, options, authHeaders)
+    const normalizedRequest = this.normalizeRequest(model, request)
+    return this.adapter.generateResponse(
+      normalizedRequest,
+      options,
+      authHeaders,
+    )
   }
 
   async streamResponse(
@@ -62,7 +69,12 @@ export class OpenAICodexProvider extends BaseLLMProvider<
     }
 
     const authHeaders = await this.getAuthHeaders()
-    return this.adapter.streamResponse(request, options, authHeaders)
+    const normalizedRequest = this.normalizeRequest(model, request)
+    return this.adapter.streamResponse(
+      normalizedRequest,
+      options,
+      authHeaders,
+    )
   }
 
   async getEmbedding(_model: string, _text: string): Promise<number[]> {
@@ -114,5 +126,22 @@ export class OpenAICodexProvider extends BaseLLMProvider<
     }
 
     return headers
+  }
+
+  private normalizeRequest<T extends LLMRequestNonStreaming | LLMRequestStreaming>(
+    model:Extract<ChatModel, { providerType: 'openai-codex' }>,
+    request: T,
+  ): T {
+    const reasoningEffort = model.reasoning?.reasoning_effort
+    const reasoningSummary = model.reasoning?.reasoning_summary
+    return {
+      ...request,
+      reasoning_effort: reasoningEffort
+        ? (reasoningEffort as ReasoningEffort)
+        : undefined,
+      reasoning_summary: reasoningSummary
+        ? (reasoningSummary as Reasoning['summary'])
+        : undefined,
+    }
   }
 }

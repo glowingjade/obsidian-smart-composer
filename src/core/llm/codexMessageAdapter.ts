@@ -6,6 +6,7 @@ import type {
   ResponseInput,
   ResponseInputItem,
   ResponseInputMessageContentList,
+  ResponseReasoningItem,
   ResponseStreamEvent,
 } from 'openai/resources/responses/responses'
 
@@ -58,6 +59,7 @@ export class CodexMessageAdapter {
     })
     const content = extractResponseText(payload)
     const toolCalls = extractToolCalls(payload)
+    const reasoningSummary = extractReasoningSummary(payload)
 
     return {
       id: payload.id,
@@ -70,6 +72,7 @@ export class CodexMessageAdapter {
           message: {
             role: 'assistant',
             content,
+            ...(reasoningSummary ? { reasoning: reasoningSummary } : {}),
             ...(toolCalls.length > 0 ? { tool_calls: toolCalls } : {}),
           },
         },
@@ -110,7 +113,6 @@ export class CodexMessageAdapter {
 
     const getChunkId = (itemId?: string) =>
       responseId.length > 0 ? responseId : (itemId ?? 'codex-response')
-
     for await (const chunk of parseJsonSseStream<ResponseStreamEvent>(body)) {
       if (chunk.type === 'response.created') {
         responseId = chunk.response.id
@@ -190,6 +192,44 @@ export class CodexMessageAdapter {
               delta: {
                 content: chunk.delta,
                 ...(deltaRole ? { role: deltaRole } : {}),
+              },
+            },
+          ],
+        }
+        continue
+      }
+
+      if (chunk.type === 'response.reasoning_summary_text.delta') {
+        yield {
+          id: getChunkId(chunk.item_id),
+          created,
+          model: resolvedModel,
+          object: 'chat.completion.chunk',
+          system_fingerprint: systemFingerprint,
+          choices: [
+            {
+              finish_reason: null,
+              delta: {
+                reasoning: chunk.delta,
+              },
+            },
+          ],
+        }
+        continue
+      }
+
+      if (chunk.type === 'response.reasoning_summary_text.done') {
+        yield {
+          id: getChunkId(chunk.item_id),
+          created,
+          model: resolvedModel,
+          object: 'chat.completion.chunk',
+          system_fingerprint: systemFingerprint,
+          choices: [
+            {
+              finish_reason: null,
+              delta: {
+                reasoning: chunk.text,
               },
             },
           ],
@@ -327,8 +367,19 @@ export class CodexMessageAdapter {
           }),
         )
       : undefined
+    const reasoning =
+      request.reasoning_effort || request.reasoning_summary
+        ? {
+            ...(request.reasoning_effort && {
+              effort: request.reasoning_effort,
+            }),
+            ...(request.reasoning_summary && {
+              summary: request.reasoning_summary,
+            }),
+          }
+        : undefined
 
-    return {
+    const body: ResponseCreateParamsBase = {
       model: request.model,
       input,
       instructions,
@@ -336,12 +387,11 @@ export class CodexMessageAdapter {
       stream,
       tools,
       tool_choice: normalizeToolChoice(request.tool_choice),
-      ...(request.reasoning_effort && {
-        reasoning: {
-          effort: request.reasoning_effort,
-        },
+      ...(reasoning && {
+        reasoning,
       }),
     }
+    return body
   }
 }
 
@@ -468,6 +518,18 @@ function extractToolCalls(payload: Response): ToolCall[] {
     }
   }
   return toolCalls
+}
+
+function extractReasoningSummary(payload: Response): string | undefined {
+  const reasoningItem = payload.output.find(
+    (item): item is ResponseReasoningItem => item.type === 'reasoning',
+  )
+  if (!reasoningItem?.summary?.length) return undefined
+  const summaryText = reasoningItem.summary
+    .filter((part) => part.type === 'summary_text')
+    .map((part) => part.text)
+    .join('')
+  return summaryText.length > 0 ? summaryText : undefined
 }
 
 function getSystemFingerprint(payload: Response): string | undefined {

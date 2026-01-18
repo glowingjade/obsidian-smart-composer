@@ -41,8 +41,8 @@ export const chatModelSchema = z.discriminatedUnion('providerType', [
     ...baseChatModelSchema.shape,
     reasoning: z
       .object({
-        enabled: z.boolean(),
         reasoning_effort: z.string().optional(),
+        reasoning_summary: z.string().optional(),
       })
       .optional(),
   }),
