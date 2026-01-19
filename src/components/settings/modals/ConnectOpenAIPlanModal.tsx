@@ -78,7 +78,11 @@ function ConnectOpenAIPlanModalComponent({
   ) => {
     const accountId = extractCodexAccountId(tokens)
 
-    if (!plugin.settings.providers.find((p) => p.type === 'openai-plan' && p.id === OPENAI_PLAN_PROVIDER_ID)) {
+    if (
+      !plugin.settings.providers.find(
+        (p) => p.type === 'openai-plan' && p.id === OPENAI_PLAN_PROVIDER_ID,
+      )
+    ) {
       throw new Error('OpenAI Plan provider not found.')
     }
     await plugin.setSettings({

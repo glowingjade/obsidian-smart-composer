@@ -48,7 +48,7 @@ function ConnectClaudePlanModalComponent({
   const hasAuthData = authorizeUrl.length > 0 && pkceVerifier.length > 0
 
   useEffect(() => {
-    ; (async () => {
+    ;(async () => {
       try {
         const pkce = await generateClaudeCodePkce()
         const newState = generateClaudeCodeState()
@@ -82,7 +82,12 @@ function ConnectClaudePlanModalComponent({
         state,
       })
 
-      if (!plugin.settings.providers.find((p) => p.type === 'anthropic-plan' && p.id === CLAUDE_PLAN_PROVIDER_ID)) {
+      if (
+        !plugin.settings.providers.find(
+          (p) =>
+            p.type === 'anthropic-plan' && p.id === CLAUDE_PLAN_PROVIDER_ID,
+        )
+      ) {
         throw new Error('Claude Plan provider not found.')
       }
       await plugin.setSettings({
