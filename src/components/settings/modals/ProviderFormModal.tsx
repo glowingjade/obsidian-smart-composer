@@ -1,9 +1,9 @@
 import { App, Notice } from 'obsidian'
 import { useState } from 'react'
 
-import { PROVIDER_TYPES_INFO } from '../../../constants'
+import { PLAN_PROVIDER_TYPES, PROVIDER_TYPES_INFO } from '../../../constants'
 import SmartComposerPlugin from '../../../main'
-import { LLMProvider, llmProviderSchema } from '../../../types/provider.types'
+import { LLMProvider, LLMProviderType, llmProviderSchema } from '../../../types/provider.types'
 import { ObsidianButton } from '../../common/ObsidianButton'
 import { ObsidianDropdown } from '../../common/ObsidianDropdown'
 import { ObsidianSetting } from '../../common/ObsidianSetting'
@@ -139,7 +139,7 @@ function ProviderFormComponent({
                 Object.entries(PROVIDER_TYPES_INFO)
                   .filter(
                     ([key]) =>
-                      key !== 'openai-plan' && key !== 'anthropic-plan',
+                      !PLAN_PROVIDER_TYPES.includes(key as LLMProviderType),
                   )
                   .map(([key, info]) => [key, info.label]),
               )}
@@ -158,8 +158,7 @@ function ProviderFormComponent({
         </>
       )}
 
-      {formData.type !== 'openai-plan' &&
-        formData.type !== 'anthropic-plan' && (
+      {!PLAN_PROVIDER_TYPES.includes(formData.type) && (
           <>
             <ObsidianSetting
               name="API Key"

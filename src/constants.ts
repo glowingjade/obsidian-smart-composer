@@ -46,6 +46,7 @@ export const RECOMMENDED_MODELS_FOR_EMBEDDING = [
   'openai/text-embedding-3-small',
 ]
 
+export const PLAN_PROVIDER_TYPES: readonly LLMProviderType[] = ['anthropic-plan', 'openai-plan'] as const
 export const PROVIDER_TYPES_INFO = {
   'anthropic-plan': {
     label: 'Claude Plan',

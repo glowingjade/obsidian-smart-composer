@@ -2,7 +2,7 @@ import { Settings, Trash2 } from 'lucide-react'
 import { App } from 'obsidian'
 import React from 'react'
 
-import { DEFAULT_PROVIDERS, PROVIDER_TYPES_INFO } from '../../../constants'
+import { DEFAULT_PROVIDERS, PLAN_PROVIDER_TYPES, PROVIDER_TYPES_INFO } from '../../../constants'
 import { useSettings } from '../../../contexts/settings-context'
 import { getEmbeddingModelClient } from '../../../core/rag/embedding'
 import SmartComposerPlugin from '../../../main'
@@ -21,7 +21,7 @@ type ProvidersSectionProps = {
 export function ProvidersSection({ app, plugin }: ProvidersSectionProps) {
   const { settings, setSettings } = useSettings()
   const apiProviders = settings.providers.filter(
-    (p) => p.type !== 'openai-plan' && p.type !== 'anthropic-plan',
+    (p) => !PLAN_PROVIDER_TYPES.includes(p.type),
   )
 
   const handleDeleteProvider = async (provider: LLMProvider) => {
