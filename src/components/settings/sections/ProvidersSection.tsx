@@ -20,6 +20,9 @@ type ProvidersSectionProps = {
 
 export function ProvidersSection({ app, plugin }: ProvidersSectionProps) {
   const { settings, setSettings } = useSettings()
+  const apiProviders = settings.providers.filter(
+    (p) => p.type !== 'openai-plan' && p.type !== 'anthropic-plan',
+  )
 
   const handleDeleteProvider = async (provider: LLMProvider) => {
     // Get associated models
@@ -82,9 +85,7 @@ export function ProvidersSection({ app, plugin }: ProvidersSectionProps) {
       <div className="smtcmp-settings-header">Providers</div>
 
       <div className="smtcmp-settings-desc">
-        <span>
-          Enter your API keys or connect OAuth for the providers you want to use
-        </span>
+        <span>Configure API providers (usage-based billing).</span>
         <br />
         <a
           href="https://github.com/glowingjade/obsidian-smart-composer/wiki/1.2-Initial-Setup#getting-your-api-key"
@@ -112,7 +113,7 @@ export function ProvidersSection({ app, plugin }: ProvidersSectionProps) {
             </tr>
           </thead>
           <tbody>
-            {settings.providers.map((provider) => (
+            {apiProviders.map((provider) => (
               <tr key={provider.id}>
                 <td>{provider.id}</td>
                 <td>{PROVIDER_TYPES_INFO[provider.type].label}</td>
@@ -122,14 +123,7 @@ export function ProvidersSection({ app, plugin }: ProvidersSectionProps) {
                     new EditProviderModal(app, plugin, provider).open()
                   }}
                 >
-                  {provider.type === 'openai-plan' ||
-                  provider.type === 'anthropic-plan'
-                    ? provider.oauth?.accessToken
-                      ? 'OAuth connected'
-                      : 'Connect OAuth'
-                    : provider.apiKey
-                      ? '••••••••'
-                      : 'Set API key'}
+                  {provider.apiKey ? '••••••••' : 'Set API key'}
                 </td>
                 <td>
                   <div className="smtcmp-settings-actions">

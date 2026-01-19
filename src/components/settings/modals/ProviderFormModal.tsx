@@ -1,22 +1,7 @@
-import { App, Notice, Platform } from 'obsidian'
-import { useEffect, useState } from 'react'
+import { App, Notice } from 'obsidian'
+import { useState } from 'react'
 
 import { PROVIDER_TYPES_INFO } from '../../../constants'
-import {
-  buildClaudeCodeAuthorizeUrl,
-  exchangeClaudeCodeForTokens,
-  generateClaudeCodePkce,
-  generateClaudeCodeState,
-} from '../../../core/llm/claudeCodeAuth'
-import {
-  buildCodexAuthorizeUrl,
-  exchangeCodexCodeForTokens,
-  extractCodexAccountId,
-  generateCodexPkce,
-  generateCodexState,
-  startCodexCallbackServer,
-  stopCodexCallbackServer,
-} from '../../../core/llm/codexAuth'
 import SmartComposerPlugin from '../../../main'
 import { LLMProvider, llmProviderSchema } from '../../../types/provider.types'
 import { ObsidianButton } from '../../common/ObsidianButton'
@@ -73,16 +58,6 @@ function ProviderFormComponent({
           baseUrl: '',
         },
   )
-  const [codexAuthUrl, setCodexAuthUrl] = useState<string>('')
-  const [codexCode, setCodexCode] = useState<string>('')
-  const [codexPkceVerifier, setCodexPkceVerifier] = useState<string>('')
-  const [isCodexAuthInProgress, setIsCodexAuthInProgress] =
-    useState<boolean>(false)
-  const [claudeAuthUrl, setClaudeAuthUrl] = useState<string>('')
-  const [claudeCode, setClaudeCode] = useState<string>('')
-  const [claudePkceVerifier, setClaudePkceVerifier] = useState<string>('')
-  const [isClaudeAuthInProgress, setIsClaudeAuthInProgress] =
-    useState<boolean>(false)
 
   const handleSubmit = async () => {
     if (provider) {
@@ -139,58 +114,6 @@ function ProviderFormComponent({
 
   const providerTypeInfo = PROVIDER_TYPES_INFO[formData.type]
 
-  useEffect(() => {
-    return () => {
-      if (Platform.isDesktop) {
-        void stopCodexCallbackServer()
-      }
-    }
-  }, [])
-
-  const applyCodexTokens = async (code: string, pkceVerifier: string) => {
-    const tokens = await exchangeCodexCodeForTokens({
-      code,
-      pkceVerifier,
-    })
-    const accountId = extractCodexAccountId(tokens)
-    setFormData((prev) => {
-      if (prev.type !== 'openai-plan') {
-        return prev
-      }
-
-      return {
-        ...prev,
-        oauth: {
-          accessToken: tokens.access_token,
-          refreshToken: tokens.refresh_token,
-          expiresAt: Date.now() + (tokens.expires_in ?? 3600) * 1000,
-          accountId: accountId ?? prev.oauth?.accountId,
-        },
-      }
-    })
-  }
-
-  const applyClaudeTokens = async (code: string, pkceVerifier: string) => {
-    const tokens = await exchangeClaudeCodeForTokens({
-      code,
-      pkceVerifier,
-    })
-    setFormData((prev) => {
-      if (prev.type !== 'anthropic-plan') {
-        return prev
-      }
-
-      return {
-        ...prev,
-        oauth: {
-          accessToken: tokens.access_token,
-          refreshToken: tokens.refresh_token,
-          expiresAt: Date.now() + (tokens.expires_in ?? 3600) * 1000,
-        },
-      }
-    })
-  }
-
   return (
     <>
       {!provider && (
@@ -213,10 +136,12 @@ function ProviderFormComponent({
             <ObsidianDropdown
               value={formData.type}
               options={Object.fromEntries(
-                Object.entries(PROVIDER_TYPES_INFO).map(([key, info]) => [
-                  key,
-                  info.label,
-                ]),
+                Object.entries(PROVIDER_TYPES_INFO)
+                  .filter(
+                    ([key]) =>
+                      key !== 'openai-plan' && key !== 'anthropic-plan',
+                  )
+                  .map(([key, info]) => [key, info.label]),
               )}
               onChange={(value: string) =>
                 setFormData(
@@ -265,197 +190,6 @@ function ProviderFormComponent({
             </ObsidianSetting>
           </>
         )}
-
-      {formData.type === 'openai-plan' && (
-        <>
-          <ObsidianSetting
-            name="OAuth Status"
-            desc={
-              formData.oauth?.accessToken
-                ? 'OAuth connected'
-                : 'OAuth not connected'
-            }
-          />
-          <ObsidianSetting
-            name="Start OAuth"
-            desc={
-              Platform.isDesktop
-                ? 'Open the authorization URL and complete login. Smart Composer will finish automatically.'
-                : 'Open the authorization URL, then copy the code from the redirected URL.'
-            }
-          >
-            <ObsidianButton
-              text="Generate OAuth URL"
-              disabled={isCodexAuthInProgress}
-              onClick={async () => {
-                if (isCodexAuthInProgress) return
-                try {
-                  setIsCodexAuthInProgress(true)
-                  const pkce = await generateCodexPkce()
-                  const state = generateCodexState()
-                  const url = buildCodexAuthorizeUrl({ pkce, state })
-                  setCodexPkceVerifier(pkce.verifier)
-                  setCodexAuthUrl(url)
-                  window.open(url, '_blank')
-                  if (!Platform.isDesktop) {
-                    return
-                  }
-
-                  try {
-                    const code = await startCodexCallbackServer({ state })
-                    setCodexCode(code)
-                    await applyCodexTokens(code, pkce.verifier)
-                    new Notice('OAuth connected')
-                  } catch {
-                    new Notice(
-                      'OAuth callback failed. Use manual code entry instead.',
-                    )
-                  }
-                } catch {
-                  new Notice('Failed to generate OAuth URL')
-                } finally {
-                  setIsCodexAuthInProgress(false)
-                }
-              }}
-            />
-          </ObsidianSetting>
-          {codexAuthUrl.length > 0 && (
-            <ObsidianSetting
-              name="Authorization URL"
-              desc="Open this URL in your browser if it did not open automatically."
-            >
-              <ObsidianTextInput
-                value={codexAuthUrl}
-                onChange={(value: string) => setCodexAuthUrl(value)}
-              />
-            </ObsidianSetting>
-          )}
-          <ObsidianSetting
-            name="Authorization Code"
-            desc="Paste the code from the redirected URL after login."
-          >
-            <ObsidianTextInput
-              value={codexCode}
-              placeholder="Enter authorization code"
-              onChange={(value: string) => setCodexCode(value)}
-            />
-          </ObsidianSetting>
-          <ObsidianSetting>
-            <ObsidianButton
-              text="Exchange Code"
-              onClick={async () => {
-                if (!codexCode || !codexPkceVerifier) {
-                  new Notice('Authorization code or PKCE verifier missing')
-                  return
-                }
-                try {
-                  await applyCodexTokens(codexCode, codexPkceVerifier)
-                  new Notice('OAuth connected')
-                } catch {
-                  new Notice('OAuth token exchange failed')
-                }
-              }}
-            />
-            <ObsidianButton
-              text="Clear OAuth"
-              onClick={() => {
-                setFormData((prev) => ({
-                  ...prev,
-                  oauth: undefined,
-                }))
-              }}
-            />
-          </ObsidianSetting>
-        </>
-      )}
-
-      {formData.type === 'anthropic-plan' && (
-        <>
-          <ObsidianSetting
-            name="OAuth Status"
-            desc={
-              formData.oauth?.accessToken
-                ? 'OAuth connected'
-                : 'OAuth not connected'
-            }
-          />
-          <ObsidianSetting
-            name="Start OAuth"
-            desc="Open the authorization URL, then copy the code from the redirected URL."
-          >
-            <ObsidianButton
-              text="Generate OAuth URL"
-              disabled={isClaudeAuthInProgress}
-              onClick={async () => {
-                if (isClaudeAuthInProgress) return
-                try {
-                  setIsClaudeAuthInProgress(true)
-                  const pkce = await generateClaudeCodePkce()
-                  const state = generateClaudeCodeState()
-                  const url = buildClaudeCodeAuthorizeUrl({
-                    pkce,
-                    state,
-                  })
-                  setClaudePkceVerifier(pkce.verifier)
-                  setClaudeAuthUrl(url)
-                  window.open(url, '_blank')
-                } catch {
-                  new Notice('Failed to generate OAuth URL')
-                } finally {
-                  setIsClaudeAuthInProgress(false)
-                }
-              }}
-            />
-          </ObsidianSetting>
-          {claudeAuthUrl.length > 0 && (
-            <ObsidianSetting
-              name="Authorization URL"
-              desc="Open this URL in your browser if it did not open automatically."
-            >
-              <ObsidianTextInput
-                value={claudeAuthUrl}
-                onChange={(value: string) => setClaudeAuthUrl(value)}
-              />
-            </ObsidianSetting>
-          )}
-          <ObsidianSetting
-            name="Authorization Code"
-            desc="Paste the code from the redirected URL after login."
-          >
-            <ObsidianTextInput
-              value={claudeCode}
-              placeholder="Enter authorization code"
-              onChange={(value: string) => setClaudeCode(value)}
-            />
-          </ObsidianSetting>
-          <ObsidianSetting>
-            <ObsidianButton
-              text="Exchange Code"
-              onClick={async () => {
-                if (!claudeCode || !claudePkceVerifier) {
-                  new Notice('Authorization code or PKCE verifier missing')
-                  return
-                }
-                try {
-                  await applyClaudeTokens(claudeCode, claudePkceVerifier)
-                  new Notice('OAuth connected')
-                } catch {
-                  new Notice('OAuth token exchange failed')
-                }
-              }}
-            />
-            <ObsidianButton
-              text="Clear OAuth"
-              onClick={() => {
-                setFormData((prev) => ({
-                  ...prev,
-                  oauth: undefined,
-                }))
-              }}
-            />
-          </ObsidianSetting>
-        </>
-      )}
 
       {providerTypeInfo.additionalSettings.map((setting) => (
         <ObsidianSetting

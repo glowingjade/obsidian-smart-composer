@@ -253,7 +253,7 @@ function McpServerStatusBadge({ status }: { status: McpServerStatus }) {
       statusClass: 'smtcmp-mcp-server-status-badge--error',
     },
     [McpServerStatus.Disconnected]: {
-      icon: <CircleMinus size={16} />,
+      icon: <CircleMinus size={14} />,
       label: 'Disconnected',
       statusClass: 'smtcmp-mcp-server-status-badge--disconnected',
     },
