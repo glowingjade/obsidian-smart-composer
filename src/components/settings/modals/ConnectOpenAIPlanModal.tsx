@@ -42,18 +42,22 @@ function ConnectOpenAIPlanModalComponent({
   plugin,
   onClose,
 }: ConnectOpenAIPlanModalProps) {
-  const extractCodeFromRedirectUrl = (input: string) => {
+  const extractParamFromRedirectUrl = (input: string, key: string) => {
     const trimmed = input.trim()
     if (!trimmed) return ''
     try {
       const parsed = new URL(trimmed)
-      return parsed.searchParams.get('code') ?? ''
+      return parsed.searchParams.get(key) ?? ''
     } catch {
-      const match = trimmed.match(/[?&]code=([^&]+)/)
+      const match = trimmed.match(new RegExp(`[?&]${key}=([^&]+)`))
       if (match?.[1]) return decodeURIComponent(match[1])
       return ''
     }
   }
+  const extractCodeFromRedirectUrl = (input: string) =>
+    extractParamFromRedirectUrl(input, 'code')
+  const extractStateFromRedirectUrl = (input: string) =>
+    extractParamFromRedirectUrl(input, 'state')
 
   const [authorizeUrl, setAuthorizeUrl] = useState('')
   const [redirectUrl, setRedirectUrl] = useState('')
@@ -65,6 +69,7 @@ function ConnectOpenAIPlanModalComponent({
   const [manualError, setManualError] = useState('')
 
   const redirectCode = extractCodeFromRedirectUrl(redirectUrl)
+  const redirectState = extractStateFromRedirectUrl(redirectUrl)
   const isBusy = isWaitingForCallback || isManualConnecting
 
   useEffect(() => {
@@ -171,14 +176,28 @@ function ConnectOpenAIPlanModalComponent({
       return
     }
 
+    if (!redirectState) {
+      setManualError(
+        'No OAuth state found. Paste the full redirect URL from your browser address bar.',
+      )
+      return
+    }
+
     setManualError('')
     setIsManualConnecting(true)
 
     try {
       const ensured = await ensureAuthContext()
       const effectivePkceVerifier = ensured?.pkceVerifier ?? pkceVerifier
-      if (!effectivePkceVerifier) {
+      const effectiveState = ensured?.state ?? state
+      if (!effectivePkceVerifier || !effectiveState) {
         new Notice('Failed to initialize OAuth flow')
+        return
+      }
+      if (redirectState !== effectiveState) {
+        setManualError(
+          'OAuth state mismatch. Start login again and paste the newest redirect URL.',
+        )
         return
       }
       const tokens = await exchangeCodexCodeForTokens({

@@ -97,7 +97,8 @@ export class OpenAICodexProvider extends BaseLLMProvider<
         const accountId = extractCodexAccountId(tokens)
         const updatedOauth = {
           accessToken: tokens.access_token,
-          refreshToken: tokens.refresh_token,
+          refreshToken:
+            tokens.refresh_token ?? this.provider.oauth.refreshToken,
           expiresAt: Date.now() + (tokens.expires_in ?? 3600) * 1000,
           accountId: accountId ?? this.provider.oauth.accountId,
         }

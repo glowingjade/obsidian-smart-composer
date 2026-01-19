@@ -19,7 +19,7 @@ const baseEmbeddingModelSchema = z.object({
   dimension: z.number(),
 })
 
-// TODO: De-duplicate provider lists; embedding providers should be a subset of LLM providers.
+// TODO: Ensure the embedding model schema only includes providers that genuinely support embeddings.
 export const embeddingModelSchema = z.discriminatedUnion('providerType', [
   z.object({
     providerType: z.literal('anthropic-plan'),

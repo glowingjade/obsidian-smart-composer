@@ -1235,6 +1235,7 @@ button.smtcmp-chat-input-model-select {
 }
 
 .smtcmp-plan-connect-fallback {
+  display: flex;
   flex-direction: column;
   align-items: stretch;
   gap: var(--size-4-2);

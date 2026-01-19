@@ -100,7 +100,8 @@ export class AnthropicClaudeCodeProvider extends BaseLLMProvider<
         )
         const updatedOauth = {
           accessToken: tokens.access_token,
-          refreshToken: tokens.refresh_token,
+          refreshToken:
+            tokens.refresh_token ?? this.provider.oauth.refreshToken,
           expiresAt: Date.now() + (tokens.expires_in ?? 3600) * 1000,
         }
         this.provider.oauth = updatedOauth

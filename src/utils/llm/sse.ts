@@ -101,8 +101,7 @@ function* flushSseBuffer<T>(
 
 function* parseSseEvent<T>(rawEvent: string): Iterable<T> {
   const dataLines = rawEvent
-    .split('\n')
-    .map((line) => (line.endsWith('\r') ? line.slice(0, -1) : line))
+    .split(/\r\n|\n|\r/)
     .filter((line) => line.startsWith('data:'))
   if (dataLines.length === 0) {
     return

@@ -6,7 +6,7 @@ import {
   CLAUDE_CODE_OAUTH_TOKEN_ENDPOINT,
   CLAUDE_CODE_REDIRECT_URI,
 } from '../../constants'
-import { postJson } from '../../utils/llm/httpTransport'
+import { postFormUrlEncoded } from '../../utils/llm/httpTransport'
 
 type ClaudeCodePkceCodes = {
   verifier: string
@@ -101,10 +101,11 @@ async function postTokenRequest(
   const payload = Object.fromEntries(
     Object.entries(body).filter(([, value]) => typeof value === 'string'),
   ) as Record<string, string>
-  return postJson<ClaudeCodeTokenResponse>(
+  const response = await postFormUrlEncoded<ClaudeCodeTokenResponse>(
     CLAUDE_CODE_OAUTH_TOKEN_ENDPOINT,
     payload,
   )
+  return response
 }
 
 function generateRandomString(length: number): string {
