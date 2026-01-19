@@ -5,7 +5,9 @@ import {
   ChatCompletionContentPart,
   ChatCompletionCreateParamsNonStreaming,
   ChatCompletionCreateParamsStreaming,
+  ChatCompletionMessageFunctionToolCall,
   ChatCompletionMessageParam,
+  ChatCompletionMessageToolCall,
 } from 'openai/resources/chat/completions'
 
 import {
@@ -18,9 +20,36 @@ import {
 import {
   LLMResponseNonStreaming,
   LLMResponseStreaming,
+  ToolCall,
 } from '../../types/llm/response'
 
 export class OpenAIMessageAdapter {
+  protected normalizeToolCalls(
+    toolCalls: ChatCompletionMessageToolCall[] | undefined,
+  ): ToolCall[] | undefined {
+    if (!toolCalls || toolCalls.length === 0) {
+      return undefined
+    }
+
+    const functionToolCalls = toolCalls.filter(
+      (toolCall): toolCall is ChatCompletionMessageFunctionToolCall =>
+        toolCall.type === 'function',
+    )
+
+    if (functionToolCalls.length === 0) {
+      return undefined
+    }
+
+    return functionToolCalls.map((toolCall) => ({
+      id: toolCall.id,
+      type: 'function',
+      function: {
+        arguments: toolCall.function.arguments,
+        name: toolCall.function.name,
+      },
+    }))
+  }
+
   async generateResponse(
     client: OpenAI,
     request: LLMRequestNonStreaming,
@@ -168,7 +197,7 @@ export class OpenAIMessageAdapter {
         message: {
           content: choice.message.content,
           role: choice.message.role,
-          tool_calls: choice.message.tool_calls,
+          tool_calls: this.normalizeToolCalls(choice.message.tool_calls),
         },
       })),
       created: response.created,

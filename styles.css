@@ -1166,6 +1166,93 @@ button.smtcmp-chat-input-model-select {
   margin: var(--size-4-1) 0;
 }
 
+.smtcmp-plan-connection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--size-4-3);
+  margin-top: var(--size-4-3);
+}
+
+.smtcmp-plan-connection-card {
+  border: var(--border-width) solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  padding: var(--size-4-3);
+  background: var(--background-primary);
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-3);
+}
+
+.smtcmp-plan-connection-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--size-4-2);
+}
+
+.smtcmp-plan-connection-card-title {
+  color: var(--text-normal);
+  font-size: var(--font-ui-medium);
+  font-weight: var(--font-medium);
+}
+
+.smtcmp-plan-connection-card-desc {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  line-height: var(--line-height-tight);
+}
+
+.smtcmp-plan-connection-card-actions {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--size-4-2);
+  flex-wrap: wrap;
+}
+
+.smtcmp-plan-connect-steps {
+  border: var(--border-width) solid var(--background-modifier-border);
+  background: var(--background-secondary);
+  border-radius: var(--radius-m);
+  padding: var(--size-4-2) var(--size-4-3);
+  margin-bottom: var(--size-4-3);
+}
+
+.smtcmp-plan-connect-steps-title {
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+  font-weight: var(--font-medium);
+  margin-bottom: var(--size-2-2);
+}
+
+.smtcmp-plan-connect-steps ol {
+  margin: 0;
+  padding-left: var(--size-4-4);
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  line-height: var(--line-height-tight);
+}
+
+.smtcmp-plan-connect-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--size-4-2);
+}
+
+.smtcmp-plan-connect-fallback .setting-item-info,
+.smtcmp-plan-connect-fallback .setting-item-control {
+  width: 100%;
+}
+
+.smtcmp-plan-connect-fallback-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--size-4-2);
+}
+
 .smtcmp-settings-callout {
   padding-inline-start: var(--size-4-2);
   border-inline-start: var(--blockquote-border-thickness) solid
@@ -1757,6 +1844,18 @@ button.smtcmp-chat-input-model-select {
 .smtcmp-mcp-tool-toggle-label {
   font-size: var(--font-ui-smaller);
   color: var(--text-muted);
+}
+
+.smtcmp-plan-connect-waiting {
+  margin-top: var(--size-2-1);
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+}
+
+.smtcmp-plan-connect-error {
+  margin-top: var(--size-2-1);
+  font-size: var(--font-ui-small);
+  color: var(--text-error);
 }
 
 /* MCP Server Modal Styles */

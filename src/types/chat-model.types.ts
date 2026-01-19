@@ -27,12 +27,22 @@ const baseChatModelSchema = z.object({
 
 export const chatModelSchema = z.discriminatedUnion('providerType', [
   z.object({
-    providerType: z.literal('openai'),
+    providerType: z.literal('anthropic-plan'),
+    ...baseChatModelSchema.shape,
+    thinking: z
+      .object({
+        enabled: z.boolean(),
+        budget_tokens: z.number(),
+      })
+      .optional(),
+  }),
+  z.object({
+    providerType: z.literal('openai-plan'),
     ...baseChatModelSchema.shape,
     reasoning: z
       .object({
-        enabled: z.boolean(),
         reasoning_effort: z.string().optional(),
+        reasoning_summary: z.string().optional(),
       })
       .optional(),
   }),
@@ -43,6 +53,16 @@ export const chatModelSchema = z.discriminatedUnion('providerType', [
       .object({
         enabled: z.boolean(),
         budget_tokens: z.number(),
+      })
+      .optional(),
+  }),
+  z.object({
+    providerType: z.literal('openai'),
+    ...baseChatModelSchema.shape,
+    reasoning: z
+      .object({
+        enabled: z.boolean(),
+        reasoning_effort: z.string().optional(),
       })
       .optional(),
   }),

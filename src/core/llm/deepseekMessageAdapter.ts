@@ -36,7 +36,7 @@ export class DeepSeekMessageAdapter extends OpenAIMessageAdapter {
             content: choice.message.content,
             reasoning: reasoningContent,
             role: choice.message.role,
-            tool_calls: choice.message.tool_calls,
+            tool_calls: this.normalizeToolCalls(choice.message.tool_calls),
             providerMetadata: reasoningContent
               ? { deepseek: { reasoningContent } }
               : undefined,

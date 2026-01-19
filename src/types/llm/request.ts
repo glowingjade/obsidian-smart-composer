@@ -2,6 +2,7 @@
 // https://openrouter.ai/docs/api-reference/overview#requests
 
 import { ChatCompletionCreateParams, ReasoningEffort } from 'openai/resources'
+import { Reasoning } from 'openai/resources/shared'
 
 import { ToolCallRequest } from '../tool-call.types'
 
@@ -28,6 +29,7 @@ export type LLMRequestBase = {
 
   // Only available for OpenAI reasoning models
   reasoning_effort?: ReasoningEffort
+  reasoning_summary?: Reasoning['summary']
 
   // Only available for OpenAI search models and Perplexity
   web_search_options?: ChatCompletionCreateParams.WebSearchOptions

@@ -85,7 +85,7 @@ export type ChatProps = {
 
 const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const app = useApp()
-  const { settings } = useSettings()
+  const { settings, setSettings } = useSettings()
   const { getRAGEngine } = useRAG()
   const { getMcpManager } = useMcp()
 
@@ -293,8 +293,9 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       const activeFileContent = await readTFileContent(activeFile, app.vault)
 
       const { providerClient, model } = getChatModelClient({
-        settings,
         modelId: settings.applyModelId,
+        settings,
+        setSettings,
       })
 
       const updatedFileContent = await applyChangesToFile({

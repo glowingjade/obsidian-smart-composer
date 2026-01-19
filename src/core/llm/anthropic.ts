@@ -200,7 +200,7 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
         },
       )
 
-      return this.streamResponseGenerator(stream)
+      return AnthropicProvider.streamResponseGenerator(stream)
     } catch (error) {
       if (error instanceof Anthropic.AuthenticationError) {
         // Anthropic's CORS Policy Change (March 2025)
@@ -241,7 +241,7 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
     }
   }
 
-  private async *streamResponseGenerator(
+  static async *streamResponseGenerator(
     stream: AsyncIterable<MessageStreamEvent>,
   ): AsyncIterable<LLMResponseStreaming> {
     let messageId = ''
@@ -532,7 +532,7 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
     return null
   }
 
-  private static validateSystemMessages(
+  static validateSystemMessages(
     messages: RequestMessage[],
   ): string | undefined {
     const systemMessages = messages.filter((m) => m.role === 'system')
@@ -565,7 +565,7 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
     }
   }
 
-  private static parseRequestTool(tool: RequestTool): AnthropicTool {
+  static parseRequestTool(tool: RequestTool): AnthropicTool {
     return {
       name: tool.function.name,
       input_schema: {
@@ -576,7 +576,7 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
     }
   }
 
-  private static parseRequestToolChoice(
+  static parseRequestToolChoice(
     toolChoice: RequestToolChoice,
   ): AnthropicToolChoice {
     if (toolChoice === 'none') {

@@ -3,6 +3,7 @@ import { ChatModel } from '../../types/chat-model.types'
 import { LLMProvider } from '../../types/provider.types'
 
 import { AnthropicProvider } from './anthropic'
+import { AnthropicClaudeCodeProvider } from './anthropicClaudeCodeProvider'
 import { AzureOpenAIProvider } from './azureOpenaiProvider'
 import { BaseLLMProvider } from './base'
 import { DeepSeekStudioProvider } from './deepseekStudioProvider'
@@ -12,6 +13,7 @@ import { LmStudioProvider } from './lmStudioProvider'
 import { MistralProvider } from './mistralProvider'
 import { OllamaProvider } from './ollama'
 import { OpenAIAuthenticatedProvider } from './openai'
+import { OpenAICodexProvider } from './openaiCodexProvider'
 import { OpenAICompatibleProvider } from './openaiCompatibleProvider'
 import { OpenRouterProvider } from './openRouterProvider'
 import { PerplexityProvider } from './perplexityProvider'
@@ -23,23 +25,46 @@ import { XaiProvider } from './xaiProvider'
  */
 
 export function getProviderClient({
-  settings,
   providerId,
+  settings,
+  setSettings,
 }: {
-  settings: SmartComposerSettings
   providerId: string
+  settings: SmartComposerSettings
+  setSettings?: (newSettings: SmartComposerSettings) => void | Promise<void>
 }): BaseLLMProvider<LLMProvider> {
   const provider = settings.providers.find((p) => p.id === providerId)
   if (!provider) {
     throw new Error(`Provider ${providerId} not found`)
   }
 
+  const onProviderUpdate = setSettings
+    ? async (targetProviderId: string, update: Partial<LLMProvider>) => {
+        const updatedProviders: LLMProvider[] = settings.providers.map(
+          (item) =>
+            item.id === targetProviderId
+              ? ({ ...item, ...update } as LLMProvider)
+              : item,
+        )
+        await setSettings({
+          ...settings,
+          providers: updatedProviders,
+        })
+      }
+    : undefined
+
   switch (provider.type) {
-    case 'openai': {
-      return new OpenAIAuthenticatedProvider(provider)
+    case 'anthropic-plan': {
+      return new AnthropicClaudeCodeProvider(provider, onProviderUpdate)
+    }
+    case 'openai-plan': {
+      return new OpenAICodexProvider(provider, onProviderUpdate)
     }
     case 'anthropic': {
       return new AnthropicProvider(provider)
+    }
+    case 'openai': {
+      return new OpenAIAuthenticatedProvider(provider)
     }
     case 'gemini': {
       return new GeminiProvider(provider)
@@ -75,11 +100,13 @@ export function getProviderClient({
 }
 
 export function getChatModelClient({
-  settings,
   modelId,
+  settings,
+  setSettings,
 }: {
-  settings: SmartComposerSettings
   modelId: string
+  settings: SmartComposerSettings
+  setSettings: (newSettings: SmartComposerSettings) => void | Promise<void>
 }): {
   providerClient: BaseLLMProvider<LLMProvider>
   model: ChatModel
@@ -90,8 +117,9 @@ export function getChatModelClient({
   }
 
   const providerClient = getProviderClient({
-    settings,
     providerId: chatModel.providerId,
+    settings,
+    setSettings,
   })
 
   return {

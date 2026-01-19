@@ -19,13 +19,22 @@ const baseEmbeddingModelSchema = z.object({
   dimension: z.number(),
 })
 
+// TODO: Ensure the embedding model schema only includes providers that genuinely support embeddings.
 export const embeddingModelSchema = z.discriminatedUnion('providerType', [
   z.object({
-    providerType: z.literal('openai'),
+    providerType: z.literal('anthropic-plan'),
+    ...baseEmbeddingModelSchema.shape,
+  }),
+  z.object({
+    providerType: z.literal('openai-plan'),
     ...baseEmbeddingModelSchema.shape,
   }),
   z.object({
     providerType: z.literal('anthropic'),
+    ...baseEmbeddingModelSchema.shape,
+  }),
+  z.object({
+    providerType: z.literal('openai'),
     ...baseEmbeddingModelSchema.shape,
   }),
   z.object({
