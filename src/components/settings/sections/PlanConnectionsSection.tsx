@@ -87,7 +87,7 @@ export function PlanConnectionsSection({
           </div>
 
           <div className="smtcmp-plan-connection-card-desc">
-            Uses your Claude Code usage. No API key is required.
+            Uses your Claude Code usage from your Claude plan.
             <br />
             Check your limit in Claude Code with <code>/usage</code>.
           </div>
@@ -116,7 +116,7 @@ export function PlanConnectionsSection({
           </div>
 
           <div className="smtcmp-plan-connection-card-desc">
-            Uses your Codex usage (from your ChatGPT plan).
+            Uses your Codex usage from your ChatGPT plan.
             <br />
             <a
               href="https://chatgpt.com/codex/settings/usage"
