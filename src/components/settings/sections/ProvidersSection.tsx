@@ -112,7 +112,7 @@ export function ProvidersSection({ app, plugin }: ProvidersSectionProps) {
             <tr>
               <th>ID</th>
               <th>Type</th>
-              <th>Credential</th>
+              <th>API Key</th>
               <th>Actions</th>
             </tr>
           </thead>
