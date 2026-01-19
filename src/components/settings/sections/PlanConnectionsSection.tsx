@@ -137,9 +137,7 @@ export function PlanConnectionsSection({
               </button>
             )}
             {isOpenAIConnected && (
-              <button
-                onClick={() => disconnect('openai-plan')}
-              >
+              <button onClick={() => disconnect('openai-plan')}>
                 Disconnect
               </button>
             )}

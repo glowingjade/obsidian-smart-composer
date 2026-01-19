@@ -3,7 +3,11 @@ import { useState } from 'react'
 
 import { PLAN_PROVIDER_TYPES, PROVIDER_TYPES_INFO } from '../../../constants'
 import SmartComposerPlugin from '../../../main'
-import { LLMProvider, LLMProviderType, llmProviderSchema } from '../../../types/provider.types'
+import {
+  LLMProvider,
+  LLMProviderType,
+  llmProviderSchema,
+} from '../../../types/provider.types'
 import { ObsidianButton } from '../../common/ObsidianButton'
 import { ObsidianDropdown } from '../../common/ObsidianDropdown'
 import { ObsidianSetting } from '../../common/ObsidianSetting'
@@ -159,36 +163,36 @@ function ProviderFormComponent({
       )}
 
       {!PLAN_PROVIDER_TYPES.includes(formData.type) && (
-          <>
-            <ObsidianSetting
-              name="API Key"
-              desc="(leave blank if not required)"
-              required={providerTypeInfo.requireApiKey}
-            >
-              <ObsidianTextInput
-                value={formData.apiKey ?? ''}
-                placeholder="Enter your API Key"
-                onChange={(value: string) =>
-                  setFormData((prev) => ({ ...prev, apiKey: value }))
-                }
-              />
-            </ObsidianSetting>
+        <>
+          <ObsidianSetting
+            name="API Key"
+            desc="(leave blank if not required)"
+            required={providerTypeInfo.requireApiKey}
+          >
+            <ObsidianTextInput
+              value={formData.apiKey ?? ''}
+              placeholder="Enter your API Key"
+              onChange={(value: string) =>
+                setFormData((prev) => ({ ...prev, apiKey: value }))
+              }
+            />
+          </ObsidianSetting>
 
-            <ObsidianSetting
-              name="Base URL"
-              desc="(leave blank if using default)"
-              required={providerTypeInfo.requireBaseUrl}
-            >
-              <ObsidianTextInput
-                value={formData.baseUrl ?? ''}
-                placeholder="Enter base URL"
-                onChange={(value: string) =>
-                  setFormData((prev) => ({ ...prev, baseUrl: value }))
-                }
-              />
-            </ObsidianSetting>
-          </>
-        )}
+          <ObsidianSetting
+            name="Base URL"
+            desc="(leave blank if using default)"
+            required={providerTypeInfo.requireBaseUrl}
+          >
+            <ObsidianTextInput
+              value={formData.baseUrl ?? ''}
+              placeholder="Enter base URL"
+              onChange={(value: string) =>
+                setFormData((prev) => ({ ...prev, baseUrl: value }))
+              }
+            />
+          </ObsidianSetting>
+        </>
+      )}
 
       {providerTypeInfo.additionalSettings.map((setting) => (
         <ObsidianSetting

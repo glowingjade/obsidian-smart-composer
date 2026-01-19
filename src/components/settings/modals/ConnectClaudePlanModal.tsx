@@ -9,7 +9,6 @@ import {
   generateClaudeCodeState,
 } from '../../../core/llm/claudeCodeAuth'
 import SmartComposerPlugin from '../../../main'
-import { LLMProvider } from '../../../types/provider.types'
 import { ObsidianButton } from '../../common/ObsidianButton'
 import { ObsidianSetting } from '../../common/ObsidianSetting'
 import { ObsidianTextInput } from '../../common/ObsidianTextInput'
@@ -49,7 +48,7 @@ function ConnectClaudePlanModalComponent({
   const hasAuthData = authorizeUrl.length > 0 && pkceVerifier.length > 0
 
   useEffect(() => {
-    ;(async () => {
+    ; (async () => {
       try {
         const pkce = await generateClaudeCodePkce()
         const newState = generateClaudeCodeState()
@@ -83,37 +82,24 @@ function ConnectClaudePlanModalComponent({
         state,
       })
 
-      const updatedProvider: LLMProvider = {
-        type: 'anthropic-plan',
-        id: CLAUDE_PLAN_PROVIDER_ID,
-        oauth: {
-          accessToken: tokens.access_token,
-          refreshToken: tokens.refresh_token,
-          expiresAt: Date.now() + (tokens.expires_in ?? 3600) * 1000,
-        },
+      if (!plugin.settings.providers.find((p) => p.type === 'anthropic-plan' && p.id === CLAUDE_PLAN_PROVIDER_ID)) {
+        throw new Error('Claude Plan provider not found.')
       }
-
-      const providers = [...plugin.settings.providers]
-      const idx = providers.findIndex(
-        (p) => p.type === 'anthropic-plan' && p.id === CLAUDE_PLAN_PROVIDER_ID,
-      )
-      if (idx >= 0) {
-        const existing = providers[idx]
-        if (existing.type === 'anthropic-plan') {
-          providers[idx] = {
-            ...existing,
-            oauth: updatedProvider.oauth,
-          }
-        } else {
-          providers[idx] = updatedProvider
-        }
-      } else {
-        providers.push(updatedProvider)
-      }
-
       await plugin.setSettings({
         ...plugin.settings,
-        providers,
+        providers: plugin.settings.providers.map((p) => {
+          if (p.type === 'anthropic-plan' && p.id === CLAUDE_PLAN_PROVIDER_ID) {
+            return {
+              ...p,
+              oauth: {
+                accessToken: tokens.access_token,
+                refreshToken: tokens.refresh_token,
+                expiresAt: Date.now() + (tokens.expires_in ?? 3600) * 1000,
+              },
+            }
+          }
+          return p
+        }),
       })
 
       new Notice('Claude Plan connected')
