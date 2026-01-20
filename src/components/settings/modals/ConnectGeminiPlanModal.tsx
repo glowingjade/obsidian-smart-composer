@@ -31,7 +31,7 @@ export class ConnectGeminiPlanModal extends ReactModal<ConnectGeminiPlanModalPro
       Component: ConnectGeminiPlanModalComponent,
       props: { plugin },
       options: {
-        title: 'Connect Gemini plan',
+        title: 'Connect Google AI subscription',
       },
     })
   }

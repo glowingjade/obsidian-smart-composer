@@ -86,7 +86,7 @@ export function PlanConnectionsSection({
       <div className="smtcmp-settings-desc">
         Use a subscription instead of API-key billing. Connected subscriptions
         consume your plan&apos;s included usage (Codex for OpenAI, Claude Code
-        for Anthropic).
+        for Anthropic, Gemini Code Assist for Gemini).
         <br />
         <strong>Important:</strong> Subscriptions aren&apos;t supported on
         mobile environments. Models that use these subscription providers are
@@ -165,9 +165,9 @@ export function PlanConnectionsSection({
           </div>
 
           <div className="smtcmp-plan-connection-card-desc">
-            Uses your Gemini plan usage via Google account OAuth.
+            Uses your Gemini Code Assist usage from your Google AI Plan.
             <br />
-            Manage usage in the Google Cloud Console.
+            Check your limit in Gemini CLI with <code>/stats</code>.
           </div>
 
           <div className="smtcmp-plan-connection-card-actions">
