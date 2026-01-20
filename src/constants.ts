@@ -33,6 +33,24 @@ export const CLAUDE_CODE_SYSTEM_MESSAGE =
   "You are Claude Code, Anthropic's official CLI for Claude."
 export const CLAUDE_CODE_USER_AGENT = 'claude-cli/2.1.2 (external, cli)'
 
+// Keep in sync with opencode-gemini-auth constants.
+export const GEMINI_OAUTH_CLIENT_ID =
+  '681255809395-oo8ft2oprdrnp9e3aqf6av3hmdib135j.apps.googleusercontent.com'
+export const GEMINI_OAUTH_CLIENT_SECRET = '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'
+export const GEMINI_OAUTH_REDIRECT_URI = 'http://localhost:8085/oauth2callback'
+export const GEMINI_OAUTH_SCOPES = [
+  'https://www.googleapis.com/auth/cloud-platform',
+  'https://www.googleapis.com/auth/userinfo.email',
+  'https://www.googleapis.com/auth/userinfo.profile',
+] as const
+export const GEMINI_CODE_ASSIST_ENDPOINT = 'https://cloudcode-pa.googleapis.com'
+export const GEMINI_CODE_ASSIST_HEADERS = {
+  'User-Agent': 'google-api-nodejs-client/9.15.1',
+  'X-Goog-Api-Client': 'gl-node/22.17.0',
+  'Client-Metadata':
+    'ideType=IDE_UNSPECIFIED,platform=PLATFORM_UNSPECIFIED,pluginType=GEMINI',
+} as const
+
 // Default model ids
 export const DEFAULT_CHAT_MODEL_ID = 'claude-sonnet-4.5'
 // gpt-4.1-mini is preferred over gpt-5-mini because gpt-5 models do not support
@@ -49,6 +67,7 @@ export const RECOMMENDED_MODELS_FOR_EMBEDDING = [
 export const PLAN_PROVIDER_TYPES: readonly LLMProviderType[] = [
   'anthropic-plan',
   'openai-plan',
+  'gemini-plan',
 ] as const
 export const PROVIDER_TYPES_INFO = {
   'anthropic-plan': {
@@ -62,6 +81,14 @@ export const PROVIDER_TYPES_INFO = {
   'openai-plan': {
     label: 'OpenAI Plan',
     defaultProviderId: 'openai-plan',
+    requireApiKey: false,
+    requireBaseUrl: false,
+    supportEmbedding: false,
+    additionalSettings: [],
+  },
+  'gemini-plan': {
+    label: 'Gemini Plan',
+    defaultProviderId: 'gemini-plan',
     requireApiKey: false,
     requireBaseUrl: false,
     supportEmbedding: false,
@@ -221,6 +248,10 @@ export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
     id: PROVIDER_TYPES_INFO['openai-plan'].defaultProviderId,
   },
   {
+    type: 'gemini-plan',
+    id: PROVIDER_TYPES_INFO['gemini-plan'].defaultProviderId,
+  },
+  {
     type: 'anthropic',
     id: PROVIDER_TYPES_INFO.anthropic.defaultProviderId,
   },
@@ -293,6 +324,18 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
     providerId: PROVIDER_TYPES_INFO['openai-plan'].defaultProviderId,
     id: 'gpt-5.2 (plan)',
     model: 'gpt-5.2',
+  },
+  {
+    providerType: 'gemini-plan',
+    providerId: PROVIDER_TYPES_INFO['gemini-plan'].defaultProviderId,
+    id: 'gemini-3-pro-preview (plan)',
+    model: 'gemini-3-pro-preview',
+  },
+  {
+    providerType: 'gemini-plan',
+    providerId: PROVIDER_TYPES_INFO['gemini-plan'].defaultProviderId,
+    id: 'gemini-3-flash-preview (plan)',
+    model: 'gemini-3-flash-preview',
   },
   {
     providerType: 'anthropic',

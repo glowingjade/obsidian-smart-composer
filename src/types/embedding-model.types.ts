@@ -30,6 +30,10 @@ export const embeddingModelSchema = z.discriminatedUnion('providerType', [
     ...baseEmbeddingModelSchema.shape,
   }),
   z.object({
+    providerType: z.literal('gemini-plan'),
+    ...baseEmbeddingModelSchema.shape,
+  }),
+  z.object({
     providerType: z.literal('anthropic'),
     ...baseEmbeddingModelSchema.shape,
   }),

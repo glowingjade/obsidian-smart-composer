@@ -18,7 +18,7 @@ const DEFAULT_PROVIDERS_V15 = [
   { type: 'lm-studio', id: 'lm-studio' },
 ] as const
 
-const DEFAULT_CHAT_MODELS_V15 = [
+export const DEFAULT_CHAT_MODELS_V15 = [
   {
     providerType: 'anthropic-plan',
     providerId: 'anthropic-plan',

@@ -326,10 +326,13 @@ const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
    * @see https://ai.google.dev/gemini-api/docs/thinking
    */
   {
-    check: (model) => model.providerType === 'gemini',
+    check: (model) =>
+      model.providerType === 'gemini' || model.providerType === 'gemini-plan',
     SettingsComponent: (props: SettingsComponentProps) => {
       const { model, plugin, onClose } = props
-      const typedModel = model as ChatModel & { providerType: 'gemini' }
+      const typedModel = model as ChatModel & {
+        providerType: 'gemini' | 'gemini-plan'
+      }
       const [thinkingEnabled, setThinkingEnabled] = useState<boolean>(
         typedModel.thinking?.enabled ?? false,
       )
