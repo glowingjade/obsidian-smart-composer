@@ -85,12 +85,21 @@ export function PlanConnectionsSection({
 
       <div className="smtcmp-settings-desc">
         <div className="smtcmp-settings-desc-warning">
-          <strong className="smtcmp-settings-desc-warning-title">Warning:</strong> Anthropic has restricted third-party OAuth access, and there are reports of account bans when using subscription OAuth via third-party clients. See the <a href="https://github.com/glowingjade/obsidian-smart-composer?tab=readme-ov-file">README</a> for full details and use at your own risk.
+          <strong className="smtcmp-settings-desc-warning-title">
+            Warning:
+          </strong>{' '}
+          Anthropic has restricted third-party OAuth access, and there are
+          reports of account bans when using subscription OAuth via third-party
+          clients. See the{' '}
+          <a href="https://github.com/glowingjade/obsidian-smart-composer?tab=readme-ov-file">
+            README
+          </a>{' '}
+          for full details and use at your own risk.
         </div>
         Use a subscription instead of API-key billing. Connected subscriptions
         consume your plan&apos;s included usage (Codex for OpenAI, Claude Code
-        for Anthropic, Gemini Code Assist for Gemini).
-        Subscriptions aren&apos;t supported on mobile environments.
+        for Anthropic, Gemini Code Assist for Gemini). Subscriptions aren&apos;t
+        supported on mobile environments.
         <br />
       </div>
 
@@ -195,15 +204,15 @@ export function PlanConnectionsSection({
 function PlanConnectionStatusBadge({ connected }: { connected: boolean }) {
   const statusConfig = connected
     ? {
-      icon: <Check size={16} />,
-      label: 'Connected',
-      statusClass: 'smtcmp-mcp-server-status-badge--connected',
-    }
+        icon: <Check size={16} />,
+        label: 'Connected',
+        statusClass: 'smtcmp-mcp-server-status-badge--connected',
+      }
     : {
-      icon: <CircleMinus size={14} />,
-      label: 'Disconnected',
-      statusClass: 'smtcmp-mcp-server-status-badge--disconnected',
-    }
+        icon: <CircleMinus size={14} />,
+        label: 'Disconnected',
+        statusClass: 'smtcmp-mcp-server-status-badge--disconnected',
+      }
 
   return (
     <div
