@@ -25,11 +25,7 @@ import {
   ToolCall,
   ToolCallDelta,
 } from '../../types/llm/response'
-import {
-  StreamSource,
-  postJson,
-  postStream,
-} from '../../utils/llm/httpTransport'
+import { StreamSource, postStream } from '../../utils/llm/httpTransport'
 import { parseJsonSseStream } from '../../utils/llm/sse'
 
 type CodexAdapterConfig = {
@@ -51,24 +47,65 @@ export class CodexMessageAdapter {
     options?: LLMOptions,
     headers?: Record<string, string>,
   ): Promise<LLMResponseNonStreaming> {
-    const body = this.buildRequestBody({ request, stream: false })
-    const payload = await postJson<Response>(this.endpoint, body, {
+    // Codex Responses require stream: true; build a snapshot from the stream.
+    const body = this.buildRequestBody({ request, stream: true })
+    const stream = await postStream(this.endpoint, body, {
       headers,
       signal: options?.signal,
       fetchFn: this.fetchFn,
     })
-    const content = extractResponseText(payload)
-    const toolCalls = extractToolCalls(payload)
-    const reasoningSummary = extractReasoningSummary(payload)
+
+    let summaryText = ''
+    let responsePayload: Response | undefined
+    for await (const chunk of parseJsonSseStream<ResponseStreamEvent>(stream)) {
+      if (chunk.type === 'response.created') {
+        responsePayload = chunk.response
+        continue
+      }
+
+      if (chunk.type === 'error') {
+        throw new Error(chunk.message)
+      }
+
+      if (!responsePayload) {
+        throw new Error(
+          `Stream event received before response.created: ${chunk.type}`,
+        )
+      }
+
+      if (chunk.type === 'response.reasoning_summary_text.delta') {
+        summaryText += chunk.delta
+        continue
+      }
+
+      if (chunk.type === 'response.reasoning_summary_text.done') {
+        if (!summaryText.length) {
+          summaryText = chunk.text
+        }
+        continue
+      }
+
+      responsePayload = accumulateResponseSnapshot(responsePayload, chunk)
+    }
+
+    if (!responsePayload) {
+      throw new Error('Stream ended without receiving a response payload')
+    }
+
+    const content = extractResponseText(responsePayload)
+    const toolCalls = extractToolCalls(responsePayload)
+    const reasoningSummary =
+      extractReasoningSummary(responsePayload) ??
+      (summaryText.length ? summaryText : undefined)
 
     return {
-      id: payload.id,
-      created: payload.created_at,
-      model: payload.model,
+      id: responsePayload.id,
+      created: responsePayload.created_at,
+      model: responsePayload.model,
       object: 'chat.completion',
       choices: [
         {
-          finish_reason: toolCalls.length > 0 ? 'tool_calls' : 'stop',
+          finish_reason: null,
           message: {
             role: 'assistant',
             content,
@@ -77,8 +114,8 @@ export class CodexMessageAdapter {
           },
         },
       ],
-      system_fingerprint: getSystemFingerprint(payload),
-      usage: mapUsage(payload.usage),
+      system_fingerprint: getSystemFingerprint(responsePayload),
+      usage: mapUsage(responsePayload.usage),
     }
   }
 
@@ -534,6 +571,103 @@ function extractReasoningSummary(payload: Response): string | undefined {
 
 function getSystemFingerprint(payload: Response): string | undefined {
   return (payload as { system_fingerprint?: string }).system_fingerprint
+}
+
+function accumulateResponseSnapshot(
+  snapshot: Response,
+  event: ResponseStreamEvent,
+): Response {
+  switch (event.type) {
+    case 'response.output_item.added': {
+      snapshot.output.push(event.item)
+      return snapshot
+    }
+    case 'response.content_part.added': {
+      const output = snapshot.output[event.output_index]
+      if (!output) {
+        throw new Error(`missing output at index ${event.output_index}`)
+      }
+      const part = event.part
+      if (output.type === 'message' && part.type !== 'reasoning_text') {
+        output.content.push(part)
+      } else if (
+        output.type === 'reasoning' &&
+        part.type === 'reasoning_text'
+      ) {
+        if (!output.content) {
+          output.content = []
+        }
+        output.content.push(part)
+      }
+      return snapshot
+    }
+    case 'response.output_text.delta': {
+      const output = snapshot.output[event.output_index]
+      if (!output) {
+        throw new Error(`missing output at index ${event.output_index}`)
+      }
+      if (output.type === 'message') {
+        const content = output.content[event.content_index]
+        if (!content) {
+          throw new Error(`missing content at index ${event.content_index}`)
+        }
+        if (content.type !== 'output_text') {
+          throw new Error(
+            `expected content to be 'output_text', got ${content.type}`,
+          )
+        }
+        content.text += event.delta
+      }
+      return snapshot
+    }
+    case 'response.function_call_arguments.delta': {
+      const output = snapshot.output[event.output_index]
+      if (!output) {
+        throw new Error(`missing output at index ${event.output_index}`)
+      }
+      if (output.type === 'function_call') {
+        output.arguments += event.delta
+      }
+      return snapshot
+    }
+    case 'response.function_call_arguments.done': {
+      const output = snapshot.output[event.output_index]
+      if (!output) {
+        throw new Error(`missing output at index ${event.output_index}`)
+      }
+      if (output.type === 'function_call' && !output.arguments?.length) {
+        output.arguments = event.arguments
+      }
+      return snapshot
+    }
+    case 'response.reasoning_text.delta': {
+      const output = snapshot.output[event.output_index]
+      if (!output) {
+        throw new Error(`missing output at index ${event.output_index}`)
+      }
+      if (output.type === 'reasoning') {
+        const content = output.content?.[event.content_index]
+        if (!content) {
+          throw new Error(`missing content at index ${event.content_index}`)
+        }
+        if (content.type !== 'reasoning_text') {
+          const contentType = (content as { type: string }).type
+          throw new Error(
+            `expected content to be 'reasoning_text', got ${contentType}`,
+          )
+        }
+        content.text += event.delta
+      }
+      return snapshot
+    }
+    case 'response.completed':
+      return event.response
+    case 'response.incomplete':
+      return event.response
+    case 'error':
+      return snapshot
+  }
+  return snapshot
 }
 
 function mapUsage(usage?: OpenAIResponseUsage): ResponseUsage | undefined {
