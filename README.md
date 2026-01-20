@@ -10,6 +10,8 @@
 
 > [!NOTE]
 > **What's New**
+>
+> **v1.2.8** - Connect your Gemini account
 > 
 > **v1.2.7** — Connect your Claude or OpenAI account directly (no API key required)
 > 
