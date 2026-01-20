@@ -1166,6 +1166,20 @@ button.smtcmp-chat-input-model-select {
   margin: var(--size-4-1) 0;
 }
 
+.smtcmp-settings-desc-warning {
+  margin-bottom: var(--size-4-2);
+  padding: var(--size-4-2) var(--size-4-3);
+  border: 1px solid color-mix(in srgb, var(--text-error) 35%, transparent);
+  background-color: color-mix(in srgb, var(--text-error) 10%, transparent);
+  border-radius: var(--radius-s);
+  color: var(--text-normal);
+  line-height: var(--line-height-normal);
+
+  .smtcmp-settings-desc-warning-title {
+    color: var(--text-error);
+  }
+}
+
 .smtcmp-plan-connection-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));

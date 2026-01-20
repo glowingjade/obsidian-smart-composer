@@ -27,6 +27,14 @@
 > A list of community-maintained forks is available in the [Community Fork Collection](https://github.com/glowingjade/obsidian-smart-composer/discussions/496).  
 > If you're maintaining a fork, feel free to add it there. And if you're simply interested in exploring alternative versions, you're welcome to check it out as well.
 
+> ### Risks of connecting a Claude subscription
+> 
+> As of January 2026, Anthropic has restricted third-party OAuth access, citing Terms of Service violations.
+> 
+> Smart Composer's subscription connect uses the same OAuth-style flow that tools like OpenCode have used. There are reports of **Claude accounts being banned or restricted** when subscription OAuth is used via third-party clients (example: [https://github.com/anomalyco/opencode/issues/6930](https://github.com/anomalyco/opencode/issues/6930)). For **OpenAI (ChatGPT)** and **Google (Gemini)**, I have not seen comparable ban reports so far, but this is still not the same as official API access, and enforcement can change at any time.
+> 
+> **Use at your own risk.** Keep usage limited to personal, interactive sessions and avoid any automation.
+
 ![SC1_Title.gif](https://github.com/user-attachments/assets/a50a1f80-39ff-4eba-8090-e3d75e7be98c)
 
 Everytime we ask ChatGPT, we need to put so much context information for each query. Why spend time putting background infos that are already in your vault?

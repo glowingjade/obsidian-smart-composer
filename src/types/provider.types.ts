@@ -40,6 +40,20 @@ export const llmProviderSchema = z.discriminatedUnion('type', [
       .optional(),
   }),
   z.object({
+    type: z.literal('gemini-plan'),
+    ...baseLlmProviderSchema.shape,
+    oauth: z
+      .object({
+        accessToken: z.string(),
+        refreshToken: z.string(),
+        expiresAt: z.number(),
+        projectId: z.string().optional(),
+        managedProjectId: z.string().optional(),
+        email: z.string().optional(),
+      })
+      .optional(),
+  }),
+  z.object({
     type: z.literal('anthropic'),
     ...baseLlmProviderSchema.shape,
   }),

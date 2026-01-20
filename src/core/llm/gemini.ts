@@ -465,7 +465,7 @@ export class GeminiProvider extends BaseLLMProvider<
     )
   }
 
-  private static parseRequestTool(tool: RequestTool): Tool {
+  static parseRequestTool(tool: RequestTool): Tool {
     // Gemini does not support additionalProperties field in JSON schema, so we need to clean it
     const cleanedParameters = this.removeAdditionalProperties(
       tool.function.parameters,
@@ -514,8 +514,8 @@ export class GeminiProvider extends BaseLLMProvider<
    * - Gemini 3 models use thinkingLevel
    * - Gemini 2.5 models use thinkingBudget
    */
-  private static buildThinkingConfig(
-    model: ChatModel & { providerType: 'gemini' },
+  static buildThinkingConfig(
+    model: ChatModel & { providerType: 'gemini' | 'gemini-plan' },
   ): ThinkingConfig | undefined {
     if (!model.thinking?.enabled) {
       return undefined
