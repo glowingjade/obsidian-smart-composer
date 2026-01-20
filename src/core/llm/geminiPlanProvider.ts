@@ -100,18 +100,22 @@ export class GeminiPlanProvider extends BaseLLMProvider<
       this.provider.oauth.expiresAt <= Date.now()
     ) {
       try {
-        const tokens = await refreshGeminiAccessToken(
-          this.provider.oauth.refreshToken,
-        )
+        const previousRefreshToken = this.provider.oauth.refreshToken
+        invalidateProjectContextCache(previousRefreshToken)
+        const tokens = await refreshGeminiAccessToken(previousRefreshToken)
         const updatedOauth = {
           ...this.provider.oauth,
           accessToken: tokens.access_token,
-          refreshToken:
-            tokens.refresh_token ?? this.provider.oauth.refreshToken,
+          refreshToken: tokens.refresh_token ?? previousRefreshToken,
           expiresAt: Date.now() + (tokens.expires_in ?? 3600) * 1000,
         }
         this.provider.oauth = updatedOauth
-        invalidateProjectContextCache(updatedOauth.refreshToken)
+        if (
+          tokens.refresh_token &&
+          tokens.refresh_token !== previousRefreshToken
+        ) {
+          invalidateProjectContextCache(tokens.refresh_token)
+        }
         await this.onProviderUpdate?.(this.provider.id, {
           oauth: updatedOauth,
         })

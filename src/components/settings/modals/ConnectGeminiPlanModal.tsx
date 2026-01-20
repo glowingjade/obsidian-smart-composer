@@ -184,14 +184,21 @@ function ConnectGeminiPlanModalComponent({
     setIsManualConnecting(true)
 
     try {
-      const ensured = await ensureAuthContext()
+      const hasRedirectState = Boolean(redirectState)
+      const ensured = hasRedirectState ? undefined : await ensureAuthContext()
       const effectivePkceVerifier = ensured?.pkceVerifier ?? pkceVerifier
-      const effectiveState = ensured?.state ?? state
-      if (!effectivePkceVerifier || !effectiveState) {
+      const effectiveState = redirectState ?? ensured?.state ?? state
+      if (!effectivePkceVerifier) {
+        setManualError(
+          'Click "Login to Google" first, then paste the redirect URL.',
+        )
+        return
+      }
+      if (!effectiveState) {
         new Notice('Failed to initialize OAuth flow')
         return
       }
-      if (redirectState !== effectiveState) {
+      if (redirectState && state && redirectState !== state) {
         setManualError(
           'OAuth state mismatch. Start login again and paste the newest redirect URL.',
         )

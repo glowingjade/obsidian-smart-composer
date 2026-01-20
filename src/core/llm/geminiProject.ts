@@ -196,7 +196,9 @@ export async function onboardManagedProject(
       return undefined
     }
 
-    await wait(delayMs)
+    if (attempt < attempts - 1) {
+      await wait(delayMs)
+    }
   }
 
   return undefined
