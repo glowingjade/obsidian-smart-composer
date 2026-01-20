@@ -395,25 +395,25 @@ export class CodexMessageAdapter {
     const { input, instructions } = buildResponsesInput(request.messages)
     const tools = request.tools
       ? request.tools.map(
-        (tool): FunctionTool => ({
-          type: 'function',
-          name: tool.function.name,
-          description: tool.function.description ?? null,
-          parameters: tool.function.parameters,
-          strict: false,
-        }),
-      )
+          (tool): FunctionTool => ({
+            type: 'function',
+            name: tool.function.name,
+            description: tool.function.description ?? null,
+            parameters: tool.function.parameters,
+            strict: false,
+          }),
+        )
       : undefined
     const reasoning =
       request.reasoning_effort || request.reasoning_summary
         ? {
-          ...(request.reasoning_effort && {
-            effort: request.reasoning_effort,
-          }),
-          ...(request.reasoning_summary && {
-            summary: request.reasoning_summary,
-          }),
-        }
+            ...(request.reasoning_effort && {
+              effort: request.reasoning_effort,
+            }),
+            ...(request.reasoning_summary && {
+              summary: request.reasoning_summary,
+            }),
+          }
         : undefined
 
     const body: ResponseCreateParamsBase = {
@@ -590,7 +590,10 @@ function accumulateResponseSnapshot(
       const part = event.part
       if (output.type === 'message' && part.type !== 'reasoning_text') {
         output.content.push(part)
-      } else if (output.type === 'reasoning' && part.type === 'reasoning_text') {
+      } else if (
+        output.type === 'reasoning' &&
+        part.type === 'reasoning_text'
+      ) {
         if (!output.content) {
           output.content = []
         }
