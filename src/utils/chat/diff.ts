@@ -29,6 +29,8 @@ type DiffOp = {
 
 const INLINE_DIFF_MAX_TOKENS = 300
 const INLINE_DIFF_MAX_CHARS = 800
+const INLINE_DIFF_MAX_WORD_CHARS = 80
+const INLINE_DIFF_MIN_SIMILARITY = 0.6
 
 const tokenizeByWord = (value: string): string[] => {
   if (!value) return []
@@ -95,6 +97,41 @@ const diffSequence = (original: string[], modified: string[]): DiffOp[] => {
   return ops.reverse()
 }
 
+const levenshteinDistance = (a: string, b: string): number => {
+  if (a === b) return 0
+  const aLen = a.length
+  const bLen = b.length
+  if (aLen === 0) return bLen
+  if (bLen === 0) return aLen
+
+  const v0 = new Array(bLen + 1).fill(0)
+  const v1 = new Array(bLen + 1).fill(0)
+
+  for (let i = 0; i <= bLen; i++) v0[i] = i
+  for (let i = 0; i < aLen; i++) {
+    v1[0] = i + 1
+    for (let j = 0; j < bLen; j++) {
+      const cost = a[i] === b[j] ? 0 : 1
+      v1[j + 1] = Math.min(v1[j] + 1, v0[j + 1] + 1, v0[j] + cost)
+    }
+    for (let j = 0; j <= bLen; j++) v0[j] = v1[j]
+  }
+
+  return v1[bLen]
+}
+
+const shouldUseCharDiff = (deletes: string, inserts: string): boolean => {
+  const deleteLen = deletes.length
+  const insertLen = inserts.length
+  const maxLen = Math.max(deleteLen, insertLen)
+  if (maxLen === 0) return false
+  if (maxLen > INLINE_DIFF_MAX_WORD_CHARS) return false
+
+  const distance = levenshteinDistance(deletes, inserts)
+  const similarity = 1 - distance / maxLen
+  return similarity >= INLINE_DIFF_MIN_SIMILARITY
+}
+
 const buildInlineTokens = (
   originalValue?: string,
   modifiedValue?: string,
@@ -133,7 +170,12 @@ const buildInlineTokens = (
       j += 1
     }
 
-    if (deletes && inserts && deletes.length + inserts.length <= INLINE_DIFF_MAX_CHARS) {
+    if (
+      deletes &&
+      inserts &&
+      deletes.length + inserts.length <= INLINE_DIFF_MAX_CHARS &&
+      shouldUseCharDiff(deletes, inserts)
+    ) {
       const charOps = diffSequence(deletes.split(''), inserts.split(''))
       charOps.forEach((charOp) => {
         if (charOp.type === 'equal') {
@@ -157,7 +199,43 @@ const buildInlineTokens = (
     index = j - 1
   }
 
-  return { originalTokens: originalInline, modifiedTokens: modifiedInline }
+  const normalizeTokens = (tokens: InlineToken[]): InlineToken[] => {
+    const normalized: InlineToken[] = []
+    let index = 0
+    while (index < tokens.length) {
+      const token = tokens[index]
+      if (!token.text) {
+        index += 1
+        continue
+      }
+
+      if (token.kind === 'added' || token.kind === 'removed') {
+        let mergedText = token.text
+        let j = index + 1
+        while (
+          j + 1 < tokens.length &&
+          tokens[j].kind === 'equal' &&
+          /^\s+$/.test(tokens[j].text) &&
+          tokens[j + 1].kind === token.kind
+        ) {
+          mergedText += tokens[j].text + tokens[j + 1].text
+          j += 2
+        }
+        pushInlineToken(normalized, token.kind, mergedText)
+        index = j
+        continue
+      }
+
+      pushInlineToken(normalized, token.kind, token.text)
+      index += 1
+    }
+    return normalized
+  }
+
+  return {
+    originalTokens: normalizeTokens(originalInline),
+    modifiedTokens: normalizeTokens(modifiedInline),
+  }
 }
 
 export function createDiffBlocks(

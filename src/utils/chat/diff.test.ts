@@ -40,4 +40,16 @@ describe('createDiffBlocks inline tokens', () => {
     )
     expect(added).toBeTruthy()
   })
+
+  it('keeps word-level replacement for dissimilar words', () => {
+    const block = getFirstModifiedBlock('horse', 'companion')
+    const removed = block.originalTokens?.find(
+      (token) => token.kind === 'removed' && token.text.includes('horse'),
+    )
+    const added = block.modifiedTokens?.find(
+      (token) => token.kind === 'added' && token.text.includes('companion'),
+    )
+    expect(removed).toBeTruthy()
+    expect(added).toBeTruthy()
+  })
 })
