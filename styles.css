@@ -667,14 +667,16 @@ input[type='text'].smtcmp-chat-list-dropdown-item-title-input {
     gap: var(--size-4-1);
     color: var(--text-normal);
     line-height: var(--line-height-normal);
+    border-radius: var(--radius-s);
+    padding: var(--size-4-2);
   }
 
   .smtcmp-diff-block.added {
-    background-color: rgba(var(--smtcmp-incoming-color-rgb), 0.3);
+    background-color: rgba(var(--smtcmp-incoming-color-rgb), 0.18);
   }
 
   .smtcmp-diff-block.removed {
-    background-color: rgba(var(--smtcmp-current-color-rgb), 0.3);
+    background-color: rgba(var(--smtcmp-current-color-rgb), 0.18);
   }
 
   .smtcmp-diff-block-grid {
@@ -715,17 +717,20 @@ input[type='text'].smtcmp-chat-list-dropdown-item-title-input {
   .smtcmp-diff-block-container {
     position: relative;
     scroll-margin-top: var(--size-4-8);
+    padding-top: var(--size-4-6);
+    padding-bottom: var(--size-4-4);
   }
 
   .smtcmp-diff-block-actions {
     position: absolute;
     right: 0;
-    top: 0;
-    transform: translateY(-100%);
+    top: var(--size-4-1);
+    transform: none;
     display: flex;
     gap: 0;
     border-radius: var(--radius-s) var(--radius-s) 0 0;
     overflow: hidden;
+    z-index: 2;
 
     button {
       padding: var(--size-4-1) var(--size-4-2);
