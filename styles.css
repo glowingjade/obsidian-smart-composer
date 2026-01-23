@@ -587,6 +587,7 @@ input[type='text'].smtcmp-chat-list-dropdown-item-title-input {
   display: flex;
   flex-direction: column;
   font-family: var(--font-interface);
+  container-type: inline-size;
 
   --smtcmp-current-color-rgb: 185, 28, 28; /* red-700 */
   --smtcmp-incoming-color-rgb: 4, 120, 87; /* emerald-700 */
@@ -674,6 +675,29 @@ input[type='text'].smtcmp-chat-list-dropdown-item-title-input {
 
   .smtcmp-diff-block.removed {
     background-color: rgba(var(--smtcmp-current-color-rgb), 0.3);
+  }
+
+  .smtcmp-diff-block-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--size-4-4);
+  }
+
+  .smtcmp-diff-empty {
+    background: transparent;
+    min-height: var(--size-4-8);
+  }
+
+  @media (max-width: 700px) {
+    .smtcmp-diff-block-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @container (max-width: 700px) {
+    .smtcmp-diff-block-grid {
+      grid-template-columns: 1fr;
+    }
   }
 
   .smtcmp-diff-inline-added {

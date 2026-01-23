@@ -334,22 +334,29 @@ const DiffBlockView = forwardRef<
       </div>
     )
   } else if (part.type === 'modified') {
+    const renderSide = (
+      value: string | undefined,
+      tokens: InlineToken[] | undefined,
+      sideClass: string,
+    ) => {
+      if (!value || value.length === 0) {
+        return <div className={`smtcmp-diff-block ${sideClass} smtcmp-diff-empty`} />
+      }
+      return (
+        <div className={`smtcmp-diff-block ${sideClass}`}>
+          <div style={{ width: '100%' }}>
+            {renderInlineTokens(tokens, value)}
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="smtcmp-diff-block-container" ref={ref}>
-        {part.originalValue && part.originalValue.length > 0 && (
-          <div className="smtcmp-diff-block removed">
-            <div style={{ width: '100%' }}>
-              {renderInlineTokens(part.originalTokens, part.originalValue)}
-            </div>
-          </div>
-        )}
-        {part.modifiedValue && part.modifiedValue.length > 0 && (
-          <div className="smtcmp-diff-block added">
-            <div style={{ width: '100%' }}>
-              {renderInlineTokens(part.modifiedTokens, part.modifiedValue)}
-            </div>
-          </div>
-        )}
+        <div className="smtcmp-diff-block-grid">
+          {renderSide(part.originalValue, part.originalTokens, 'removed')}
+          {renderSide(part.modifiedValue, part.modifiedTokens, 'added')}
+        </div>
         <div className="smtcmp-diff-block-actions">
           <button onClick={onAcceptIncoming} className="smtcmp-accept">
             Accept Incoming
