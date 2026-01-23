@@ -676,6 +676,18 @@ input[type='text'].smtcmp-chat-list-dropdown-item-title-input {
     background-color: rgba(var(--smtcmp-current-color-rgb), 0.3);
   }
 
+  .smtcmp-diff-inline-added {
+    background-color: rgba(var(--smtcmp-incoming-color-rgb), 0.45);
+    border-radius: var(--radius-s);
+    padding: 0 1px;
+  }
+
+  .smtcmp-diff-inline-removed {
+    background-color: rgba(var(--smtcmp-current-color-rgb), 0.45);
+    border-radius: var(--radius-s);
+    padding: 0 1px;
+  }
+
   .smtcmp-diff-block-container {
     position: relative;
     scroll-margin-top: var(--size-4-8);

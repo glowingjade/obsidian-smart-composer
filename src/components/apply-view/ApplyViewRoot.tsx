@@ -2,6 +2,7 @@ import { CheckIcon, ChevronDown, ChevronUp, X } from 'lucide-react'
 import { getIcon } from 'obsidian'
 import {
   forwardRef,
+  ReactNode,
   useCallback,
   useEffect,
   useMemo,
@@ -11,7 +12,11 @@ import {
 
 import { ApplyViewState } from '../../ApplyView'
 import { useApp } from '../../contexts/app-context'
-import { DiffBlock, createDiffBlocks } from '../../utils/chat/diff'
+import {
+  DiffBlock,
+  InlineToken,
+  createDiffBlocks,
+} from '../../utils/chat/diff'
 
 export default function ApplyViewRoot({
   state,
@@ -298,6 +303,30 @@ const DiffBlockView = forwardRef<
     onAcceptBoth: () => void
   }
 >(({ block: part, onAcceptIncoming, onAcceptCurrent, onAcceptBoth }, ref) => {
+  const renderInlineTokens = (
+    tokens?: InlineToken[],
+    fallback?: string,
+  ): ReactNode => {
+    if (!tokens || tokens.length === 0 || !fallback) {
+      return fallback ?? null
+    }
+
+    return tokens.map((token, index) => {
+      if (!token.text) return null
+      const className =
+        token.kind === 'added'
+          ? 'smtcmp-diff-inline-added'
+          : token.kind === 'removed'
+            ? 'smtcmp-diff-inline-removed'
+            : undefined
+      return (
+        <span key={`${token.kind}-${index}`} className={className}>
+          {token.text}
+        </span>
+      )
+    })
+  }
+
   if (part.type === 'unchanged') {
     return (
       <div className="smtcmp-diff-block">
@@ -309,12 +338,16 @@ const DiffBlockView = forwardRef<
       <div className="smtcmp-diff-block-container" ref={ref}>
         {part.originalValue && part.originalValue.length > 0 && (
           <div className="smtcmp-diff-block removed">
-            <div style={{ width: '100%' }}>{part.originalValue}</div>
+            <div style={{ width: '100%' }}>
+              {renderInlineTokens(part.originalTokens, part.originalValue)}
+            </div>
           </div>
         )}
         {part.modifiedValue && part.modifiedValue.length > 0 && (
           <div className="smtcmp-diff-block added">
-            <div style={{ width: '100%' }}>{part.modifiedValue}</div>
+            <div style={{ width: '100%' }}>
+              {renderInlineTokens(part.modifiedTokens, part.modifiedValue)}
+            </div>
           </div>
         )}
         <div className="smtcmp-diff-block-actions">
