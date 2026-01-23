@@ -18,6 +18,32 @@ import {
   createDiffBlocks,
 } from '../../utils/chat/diff'
 
+const buildContentFromDiff = (
+  diff: DiffBlock[],
+  preference: 'modified' | 'original',
+) => {
+  const parts: string[] = []
+  diff.forEach((block) => {
+    if (block.type === 'unchanged') {
+      if (block.lineCount > 0) {
+        parts.push(block.value ?? '')
+      }
+      return
+    }
+
+    const value =
+      preference === 'modified' ? block.modifiedValue : block.originalValue
+    const lineCount =
+      preference === 'modified'
+        ? block.modifiedLineCount
+        : block.originalLineCount
+    if (lineCount && lineCount > 0) {
+      parts.push(value ?? '')
+    }
+  })
+  return parts.join('\n')
+}
+
 export default function ApplyViewRoot({
   state,
   close,
@@ -68,21 +94,19 @@ export default function ApplyViewRoot({
     scrollToDiffBlock(currentDiffIndex + 1)
   }, [currentDiffIndex, scrollToDiffBlock])
 
-  const handleAccept = async () => {
-    const newContent = diff
-      .map((diffBlock) => {
-        if (diffBlock.type === 'modified') {
-          return diffBlock.modifiedValue
-        } else {
-          return diffBlock.value
-        }
-      })
-      .join('\n')
+  const handleAcceptRemaining = async () => {
+    const newContent = buildContentFromDiff(diff, 'modified')
     await app.vault.modify(state.file, newContent)
     close()
   }
 
-  const handleReject = async () => {
+  const handleRejectRemaining = async () => {
+    const newContent = buildContentFromDiff(diff, 'original')
+    await app.vault.modify(state.file, newContent)
+    close()
+  }
+
+  const handleCancel = async () => {
     close()
   }
 
@@ -95,7 +119,7 @@ export default function ApplyViewRoot({
         return prevDiff
       }
 
-      if (!currentPart.originalValue) {
+      if (!currentPart.originalLineCount || currentPart.originalLineCount <= 0) {
         return [...prevDiff.slice(0, index), ...prevDiff.slice(index + 1)]
       }
 
@@ -103,7 +127,8 @@ export default function ApplyViewRoot({
         currentPart.type === 'modified'
           ? {
               type: 'unchanged',
-              value: currentPart.originalValue,
+              value: currentPart.originalValue ?? '',
+              lineCount: currentPart.originalLineCount ?? 0,
             }
           : currentPart
 
@@ -124,7 +149,7 @@ export default function ApplyViewRoot({
         return prevDiff
       }
 
-      if (!currentPart.modifiedValue) {
+      if (!currentPart.modifiedLineCount || currentPart.modifiedLineCount <= 0) {
         return [...prevDiff.slice(0, index), ...prevDiff.slice(index + 1)]
       }
 
@@ -132,7 +157,8 @@ export default function ApplyViewRoot({
         currentPart.type === 'modified'
           ? {
               type: 'unchanged',
-              value: currentPart.modifiedValue,
+              value: currentPart.modifiedValue ?? '',
+              lineCount: currentPart.modifiedLineCount ?? 0,
             }
           : currentPart
 
@@ -153,11 +179,20 @@ export default function ApplyViewRoot({
         return prevDiff
       }
 
+      const originalLineCount = currentPart.originalLineCount ?? 0
+      const modifiedLineCount = currentPart.modifiedLineCount ?? 0
+      const parts: string[] = []
+      if (originalLineCount > 0) {
+        parts.push(currentPart.originalValue ?? '')
+      }
+      if (modifiedLineCount > 0) {
+        parts.push(currentPart.modifiedValue ?? '')
+      }
+
       const newPart: DiffBlock = {
         type: 'unchanged',
-        value: [currentPart.originalValue, currentPart.modifiedValue]
-          .filter(Boolean)
-          .join('\n'),
+        value: parts.join('\n'),
+        lineCount: originalLineCount + modifiedLineCount,
       }
 
       return [
@@ -244,16 +279,24 @@ export default function ApplyViewRoot({
             </div>
             <button
               className="clickable-icon view-action"
-              aria-label="Accept changes"
-              onClick={handleAccept}
+              aria-label="Accept all remaining changes"
+              onClick={handleAcceptRemaining}
             >
               {acceptIcon && <CheckIcon size={14} />}
-              Accept
+              Accept All
+            </button>
+            <button
+              className="clickable-icon view-action"
+              aria-label="Reject all remaining changes"
+              onClick={handleRejectRemaining}
+            >
+              {rejectIcon && <X size={14} />}
+              Reject All
             </button>
             <button
               className="clickable-icon view-action"
               aria-label="Cancel apply"
-              onClick={handleReject}
+              onClick={handleCancel}
             >
               {rejectIcon && <X size={14} />}
               Cancel

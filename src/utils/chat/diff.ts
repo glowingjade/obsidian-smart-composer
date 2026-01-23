@@ -8,11 +8,14 @@ export type DiffBlock =
   | {
       type: 'unchanged'
       value: string
+      lineCount: number
     }
   | {
       type: 'modified'
       originalValue?: string
       modifiedValue?: string
+      originalLineCount?: number
+      modifiedLineCount?: number
       originalTokens?: InlineToken[]
       modifiedTokens?: InlineToken[]
     }
@@ -268,32 +271,38 @@ export function createDiffBlocks(
 
     // Emit unchanged blocks
     if (oStart > lastOriginalEndLineNumberExclusive) {
-      const unchangedValue = currentLines
-        .slice(lastOriginalEndLineNumberExclusive - 1, oStart - 1)
-        .join('\n')
-      if (unchangedValue.length > 0) {
+      const unchangedLines = currentLines.slice(
+        lastOriginalEndLineNumberExclusive - 1,
+        oStart - 1,
+      )
+      if (unchangedLines.length > 0) {
         blocks.push({
           type: 'unchanged',
-          value: unchangedValue,
+          value: unchangedLines.join('\n'),
+          lineCount: unchangedLines.length,
         })
       }
     }
 
     // Emit modified blocks
-    const originalValue = currentLines.slice(oStart - 1, oEnd - 1).join('\n')
-    const modifiedValue = incomingLines.slice(mStart - 1, mEnd - 1).join('\n')
-    if (originalValue.length > 0 || modifiedValue.length > 0) {
+    const originalLines = currentLines.slice(oStart - 1, oEnd - 1)
+    const modifiedLines = incomingLines.slice(mStart - 1, mEnd - 1)
+    const originalValue = originalLines.join('\n')
+    const modifiedValue = modifiedLines.join('\n')
+    if (originalLines.length > 0 || modifiedLines.length > 0) {
       const inlineTokens = buildInlineTokens(originalValue, modifiedValue)
       blocks.push({
         type: 'modified',
-        originalValue: originalValue.length > 0 ? originalValue : undefined,
-        modifiedValue: modifiedValue.length > 0 ? modifiedValue : undefined,
+        originalValue: originalLines.length > 0 ? originalValue : undefined,
+        modifiedValue: modifiedLines.length > 0 ? modifiedValue : undefined,
+        originalLineCount: originalLines.length > 0 ? originalLines.length : 0,
+        modifiedLineCount: modifiedLines.length > 0 ? modifiedLines.length : 0,
         originalTokens:
-          inlineTokens && originalValue.length > 0
+          inlineTokens && originalLines.length > 0
             ? inlineTokens.originalTokens
             : undefined,
         modifiedTokens:
-          inlineTokens && modifiedValue.length > 0
+          inlineTokens && modifiedLines.length > 0
             ? inlineTokens.modifiedTokens
             : undefined,
       })
@@ -304,13 +313,14 @@ export function createDiffBlocks(
 
   // Emit final unchanged blocks (if any)
   if (currentLines.length > lastOriginalEndLineNumberExclusive - 1) {
-    const unchangedValue = currentLines
-      .slice(lastOriginalEndLineNumberExclusive - 1)
-      .join('\n')
-    if (unchangedValue.length > 0) {
+    const unchangedLines = currentLines.slice(
+      lastOriginalEndLineNumberExclusive - 1,
+    )
+    if (unchangedLines.length > 0) {
       blocks.push({
         type: 'unchanged',
-        value: unchangedValue,
+        value: unchangedLines.join('\n'),
+        lineCount: unchangedLines.length,
       })
     }
   }
