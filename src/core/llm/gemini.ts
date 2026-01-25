@@ -201,24 +201,24 @@ export class GeminiProvider extends BaseLLMProvider<
       case 'user': {
         const contentParts: Part[] = Array.isArray(message.content)
           ? message.content.map((part) => {
-            switch (part.type) {
-              case 'text':
-                return { text: part.text }
-              case 'image_url': {
-                const { mimeType, base64Data } = parseImageDataUrl(
-                  part.image_url.url,
-                )
-                GeminiProvider.validateImageType(mimeType)
+              switch (part.type) {
+                case 'text':
+                  return { text: part.text }
+                case 'image_url': {
+                  const { mimeType, base64Data } = parseImageDataUrl(
+                    part.image_url.url,
+                  )
+                  GeminiProvider.validateImageType(mimeType)
 
-                return {
-                  inlineData: {
-                    data: base64Data,
-                    mimeType,
-                  },
+                  return {
+                    inlineData: {
+                      data: base64Data,
+                      mimeType,
+                    },
+                  }
                 }
               }
-            }
-          })
+            })
           : [{ text: message.content }]
 
         return {
@@ -326,10 +326,10 @@ export class GeminiProvider extends BaseLLMProvider<
       object: 'chat.completion',
       usage: response.usageMetadata
         ? {
-          prompt_tokens: response.usageMetadata.promptTokenCount ?? 0,
-          completion_tokens: response.usageMetadata.candidatesTokenCount ?? 0,
-          total_tokens: response.usageMetadata.totalTokenCount ?? 0,
-        }
+            prompt_tokens: response.usageMetadata.promptTokenCount ?? 0,
+            completion_tokens: response.usageMetadata.candidatesTokenCount ?? 0,
+            total_tokens: response.usageMetadata.totalTokenCount ?? 0,
+          }
         : undefined,
     }
   }
@@ -365,10 +365,10 @@ export class GeminiProvider extends BaseLLMProvider<
       object: 'chat.completion.chunk',
       usage: chunk.usageMetadata
         ? {
-          prompt_tokens: chunk.usageMetadata.promptTokenCount ?? 0,
-          completion_tokens: chunk.usageMetadata.candidatesTokenCount ?? 0,
-          total_tokens: chunk.usageMetadata.totalTokenCount ?? 0,
-        }
+            prompt_tokens: chunk.usageMetadata.promptTokenCount ?? 0,
+            completion_tokens: chunk.usageMetadata.candidatesTokenCount ?? 0,
+            total_tokens: chunk.usageMetadata.totalTokenCount ?? 0,
+          }
         : undefined,
     }
   }
