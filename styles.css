@@ -582,6 +582,17 @@ input[type='text'].smtcmp-chat-list-dropdown-item-title-input {
   padding: var(--size-4-3);
 }
 
+.smtcmp-code-block-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  font-size: var(--font-smallest);
+  border-top: 1px solid var(--background-modifier-border);
+  background-color: var(--background-primary);
+  border-radius: 0 0 var(--radius-s) var(--radius-s);
+  height: calc(var(--size-4-8) - var(--size-4-1));
+}
+
 #smtcmp-apply-view {
   flex: 1 1 auto;
   display: flex;
