@@ -55,11 +55,16 @@ export class LmStudioProvider extends BaseLLMProvider<
     return this.adapter.streamResponse(this.client, request, options)
   }
 
-  async getEmbedding(model: string, text: string): Promise<number[]> {
+  async getEmbedding(
+    model: string,
+    text: string,
+    options?: { dimensions?: number },
+  ): Promise<number[]> {
     const embedding = await this.client.embeddings.create({
       model: model,
       input: text,
       encoding_format: 'float',
+      ...(options?.dimensions && { dimensions: options.dimensions }),
     })
     return embedding.data[0].embedding
   }
