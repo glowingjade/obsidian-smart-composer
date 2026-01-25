@@ -25,6 +25,8 @@ export const getEmbeddingModelClient = ({
     id: embeddingModel.id,
     dimension: embeddingModel.dimension,
     getEmbedding: (text: string) =>
-      providerClient.getEmbedding(embeddingModel.model, text),
+      providerClient.getEmbedding(embeddingModel.model, text, {
+        dimensions: embeddingModel.outputDimension,
+      }),
   }
 }

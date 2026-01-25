@@ -79,7 +79,11 @@ export class GeminiPlanProvider extends BaseLLMProvider<
     )
   }
 
-  async getEmbedding(_model: string, _text: string): Promise<number[]> {
+  async getEmbedding(
+    _model: string,
+    _text: string,
+    _options?: { dimensions?: number },
+  ): Promise<number[]> {
     throw new Error(
       `Provider ${this.provider.id} does not support embeddings. Please use a different provider.`,
     )

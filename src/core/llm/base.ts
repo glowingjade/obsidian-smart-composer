@@ -29,5 +29,9 @@ export abstract class BaseLLMProvider<P extends LLMProvider> {
     options?: LLMOptions,
   ): Promise<AsyncIterable<LLMResponseStreaming>>
 
-  abstract getEmbedding(model: string, text: string): Promise<number[]>
+  abstract getEmbedding(
+    model: string,
+    text: string,
+    options?: { dimensions?: number },
+  ): Promise<number[]>
 }

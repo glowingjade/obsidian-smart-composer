@@ -43,7 +43,9 @@ function AddEmbeddingModelModalComponent({
     providerType: DEFAULT_PROVIDERS[0].type,
     id: '',
     model: '',
+    outputDimension: undefined,
   })
+  const [outputDimensionInput, setOutputDimensionInput] = useState('')
 
   const handleSubmit = async () => {
     try {
@@ -69,6 +71,7 @@ function AddEmbeddingModelModalComponent({
       const embeddingResult = await providerClient.getEmbedding(
         formData.model,
         'test',
+        { dimensions: formData.outputDimension },
       )
 
       if (!Array.isArray(embeddingResult) || embeddingResult.length === 0) {
@@ -76,6 +79,18 @@ function AddEmbeddingModelModalComponent({
       }
 
       const dimension = embeddingResult.length
+
+      // Validate that the model respected the requested output dimension
+      if (
+        formData.outputDimension !== undefined &&
+        dimension !== formData.outputDimension
+      ) {
+        throw new Error(
+          `Requested output dimension ${formData.outputDimension}, but the model returned ${dimension} dimensions. ` +
+            `This model may not support custom output dimensions (Matryoshka Representation Learning). ` +
+            `Leave the "Output Dimensions" field empty to use the model's default dimension.`,
+        )
+      }
 
       if (!supportedDimensionsForIndex.includes(dimension)) {
         const confirmed = await new Promise<boolean>((resolve) => {
@@ -171,6 +186,24 @@ function AddEmbeddingModelModalComponent({
           onChange={(value: string) =>
             setFormData((prev) => ({ ...prev, model: value }))
           }
+        />
+      </ObsidianSetting>
+
+      <ObsidianSetting
+        name="Output Dimensions"
+        desc="Optional. Request a specific output dimension from models that support Matryoshka Representation Learning (MRL), such as OpenAI's text-embedding-3-* or Google's gemini-embedding-001. Leave empty to use the model's default dimension."
+      >
+        <ObsidianTextInput
+          value={outputDimensionInput}
+          placeholder="e.g., 768"
+          onChange={(value: string) => {
+            setOutputDimensionInput(value)
+            const parsed = parseInt(value, 10)
+            setFormData((prev) => ({
+              ...prev,
+              outputDimension: isNaN(parsed) ? undefined : parsed,
+            }))
+          }}
         />
       </ObsidianSetting>
 
