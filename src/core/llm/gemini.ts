@@ -49,11 +49,13 @@ export class GeminiProvider extends BaseLLMProvider<
 
   constructor(provider: Extract<LLMProvider, { type: 'gemini' }>) {
     super(provider)
-    if (provider.baseUrl) {
-      throw new Error('Gemini does not support custom base URL')
-    }
 
-    this.client = new GoogleGenAI({ apiKey: provider.apiKey ?? '' })
+    this.client = new GoogleGenAI({
+      apiKey: provider.apiKey ?? '',
+      httpOptions: provider.baseUrl
+        ? { baseUrl: provider.baseUrl.replace(/\/+$/, '') }
+        : undefined,
+    })
     this.apiKey = provider.apiKey ?? ''
   }
 
