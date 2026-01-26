@@ -1,6 +1,6 @@
 {
   "name": "obsidian-smart-composer",
-  "version": "1.2.8",
+  "version": "1.2.9",
   "description": "This is a sample plugin for Obsidian (https://obsidian.md)",
   "main": "main.js",
   "scripts": {
