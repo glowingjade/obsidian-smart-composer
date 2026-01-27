@@ -246,7 +246,9 @@ function ConnectOpenAIPlanModalComponent({
               <div className="smtcmp-plan-connect-waiting-spinner" />
               <div className="smtcmp-plan-connect-waiting-text">
                 <strong>Waiting for authorization</strong>
-                <span>Complete the login in your browser, then return here</span>
+                <span>
+                  Complete the login in your browser, then return here
+                </span>
               </div>
             </div>
           </div>
