@@ -242,7 +242,15 @@ function ConnectOpenAIPlanModalComponent({
         />
         {isWaitingForCallback && (
           <div className="smtcmp-plan-connect-waiting">
-            Waiting for authorization...
+            <div className="smtcmp-plan-connect-waiting-content">
+              <div className="smtcmp-plan-connect-waiting-spinner" />
+              <div className="smtcmp-plan-connect-waiting-text">
+                <strong>Waiting for authorization</strong>
+                <span>
+                  Complete the login in your browser, then return here
+                </span>
+              </div>
+            </div>
           </div>
         )}
       </ObsidianSetting>
