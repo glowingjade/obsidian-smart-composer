@@ -1872,8 +1872,51 @@ button.smtcmp-chat-input-model-select {
 }
 
 .smtcmp-plan-connect-waiting {
-  margin-top: var(--size-2-1);
-  font-size: var(--font-ui-small);
+  margin: var(--size-4-3) 0;
+  padding: var(--size-4-3);
+  background: var(--background-modifier-info);
+  border: 1px solid var(--background-modifier-border);
+  border-left: 3px solid var(--interactive-accent);
+  border-radius: var(--radius-s);
+}
+
+.smtcmp-plan-connect-waiting-content {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-3);
+}
+
+.smtcmp-plan-connect-waiting-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--background-modifier-border);
+  border-top-color: var(--interactive-accent);
+  border-radius: 50%;
+  animation: smtcmp-spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes smtcmp-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.smtcmp-plan-connect-waiting-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.smtcmp-plan-connect-waiting-text strong {
+  color: var(--text-normal);
+}
+
+.smtcmp-plan-connect-waiting-text span {
+  font-size: var(--font-ui-smaller);
   color: var(--text-muted);
 }
 
