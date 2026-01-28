@@ -2,6 +2,7 @@ import { CheckIcon, ChevronDown, ChevronUp, X } from 'lucide-react'
 import { getIcon } from 'obsidian'
 import {
   forwardRef,
+  ReactNode,
   useCallback,
   useEffect,
   useMemo,
@@ -11,7 +12,37 @@ import {
 
 import { ApplyViewState } from '../../ApplyView'
 import { useApp } from '../../contexts/app-context'
-import { DiffBlock, createDiffBlocks } from '../../utils/chat/diff'
+import {
+  DiffBlock,
+  InlineToken,
+  createDiffBlocks,
+} from '../../utils/chat/diff'
+
+const buildContentFromDiff = (
+  diff: DiffBlock[],
+  preference: 'modified' | 'original',
+) => {
+  const parts: string[] = []
+  diff.forEach((block) => {
+    if (block.type === 'unchanged') {
+      if (block.lineCount > 0) {
+        parts.push(block.value ?? '')
+      }
+      return
+    }
+
+    const value =
+      preference === 'modified' ? block.modifiedValue : block.originalValue
+    const lineCount =
+      preference === 'modified'
+        ? block.modifiedLineCount
+        : block.originalLineCount
+    if (lineCount && lineCount > 0) {
+      parts.push(value ?? '')
+    }
+  })
+  return parts.join('\n')
+}
 
 export default function ApplyViewRoot({
   state,
@@ -63,21 +94,19 @@ export default function ApplyViewRoot({
     scrollToDiffBlock(currentDiffIndex + 1)
   }, [currentDiffIndex, scrollToDiffBlock])
 
-  const handleAccept = async () => {
-    const newContent = diff
-      .map((diffBlock) => {
-        if (diffBlock.type === 'modified') {
-          return diffBlock.modifiedValue
-        } else {
-          return diffBlock.value
-        }
-      })
-      .join('\n')
+  const handleAcceptRemaining = async () => {
+    const newContent = buildContentFromDiff(diff, 'modified')
     await app.vault.modify(state.file, newContent)
     close()
   }
 
-  const handleReject = async () => {
+  const handleRejectRemaining = async () => {
+    const newContent = buildContentFromDiff(diff, 'original')
+    await app.vault.modify(state.file, newContent)
+    close()
+  }
+
+  const handleCancel = async () => {
     close()
   }
 
@@ -90,7 +119,7 @@ export default function ApplyViewRoot({
         return prevDiff
       }
 
-      if (!currentPart.originalValue) {
+      if (!currentPart.originalLineCount || currentPart.originalLineCount <= 0) {
         return [...prevDiff.slice(0, index), ...prevDiff.slice(index + 1)]
       }
 
@@ -98,7 +127,8 @@ export default function ApplyViewRoot({
         currentPart.type === 'modified'
           ? {
               type: 'unchanged',
-              value: currentPart.originalValue,
+              value: currentPart.originalValue ?? '',
+              lineCount: currentPart.originalLineCount ?? 0,
             }
           : currentPart
 
@@ -119,7 +149,7 @@ export default function ApplyViewRoot({
         return prevDiff
       }
 
-      if (!currentPart.modifiedValue) {
+      if (!currentPart.modifiedLineCount || currentPart.modifiedLineCount <= 0) {
         return [...prevDiff.slice(0, index), ...prevDiff.slice(index + 1)]
       }
 
@@ -127,7 +157,8 @@ export default function ApplyViewRoot({
         currentPart.type === 'modified'
           ? {
               type: 'unchanged',
-              value: currentPart.modifiedValue,
+              value: currentPart.modifiedValue ?? '',
+              lineCount: currentPart.modifiedLineCount ?? 0,
             }
           : currentPart
 
@@ -148,11 +179,20 @@ export default function ApplyViewRoot({
         return prevDiff
       }
 
+      const originalLineCount = currentPart.originalLineCount ?? 0
+      const modifiedLineCount = currentPart.modifiedLineCount ?? 0
+      const parts: string[] = []
+      if (originalLineCount > 0) {
+        parts.push(currentPart.originalValue ?? '')
+      }
+      if (modifiedLineCount > 0) {
+        parts.push(currentPart.modifiedValue ?? '')
+      }
+
       const newPart: DiffBlock = {
         type: 'unchanged',
-        value: [currentPart.originalValue, currentPart.modifiedValue]
-          .filter(Boolean)
-          .join('\n'),
+        value: parts.join('\n'),
+        lineCount: originalLineCount + modifiedLineCount,
       }
 
       return [
@@ -239,16 +279,24 @@ export default function ApplyViewRoot({
             </div>
             <button
               className="clickable-icon view-action"
-              aria-label="Accept changes"
-              onClick={handleAccept}
+              aria-label="Accept all remaining changes"
+              onClick={handleAcceptRemaining}
             >
               {acceptIcon && <CheckIcon size={14} />}
-              Accept
+              Accept All
+            </button>
+            <button
+              className="clickable-icon view-action"
+              aria-label="Reject all remaining changes"
+              onClick={handleRejectRemaining}
+            >
+              {rejectIcon && <X size={14} />}
+              Reject All
             </button>
             <button
               className="clickable-icon view-action"
               aria-label="Cancel apply"
-              onClick={handleReject}
+              onClick={handleCancel}
             >
               {rejectIcon && <X size={14} />}
               Cancel
@@ -298,6 +346,30 @@ const DiffBlockView = forwardRef<
     onAcceptBoth: () => void
   }
 >(({ block: part, onAcceptIncoming, onAcceptCurrent, onAcceptBoth }, ref) => {
+  const renderInlineTokens = (
+    tokens?: InlineToken[],
+    fallback?: string,
+  ): ReactNode => {
+    if (!tokens || tokens.length === 0 || !fallback) {
+      return fallback ?? null
+    }
+
+    return tokens.map((token, index) => {
+      if (!token.text) return null
+      const className =
+        token.kind === 'added'
+          ? 'smtcmp-diff-inline-added'
+          : token.kind === 'removed'
+            ? 'smtcmp-diff-inline-removed'
+            : undefined
+      return (
+        <span key={`${token.kind}-${index}`} className={className}>
+          {token.text}
+        </span>
+      )
+    })
+  }
+
   if (part.type === 'unchanged') {
     return (
       <div className="smtcmp-diff-block">
@@ -305,18 +377,29 @@ const DiffBlockView = forwardRef<
       </div>
     )
   } else if (part.type === 'modified') {
+    const renderSide = (
+      value: string | undefined,
+      tokens: InlineToken[] | undefined,
+      sideClass: string,
+    ) => {
+      if (!value || value.length === 0) {
+        return <div className={`smtcmp-diff-block ${sideClass} smtcmp-diff-empty`} />
+      }
+      return (
+        <div className={`smtcmp-diff-block ${sideClass}`}>
+          <div style={{ width: '100%' }}>
+            {renderInlineTokens(tokens, value)}
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="smtcmp-diff-block-container" ref={ref}>
-        {part.originalValue && part.originalValue.length > 0 && (
-          <div className="smtcmp-diff-block removed">
-            <div style={{ width: '100%' }}>{part.originalValue}</div>
-          </div>
-        )}
-        {part.modifiedValue && part.modifiedValue.length > 0 && (
-          <div className="smtcmp-diff-block added">
-            <div style={{ width: '100%' }}>{part.modifiedValue}</div>
-          </div>
-        )}
+        <div className="smtcmp-diff-block-grid">
+          {renderSide(part.originalValue, part.originalTokens, 'removed')}
+          {renderSide(part.modifiedValue, part.modifiedTokens, 'added')}
+        </div>
         <div className="smtcmp-diff-block-actions">
           <button onClick={onAcceptIncoming} className="smtcmp-accept">
             Accept Incoming
