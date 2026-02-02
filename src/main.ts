@@ -1,15 +1,18 @@
-import { Editor, MarkdownView, Notice, Plugin } from 'obsidian'
+import { Editor, MarkdownView, Notice, Plugin, TFile } from 'obsidian'
 
 import { ApplyView } from './ApplyView'
 import { ChatView } from './ChatView'
 import { ChatProps } from './components/chat-view/Chat'
 import { InstallerUpdateRequiredModal } from './components/modals/InstallerUpdateRequiredModal'
 import { APPLY_VIEW_TYPE, CHAT_VIEW_TYPE } from './constants'
+import { ChatService, CreateChatOptions } from './core/chat/ChatService'
 import { McpManager } from './core/mcp/mcpManager'
 import { RAGEngine } from './core/rag/ragEngine'
 import { DatabaseManager } from './database/DatabaseManager'
 import { PGLiteAbortedException } from './database/exception'
 import { migrateToJsonDatabase } from './database/json/migrateToJsonDatabase'
+import { ConversationPromptModal } from './settings/ConversationPromptModal'
+import { CreateChatModal } from './settings/CreateChatModal'
 import {
   SmartComposerSettings,
   smartComposerSettingsSchema,
@@ -28,6 +31,10 @@ export default class SmartComposerPlugin extends Plugin {
   private dbManagerInitPromise: Promise<DatabaseManager> | null = null
   private ragEngineInitPromise: Promise<RAGEngine> | null = null
   private timeoutIds: ReturnType<typeof setTimeout>[] = [] // Use ReturnType instead of number
+
+  // Property to store a reference to the ChatView
+  chatView: ChatView | null = null
+  private chatService: ChatService | null = null
 
   async onload() {
     await this.loadSettings()
@@ -151,6 +158,12 @@ export default class SmartComposerPlugin extends Plugin {
     // McpManager cleanup
     this.mcpManager?.cleanup()
     this.mcpManager = null
+
+    // ChatService cleanup
+    this.chatService = null
+
+    // Clear chat view reference
+    this.chatView = null
   }
 
   async loadSettings() {
@@ -337,5 +350,137 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
     new Notice('Reloading "smart-composer" due to migration', 1000)
     leaves[0].detach()
     await this.activateChatView()
+  }
+
+  /**
+   * Opens a specific conversation by ID
+   * @param conversationId ID of the conversation to open
+   * @returns Promise that resolves when the conversation is opened
+   */
+  async openConversation(conversationId: string): Promise<void> {
+    // Make sure chat view is open
+    await this.activateChatView()
+
+    // Get the chat view
+    const leaf = this.app.workspace.getLeavesOfType(CHAT_VIEW_TYPE)[0]
+    if (!leaf || !(leaf.view instanceof ChatView)) {
+      throw new Error('Failed to open chat view')
+    }
+
+    // Open the conversation
+    await leaf.view.loadConversation(conversationId)
+
+    // Reveal the leaf
+    this.app.workspace.revealLeaf(leaf)
+  }
+
+  /**
+   * Prompts the user to enter a conversation ID
+   * @returns Promise that resolves to the entered ID or null if cancelled
+   */
+  async promptForConversationId(): Promise<string | null> {
+    return new Promise((resolve) => {
+      const modal = new ConversationPromptModal(this.app, (result) => {
+        resolve(result)
+      })
+      modal.open()
+    })
+  }
+
+  /**
+   * Prompts the user to enter information for a new chat
+   * @returns Promise that resolves to the message and file or null if cancelled
+   */
+  async promptForCreateChat(): Promise<{
+    message: string
+    file?: TFile | null
+  } | null> {
+    return new Promise((resolve) => {
+      const modal = new CreateChatModal(this.app, (result) => {
+        resolve(result)
+      })
+      modal.open()
+    })
+  }
+
+  /**
+   * Create a new chat with the given text block and automatically submit the message
+   * @param blockData The text block to add to the chat
+   * @returns Promise that resolves to the ID of the created conversation
+   */
+  async createChatWithBlock(blockData: {
+    file: TFile
+    text: string
+    startLine: number
+    endLine: number
+  }): Promise<string> {
+    // Make sure chat view is open
+    await this.activateChatView()
+
+    // Get the chat view
+    const leaf = this.app.workspace.getLeavesOfType(CHAT_VIEW_TYPE)[0]
+    if (!leaf || !(leaf.view instanceof ChatView)) {
+      throw new Error('Failed to open chat view')
+    }
+
+    // Create and submit the chat - access via the method we added to ChatView
+    const conversationId =
+      await leaf.view.createAndSubmitChatFromBlock(blockData)
+    if (!conversationId) {
+      throw new Error('Failed to create chat')
+    }
+
+    // Reveal the leaf
+    this.app.workspace.revealLeaf(leaf)
+
+    return conversationId
+  }
+
+  /**
+   * Lazily initialize ChatService which handles headless chat creation/streaming.
+   */
+  private async getChatService(): Promise<ChatService> {
+    if (this.chatService) return this.chatService
+
+    // Ensure db manager exists (for migrations etc.)
+    await this.getDbManager()
+
+    const chatManagerModule = await import('./database/json/chat/ChatManager')
+    const chatManager = new chatManagerModule.ChatManager(this.app)
+
+    this.chatService = new ChatService({
+      app: this.app,
+      settings: this.settings,
+      chatManager,
+      getRAGEngine: () => this.getRAGEngine(),
+      getMcpManager: () => this.getMcpManager(),
+    })
+    return this.chatService
+  }
+
+  /**
+   * Public API for other plugins – create chat quietly and return id.
+   */
+  async createChat(
+    initialText: string,
+    opts?: CreateChatOptions,
+  ): Promise<string> {
+    const service = await this.getChatService()
+    return service.createChat(initialText, opts)
+  }
+
+  /** Convenience: create a chat, wait until assistant finished, then open UI. */
+  async createChatAndOpen(initialText: string, opts?: CreateChatOptions) {
+    const service = await this.getChatService()
+    const id = await service.createChat(initialText, opts)
+    await service.waitUntilFinished(id)
+    await this.openConversation(id)
+    return id
+  }
+
+  /** Allow other plugins to await the assistant stream without opening UI. */
+  async waitUntilFinished(conversationId: string): Promise<void> {
+    const service = await this.getChatService()
+    return service.waitUntilFinished(conversationId)
   }
 }
