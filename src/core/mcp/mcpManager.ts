@@ -393,7 +393,7 @@ export class McpManager {
       const result = (await client.callTool(
         {
           name: toolName,
-          arguments: parsedArgs,
+          arguments: parsedArgs ?? {},
         },
         undefined,
         {
