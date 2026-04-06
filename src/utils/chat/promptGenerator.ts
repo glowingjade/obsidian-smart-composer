@@ -413,6 +413,7 @@ ${await this.getWebsiteContent(url)}
 
   private getSystemMessage(shouldUseRAG: boolean): RequestMessage {
     const modelPromptLevel = this.getModelPromptLevel()
+    const languageInstruction = this.getLanguageInstruction()
     const systemPrompt = `You are an intelligent assistant to help answer any questions that the user has${modelPromptLevel == PromptLevel.Default ? `, particularly about editing and organizing markdown files in Obsidian` : ''}.
 
 1. Please keep your response as concise as possible. Avoid being verbose.
@@ -423,7 +424,7 @@ ${await this.getWebsiteContent(url)}
 
 ${
   modelPromptLevel == PromptLevel.Default
-    ? `4. Respond in the same language as the user's message.
+    ? `4. ${languageInstruction}
 
 5. When writing out new markdown blocks, also wrap them with <smtcmp_block> tags. For example:
 <smtcmp_block language="markdown">
@@ -459,7 +460,7 @@ The user has full access to the file, so they prefer seeing only the changes in 
 
 ${
   modelPromptLevel == PromptLevel.Default
-    ? `3. Respond in the same language as the user's message.
+    ? `3. ${languageInstruction}
 
 4. When referencing markdown blocks in your answer, keep the following guidelines in mind:
 
@@ -568,5 +569,17 @@ ${transcript.map((t) => `${t.offset}: ${t.text}`).join('\n')}`
       (model) => model.id === this.settings.chatModelId,
     )
     return chatModel?.promptLevel ?? PromptLevel.Default
+  }
+
+  private getLanguageInstruction(): string {
+    switch (this.settings.chatOptions.responseLanguage) {
+      case 'ko':
+        return 'Respond in Korean.'
+      case 'en':
+        return 'Respond in English.'
+      case 'auto':
+      default:
+        return "Respond in the same language as the user's message."
+    }
   }
 }

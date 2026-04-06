@@ -81,6 +81,32 @@ export function ChatSection() {
       </ObsidianSetting>
 
       <ObsidianSetting
+        name="Response language"
+        desc="Choose the assistant response language."
+      >
+        <ObsidianDropdown
+          value={settings.chatOptions.responseLanguage}
+          options={{
+            auto: 'Auto (match user language)',
+            ko: 'Korean (한국어)',
+            en: 'English',
+          }}
+          onChange={async (value) => {
+            if (value !== 'auto' && value !== 'ko' && value !== 'en') {
+              return
+            }
+            await setSettings({
+              ...settings,
+              chatOptions: {
+                ...settings.chatOptions,
+                responseLanguage: value,
+              },
+            })
+          }}
+        />
+      </ObsidianSetting>
+
+      <ObsidianSetting
         name="Include current file"
         desc="Automatically include the content of your current file in chats."
       >

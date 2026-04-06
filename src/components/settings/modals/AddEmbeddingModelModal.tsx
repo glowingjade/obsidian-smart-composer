@@ -63,6 +63,30 @@ function AddEmbeddingModelModalComponent({
         throw new Error('Provider with this ID does not exist')
       }
 
+      const selectedProvider = plugin.settings.providers.find(
+        (provider) => provider.id === formData.providerId,
+      )
+      if (!selectedProvider) {
+        throw new Error('Provider with this ID does not exist')
+      }
+
+      const isVoyageModel = formData.model.startsWith('voyage-')
+      if (isVoyageModel) {
+        if (selectedProvider.type !== 'openai-compatible') {
+          throw new Error(
+            'Voyage embedding models require an OpenAI Compatible provider.',
+          )
+        }
+        if (!selectedProvider.baseUrl?.includes('voyageai.com')) {
+          throw new Error(
+            'For Voyage models, set provider base URL to https://api.voyageai.com/v1.',
+          )
+        }
+        if (!selectedProvider.apiKey) {
+          throw new Error('Voyage models require a Voyage API key.')
+        }
+      }
+
       const providerClient = getProviderClient({
         settings: plugin.settings,
         providerId: formData.providerId,

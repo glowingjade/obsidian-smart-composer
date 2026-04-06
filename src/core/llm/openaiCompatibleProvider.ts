@@ -85,12 +85,53 @@ export class OpenAICompatibleProvider extends BaseLLMProvider<
     text: string,
     options?: { dimensions?: number },
   ): Promise<number[]> {
-    const embedding = await this.client.embeddings.create({
-      model: model,
-      input: text,
-      encoding_format: 'float',
-      ...(options?.dimensions && { dimensions: options.dimensions }),
-    })
-    return embedding.data[0].embedding
+    const requests: Record<string, unknown>[] = [
+      {
+        model: model,
+        input: text,
+        encoding_format: 'float',
+        ...(options?.dimensions && { dimensions: options.dimensions }),
+      },
+      {
+        model: model,
+        input: text,
+        ...(options?.dimensions && { dimensions: options.dimensions }),
+      },
+      {
+        model: model,
+        input: text,
+        ...(options?.dimensions && { output_dimension: options.dimensions }),
+      },
+      {
+        model: model,
+        input: text,
+      },
+    ]
+
+    const deduplicatedRequests = requests.filter(
+      (request, index) =>
+        requests.findIndex(
+          (candidate) =>
+            JSON.stringify(candidate) === JSON.stringify(request),
+        ) === index,
+    )
+
+    let lastError: unknown = undefined
+    for (const request of deduplicatedRequests) {
+      try {
+        const embedding = await this.client.embeddings.create(
+          request as unknown as Parameters<
+            typeof this.client.embeddings.create
+          >[0],
+        )
+        return embedding.data[0].embedding
+      } catch (error) {
+        lastError = error
+      }
+    }
+
+    throw lastError instanceof Error
+      ? lastError
+      : new Error('Failed to create embedding')
   }
 }
