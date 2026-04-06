@@ -1,211 +1,232 @@
-<h1 align="center">Smart Composer</h1>
+<h1 align="center">ko-smart composer</h1>
 
 <p align="center">
-  <a href="https://github.com/glowingjade/obsidian-smart-composer/wiki">Documentation</a>
+  <a href="https://github.com/glowingjade/obsidian-smart-composer/wiki">문서(Documentation)</a>
   ·
-  <a href="https://github.com/glowingjade/obsidian-smart-composer/issues">Report Bug</a>
+  <a href="https://github.com/glowingjade/obsidian-smart-composer/issues">버그 제보</a>
   ·
-  <a href="https://github.com/glowingjade/obsidian-smart-composer/discussions">Discussions</a>
+  <a href="https://github.com/glowingjade/obsidian-smart-composer/discussions">토론(Discussions)</a>
 </p>
 
-> [!NOTE]
-> **What's New**
+> [!IMPORTANT]
+> **포크(Fork) 안내 및 원저작자 존중**
 >
-> **v1.2.8** — Connect your Gemini account
-> 
-> **v1.2.7** — Connect your Claude or OpenAI account directly (no API key required)
-> 
-> **v1.2.6** — Support for GPT-5.2, Opus 4.5, Gemini 3, and Grok 4.1
-> 
-> **🔌 MCP Support** — Connect Smart Composer to external tools and data sources via the [Model Context Protocol](https://modelcontextprotocol.io)
+> 이 저장소는 **[@glowingjade](https://github.com/glowingjade)** 님의 원본 프로젝트  
+> [obsidian-smart-composer](https://github.com/glowingjade/obsidian-smart-composer) 를 기반으로 한 포크입니다.
+>
+> 본 포크는 원본 개발자를 사칭하지 않으며, 원본 프로젝트의 비전과 기여자들을 존중합니다.  
+> 원본 프로젝트 관련 공로와 저작권은 원저작자 및 기여자에게 있습니다.
+
+> [!NOTE]
+> **최근 업데이트**
+>
+> - **v1.2.8** — Gemini 계정 연결 지원
+> - **v1.2.7** — Claude / OpenAI 계정을 API Key 없이 연결 지원
+> - **v1.2.6** — GPT-5.2, Opus 4.5, Gemini 3, Grok 4.1 지원
+> - **🔌 MCP 지원** — [Model Context Protocol](https://modelcontextprotocol.io) 기반 외부 도구/데이터 연동
 
 > [!WARNING]
-> **⚠️ Maintenance Notice**
+> **⚠️ 유지보수 안내**
 >
-> This plugin is currently maintained by a single developer and is **not under active development**.  
-> Occasional updates or bug fixes may still be released, but **issues and feature requests may not be reviewed promptly**.
+> 현재 플러그인은 1인 개발자가 유지보수하고 있으며, **활발한 신규 개발 단계는 아닙니다.**
+> 간헐적 업데이트와 버그 수정은 가능하지만, **이슈/기능 요청 반영이 지연될 수 있습니다.**
 >
-> **🔗 Community Forks**  
-> A list of community-maintained forks is available in the [Community Fork Collection](https://github.com/glowingjade/obsidian-smart-composer/discussions/496).  
-> If you're maintaining a fork, feel free to add it there. And if you're simply interested in exploring alternative versions, you're welcome to check it out as well.
+> 커뮤니티 포크 목록은 [Community Fork Collection](https://github.com/glowingjade/obsidian-smart-composer/discussions/496)에서 확인할 수 있습니다.
 
-> ### Risks of connecting a Claude subscription
-> 
-> As of January 2026, Anthropic has restricted third-party OAuth access, citing Terms of Service violations.
-> 
-> Smart Composer's subscription connect uses the same OAuth-style flow that tools like OpenCode have used. There are reports of **Claude accounts being banned or restricted** when subscription OAuth is used via third-party clients (example: [https://github.com/anomalyco/opencode/issues/6930](https://github.com/anomalyco/opencode/issues/6930)). For **OpenAI (ChatGPT)** and **Google (Gemini)**, I have not seen comparable ban reports so far, but this is still not the same as official API access, and enforcement can change at any time.
-> 
-> **Use at your own risk.** Keep usage limited to personal, interactive sessions and avoid any automation.
+> [!WARNING]
+> **Claude 구독 연결 관련 위험 안내**
+>
+> 2026년 1월 기준 Anthropic은 서드파티 OAuth 접근을 약관 위반 사유로 제한한 이력이 있습니다.
+> Smart Composer의 구독 연결은 OAuth 스타일 흐름을 사용하며, 일부 서드파티 클라이언트 사용 사례에서 **계정 제한/정지 보고**가 있습니다.
+>
+> OpenAI(ChatGPT), Google(Gemini)은 동일 수준의 제재 보고가 상대적으로 적지만, 공식 API와 동일한 보장을 제공하지는 않습니다.
+>
+> **반드시 사용자 책임 하에 사용**하고, 자동화보다는 개인 대화형 용도로 제한하는 것을 권장합니다.
 
 ![SC1_Title.gif](https://github.com/user-attachments/assets/a50a1f80-39ff-4eba-8090-e3d75e7be98c)
 
-Everytime we ask ChatGPT, we need to put so much context information for each query. Why spend time putting background infos that are already in your vault?
+ko-smart composer는 **Obsidian에서 노트 문맥을 그대로 활용해 AI와 작성·수정·검색을 통합**할 수 있도록 설계된 플러그인입니다.
+Cursor AI의 문맥 선택 방식과 ChatGPT Canvas의 편집 흐름에서 영감을 받아, “노트 정리”와 “AI 작업” 사이 전환 비용을 줄이는 데 집중합니다.
 
-**Smart Composer is an Obsidian plugin that helps you write efficiently with AI by easily referencing your vault content.** Inspired by Cursor AI and ChatGPT Canvas, this plugin unifies your note-taking and content creation process within Obsidian.
+---
 
-## Features
+## 1) 코드 분석 요약 (서비스 역할 관점)
 
-### Contextual Chat
+### 서비스의 핵심 역할
+
+ko-smart composer는 Obsidian 안에서 다음 4가지 역할을 수행합니다.
+
+1. **대화 허브(Chat Hub)**: 노트 문맥/외부 문맥을 결합해 AI 질의·응답을 관리
+2. **편집 실행기(Apply Engine)**: AI가 제안한 변경사항을 문서에 안전하게 적용
+3. **지식 검색기(RAG Engine)**: 볼트 전체 인덱싱 후 관련 문서를 의미 기반 검색
+4. **도구 오케스트레이터(MCP)**: 외부 MCP 서버 도구를 채팅 흐름에 통합
+
+### 구조 관점에서 본 주요 모듈
+
+- `src/main.ts`
+  - 플러그인 엔트리 포인트
+  - Chat/Apply View 등록, 명령(Command) 등록, 설정 로드/저장, RAG 인덱스 재구축·업데이트 트리거
+- `src/core/llm/*`
+  - OpenAI, Anthropic, Gemini, Ollama 등 다양한 제공자(Provider) 어댑터와 메시지 변환기
+- `src/core/rag/*`
+  - 임베딩 생성 및 볼트 인덱싱/검색 로직
+- `src/core/mcp/*`
+  - MCP 서버 연동 및 도구 호출 관리
+- `src/database/*` 및 `src/database/json/*`
+  - 벡터/템플릿/채팅 데이터 저장 계층과 JSON 마이그레이션 경로
+- `src/components/*`, `src/contexts/*`
+  - 채팅 UI, 설정 UI, 상태 공유 컨텍스트
+
+즉, 이 서비스는 단순 채팅 플러그인이 아니라, **“Obsidian 기반 AI 작업 운영체제”**에 가깝습니다.
+
+---
+
+## 2) 주요 기능
+
+### 2.1 문맥 기반 채팅 (Contextual Chat)
 
 ![SC2_ContextChat.gif](https://github.com/user-attachments/assets/8da4c189-399a-450a-9591-95f1c9af1bc8)
 
-Upgrade your note-taking experience with our Contextual AI Assistant, inspired by Cursor AI. Unlike typical AI plugins, our assistant allows you to **precisely select the context for your conversation.**
+일반 AI 챗처럼 단일 프롬프트만 보내는 방식이 아니라, Obsidian 볼트의 특정 파일/폴더를 선택해 정확한 문맥으로 대화할 수 있습니다.
 
-- Type `@<fname>` to choose specific files/folders as your conversation context
-- Get responses based on selected vault content
+- `@파일명` 형태로 문맥 대상 지정
+- 선택한 문서 기반으로 답변 생성
+- 반복 설명(배경 프롬프트) 부담 감소
 
-#### Multimedia Context
+#### 멀티미디어 문맥
 
 <img src="https://github.com/user-attachments/assets/b22175d4-80a2-4122-8555-2b9dd4987f93" alt="SC2-2_MultiContext.png" width="360"/>
 
-Now, you can **add website links and images** as additional context for your queries.
+텍스트 문서 외에도 웹/이미지/유튜브 링크를 문맥으로 추가할 수 있습니다.
 
-- Website content is automatically extracted
-- **Image support**: Add images directly to your chat through:
-  - Upload button
-  - Drag & drop
-  - Paste from clipboard
-- **Youtube link support**: YouTube transcripts are fetched and included as context
-- **Coming soon**: Support for external files (PDF, DOCX, ...)
+- 웹페이지 본문 자동 추출
+- 이미지 입력(업로드, 드래그 앤 드롭, 클립보드 붙여넣기)
+- 유튜브 링크 자막 추출 후 문맥 반영
 
-### Apply Edit
+### 2.2 Apply Edit (AI 제안 수정 적용)
 
 ![SC3_ApplyEdit.gif](https://github.com/user-attachments/assets/35ee03ff-4a61-4d08-8032-ca61fb37dcf1)
 
-Smart Composer **suggests edits to your document.** You can apply with a single click.
+AI가 제안한 변경점을 검토 후 한 번에 적용할 수 있습니다.
 
-- Offers document change recommendations
-- Apply suggested changes instantly
+- 문서 변경 제안 생성
+- 클릭 기반 즉시 반영
+- 생성과 편집 사이의 작업 단절 최소화
 
-### Vault Search (RAG)
+### 2.3 Vault Search (RAG)
 
 ![SC4_RAG-ezgif.com-crop-video.gif](https://github.com/user-attachments/assets/91c3ab8d-56d7-43b8-bb4a-1e73615a40ec)
 
-**Automatically find and use relevant notes** from your vault to enhance AI responses.
+볼트 전체를 의미 기반으로 검색해 관련 노트를 자동 보강 문맥으로 활용합니다.
 
-- Hit `Cmd+Shift+Enter` to run Vault Search answer
-- Semantic search across your vault to find the most relevant context
+- `Cmd/Ctrl + Shift + Enter`로 검색 기반 응답 실행
+- 유사도 기반 문서 탐색으로 답변 품질 향상
 
-### Model Context Protocol (MCP)
+### 2.4 MCP (Model Context Protocol) 연동
 
 ![mcp_demo](https://github.com/user-attachments/assets/4c80a1af-4cbf-4aa4-90d2-457499553357)
 
-Connect Smart Composer to external MCP servers.
-MCP lets you use powerful third-party tools and data sources right inside your chat.
+외부 MCP 서버를 연결해 채팅 중 외부 도구/데이터를 호출할 수 있습니다.
 
-### Additional Features
+- 사내 도구, API, 데이터 소스 확장 가능
+- “대화 + 도구 실행” 통합 워크플로우 구현
 
-- **Custom Model Selection**: Use your own model by setting your API Key (stored locally). Supported API providers:
-  - OpenAI
-  - Anthropic
-  - Google (Gemini)
-  - Groq
-  - DeepSeek
-  - OpenRouter
-  - Azure OpenAI
-  - Ollama
-  - LM Studio
-  - MorphLLM
-  - Any other OpenAI-compatible providers
-- **Local Model Support**: Run open-source LLMs and embedding models locally with [Ollama](https://ollama.ai) for complete privacy and offline usage.
-- **Custom System Prompts**: Define your own system prompts that will be applied to every chat conversation.
-- **Prompt Templates**: Create and reuse templates for common queries by typing `/` in the chat view. Perfect for standardizing repetitive tasks.
-  - Create templates from any selected text with one click
+### 2.5 모델/프롬프트/템플릿 확장
 
-## Getting Started
+- 다양한 모델 제공자 지원 (OpenAI, Anthropic, Gemini, xAI, DeepSeek, Mistral, Perplexity, OpenRouter, Ollama, LM Studio, Azure OpenAI, OpenAI 호환 등)
+- 로컬 모델(Ollama/LM Studio) 지원
+- 시스템 프롬프트 커스터마이징
+- `/` 기반 프롬프트 템플릿 생성/재사용
+
+---
+
+## 3) 이 서비스가 해결하는 문제
+
+ko-smart composer는 아래 문제를 해결하는 데 초점을 둡니다.
+
+- 매 질문마다 배경 문맥을 다시 설명해야 하는 비효율
+- “노트 앱 ↔ AI 서비스” 전환으로 생기는 집중력 저하
+- 검색/작성/수정 도구가 분리되어 발생하는 워크플로우 단절
+
+결과적으로, 사용자는 Obsidian 안에서 **아이디어 정리 → 조사 → 작성 → 편집**을 연속적으로 수행할 수 있습니다.
+
+---
+
+## 4) 설치 및 시작
 
 > [!IMPORTANT]
-> **Installer Version Requirement**  
-> Smart Composer requires a recent version of the Obsidian installer. If you experience issues with the plugin not loading properly:
-> 
-> 1. First, try updating Obsidian normally at `Settings > General > Check for updates`.
-> 
-> 2. If issues persist, manually update your Obsidian installer:
->    - Download the latest installer from [Obsidian's download page](https://obsidian.md/download)
->    - Close Obsidian completely
->    - Run the new installer
+> **Installer 버전 주의**
+>
+> 플러그인이 정상 로드되지 않으면 Obsidian 앱 자체 설치 프로그램(Installer)을 최신 버전으로 갱신해야 할 수 있습니다.
+>
+> 1. `Settings > General > Check for updates`로 일반 업데이트 수행
+> 2. 문제가 지속되면 [Obsidian 다운로드 페이지](https://obsidian.md/download)에서 설치 파일 재설치
 
-1. Open Obsidian Settings
-2. Navigate to "Community plugins" and click "Browse"
-3. Search for "Smart Composer" and click Install
-4. Enable the plugin in Community plugins
-5. Set up Smart Composer in plugin settings:
-   - **Connect subscription (no API key)**: Connect your Claude/OpenAI account in `Settings > Smart Composer > Connect your subscription`
-   - **API Providers (usage-based billing)**: Add an API key in `Settings > Smart Composer > Providers`
-     - OpenAI: [ChatGPT API Keys](https://platform.openai.com/api-keys)
-     - Anthropic: [Claude API Keys](https://console.anthropic.com/settings/keys)
-     - Gemini: [Gemini API Keys](https://aistudio.google.com/apikey)
+1. Obsidian 설정 열기
+2. `Community plugins` > `Browse` 이동
+3. `ko-smart composer` 검색 후 설치
+4. 플러그인 활성화
+5. `Settings > ko-smart composer`에서 연결 설정
+   - **구독 연결(무 API Key)**: Claude/OpenAI 계정 연결
+   - **API 제공자 연결(사용량 과금)**: 각 제공자 API Key 입력
 
 > [!TIP]
-> **Looking for a free option?**  
-> Gemini API provides the best performance among free models for Smart Composer. Recommended for users looking for a free option.
-> _When using free APIs, please review the provider’s privacy policy before sending sensitive data._
+> 무료 옵션이 필요하다면, Smart Composer 사용 사례에서 Gemini 무료 API 조합이 상대적으로 실용적입니다.
+> 단, 민감 정보 전송 전에는 반드시 제공자 개인정보 처리정책을 확인하세요.
 
-**📚 For detailed setup instructions and documentation, please visit our [Documentation](https://github.com/glowingjade/obsidian-smart-composer/wiki).**
+상세 문서는 [공식 Documentation](https://github.com/glowingjade/obsidian-smart-composer/wiki)에서 확인할 수 있습니다.
 
-## Roadmap
+---
 
-To see our up-to-date project roadmap and progress, please check out our [GitHub Projects kanban board](https://github.com/glowingjade/obsidian-smart-composer/projects?query=is%3Aopen).
+## 5) 로드맵
 
-Some of our planned features include:
+진행 현황은 [GitHub Projects 보드](https://github.com/glowingjade/obsidian-smart-composer/projects?query=is%3Aopen)에서 확인할 수 있습니다.
 
-- Support for external files (PDF, DOCX, etc.)
-- Mentioning with tags or other metadata
+예정 항목:
 
-## Feedback and Support
+- 외부 파일(PDF, DOCX 등) 문맥 지원 확장
+- 태그/메타데이터 기반 멘션 개선
 
-We value your input and want to ensure you can easily share your thoughts and report any issues:
+---
 
-- **Bug Reports**: If you encounter any bugs or unexpected behavior, please submit an issue on our [GitHub Issues](https://github.com/glowingjade/obsidian-smart-composer/issues) page. Be sure to include as much detail as possible to help us reproduce and address the problem.
+## 6) 피드백 및 기여
 
-- **Feature Requests**: For new feature ideas or enhancements, please use our [GitHub Discussions - Ideas & Feature Requests](https://github.com/glowingjade/obsidian-smart-composer/discussions/categories/ideas-feature-requests) page. Create a new discussion to share your suggestions. This allows for community engagement and helps us prioritize future developments.
+> [!NOTE]
+> 원본 프로젝트 관련 이슈/토론은 가능한 한 원본 저장소를 우선 확인해 주세요.
+> - 원본 저장소: https://github.com/glowingjade/obsidian-smart-composer
+> - 본 포크 저장소 이슈는 포크에서 변경한 내용에 대해 사용해 주세요.
 
-- **Show and Tell**: We love seeing how you use Smart Composer! Share your unique use cases, workflows, or interesting applications of the plugin in the [GitHub Discussions - Smart Composer Showcase](https://github.com/glowingjade/obsidian-smart-composer/discussions/categories/smart-composer-showcase) page.
+- 버그 제보: [Issues](https://github.com/glowingjade/obsidian-smart-composer/issues)
+- 기능 제안: [Discussions - Ideas & Feature Requests](https://github.com/glowingjade/obsidian-smart-composer/discussions/categories/ideas-feature-requests)
+- 사용 사례 공유: [Discussions - Smart Composer Showcase](https://github.com/glowingjade/obsidian-smart-composer/discussions/categories/smart-composer-showcase)
 
-Your feedback and experiences are crucial in making Smart Composer better for everyone!
+기여 전에는 [CONTRIBUTING.md](CONTRIBUTING.md)를 확인해 주세요.
 
-## Contributing
-
-We welcome all kinds of contributions to Smart Composer, including bug reports, bug fixes, documentation improvements, and feature enhancements.
-
-**For major feature ideas, please create an issue first to discuss feasibility and implementation approach.**
-
-If you're interested in contributing, please refer to our [CONTRIBUTING.md](CONTRIBUTING.md) file for detailed information on:
-
-- Setting up the development environment
-- Our development workflow
-- Working with the database schema
-- The process for submitting pull requests
-- Known issues and solutions for developers
-
+---
 
 ## Contributors
 
 ### Core Team
 
-These contributors were instrumental in shaping the initial vision, architecture, and design of Smart Composer:
-
 **[@glowingjade](https://github.com/glowingjade)** ([Twitter](https://x.com/andy_suh_)), **[@kevin-on](https://github.com/kevin-on)**, **[@realsnoopso](https://github.com/realsnoopso)** ([Twitter](https://twitter.com/RealSnoopSo) · [LinkedIn](https://linkedin.com/in/realsnoopso)), **[@woosukji](https://github.com/woosukji)**
 
 ### Additional Contributors
 
-We also want to thank everyone else who has contributed. Your time and effort help make Smart Composer better for everyone!
+프로젝트 개선에 기여해주신 모든 분들께 감사드립니다.
+
+## Fork Maintainer Note
+
+- 본 포크의 유지보수/배포는 포크 관리자가 담당합니다.
+- 원본 프로젝트 개발진과 별개의 릴리즈 정책/일정으로 운영될 수 있습니다.
+- 원본 팀에 대한 문의/요청은 원본 저장소 채널을 이용해 주세요.
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+본 프로젝트는 [MIT License](LICENSE)를 따릅니다.
 
 ## Support the Project
 
-If you find Smart Composer valuable, consider supporting its development:
-
-<a href="https://www.buymeacoffee.com/kevin.on" target="_blank">
-  <img src="https://github.com/user-attachments/assets/e794767d-b7dd-40eb-9132-e48ae7088000" alt="Buy Me A Coffee" width="180">
-</a>
-
-Follow me on X (Twitter) [@andy_suh_](https://x.com/andy_suh_) for updates and announcements!
-
-Your support helps maintain and improve this plugin. Every contribution is appreciated and makes a difference. Thank you for your support!
+원본 프로젝트를 응원하고 싶다면 원본 저장소의 후원/커뮤니티 채널을 이용해 주세요.
 
 ## Star History
 

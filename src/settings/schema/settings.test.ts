@@ -43,6 +43,7 @@ describe('parseSmartComposerSettings', () => {
         includeCurrentFileContent: true,
         enableTools: true,
         maxAutoIterations: 1,
+        responseLanguage: 'auto',
       },
     })
   })

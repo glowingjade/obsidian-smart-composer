@@ -23,6 +23,8 @@ const ragOptionsSchema = z.object({
   includePatterns: z.array(z.string()).catch([]),
 })
 
+const responseLanguageSchema = z.enum(['auto', 'ko', 'en']).catch('auto')
+
 /**
  * Settings
  */
@@ -81,11 +83,13 @@ export const smartComposerSettingsSchema = z.object({
       includeCurrentFileContent: z.boolean(),
       enableTools: z.boolean(),
       maxAutoIterations: z.number(),
+      responseLanguage: responseLanguageSchema,
     })
     .catch({
       includeCurrentFileContent: true,
       enableTools: true,
       maxAutoIterations: 1,
+      responseLanguage: 'auto',
     }),
 })
 export type SmartComposerSettings = z.infer<typeof smartComposerSettingsSchema>
