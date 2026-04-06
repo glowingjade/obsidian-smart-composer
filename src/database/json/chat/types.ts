@@ -2,6 +2,11 @@ import { SerializedChatMessage } from '../../../types/chat'
 
 export const CHAT_SCHEMA_VERSION = 1
 
+export type ChatSettings = {
+  systemPrompt: string
+  systemPromptMode: 'append' | 'override'
+}
+
 export type ChatConversation = {
   id: string
   title: string
@@ -9,6 +14,7 @@ export type ChatConversation = {
   createdAt: number
   updatedAt: number
   schemaVersion: number
+  chatSettings?: ChatSettings
 }
 
 export type ChatConversationMetadata = {

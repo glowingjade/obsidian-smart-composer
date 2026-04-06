@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { BaseLLMProvider } from '../../core/llm/base'
 import { McpManager } from '../../core/mcp/mcpManager'
+import { ChatSettings } from '../../database/json/chat/types'
 import { ChatMessage, ChatToolMessage } from '../../types/chat'
 import { ChatModel } from '../../types/chat-model.types'
 import { RequestTool } from '../../types/llm/request'
@@ -29,6 +30,7 @@ export type ResponseGeneratorParams = {
   promptGenerator: PromptGenerator
   mcpManager: McpManager
   abortSignal?: AbortSignal
+  chatSettings?: ChatSettings
 }
 
 export class ResponseGenerator {
@@ -39,6 +41,7 @@ export class ResponseGenerator {
   private readonly promptGenerator: PromptGenerator
   private readonly mcpManager: McpManager
   private readonly abortSignal?: AbortSignal
+  private readonly chatSettings?: ChatSettings
   private readonly receivedMessages: ChatMessage[]
   private readonly maxAutoIterations: number
 
@@ -55,6 +58,7 @@ export class ResponseGenerator {
     this.promptGenerator = params.promptGenerator
     this.mcpManager = params.mcpManager
     this.abortSignal = params.abortSignal
+    this.chatSettings = params.chatSettings
   }
 
   public subscribe(callback: (messages: ChatMessage[]) => void) {
@@ -146,6 +150,7 @@ export class ResponseGenerator {
   }> {
     const requestMessages = await this.promptGenerator.generateRequestMessages({
       messages: [...this.receivedMessages, ...this.responseMessages],
+      chatSettings: this.chatSettings,
     })
 
     const availableTools = this.enableTools

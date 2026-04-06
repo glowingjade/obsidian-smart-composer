@@ -12,6 +12,7 @@ import {
   LLMModelNotFoundException,
 } from '../../core/llm/exception'
 import { getChatModelClient } from '../../core/llm/manager'
+import { ChatSettings } from '../../database/json/chat/types'
 import { ChatMessage } from '../../types/chat'
 import { PromptGenerator } from '../../utils/chat/promptGenerator'
 import { ResponseGenerator } from '../../utils/chat/responseGenerator'
@@ -28,7 +29,11 @@ export type UseChatStreamManager = {
   submitChatMutation: UseMutationResult<
     void,
     Error,
-    { chatMessages: ChatMessage[]; conversationId: string }
+    {
+      chatMessages: ChatMessage[]
+      conversationId: string
+      chatSettings?: ChatSettings
+    }
   >
 }
 
@@ -90,9 +95,11 @@ export function useChatStreamManager({
     mutationFn: async ({
       chatMessages,
       conversationId,
+      chatSettings,
     }: {
       chatMessages: ChatMessage[]
       conversationId: string
+      chatSettings?: ChatSettings
     }) => {
       const lastMessage = chatMessages.at(-1)
       if (!lastMessage) {
@@ -118,6 +125,7 @@ export function useChatStreamManager({
           promptGenerator,
           mcpManager,
           abortSignal: abortController.signal,
+          chatSettings,
         })
 
         unsubscribeResponseGenerator = responseGenerator.subscribe(

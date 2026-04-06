@@ -3,6 +3,7 @@ import { App, TFile, htmlToMarkdown, requestUrl } from 'obsidian'
 import { editorStateToPlainText } from '../../components/chat-view/chat-input/utils/editor-state-to-plain-text'
 import { QueryProgressState } from '../../components/chat-view/QueryProgress'
 import { RAGEngine } from '../../core/rag/ragEngine'
+import { ChatSettings } from '../../database/json/chat/types'
 import { SelectEmbedding } from '../../database/schema'
 import { SmartComposerSettings } from '../../settings/schema/setting.types'
 import {
@@ -49,8 +50,10 @@ export class PromptGenerator {
 
   public async generateRequestMessages({
     messages,
+    chatSettings,
   }: {
     messages: ChatMessage[]
+    chatSettings?: ChatSettings
   }): Promise<RequestMessage[]> {
     if (messages.length === 0) {
       throw new Error('No messages provided')
@@ -90,7 +93,8 @@ export class PromptGenerator {
 
     const systemMessage = this.getSystemMessage(shouldUseRAG)
 
-    const customInstructionMessage = this.getCustomInstructionMessage()
+    const customInstructionMessage =
+      this.getCustomInstructionMessage(chatSettings)
 
     const currentFile = lastUserMessage.mentionables.find(
       (m) => m.type === 'current-file',
@@ -486,16 +490,30 @@ ${
     }
   }
 
-  private getCustomInstructionMessage(): RequestMessage | null {
-    const customInstruction = this.settings.systemPrompt.trim()
-    if (!customInstruction) {
+  private getCustomInstructionMessage(
+    chatSettings?: ChatSettings,
+  ): RequestMessage | null {
+    const globalInstruction = this.settings.systemPrompt.trim()
+    const chatInstruction = chatSettings?.systemPrompt?.trim() ?? ''
+    const mode = chatSettings?.systemPromptMode ?? 'append'
+
+    let effectiveInstruction: string
+    if (mode === 'override' && chatInstruction) {
+      effectiveInstruction = chatInstruction
+    } else {
+      effectiveInstruction = [globalInstruction, chatInstruction]
+        .filter(Boolean)
+        .join('\n\n')
+    }
+
+    if (!effectiveInstruction) {
       return null
     }
     return {
       role: 'user',
       content: `Here are additional instructions to follow in your responses when relevant. There's no need to explicitly acknowledge them:
 <custom_instructions>
-${customInstruction}
+${effectiveInstruction}
 </custom_instructions>`,
     }
   }
