@@ -5,7 +5,6 @@ import { useCallback, useMemo, useRef } from 'react'
 import { useApp } from '../../contexts/app-context'
 import { useMcp } from '../../contexts/mcp-context'
 import { useSettings } from '../../contexts/settings-context'
-import { ChatSettings } from '../../database/json/chat/types'
 import {
   LLMAPIKeyInvalidException,
   LLMAPIKeyNotSetException,
@@ -13,6 +12,7 @@ import {
   LLMModelNotFoundException,
 } from '../../core/llm/exception'
 import { getChatModelClient } from '../../core/llm/manager'
+import { ChatSettings } from '../../database/json/chat/types'
 import { ChatMessage } from '../../types/chat'
 import { PromptGenerator } from '../../utils/chat/promptGenerator'
 import { ResponseGenerator } from '../../utils/chat/responseGenerator'

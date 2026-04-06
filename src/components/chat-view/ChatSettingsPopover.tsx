@@ -46,9 +46,7 @@ export function ChatSettingsPopover({
       <Popover.Portal>
         <Popover.Content className="smtcmp-popover smtcmp-chat-settings-content">
           <div className="smtcmp-chat-settings-section">
-            <div className="smtcmp-chat-settings-label">
-              System prompt
-            </div>
+            <div className="smtcmp-chat-settings-label">System prompt</div>
             <div className="smtcmp-chat-settings-description">
               This prompt applies only to this chat.
             </div>
@@ -62,9 +60,7 @@ export function ChatSettingsPopover({
           </div>
 
           <div className="smtcmp-chat-settings-section">
-            <div className="smtcmp-chat-settings-label">
-              Mode
-            </div>
+            <div className="smtcmp-chat-settings-label">Mode</div>
             <select
               className="dropdown smtcmp-chat-settings-select"
               value={systemPromptMode}

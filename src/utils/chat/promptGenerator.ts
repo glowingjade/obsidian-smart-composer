@@ -93,7 +93,8 @@ export class PromptGenerator {
 
     const systemMessage = this.getSystemMessage(shouldUseRAG)
 
-    const customInstructionMessage = this.getCustomInstructionMessage(chatSettings)
+    const customInstructionMessage =
+      this.getCustomInstructionMessage(chatSettings)
 
     const currentFile = lastUserMessage.mentionables.find(
       (m) => m.type === 'current-file',
