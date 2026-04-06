@@ -1,7 +1,7 @@
 import { App } from 'obsidian'
 
 import { ChatManager } from './ChatManager'
-import { CHAT_SCHEMA_VERSION, ChatConversation } from './types'
+import { CHAT_SCHEMA_VERSION, ChatConversation, ChatSettings } from './types'
 
 const mockAdapter = {
   exists: jest.fn().mockResolvedValue(true),
@@ -74,6 +74,57 @@ describe('ChatManager', () => {
         expect(metadata.title).toBe(chat.title)
         expect(metadata.updatedAt).toBe(chat.updatedAt)
         expect(metadata.schemaVersion).toBe(chat.schemaVersion)
+      }
+    })
+  })
+
+  describe('chatSettings roundtrip', () => {
+    it('should roundtrip correctly with chatSettings present', () => {
+      const chatSettings: ChatSettings = {
+        systemPrompt: 'Be a helpful assistant',
+        systemPromptMode: 'override',
+      }
+      const chat: ChatConversation = {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        title: 'Chat with settings',
+        messages: [],
+        createdAt: 1620000000000,
+        updatedAt: 1620000000000,
+        schemaVersion: CHAT_SCHEMA_VERSION,
+        chatSettings,
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fileName = (chatManager as any).generateFileName(chat)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const metadata = (chatManager as any).parseFileName(fileName)
+
+      expect(metadata).not.toBeNull()
+      if (metadata) {
+        expect(metadata.id).toBe(chat.id)
+        expect(metadata.title).toBe(chat.title)
+      }
+    })
+
+    it('should roundtrip correctly without chatSettings (backward compat)', () => {
+      const chat: ChatConversation = {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        title: 'Legacy chat',
+        messages: [],
+        createdAt: 1620000000000,
+        updatedAt: 1620000000000,
+        schemaVersion: CHAT_SCHEMA_VERSION,
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fileName = (chatManager as any).generateFileName(chat)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const metadata = (chatManager as any).parseFileName(fileName)
+
+      expect(metadata).not.toBeNull()
+      if (metadata) {
+        expect(metadata.id).toBe(chat.id)
+        expect(metadata.title).toBe(chat.title)
       }
     })
   })

@@ -5,7 +5,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { editorStateToPlainText } from '../components/chat-view/chat-input/utils/editor-state-to-plain-text'
 import { useApp } from '../contexts/app-context'
-import { ChatConversationMetadata } from '../database/json/chat/types'
+import {
+  ChatConversationMetadata,
+  ChatSettings,
+} from '../database/json/chat/types'
 import { ChatMessage, SerializedChatMessage } from '../types/chat'
 import { Mentionable } from '../types/mentionable'
 import {
@@ -15,13 +18,19 @@ import {
 
 import { useChatManager } from './useJsonManagers'
 
+type ConversationData = {
+  messages: ChatMessage[]
+  chatSettings?: ChatSettings
+}
+
 type UseChatHistory = {
   createOrUpdateConversation: (
     id: string,
     messages: ChatMessage[],
+    chatSettings?: ChatSettings,
   ) => Promise<void> | undefined
   deleteConversation: (id: string) => Promise<void>
-  getChatMessagesById: (id: string) => Promise<ChatMessage[] | null>
+  getConversationById: (id: string) => Promise<ConversationData | null>
   updateConversationTitle: (id: string, title: string) => Promise<void>
   chatList: ChatConversationMetadata[]
 }
@@ -44,16 +53,24 @@ export function useChatHistory(): UseChatHistory {
   const createOrUpdateConversation = useMemo(
     () =>
       debounce(
-        async (id: string, messages: ChatMessage[]): Promise<void> => {
+        async (
+          id: string,
+          messages: ChatMessage[],
+          chatSettings?: ChatSettings,
+        ): Promise<void> => {
           const serializedMessages = messages.map(serializeChatMessage)
           const existingConversation = await chatManager.findById(id)
 
           if (existingConversation) {
-            if (isEqual(existingConversation.messages, serializedMessages)) {
+            if (
+              isEqual(existingConversation.messages, serializedMessages) &&
+              isEqual(existingConversation.chatSettings, chatSettings)
+            ) {
               return
             }
             await chatManager.updateChat(existingConversation.id, {
               messages: serializedMessages,
+              chatSettings,
             })
           } else {
             const firstUserMessage = messages.find((v) => v.role === 'user')
@@ -67,6 +84,7 @@ export function useChatHistory(): UseChatHistory {
                   )
                 : 'New chat',
               messages: serializedMessages,
+              chatSettings,
             })
           }
 
@@ -88,15 +106,18 @@ export function useChatHistory(): UseChatHistory {
     [chatManager, fetchChatList],
   )
 
-  const getChatMessagesById = useCallback(
-    async (id: string): Promise<ChatMessage[] | null> => {
+  const getConversationById = useCallback(
+    async (id: string): Promise<ConversationData | null> => {
       const conversation = await chatManager.findById(id)
       if (!conversation) {
         return null
       }
-      return conversation.messages.map((message) =>
-        deserializeChatMessage(message, app),
-      )
+      return {
+        messages: conversation.messages.map((message) =>
+          deserializeChatMessage(message, app),
+        ),
+        chatSettings: conversation.chatSettings,
+      }
     },
     [chatManager, app],
   )
@@ -121,7 +142,7 @@ export function useChatHistory(): UseChatHistory {
   return {
     createOrUpdateConversation,
     deleteConversation,
-    getChatMessagesById,
+    getConversationById,
     updateConversationTitle,
     chatList,
   }

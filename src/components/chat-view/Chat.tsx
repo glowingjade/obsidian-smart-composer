@@ -24,6 +24,7 @@ import {
   LLMBaseUrlNotSetException,
 } from '../../core/llm/exception'
 import { getChatModelClient } from '../../core/llm/manager'
+import { ChatSettings } from '../../database/json/chat/types'
 import { useChatHistory } from '../../hooks/useChatHistory'
 import {
   AssistantToolMessageGroup,
@@ -52,6 +53,7 @@ import AssistantToolMessageGroupItem from './AssistantToolMessageGroupItem'
 import ChatUserInput, { ChatUserInputRef } from './chat-input/ChatUserInput'
 import { editorStateToPlainText } from './chat-input/utils/editor-state-to-plain-text'
 import { ChatListDropdown } from './ChatListDropdown'
+import { ChatSettingsPopover } from './ChatSettingsPopover'
 import QueryProgress, { QueryProgressState } from './QueryProgress'
 import { useAutoScroll } from './useAutoScroll'
 import { useChatStreamManager } from './useChatStreamManager'
@@ -92,7 +94,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const {
     createOrUpdateConversation,
     deleteConversation,
-    getChatMessagesById,
+    getConversationById,
     updateConversationTitle,
     chatList,
   } = useChatHistory()
@@ -127,6 +129,9 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const [focusedMessageId, setFocusedMessageId] = useState<string | null>(null)
   const [currentConversationId, setCurrentConversationId] =
     useState<string>(uuidv4())
+  const [chatSettings, setChatSettings] = useState<ChatSettings | undefined>(
+    undefined,
+  )
   const [queryProgress, setQueryProgress] = useState<QueryProgressState>({
     type: 'idle',
   })
@@ -163,12 +168,13 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const handleLoadConversation = async (conversationId: string) => {
     try {
       abortActiveStreams()
-      const conversation = await getChatMessagesById(conversationId)
+      const conversation = await getConversationById(conversationId)
       if (!conversation) {
         throw new Error('Conversation not found')
       }
       setCurrentConversationId(conversationId)
-      setChatMessages(conversation)
+      setChatMessages(conversation.messages)
+      setChatSettings(conversation.chatSettings)
       const newInputMessage = getNewInputMessage(app)
       setInputMessage(newInputMessage)
       setFocusedMessageId(newInputMessage.id)
@@ -184,6 +190,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const handleNewChat = (selectedBlock?: MentionableBlockData) => {
     setCurrentConversationId(uuidv4())
     setChatMessages([])
+    setChatSettings(undefined)
     const newInputMessage = getNewInputMessage(app)
     if (selectedBlock) {
       const mentionableBlock: MentionableBlock = {
@@ -265,6 +272,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       submitChatMutation.mutate({
         chatMessages: compiledMessages,
         conversationId: currentConversationId,
+        chatSettings,
       })
     },
     [
@@ -273,6 +281,7 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       promptGenerator,
       abortActiveStreams,
       forceScrollToBottom,
+      chatSettings,
     ],
   )
 
@@ -425,8 +434,9 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     submitChatMutation.mutate({
       chatMessages: chatMessages,
       conversationId: currentConversationId,
+      chatSettings,
     })
-  }, [submitChatMutation, chatMessages, currentConversationId])
+  }, [submitChatMutation, chatMessages, currentConversationId, chatSettings])
 
   useEffect(() => {
     setFocusedMessageId(inputMessage.id)
@@ -437,7 +447,11 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     const updateConversationAsync = async () => {
       try {
         if (chatMessages.length > 0) {
-          createOrUpdateConversation(currentConversationId, chatMessages)
+          createOrUpdateConversation(
+            currentConversationId,
+            chatMessages,
+            chatSettings,
+          )
         }
       } catch (error) {
         new Notice('Failed to save chat history')
@@ -445,7 +459,12 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       }
     }
     updateConversationAsync()
-  }, [currentConversationId, chatMessages, createOrUpdateConversation])
+  }, [
+    currentConversationId,
+    chatMessages,
+    chatSettings,
+    createOrUpdateConversation,
+  ])
 
   // Updates the currentFile of the focused message (input or chat history)
   // This happens when active file changes or focused message changes
@@ -570,6 +589,10 @@ const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           >
             <Plus size={18} />
           </button>
+          <ChatSettingsPopover
+            chatSettings={chatSettings}
+            onChange={setChatSettings}
+          />
           <ChatListDropdown
             chatList={chatList}
             currentConversationId={currentConversationId}

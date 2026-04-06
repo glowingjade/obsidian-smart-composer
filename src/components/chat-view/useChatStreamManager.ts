@@ -5,6 +5,7 @@ import { useCallback, useMemo, useRef } from 'react'
 import { useApp } from '../../contexts/app-context'
 import { useMcp } from '../../contexts/mcp-context'
 import { useSettings } from '../../contexts/settings-context'
+import { ChatSettings } from '../../database/json/chat/types'
 import {
   LLMAPIKeyInvalidException,
   LLMAPIKeyNotSetException,
@@ -28,7 +29,11 @@ export type UseChatStreamManager = {
   submitChatMutation: UseMutationResult<
     void,
     Error,
-    { chatMessages: ChatMessage[]; conversationId: string }
+    {
+      chatMessages: ChatMessage[]
+      conversationId: string
+      chatSettings?: ChatSettings
+    }
   >
 }
 
@@ -90,9 +95,11 @@ export function useChatStreamManager({
     mutationFn: async ({
       chatMessages,
       conversationId,
+      chatSettings,
     }: {
       chatMessages: ChatMessage[]
       conversationId: string
+      chatSettings?: ChatSettings
     }) => {
       const lastMessage = chatMessages.at(-1)
       if (!lastMessage) {
@@ -118,6 +125,7 @@ export function useChatStreamManager({
           promptGenerator,
           mcpManager,
           abortSignal: abortController.signal,
+          chatSettings,
         })
 
         unsubscribeResponseGenerator = responseGenerator.subscribe(
