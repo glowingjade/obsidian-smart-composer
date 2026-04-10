@@ -1,12 +1,16 @@
 import clsx from 'clsx'
 import { Check, ChevronDown, ChevronRight, Loader2, X } from 'lucide-react'
-import { memo, useCallback, useMemo, useState } from 'react'
+import { memo, useCallback, useMemo, useRef, useState } from 'react'
 
+import { useApp } from '../../contexts/app-context'
 import { useMcp } from '../../contexts/mcp-context'
+import { useRAG } from '../../contexts/rag-context'
 import { useSettings } from '../../contexts/settings-context'
 import { InvalidToolNameException } from '../../core/mcp/exception'
 import { parseToolName } from '../../core/mcp/tool-name-utils'
+import { VaultTools } from '../../core/vault-tools/vaultTools'
 import { ChatToolMessage } from '../../types/chat'
+import { parseToolArgs } from '../../utils/tool-args'
 import {
   ToolCallRequest,
   ToolCallResponse,
@@ -95,6 +99,7 @@ function ToolCallItem({
   onResponseUpdate: (response: ToolCallResponse) => void
 }) {
   const {
+    isVaultTool,
     handleToolCall,
     handleAllowForConversation,
     handleAllowAutoExecution,
@@ -182,24 +187,28 @@ function ToolCallItem({
                   handleToolCall()
                   setIsOpen(false)
                 }}
-                menuOptions={[
-                  {
-                    label: 'Always allow this tool',
-                    onClick: () => {
-                      handleToolCall()
-                      handleAllowAutoExecution()
-                      setIsOpen(false)
-                    },
-                  },
-                  {
-                    label: 'Allow for this chat',
-                    onClick: () => {
-                      handleToolCall()
-                      handleAllowForConversation()
-                      setIsOpen(false)
-                    },
-                  },
-                ]}
+                menuOptions={
+                  isVaultTool
+                    ? []
+                    : [
+                        {
+                          label: 'Always allow this tool',
+                          onClick: () => {
+                            handleToolCall()
+                            handleAllowAutoExecution()
+                            setIsOpen(false)
+                          },
+                        },
+                        {
+                          label: 'Allow for this chat',
+                          onClick: () => {
+                            handleToolCall()
+                            handleAllowForConversation()
+                            setIsOpen(false)
+                          },
+                        },
+                      ]
+                }
               />
               <button
                 onClick={() => {
@@ -229,26 +238,60 @@ function useToolCall(
 ) {
   const { settings, setSettings } = useSettings()
   const { getMcpManager } = useMcp()
+  const app = useApp()
+  const { getRAGEngine } = useRAG()
+  const vaultTools = useMemo(
+    () => new VaultTools(app, getRAGEngine),
+    [app, getRAGEngine],
+  )
+  const isVaultTool = useMemo(
+    () => vaultTools.isNativeTool(request.name),
+    [vaultTools, request.name],
+  )
+  const abortControllerRef = useRef<AbortController | null>(null)
+  const toolCallSettledRef = useRef(false)
 
   const handleToolCall = useCallback(async () => {
-    const mcpManager = await getMcpManager()
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+    toolCallSettledRef.current = false
     onResponseUpdate({
       status: ToolCallResponseStatus.Running,
     })
-    const toolCallResponse: ToolCallResponse = await mcpManager.callTool({
-      name: request.name,
-      args: request.arguments,
-      id: request.id,
-    })
-    onResponseUpdate(toolCallResponse)
-  }, [request, onResponseUpdate, getMcpManager])
+    let toolCallResponse: ToolCallResponse
+    if (isVaultTool) {
+      const parsedArgs = parseToolArgs(request.arguments)
+      if (parsedArgs === null) {
+        toolCallSettledRef.current = true
+        onResponseUpdate({
+          status: ToolCallResponseStatus.Error,
+          error: `Invalid tool arguments: ${request.arguments}`,
+        })
+        return
+      }
+      toolCallResponse = await vaultTools.callTool(request.name, parsedArgs, controller.signal)
+    } else {
+      const mcpManager = await getMcpManager()
+      toolCallResponse = await mcpManager.callTool({
+        name: request.name,
+        args: request.arguments,
+        id: request.id,
+      })
+    }
+    if (!controller.signal.aborted) {
+      toolCallSettledRef.current = true
+      onResponseUpdate(toolCallResponse)
+    }
+  }, [request, onResponseUpdate, getMcpManager, isVaultTool, vaultTools])
 
   const handleAllowForConversation = useCallback(async () => {
+    if (isVaultTool) return
     const mcpManager = await getMcpManager()
     mcpManager.allowToolForConversation(request.name, conversationId)
-  }, [request, conversationId, getMcpManager])
+  }, [request, conversationId, getMcpManager, isVaultTool])
 
   const handleAllowAutoExecution = useCallback(async () => {
+    if (isVaultTool) return
     const { serverName, toolName } = parseToolName(request.name)
     const server = settings.mcp.servers.find((s) => s.id === serverName)
     if (!server) {
@@ -256,7 +299,6 @@ function useToolCall(
     }
     const toolOptions = { ...server.toolOptions }
     if (!toolOptions[toolName]) {
-      // If the tool is not in the toolOptions, add it with default values
       toolOptions[toolName] = {
         allowAutoExecution: false,
         disabled: false,
@@ -281,7 +323,7 @@ function useToolCall(
         ),
       },
     })
-  }, [request, settings, setSettings])
+  }, [request, settings, setSettings, isVaultTool])
 
   const handleReject = useCallback(async () => {
     onResponseUpdate({
@@ -290,14 +332,20 @@ function useToolCall(
   }, [onResponseUpdate])
 
   const handleAbort = useCallback(async () => {
-    const mcpManager = await getMcpManager()
-    mcpManager.abortToolCall(request.id)
-    onResponseUpdate({
-      status: ToolCallResponseStatus.Aborted,
-    })
-  }, [request, onResponseUpdate, getMcpManager])
+    abortControllerRef.current?.abort()
+    if (!isVaultTool) {
+      const mcpManager = await getMcpManager()
+      mcpManager.abortToolCall(request.id)
+    }
+    if (!toolCallSettledRef.current) {
+      onResponseUpdate({
+        status: ToolCallResponseStatus.Aborted,
+      })
+    }
+  }, [request, onResponseUpdate, getMcpManager, isVaultTool])
 
   return {
+    isVaultTool,
     handleToolCall,
     handleAllowForConversation,
     handleAllowAutoExecution,

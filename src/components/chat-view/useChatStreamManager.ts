@@ -4,7 +4,9 @@ import { useCallback, useMemo, useRef } from 'react'
 
 import { useApp } from '../../contexts/app-context'
 import { useMcp } from '../../contexts/mcp-context'
+import { useRAG } from '../../contexts/rag-context'
 import { useSettings } from '../../contexts/settings-context'
+import { VaultTools } from '../../core/vault-tools/vaultTools'
 import {
   LLMAPIKeyInvalidException,
   LLMAPIKeyNotSetException,
@@ -40,6 +42,11 @@ export function useChatStreamManager({
   const app = useApp()
   const { settings, setSettings } = useSettings()
   const { getMcpManager } = useMcp()
+  const { getRAGEngine } = useRAG()
+  const vaultTools = useMemo(
+    () => new VaultTools(app, getRAGEngine),
+    [app, getRAGEngine],
+  )
 
   const activeStreamAbortControllersRef = useRef<AbortController[]>([])
 
@@ -114,9 +121,11 @@ export function useChatStreamManager({
           messages: chatMessages,
           conversationId,
           enableTools: settings.chatOptions.enableTools,
+          enableVaultTools: settings.chatOptions.enableVaultTools,
           maxAutoIterations: settings.chatOptions.maxAutoIterations,
           promptGenerator,
           mcpManager,
+          vaultTools,
           abortSignal: abortController.signal,
         })
 

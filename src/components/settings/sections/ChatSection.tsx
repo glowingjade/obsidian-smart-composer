@@ -81,6 +81,31 @@ export function ChatSection() {
       </ObsidianSetting>
 
       <ObsidianSetting
+        name="Context files"
+        desc="Vault paths to automatically include in every chat (e.g. AGENTS.md, CLAUDE.md). One path per line."
+        className="smtcmp-settings-textarea-header"
+      />
+
+      <ObsidianSetting className="smtcmp-settings-textarea">
+        <ObsidianTextArea
+          value={settings.chatOptions.contextFiles.join('\n')}
+          onChange={async (value: string) => {
+            const files = value
+              .split('\n')
+              .map((p: string) => p.trim())
+              .filter((p: string) => p.length > 0)
+            await setSettings({
+              ...settings,
+              chatOptions: {
+                ...settings.chatOptions,
+                contextFiles: files,
+              },
+            })
+          }}
+        />
+      </ObsidianSetting>
+
+      <ObsidianSetting
         name="Include current file"
         desc="Automatically include the content of your current file in chats."
       >
@@ -110,6 +135,24 @@ export function ChatSection() {
               chatOptions: {
                 ...settings.chatOptions,
                 enableTools: value,
+              },
+            })
+          }}
+        />
+      </ObsidianSetting>
+
+      <ObsidianSetting
+        name="Enable vault tools"
+        desc="Allow the AI to read and search vault files directly. Each call requires per-call approval."
+      >
+        <ObsidianToggle
+          value={settings.chatOptions.enableVaultTools}
+          onChange={async (value) => {
+            await setSettings({
+              ...settings,
+              chatOptions: {
+                ...settings.chatOptions,
+                enableVaultTools: value,
               },
             })
           }}

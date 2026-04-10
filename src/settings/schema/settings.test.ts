@@ -42,7 +42,9 @@ describe('parseSmartComposerSettings', () => {
       chatOptions: {
         includeCurrentFileContent: true,
         enableTools: true,
+        enableVaultTools: false,
         maxAutoIterations: 1,
+        contextFiles: [],
       },
     })
   })

@@ -16,6 +16,10 @@ import {
   ToolCallResponseStatus,
 } from '../../types/tool-call.types'
 
+import { VaultTools } from '../../core/vault-tools/vaultTools'
+
+import { parseToolArgs } from '../tool-args'
+
 import { fetchAnnotationTitles } from './fetch-annotation-titles'
 import { PromptGenerator } from './promptGenerator'
 
@@ -25,9 +29,11 @@ export type ResponseGeneratorParams = {
   messages: ChatMessage[]
   conversationId: string
   enableTools: boolean
+  enableVaultTools: boolean
   maxAutoIterations: number
   promptGenerator: PromptGenerator
   mcpManager: McpManager
+  vaultTools: VaultTools
   abortSignal?: AbortSignal
 }
 
@@ -36,8 +42,10 @@ export class ResponseGenerator {
   private readonly model: ChatModel
   private readonly conversationId: string
   private readonly enableTools: boolean
+  private readonly enableVaultTools: boolean
   private readonly promptGenerator: PromptGenerator
   private readonly mcpManager: McpManager
+  private readonly vaultTools: VaultTools
   private readonly abortSignal?: AbortSignal
   private readonly receivedMessages: ChatMessage[]
   private readonly maxAutoIterations: number
@@ -50,10 +58,12 @@ export class ResponseGenerator {
     this.model = params.model
     this.conversationId = params.conversationId
     this.enableTools = params.enableTools
+    this.enableVaultTools = params.enableVaultTools
     this.maxAutoIterations = Math.max(1, params.maxAutoIterations) // Ensure maxAutoIterations is at least 1
     this.receivedMessages = params.messages
     this.promptGenerator = params.promptGenerator
     this.mcpManager = params.mcpManager
+    this.vaultTools = params.vaultTools
     this.abortSignal = params.abortSignal
   }
 
@@ -78,12 +88,13 @@ export class ResponseGenerator {
         toolCalls: toolCallRequests.map((toolCall) => ({
           request: toolCall,
           response: {
-            status: this.mcpManager.isToolExecutionAllowed({
-              requestToolName: toolCall.name,
-              conversationId: this.conversationId,
-            })
-              ? ToolCallResponseStatus.Running
-              : ToolCallResponseStatus.PendingApproval,
+            status:
+              this.mcpManager.isToolExecutionAllowed({
+                requestToolName: toolCall.name,
+                conversationId: this.conversationId,
+              })
+                ? ToolCallResponseStatus.Running
+                : ToolCallResponseStatus.PendingApproval,
           },
         })),
       }
@@ -97,12 +108,27 @@ export class ResponseGenerator {
               toolCall.response.status === ToolCallResponseStatus.Running,
           )
           .map(async (toolCall) => {
-            const response = await this.mcpManager.callTool({
-              name: toolCall.request.name,
-              args: toolCall.request.arguments,
-              id: toolCall.request.id,
-              signal: this.abortSignal,
-            })
+            const parsedArgs = parseToolArgs(toolCall.request.arguments)
+            const response =
+              parsedArgs === null
+                ? ({
+                    status: ToolCallResponseStatus.Error,
+                    error: `Invalid tool arguments: ${toolCall.request.arguments}`,
+                  } as const)
+                : this.vaultTools.isNativeTool(toolCall.request.name)
+                  ? this.enableVaultTools
+                    ? await this.vaultTools.callTool(toolCall.request.name, parsedArgs, this.abortSignal)
+                    : ({
+                        status: ToolCallResponseStatus.Error,
+                        error: `Vault tools are disabled`,
+                      } as const)
+                  : await this.mcpManager.callTool({
+                      name: toolCall.request.name,
+                      args: toolCall.request.arguments,
+                      id: toolCall.request.id,
+                      signal: this.abortSignal,
+                    })
+            if (this.abortSignal?.aborted) return
             this.updateResponseMessages((messages) =>
               messages.map((message) =>
                 message.id === toolMessage.id && message.role === 'tool'
@@ -148,26 +174,31 @@ export class ResponseGenerator {
       messages: [...this.receivedMessages, ...this.responseMessages],
     })
 
-    const availableTools = this.enableTools
+    const availableMcpTools = this.enableTools
       ? await this.mcpManager.listAvailableTools()
       : []
+
+    const mcpToolDefs: RequestTool[] = availableMcpTools.map((tool) => ({
+      type: 'function',
+      function: {
+        name: tool.name,
+        description: tool.description,
+        parameters: {
+          ...tool.inputSchema,
+          properties: tool.inputSchema.properties ?? {},
+        },
+      },
+    }))
+
+    const allTools = [
+      ...(this.enableVaultTools ? this.vaultTools.listTools() : []),
+      ...mcpToolDefs,
+    ]
 
     // Set tools to undefined when no tools are available since some providers
     // reject empty tools arrays.
     const tools: RequestTool[] | undefined =
-      availableTools.length > 0
-        ? availableTools.map((tool) => ({
-            type: 'function',
-            function: {
-              name: tool.name,
-              description: tool.description,
-              parameters: {
-                ...tool.inputSchema,
-                properties: tool.inputSchema.properties ?? {},
-              },
-            },
-          }))
-        : undefined
+      allTools.length > 0 ? allTools : undefined
 
     const stream = await this.providerClient.streamResponse(
       this.model,

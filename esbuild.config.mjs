@@ -21,10 +21,10 @@ const nodeBuiltins = [...builtins, ...builtins.map((mod) => `node:${mod}`)]
 const pgliteShimPlugin = {
   name: 'pglite-shim-plugin',
   setup(build) {
-    build.onLoad({ filter: /@electric-sql\/pglite/ }, async (args) => {
+    build.onLoad({ filter: /@electric-sql/ }, async (args) => {
+      if (!args.path.includes('pglite')) return null
       const source = await fs.promises.readFile(args.path, 'utf8')
-      const shimSource = `const process = {};\n${source}`
-      return { contents: shimSource, loader: 'js' }
+      return { contents: `const process = {};\n${source}`, loader: 'js' }
     })
   },
 }
