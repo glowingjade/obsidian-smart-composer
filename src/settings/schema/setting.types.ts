@@ -21,6 +21,7 @@ const ragOptionsSchema = z.object({
   limit: z.number().catch(10),
   excludePatterns: z.array(z.string()).catch([]),
   includePatterns: z.array(z.string()).catch([]),
+  excludeHiddenFiles: z.boolean().catch(true),
 })
 
 /**
@@ -64,6 +65,7 @@ export const smartComposerSettingsSchema = z.object({
     limit: 10,
     excludePatterns: [],
     includePatterns: [],
+    excludeHiddenFiles: true,
   }),
 
   // MCP configuration

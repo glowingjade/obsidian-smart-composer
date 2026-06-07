@@ -33,6 +33,7 @@ describe('parseSmartComposerSettings', () => {
         limit: 10,
         excludePatterns: [],
         includePatterns: [],
+        excludeHiddenFiles: true,
       },
 
       mcp: {

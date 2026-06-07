@@ -120,6 +120,7 @@ function EmbeddingDbManageModalComponent() {
           chunkSize: settings.ragOptions.chunkSize,
           excludePatterns: settings.ragOptions.excludePatterns,
           includePatterns: settings.ragOptions.includePatterns,
+          excludeHiddenFiles: settings.ragOptions.excludeHiddenFiles,
           reindexAll: true,
         },
         (progress) => {

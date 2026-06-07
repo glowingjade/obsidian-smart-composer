@@ -60,6 +60,7 @@ export class RAGEngine {
         chunkSize: this.settings.ragOptions.chunkSize,
         excludePatterns: this.settings.ragOptions.excludePatterns,
         includePatterns: this.settings.ragOptions.includePatterns,
+        excludeHiddenFiles: this.settings.ragOptions.excludeHiddenFiles,
         reindexAll: options.reindexAll,
       },
       (indexProgress) => {
@@ -68,6 +69,29 @@ export class RAGEngine {
           indexProgress,
         })
       },
+    )
+  }
+
+  /**
+   * Prunes the vector index of files that are no longer eligible for indexing
+   * under the current include/exclude patterns. Used after a file or folder is
+   * added to the exclude list so its chunks are removed immediately.
+   *
+   * @returns The number of files whose vectors were removed.
+   */
+  async deleteVectorsForExcludedFiles(): Promise<number> {
+    if (!this.embeddingModel) {
+      throw new Error('Embedding model is not set')
+    }
+    return (
+      (await this.vectorManager?.deleteVectorsForExcludedFiles(
+        this.embeddingModel,
+        {
+          excludePatterns: this.settings.ragOptions.excludePatterns,
+          includePatterns: this.settings.ragOptions.includePatterns,
+          excludeHiddenFiles: this.settings.ragOptions.excludeHiddenFiles,
+        },
+      )) ?? 0
     )
   }
 

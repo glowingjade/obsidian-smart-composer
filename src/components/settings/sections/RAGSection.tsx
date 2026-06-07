@@ -9,6 +9,7 @@ import { ObsidianDropdown } from '../../common/ObsidianDropdown'
 import { ObsidianSetting } from '../../common/ObsidianSetting'
 import { ObsidianTextArea } from '../../common/ObsidianTextArea'
 import { ObsidianTextInput } from '../../common/ObsidianTextInput'
+import { ObsidianToggle } from '../../common/ObsidianToggle'
 import { EmbeddingDbManageModal } from '../modals/EmbeddingDbManageModal'
 import { ExcludedFilesModal } from '../modals/ExcludedFilesModal'
 import { IncludedFilesModal } from '../modals/IncludedFilesModal'
@@ -112,6 +113,24 @@ export function RAGSection({ app, plugin }: RAGSectionProps) {
               ragOptions: {
                 ...settings.ragOptions,
                 excludePatterns: patterns,
+              },
+            })
+          }}
+        />
+      </ObsidianSetting>
+
+      <ObsidianSetting
+        name="Exclude hidden files and folders"
+        desc="When enabled, files and folders whose name starts with a dot (e.g. '.obsidian', '.trash') are excluded from indexing. Requires 'Rebuild entire vault index' after changing."
+      >
+        <ObsidianToggle
+          value={settings.ragOptions.excludeHiddenFiles}
+          onChange={async (value) => {
+            await setSettings({
+              ...settings,
+              ragOptions: {
+                ...settings.ragOptions,
+                excludeHiddenFiles: value,
               },
             })
           }}
