@@ -1,7 +1,6 @@
 import { PgliteDatabase } from 'drizzle-orm/pglite'
 import { backOff } from 'exponential-backoff'
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter'
-import { minimatch } from 'minimatch'
 import { App, TFile } from 'obsidian'
 
 import { IndexProgress } from '../../../components/chat-view/QueryProgress'
@@ -22,6 +21,7 @@ import {
   EmbeddingModelClient,
 } from '../../../types/embedding'
 import { chunkArray } from '../../../utils/common/chunk-array'
+import { isPathIndexable } from '../../../utils/glob-utils'
 
 import { VectorRepository } from './VectorRepository'
 
@@ -99,6 +99,7 @@ export class VectorManager {
       chunkSize: number
       excludePatterns: string[]
       includePatterns: string[]
+      excludeHiddenFiles: boolean
       reindexAll?: boolean
     },
     updateProgress?: (indexProgress: IndexProgress) => void,
@@ -109,6 +110,7 @@ export class VectorManager {
         embeddingModel: embeddingModel,
         excludePatterns: options.excludePatterns,
         includePatterns: options.includePatterns,
+        excludeHiddenFiles: options.excludeHiddenFiles,
         reindexAll: true,
       })
       await this.repository.clearAllVectors(embeddingModel)
@@ -118,6 +120,7 @@ export class VectorManager {
         embeddingModel: embeddingModel,
         excludePatterns: options.excludePatterns,
         includePatterns: options.includePatterns,
+        excludeHiddenFiles: options.excludeHiddenFiles,
       })
       await this.repository.deleteVectorsForMultipleFiles(
         filesToIndex.map((file) => file.path),
@@ -350,20 +353,24 @@ Please report this issue to the developer if it persists.`,
     {
       excludePatterns,
       includePatterns,
-    }: { excludePatterns: string[]; includePatterns: string[] },
+      excludeHiddenFiles,
+    }: {
+      excludePatterns: string[]
+      includePatterns: string[]
+      excludeHiddenFiles: boolean
+    },
   ): Promise<number> {
     const indexedFilePaths =
       await this.repository.getIndexedFilePaths(embeddingModel)
 
-    const filePathsToDelete = indexedFilePaths.filter((filePath) => {
-      const isExcluded = excludePatterns.some((pattern) =>
-        minimatch(filePath, pattern),
-      )
-      const isNotIncluded =
-        includePatterns.length > 0 &&
-        !includePatterns.some((pattern) => minimatch(filePath, pattern))
-      return isExcluded || isNotIncluded
-    })
+    const filePathsToDelete = indexedFilePaths.filter(
+      (filePath) =>
+        !isPathIndexable(filePath, {
+          excludePatterns,
+          includePatterns,
+          excludeHiddenFiles,
+        }),
+    )
 
     if (filePathsToDelete.length === 0) {
       return 0
@@ -397,24 +404,24 @@ Please report this issue to the developer if it persists.`,
     embeddingModel,
     excludePatterns,
     includePatterns,
+    excludeHiddenFiles,
     reindexAll,
   }: {
     embeddingModel: EmbeddingModelClient
     excludePatterns: string[]
     includePatterns: string[]
+    excludeHiddenFiles: boolean
     reindexAll?: boolean
   }): Promise<TFile[]> {
     let filesToIndex = this.app.vault.getMarkdownFiles()
 
-    filesToIndex = filesToIndex.filter((file) => {
-      return !excludePatterns.some((pattern) => minimatch(file.path, pattern))
-    })
-
-    if (includePatterns.length > 0) {
-      filesToIndex = filesToIndex.filter((file) => {
-        return includePatterns.some((pattern) => minimatch(file.path, pattern))
-      })
-    }
+    filesToIndex = filesToIndex.filter((file) =>
+      isPathIndexable(file.path, {
+        excludePatterns,
+        includePatterns,
+        excludeHiddenFiles,
+      }),
+    )
 
     if (reindexAll) {
       return filesToIndex

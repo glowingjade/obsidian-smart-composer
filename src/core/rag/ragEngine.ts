@@ -60,6 +60,7 @@ export class RAGEngine {
         chunkSize: this.settings.ragOptions.chunkSize,
         excludePatterns: this.settings.ragOptions.excludePatterns,
         includePatterns: this.settings.ragOptions.includePatterns,
+        excludeHiddenFiles: this.settings.ragOptions.excludeHiddenFiles,
         reindexAll: options.reindexAll,
       },
       (indexProgress) => {
@@ -88,6 +89,7 @@ export class RAGEngine {
         {
           excludePatterns: this.settings.ragOptions.excludePatterns,
           includePatterns: this.settings.ragOptions.includePatterns,
+          excludeHiddenFiles: this.settings.ragOptions.excludeHiddenFiles,
         },
       )) ?? 0
     )
