@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo } from 'react'
 
 import { ChatAssistantMessage, ChatMessage } from '../../types/chat'
+import { formatAssistantMarkdown } from '../../utils/chat/format-assistant-markdown'
 import {
   ParsedTagContent,
   parseTagContents,
@@ -55,7 +56,10 @@ const AssistantTextRenderer = React.memo(function AssistantTextRenderer({
       {blocks.map((block, index) =>
         block.type === 'string' ? (
           <div key={index}>
-            <ObsidianMarkdown content={block.content} scale="sm" />
+            <ObsidianMarkdown
+              content={formatAssistantMarkdown(block.content)}
+              scale="sm"
+            />
           </div>
         ) : block.type === 'think' ? (
           <AssistantMessageReasoning key={index} reasoning={block.content} />
