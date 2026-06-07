@@ -1,4 +1,12 @@
-import { Editor, MarkdownView, Notice, Plugin } from 'obsidian'
+import {
+  Editor,
+  MarkdownView,
+  Menu,
+  Notice,
+  Plugin,
+  TAbstractFile,
+  TFolder,
+} from 'obsidian'
 
 import { ApplyView } from './ApplyView'
 import { ChatView } from './ChatView'
@@ -16,6 +24,7 @@ import {
 } from './settings/schema/setting.types'
 import { parseSmartComposerSettings } from './settings/schema/settings'
 import { SmartComposerSettingTab } from './settings/SettingTab'
+import { getExcludePatternForPath } from './utils/glob-utils'
 import { getMentionableBlockData } from './utils/obsidian'
 
 export default class SmartComposerPlugin extends Plugin {
@@ -128,6 +137,18 @@ export default class SmartComposerPlugin extends Plugin {
     // This adds a settings tab so the user can configure various aspects of the plugin
     this.addSettingTab(new SmartComposerSettingTab(this.app, this))
 
+    // Add "Exclude from Smart Composer index" to the file explorer context menu
+    this.registerEvent(
+      this.app.workspace.on('file-menu', (menu, file) => {
+        this.addExcludeFromIndexMenuItem(menu, [file])
+      }),
+    )
+    this.registerEvent(
+      this.app.workspace.on('files-menu', (menu, files) => {
+        this.addExcludeFromIndexMenuItem(menu, files)
+      }),
+    )
+
     void this.migrateToJsonStorage()
   }
 
@@ -182,6 +203,101 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
         (l) => l !== listener,
       )
     }
+  }
+
+  /**
+   * Adds an "Exclude from Smart Composer index" (or "Re-include") item to the
+   * file explorer context menu for the given files/folders. Folders exclude all
+   * of their descendants.
+   */
+  private addExcludeFromIndexMenuItem(menu: Menu, files: TAbstractFile[]) {
+    if (files.length === 0) {
+      return
+    }
+
+    const patterns = files.map((file) =>
+      getExcludePatternForPath(file.path, file instanceof TFolder),
+    )
+    const currentExcludePatterns = this.settings.ragOptions.excludePatterns
+    const allExcluded = patterns.every((pattern) =>
+      currentExcludePatterns.includes(pattern),
+    )
+
+    menu.addItem((item) => {
+      item
+        .setTitle(
+          allExcluded
+            ? 'Re-include in Smart Composer index'
+            : 'Exclude from Smart Composer index',
+        )
+        .setIcon(allExcluded ? 'eye' : 'eye-off')
+        .onClick(async () => {
+          if (allExcluded) {
+            await this.removeExcludePatterns(patterns)
+          } else {
+            await this.addExcludePatterns(patterns)
+          }
+        })
+    })
+  }
+
+  private async addExcludePatterns(patterns: string[]) {
+    const mergedPatterns = Array.from(
+      new Set([...this.settings.ragOptions.excludePatterns, ...patterns]),
+    )
+    await this.setSettings({
+      ...this.settings,
+      ragOptions: {
+        ...this.settings.ragOptions,
+        excludePatterns: mergedPatterns,
+      },
+    })
+
+    // Prune already-indexed chunks for the now-excluded files so they disappear
+    // from the index immediately. Skipped when no embedding model is configured,
+    // since there is nothing indexed to prune.
+    if (!this.settings.embeddingModelId) {
+      new Notice('Excluded from Smart Composer index')
+      return
+    }
+
+    const notice = new Notice('Updating Smart Composer index...', 0)
+    try {
+      const ragEngine = await this.getRAGEngine()
+      const deletedCount = await ragEngine.deleteVectorsForExcludedFiles()
+      notice.setMessage(
+        deletedCount > 0
+          ? `Excluded from Smart Composer index (removed ${deletedCount} file${
+              deletedCount === 1 ? '' : 's'
+            } from index)`
+          : 'Excluded from Smart Composer index',
+      )
+    } catch (error) {
+      console.error(error)
+      notice.setMessage('Failed to update Smart Composer index')
+    } finally {
+      this.registerTimeout(() => {
+        notice.hide()
+      }, 2000)
+    }
+  }
+
+  private async removeExcludePatterns(patterns: string[]) {
+    const patternsToRemove = new Set(patterns)
+    const remainingPatterns = this.settings.ragOptions.excludePatterns.filter(
+      (pattern) => !patternsToRemove.has(pattern),
+    )
+    await this.setSettings({
+      ...this.settings,
+      ragOptions: {
+        ...this.settings.ragOptions,
+        excludePatterns: remainingPatterns,
+      },
+    })
+
+    new Notice(
+      'Removed from Smart Composer index exclusions. The files will be re-indexed on the next query, or run "Rebuild entire vault index".',
+    )
   }
 
   async openChatView(openNewChat = false) {

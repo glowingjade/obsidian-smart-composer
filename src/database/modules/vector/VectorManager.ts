@@ -337,6 +337,47 @@ Please report this issue to the developer if it persists.`,
     await this.requestSave()
   }
 
+  /**
+   * Removes vectors for already-indexed files that are no longer eligible for
+   * indexing under the given include/exclude patterns. This is used to prune the
+   * index immediately when a file or folder is added to the exclude list, since
+   * those files still exist in the vault and would otherwise keep their chunks.
+   *
+   * @returns The number of files whose vectors were removed.
+   */
+  async deleteVectorsForExcludedFiles(
+    embeddingModel: EmbeddingModelClient,
+    {
+      excludePatterns,
+      includePatterns,
+    }: { excludePatterns: string[]; includePatterns: string[] },
+  ): Promise<number> {
+    const indexedFilePaths =
+      await this.repository.getIndexedFilePaths(embeddingModel)
+
+    const filePathsToDelete = indexedFilePaths.filter((filePath) => {
+      const isExcluded = excludePatterns.some((pattern) =>
+        minimatch(filePath, pattern),
+      )
+      const isNotIncluded =
+        includePatterns.length > 0 &&
+        !includePatterns.some((pattern) => minimatch(filePath, pattern))
+      return isExcluded || isNotIncluded
+    })
+
+    if (filePathsToDelete.length === 0) {
+      return 0
+    }
+
+    await this.repository.deleteVectorsForMultipleFiles(
+      filePathsToDelete,
+      embeddingModel,
+    )
+    await this.requestSave()
+
+    return filePathsToDelete.length
+  }
+
   private async deleteVectorsForDeletedFiles(
     embeddingModel: EmbeddingModelClient,
   ) {
