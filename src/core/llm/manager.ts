@@ -10,6 +10,7 @@ import { DeepSeekStudioProvider } from './deepseekStudioProvider'
 import { LLMModelNotFoundException } from './exception'
 import { GeminiProvider } from './gemini'
 import { GeminiPlanProvider } from './geminiPlanProvider'
+import { LiteLLMProvider } from './litellmProvider'
 import { LmStudioProvider } from './lmStudioProvider'
 import { MistralProvider } from './mistralProvider'
 import { OllamaProvider } from './ollama'
@@ -93,6 +94,9 @@ export function getProviderClient({
     }
     case 'xai': {
       return new XaiProvider(provider)
+    }
+    case 'litellm': {
+      return new LiteLLMProvider(provider)
     }
     case 'azure-openai': {
       return new AzureOpenAIProvider(provider)
