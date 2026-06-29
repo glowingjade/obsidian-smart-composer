@@ -16,6 +16,9 @@ export default function OnEnterPlugin({
     const removeListener = editor.registerCommand(
       KEY_ENTER_COMMAND,
       (evt: KeyboardEvent) => {
+        if (evt.isComposing) {
+          return false
+        }
         if (
           onVaultChat &&
           evt.shiftKey &&
