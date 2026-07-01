@@ -16,7 +16,7 @@ const DEFAULT_PROVIDERS_V17 = [
   { type: 'openrouter', id: 'openrouter' },
   { type: 'ollama', id: 'ollama' },
   { type: 'lm-studio', id: 'lm-studio' },
-  { type: 'litellm', id: 'litellm' },
+  { type: 'litellm', id: 'litellm', baseUrl: 'http://localhost:4000/v1' },
 ] as const
 
 export const migrateFrom16To17: SettingMigration['migrate'] = (data) => {

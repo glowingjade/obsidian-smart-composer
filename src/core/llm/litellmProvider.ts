@@ -66,7 +66,7 @@ export class LiteLLMProvider extends BaseLLMProvider<
       model: model,
       input: text,
       encoding_format: 'float',
-      ...(options?.dimensions && { dimensions: options.dimensions }),
+      ...(options?.dimensions != null && { dimensions: options.dimensions }),
     })
     return embedding.data[0].embedding
   }
