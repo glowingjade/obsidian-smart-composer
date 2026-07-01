@@ -174,6 +174,14 @@ export const PROVIDER_TYPES_INFO = {
     supportEmbedding: true,
     additionalSettings: [],
   },
+  litellm: {
+    label: 'LiteLLM',
+    defaultProviderId: 'litellm',
+    requireApiKey: false,
+    requireBaseUrl: true,
+    supportEmbedding: true,
+    additionalSettings: [],
+  },
   'azure-openai': {
     label: 'Azure OpenAI',
     defaultProviderId: null, // no default provider for this type
@@ -290,6 +298,11 @@ export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
   {
     type: 'lm-studio',
     id: PROVIDER_TYPES_INFO['lm-studio'].defaultProviderId,
+  },
+  {
+    type: 'litellm',
+    id: PROVIDER_TYPES_INFO.litellm.defaultProviderId,
+    baseUrl: 'http://localhost:4000/v1',
   },
 ]
 
