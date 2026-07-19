@@ -661,13 +661,28 @@ function accumulateResponseSnapshot(
       return snapshot
     }
     case 'response.completed':
-      return event.response
+      return finalizeResponseSnapshot(snapshot, event.response)
     case 'response.incomplete':
-      return event.response
+      return finalizeResponseSnapshot(snapshot, event.response)
     case 'error':
       return snapshot
   }
   return snapshot
+}
+
+function finalizeResponseSnapshot(
+  snapshot: Response,
+  finalResponse: Response,
+): Response {
+  const hasAccumulatedOutput =
+    extractResponseText(snapshot).length > 0 ||
+    extractToolCalls(snapshot).length > 0
+
+  return {
+    ...snapshot,
+    ...finalResponse,
+    output: hasAccumulatedOutput ? snapshot.output : finalResponse.output,
+  }
 }
 
 function mapUsage(usage?: OpenAIResponseUsage): ResponseUsage | undefined {
