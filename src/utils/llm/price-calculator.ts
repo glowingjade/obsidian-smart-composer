@@ -1,5 +1,7 @@
 import {
   ANTHROPIC_PRICES,
+  DEEPSEEK_PRICES,
+  GEMINI_LONG_CONTEXT_PRICES,
   GEMINI_PRICES,
   OPENAI_PRICES,
   XAI_PRICES,
@@ -35,7 +37,11 @@ export const calculateLLMCost = ({
       )
     }
     case 'gemini': {
-      const modelPricing = GEMINI_PRICES[model.model]
+      const modelPricing = (
+        usage.prompt_tokens > 200_000
+          ? GEMINI_LONG_CONTEXT_PRICES
+          : GEMINI_PRICES
+      )[model.model]
       if (!modelPricing) return null
       return (
         (usage.prompt_tokens * modelPricing.input +
@@ -45,6 +51,15 @@ export const calculateLLMCost = ({
     }
     case 'xai': {
       const modelPricing = XAI_PRICES[model.model]
+      if (!modelPricing) return null
+      return (
+        (usage.prompt_tokens * modelPricing.input +
+          usage.completion_tokens * modelPricing.output) /
+        1_000_000
+      )
+    }
+    case 'deepseek': {
+      const modelPricing = DEEPSEEK_PRICES[model.model]
       if (!modelPricing) return null
       return (
         (usage.prompt_tokens * modelPricing.input +
