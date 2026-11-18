@@ -7,6 +7,14 @@ import { InstallerUpdateRequiredModal } from './components/modals/InstallerUpdat
 import { APPLY_VIEW_TYPE, CHAT_VIEW_TYPE } from './constants'
 import { McpManager } from './core/mcp/mcpManager'
 import { RAGEngine } from './core/rag/ragEngine'
+import {
+  SecretsBlob,
+  applySecrets,
+  extractSecrets,
+  hasSecrets,
+  mergeSecrets,
+} from './core/secrets/secrets'
+import { SecretStore } from './core/secrets/secretStore'
 import { DatabaseManager } from './database/DatabaseManager'
 import { PGLiteAbortedException } from './database/exception'
 import { migrateToJsonDatabase } from './database/json/migrateToJsonDatabase'
@@ -20,6 +28,8 @@ import { getMentionableBlockData } from './utils/obsidian'
 
 export default class SmartComposerPlugin extends Plugin {
   settings: SmartComposerSettings
+  private secretStore: SecretStore
+  private useSecretStore = false
   initialChatProps?: ChatProps // TODO: change this to use view state like ApplyView
   settingsChangeListeners: ((newSettings: SmartComposerSettings) => void)[] = []
   mcpManager: McpManager | null = null
@@ -30,6 +40,7 @@ export default class SmartComposerPlugin extends Plugin {
   private timeoutIds: ReturnType<typeof setTimeout>[] = [] // Use ReturnType instead of number
 
   async onload() {
+    this.secretStore = new SecretStore(this.app)
     await this.loadSettings()
 
     this.registerView(CHAT_VIEW_TYPE, (leaf) => new ChatView(leaf, this))
@@ -154,8 +165,52 @@ export default class SmartComposerPlugin extends Plugin {
   }
 
   async loadSettings() {
-    this.settings = parseSmartComposerSettings(await this.loadData())
-    await this.saveData(this.settings) // Save updated settings
+    const parsed = parseSmartComposerSettings(await this.loadData())
+
+    // Secrets are stored per user/device, not in data.json (which is shared
+    // with everyone who can access the vault). Any secrets still found in
+    // data.json (older versions) are moved into this device's secret store.
+    this.useSecretStore = this.secretStore.isAvailable()
+    let local: SecretsBlob | null = null
+    if (this.useSecretStore) {
+      try {
+        local = this.secretStore.load()
+      } catch (error) {
+        // Never treat an unreadable store as empty: that could overwrite it.
+        console.error('Failed to read secrets', error)
+        this.useSecretStore = false
+        new Notice(
+          'Smart Composer: could not read the secret store, so API keys stay in data.json for now.',
+        )
+      }
+    } else {
+      new Notice(
+        'Smart Composer: this Obsidian version has no private storage, so API keys are stored in data.json.',
+      )
+    }
+
+    if (!local) {
+      this.settings = parsed
+      await this.saveData(parsed)
+      return
+    }
+
+    const { sanitized, secrets: legacySecrets } = extractSecrets(parsed)
+    const secrets = mergeSecrets(legacySecrets, local)
+    if (hasSecrets(legacySecrets)) {
+      try {
+        this.secretStore.save(secrets)
+      } catch (error) {
+        // Do not scrub data.json if the secrets could not be saved.
+        console.error('Failed to save secrets', error)
+        this.useSecretStore = false
+        this.settings = parsed
+        await this.saveData(parsed)
+        return
+      }
+    }
+    this.settings = applySecrets(sanitized, secrets)
+    await this.saveData(sanitized) // Save updated settings without secrets
   }
 
   async setSettings(newSettings: SmartComposerSettings) {
@@ -167,8 +222,24 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
       return
     }
 
+    let toSave = newSettings
+    if (this.useSecretStore) {
+      const { sanitized, secrets } = extractSecrets(newSettings)
+      try {
+        this.secretStore.save(secrets)
+        toSave = sanitized
+      } catch (error) {
+        // Never fall back to writing secrets into the shared data.json here.
+        // They stay in memory for this session; other settings are still saved.
+        console.error('Failed to save secrets', error)
+        toSave = sanitized
+        new Notice(
+          'Smart Composer: could not save API keys to private storage. They will be lost when Obsidian restarts.',
+        )
+      }
+    }
     this.settings = newSettings
-    await this.saveData(newSettings)
+    await this.saveData(toSave)
     this.ragEngine?.setSettings(newSettings)
     this.settingsChangeListeners.forEach((listener) => listener(newSettings))
   }

@@ -166,7 +166,7 @@ function ProviderFormComponent({
         <>
           <ObsidianSetting
             name="API Key"
-            desc="(leave blank if not required)"
+            desc="(leave blank if not required) Stored on this device only, not in your vault."
             required={providerTypeInfo.requireApiKey}
           >
             <ObsidianTextInput
