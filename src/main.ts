@@ -229,10 +229,12 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
         this.secretStore.save(secrets)
         toSave = sanitized
       } catch (error) {
-        // Keep the secrets in data.json rather than losing them.
+        // Never fall back to writing secrets into the shared data.json here.
+        // They stay in memory for this session; other settings are still saved.
         console.error('Failed to save secrets', error)
+        toSave = sanitized
         new Notice(
-          'Smart Composer: could not save API keys privately; they were stored in data.json.',
+          'Smart Composer: could not save API keys to private storage. They will be lost when Obsidian restarts.',
         )
       }
     }
