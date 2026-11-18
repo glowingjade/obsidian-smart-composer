@@ -7,6 +7,13 @@ import { InstallerUpdateRequiredModal } from './components/modals/InstallerUpdat
 import { APPLY_VIEW_TYPE, CHAT_VIEW_TYPE } from './constants'
 import { McpManager } from './core/mcp/mcpManager'
 import { RAGEngine } from './core/rag/ragEngine'
+import {
+  applySecrets,
+  extractSecrets,
+  hasSecrets,
+  mergeSecrets,
+} from './core/secrets/secrets'
+import { SecretStore } from './core/secrets/secretStore'
 import { DatabaseManager } from './database/DatabaseManager'
 import { PGLiteAbortedException } from './database/exception'
 import { migrateToJsonDatabase } from './database/json/migrateToJsonDatabase'
@@ -20,6 +27,7 @@ import { getMentionableBlockData } from './utils/obsidian'
 
 export default class SmartComposerPlugin extends Plugin {
   settings: SmartComposerSettings
+  private secretStore: SecretStore
   initialChatProps?: ChatProps // TODO: change this to use view state like ApplyView
   settingsChangeListeners: ((newSettings: SmartComposerSettings) => void)[] = []
   mcpManager: McpManager | null = null
@@ -30,6 +38,7 @@ export default class SmartComposerPlugin extends Plugin {
   private timeoutIds: ReturnType<typeof setTimeout>[] = [] // Use ReturnType instead of number
 
   async onload() {
+    this.secretStore = new SecretStore(this.app)
     await this.loadSettings()
 
     this.registerView(CHAT_VIEW_TYPE, (leaf) => new ChatView(leaf, this))
@@ -154,8 +163,18 @@ export default class SmartComposerPlugin extends Plugin {
   }
 
   async loadSettings() {
-    this.settings = parseSmartComposerSettings(await this.loadData())
-    await this.saveData(this.settings) // Save updated settings
+    const parsed = parseSmartComposerSettings(await this.loadData())
+
+    // Secrets are stored per user/device, not in data.json (which is shared
+    // with everyone who can access the vault). Any secrets still found in
+    // data.json (older versions) are moved into this device's secret store.
+    const { sanitized, secrets: legacySecrets } = extractSecrets(parsed)
+    const secrets = mergeSecrets(legacySecrets, this.secretStore.load())
+    if (hasSecrets(legacySecrets)) {
+      this.secretStore.save(secrets) // throws before data.json is scrubbed
+    }
+    this.settings = applySecrets(sanitized, secrets)
+    await this.saveData(sanitized) // Save updated settings without secrets
   }
 
   async setSettings(newSettings: SmartComposerSettings) {
@@ -167,8 +186,10 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
       return
     }
 
+    const { sanitized, secrets } = extractSecrets(newSettings)
+    this.secretStore.save(secrets)
     this.settings = newSettings
-    await this.saveData(newSettings)
+    await this.saveData(sanitized)
     this.ragEngine?.setSettings(newSettings)
     this.settingsChangeListeners.forEach((listener) => listener(newSettings))
   }
