@@ -17,7 +17,11 @@ export type SecretsBlob = {
   mcp: Record<string, Record<string, string>>
 }
 
-export const emptySecrets = (): SecretsBlob => ({ providers: {}, mcp: {} })
+// Null-prototype dictionaries, so ids such as "__proto__" are stored as plain keys.
+export const emptySecrets = (): SecretsBlob => ({
+  providers: Object.create(null),
+  mcp: Object.create(null),
+})
 
 export function hasSecrets(secrets: SecretsBlob): boolean {
   return (
@@ -95,8 +99,13 @@ export function mergeSecrets(
   legacy: SecretsBlob,
   local: SecretsBlob,
 ): SecretsBlob {
-  return {
-    providers: { ...legacy.providers, ...local.providers },
-    mcp: { ...legacy.mcp, ...local.mcp },
+  const merged = emptySecrets()
+  for (const id of new Set([
+    ...Object.keys(legacy.providers),
+    ...Object.keys(local.providers),
+  ])) {
+    merged.providers[id] = { ...legacy.providers[id], ...local.providers[id] }
   }
+  Object.assign(merged.mcp, legacy.mcp, local.mcp)
+  return merged
 }

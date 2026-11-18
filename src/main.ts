@@ -8,6 +8,7 @@ import { APPLY_VIEW_TYPE, CHAT_VIEW_TYPE } from './constants'
 import { McpManager } from './core/mcp/mcpManager'
 import { RAGEngine } from './core/rag/ragEngine'
 import {
+  SecretsBlob,
   applySecrets,
   extractSecrets,
   hasSecrets,
@@ -28,6 +29,7 @@ import { getMentionableBlockData } from './utils/obsidian'
 export default class SmartComposerPlugin extends Plugin {
   settings: SmartComposerSettings
   private secretStore: SecretStore
+  private useSecretStore = false
   initialChatProps?: ChatProps // TODO: change this to use view state like ApplyView
   settingsChangeListeners: ((newSettings: SmartComposerSettings) => void)[] = []
   mcpManager: McpManager | null = null
@@ -168,10 +170,44 @@ export default class SmartComposerPlugin extends Plugin {
     // Secrets are stored per user/device, not in data.json (which is shared
     // with everyone who can access the vault). Any secrets still found in
     // data.json (older versions) are moved into this device's secret store.
+    this.useSecretStore = this.secretStore.isAvailable()
+    let local: SecretsBlob | null = null
+    if (this.useSecretStore) {
+      try {
+        local = this.secretStore.load()
+      } catch (error) {
+        // Never treat an unreadable store as empty: that could overwrite it.
+        console.error('Failed to read secrets', error)
+        this.useSecretStore = false
+        new Notice(
+          'Smart Composer: could not read the secret store, so API keys stay in data.json for now.',
+        )
+      }
+    } else {
+      new Notice(
+        'Smart Composer: this Obsidian version has no private storage, so API keys are stored in data.json.',
+      )
+    }
+
+    if (!local) {
+      this.settings = parsed
+      await this.saveData(parsed)
+      return
+    }
+
     const { sanitized, secrets: legacySecrets } = extractSecrets(parsed)
-    const secrets = mergeSecrets(legacySecrets, this.secretStore.load())
+    const secrets = mergeSecrets(legacySecrets, local)
     if (hasSecrets(legacySecrets)) {
-      this.secretStore.save(secrets) // throws before data.json is scrubbed
+      try {
+        this.secretStore.save(secrets)
+      } catch (error) {
+        // Do not scrub data.json if the secrets could not be saved.
+        console.error('Failed to save secrets', error)
+        this.useSecretStore = false
+        this.settings = parsed
+        await this.saveData(parsed)
+        return
+      }
     }
     this.settings = applySecrets(sanitized, secrets)
     await this.saveData(sanitized) // Save updated settings without secrets
@@ -186,10 +222,22 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
       return
     }
 
-    const { sanitized, secrets } = extractSecrets(newSettings)
-    this.secretStore.save(secrets)
+    let toSave = newSettings
+    if (this.useSecretStore) {
+      const { sanitized, secrets } = extractSecrets(newSettings)
+      try {
+        this.secretStore.save(secrets)
+        toSave = sanitized
+      } catch (error) {
+        // Keep the secrets in data.json rather than losing them.
+        console.error('Failed to save secrets', error)
+        new Notice(
+          'Smart Composer: could not save API keys privately; they were stored in data.json.',
+        )
+      }
+    }
     this.settings = newSettings
-    await this.saveData(sanitized)
+    await this.saveData(toSave)
     this.ragEngine?.setSettings(newSettings)
     this.settingsChangeListeners.forEach((listener) => listener(newSettings))
   }

@@ -42,43 +42,65 @@ export class SecretStore {
     this.storageId = `${KEY_PREFIX}-${hashString(app.vault.getName())}`
   }
 
+  /** Whether this Obsidian version offers any private storage at all. */
+  isAvailable(): boolean {
+    return (
+      !!this.app.secretStorage ||
+      (!!this.app.loadLocalStorage && !!this.app.saveLocalStorage)
+    )
+  }
+
+  /**
+   * Returns the stored secrets (empty if none were stored yet).
+   * Throws if the store exists but cannot be read, so callers never mistake an
+   * unreadable store for an empty one.
+   */
   load(): SecretsBlob {
+    const secretStorage = this.app.secretStorage
+    const primary = secretStorage
+      ? secretStorage.getSecret(this.storageId)
+      : this.readLocal()
+    if (primary) return parseBlob(primary)
+
+    // Secrets saved to local storage on an older Obsidian: promote them once
+    // SecretStorage is available. The local copy is removed only afterwards.
+    const fallback = secretStorage ? this.readLocal() : null
+    if (!secretStorage || !fallback) return emptySecrets()
+    const blob = parseBlob(fallback)
     try {
-      const raw = this.read()
-      if (!raw) return emptySecrets()
-      const parsed = JSON.parse(raw) as Partial<SecretsBlob>
-      return {
-        providers: parsed.providers ?? {},
-        mcp: parsed.mcp ?? {},
+      secretStorage.setSecret(this.storageId, fallback)
+      if (secretStorage.getSecret(this.storageId) === fallback) {
+        this.app.saveLocalStorage?.(this.storageId, null)
       }
     } catch (error) {
-      console.error('Failed to read secrets from local storage', error)
-      return emptySecrets()
+      console.error('Failed to move secrets into SecretStorage', error)
     }
+    return blob
   }
 
+  /** Throws if the secrets could not be persisted. */
   save(secrets: SecretsBlob): void {
-    this.write(JSON.stringify(secrets))
-  }
-
-  private read(): string | null {
-    const secretStorage = this.app.secretStorage
-    if (secretStorage) {
-      return secretStorage.getSecret(this.storageId)
-    }
-    const value = this.app.loadLocalStorage?.(this.storageId)
-    return typeof value === 'string' ? value : null
-  }
-
-  private write(value: string): void {
-    const secretStorage = this.app.secretStorage
-    if (secretStorage) {
-      secretStorage.setSecret(this.storageId, value)
+    const value = JSON.stringify(secrets)
+    if (this.app.secretStorage) {
+      this.app.secretStorage.setSecret(this.storageId, value)
       return
     }
     if (!this.app.saveLocalStorage) {
       throw new Error('No private storage available for secrets')
     }
     this.app.saveLocalStorage(this.storageId, value)
+  }
+
+  private readLocal(): string | null {
+    const value = this.app.loadLocalStorage?.(this.storageId)
+    return typeof value === 'string' ? value : null
+  }
+}
+
+function parseBlob(raw: string): SecretsBlob {
+  const parsed = JSON.parse(raw) as Partial<SecretsBlob>
+  return {
+    providers: { ...emptySecrets().providers, ...parsed.providers },
+    mcp: { ...emptySecrets().mcp, ...parsed.mcp },
   }
 }
